@@ -2,49 +2,57 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interfaces/ITornado.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/IDebridge.sol";
+import "./Aggregator.sol";
 
-contract CommitmentAggregator is AccessControl {
+contract CommitmentAggregator is Aggregator {
     struct CommitmentInfo {
         bool broadcasted;
         uint256 confirmations;
+        bytes32 debridgeId; // hash(chainId, tokenAddress, amount)
+        bytes32 commitment;
         mapping(address => bool) hasVerified;
     }
 
-    bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
-    uint256 public minConfirmations;
     mapping(bytes32 => CommitmentInfo) public getCommintmentInfo;
-    ITornado tornado;
+    mapping(bytes32 => IDebridge) public getDebridge;
 
-    constructor(uint256 _minConfirmations, ITornado _tornado) {
-        minConfirmations = _minConfirmations;
-        tornado = _tornado;
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-    }
+    event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
+    event Broadcasted(bytes32 debridgeId, bytes32 commitment);
 
-    function submit(bytes32 _commitment) external {
-        require(hasRole(ORACLE_ROLE, msg.sender), "onlyOracle: bad role");
-        CommitmentInfo storage commitmentInfo = getCommintmentInfo[_commitment];
+    constructor(uint256 _minConfirmations, uint128 _payment)
+        Aggregator(_minConfirmations, _payment)
+    {}
+
+    function submit(bytes32 _commitment, bytes32 _debridgeId)
+        external
+        onlyOracle
+    {
+        bytes32 depositId =
+            keccak256(abi.encodePacked(_commitment, _debridgeId));
+        CommitmentInfo storage commitmentInfo = getCommintmentInfo[depositId];
         require(
             !commitmentInfo.hasVerified[msg.sender],
             "submit: submitted already"
         );
+        if (commitmentInfo.confirmations == 0) {
+            commitmentInfo.commitment = _commitment;
+            commitmentInfo.debridgeId = _debridgeId;
+        }
         commitmentInfo.confirmations += 1;
         commitmentInfo.hasVerified[msg.sender] = true;
-        if (
-            !commitmentInfo.broadcasted &&
-            commitmentInfo.confirmations >= minConfirmations
-        ) {
-            // submit to Tornado
-            tornado.externalDeposit(_commitment);
+        if (commitmentInfo.confirmations == minConfirmations) {
+            getDebridge[_debridgeId].externalDeposit(_commitment);
+            commitmentInfo.broadcasted = true;
         }
+        _payOracle(msg.sender);
     }
 
-    function setMinConfirmations(uint256 _minConfirmations) external {
-        require(
-            hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "setMinConfirmations: bad role"
-        );
-        minConfirmations = _minConfirmations;
+    function setDebridge(bytes32 _debridgeId, IDebridge _debridge)
+        external
+        onlyAdmin
+    {
+        getDebridge[_debridgeId] = _debridge;
     }
 }
