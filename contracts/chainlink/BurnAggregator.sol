@@ -48,11 +48,7 @@ contract BurnAggregator is Aggregator {
         burnInfo.confirmations += 1;
         burnInfo.hasVerified[msg.sender] = true;
         if (burnInfo.confirmations == minConfirmations) {
-            getDebridge[_debridgeId].externalWithdraw(
-                _debridgeId,
-                _amount,
-                _receiver
-            );
+            getDebridge[_debridgeId].claim(_debridgeId, _receiver, _amount);
             burnInfo.broadcasted = true;
         }
         _payOracle(msg.sender);

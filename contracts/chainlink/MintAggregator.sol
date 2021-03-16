@@ -48,11 +48,7 @@ contract MintAggregator is Aggregator {
         mintInfo.confirmations += 1;
         mintInfo.hasVerified[msg.sender] = true;
         if (mintInfo.confirmations == minConfirmations) {
-            getDebridge[_debridgeId].externalDeposit(
-                _debridgeId,
-                _amount,
-                _receiver
-            );
+            getDebridge[_debridgeId].mint(_debridgeId, _receiver, _amount);
             mintInfo.broadcasted = true;
         }
         _payOracle(msg.sender);
