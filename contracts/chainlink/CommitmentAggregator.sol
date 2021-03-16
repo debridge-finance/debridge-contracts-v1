@@ -15,7 +15,7 @@ contract CommitmentAggregator is Aggregator {
         mapping(address => bool) hasVerified;
     }
 
-    mapping(bytes32 => CommitmentInfo) public getCommintmentInfo;
+    mapping(bytes32 => CommitmentInfo) public getCommitmentInfo;
     mapping(bytes32 => IDarkDebridge) public getDebridge;
 
     event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
@@ -31,7 +31,7 @@ contract CommitmentAggregator is Aggregator {
     {
         bytes32 depositId =
             keccak256(abi.encodePacked(_commitment, _debridgeId));
-        CommitmentInfo storage commitmentInfo = getCommintmentInfo[depositId];
+        CommitmentInfo storage commitmentInfo = getCommitmentInfo[depositId];
         require(
             !commitmentInfo.hasVerified[msg.sender],
             "submit: submitted already"

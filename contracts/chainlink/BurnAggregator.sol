@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IWhiteDebridge.sol";
 import "./Aggregator.sol";
 
-contract MintAggregator is Aggregator {
-    struct MintInfo {
+contract BurnAggregator is Aggregator {
+    struct BurnInfo {
         bool broadcasted;
         uint256 confirmations;
         bytes32 debridgeId; // hash(chainId, tokenAddress)
@@ -17,7 +17,7 @@ contract MintAggregator is Aggregator {
         mapping(address => bool) hasVerified;
     }
 
-    mapping(bytes32 => MintInfo) public getMintInfo;
+    mapping(bytes32 => BurnInfo) public getBurnInfo;
     mapping(bytes32 => IWhiteDebridge) public getDebridge;
 
     event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
@@ -37,23 +37,23 @@ contract MintAggregator is Aggregator {
             keccak256(
                 abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
             );
-        MintInfo storage mintInfo = getMintInfo[depositId];
-        require(!mintInfo.hasVerified[msg.sender], "submit: submitted already");
-        if (mintInfo.confirmations == 0) {
-            mintInfo.amount = _amount;
-            mintInfo.receiver = _receiver;
-            mintInfo.nonce = _nonce;
-            mintInfo.debridgeId = _debridgeId;
+        BurnInfo storage burnInfo = getBurnInfo[depositId];
+        require(!burnInfo.hasVerified[msg.sender], "submit: submitted already");
+        if (burnInfo.confirmations == 0) {
+            burnInfo.amount = _amount;
+            burnInfo.receiver = _receiver;
+            burnInfo.nonce = _nonce;
+            burnInfo.debridgeId = _debridgeId;
         }
-        mintInfo.confirmations += 1;
-        mintInfo.hasVerified[msg.sender] = true;
-        if (mintInfo.confirmations == minConfirmations) {
-            getDebridge[_debridgeId].externalDeposit(
+        burnInfo.confirmations += 1;
+        burnInfo.hasVerified[msg.sender] = true;
+        if (burnInfo.confirmations == minConfirmations) {
+            getDebridge[_debridgeId].externalWithdraw(
                 _debridgeId,
                 _amount,
                 _receiver
             );
-            mintInfo.broadcasted = true;
+            burnInfo.broadcasted = true;
         }
         _payOracle(msg.sender);
     }

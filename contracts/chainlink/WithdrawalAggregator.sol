@@ -19,7 +19,7 @@ contract WithdrawalAggregator is Aggregator {
         mapping(address => bool) hasVerified;
     }
 
-    mapping(bytes32 => WithdrawalInfo) public getCommintmentInfo;
+    mapping(bytes32 => WithdrawalInfo) public getWithdrawalInfo;
     mapping(bytes32 => ILightDarkDebridge) public getDebridge;
 
     event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
@@ -48,8 +48,7 @@ contract WithdrawalAggregator is Aggregator {
                     _relayer
                 )
             );
-        WithdrawalInfo storage withdrawalInfo =
-            getCommintmentInfo[withdrawalId];
+        WithdrawalInfo storage withdrawalInfo = getWithdrawalInfo[withdrawalId];
         require(
             !withdrawalInfo.hasVerified[msg.sender],
             "submit: submitted already"
