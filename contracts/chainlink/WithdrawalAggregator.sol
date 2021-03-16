@@ -25,9 +25,11 @@ contract WithdrawalAggregator is Aggregator {
     event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
     event Broadcasted(bytes32 debridgeId, bytes32 commitment);
 
-    constructor(uint256 _minConfirmations, uint128 _payment)
-        Aggregator(_minConfirmations, _payment)
-    {}
+    constructor(
+        uint256 _minConfirmations,
+        uint128 _payment,
+        IERC20 _link
+    ) Aggregator(_minConfirmations, _payment, _link) {}
 
     function submit(
         bytes32 _debridgeId,

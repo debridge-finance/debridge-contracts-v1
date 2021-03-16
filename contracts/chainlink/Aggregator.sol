@@ -28,9 +28,14 @@ contract Aggregator is AccessControl {
         _;
     }
 
-    constructor(uint256 _minConfirmations, uint128 _payment) {
+    constructor(
+        uint256 _minConfirmations,
+        uint128 _payment,
+        IERC20 _link
+    ) {
         minConfirmations = _minConfirmations;
         payment = _payment;
+        link = _link;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interfaces/IWhiteDebridge.sol";
-import "../interfaces/IWrappedAsset.sol";
+import "../periphery/WrappedAsset.sol";
 
 contract WhiteDebridge is AccessControl, IWhiteDebridge {
     using SafeERC20 for IERC20;
@@ -23,9 +23,11 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     bytes32 public constant AGGREGATOR_ROLE = keccak256("AGGREGATOR_ROLE");
     uint256 public chainId;
     uint256 public collectedFees;
+    uint256 public nonce;
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
 
     event Sent(
+        uint256 nonce,
         uint256 amount,
         address receiver,
         bytes32 debridgeId,
@@ -33,6 +35,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     );
     event Minted(uint256 amount, address receiver, bytes32 debridgeId);
     event Burnt(
+        uint256 nonce,
         uint256 amount,
         address receiver,
         bytes32 debridgeId,
@@ -50,6 +53,26 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
+    }
+
+    constructor(
+        uint256 _chainId,
+        uint256 _minAmount,
+        uint256 _transferFee,
+        uint256[] memory _supportedChainIds
+    ) {
+        chainId = _chainId;
+        bytes32 debridgeId = keccak256(abi.encodePacked(_chainId, address(0)));
+        _addAsset(
+            debridgeId,
+            address(0),
+            chainId,
+            _minAmount,
+            _transferFee,
+            _supportedChainIds
+        );
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(AGGREGATOR_ROLE, msg.sender);
     }
 
     function send(
@@ -84,7 +107,8 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             collectedFees += transferFee;
             _amount -= transferFee;
         }
-        emit Sent(_amount, _receiver, debridgeId, _chainIdTo);
+        emit Sent(nonce, _amount, _receiver, debridgeId, _chainIdTo);
+        nonce++;
     }
 
     function claim(
@@ -122,7 +146,8 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             collectedFees += transferFee;
             _amount -= transferFee;
         }
-        emit Burnt(_amount, _receiver, _debridgeId, debridge.chainId);
+        emit Burnt(nonce, _amount, _receiver, _debridgeId, debridge.chainId);
+        nonce++;
     }
 
     function mint(
@@ -176,7 +201,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         string memory _name,
         string memory _symbol
     ) external override onlyAdmin() {
-        address tokenAddress = address(new ERC20(_name, _symbol));
+        address tokenAddress = address(new WrappedAsset(_name, _symbol));
         _addAsset(
             _debridgeId,
             tokenAddress,
@@ -185,6 +210,14 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             _transferFee,
             _supportedChainIds
         );
+    }
+
+    function addAggregator(address _aggregator) external onlyAdmin() {
+        grantRole(AGGREGATOR_ROLE, _aggregator);
+    }
+
+    function removeAggregator(address _aggregator) external onlyAdmin() {
+        revokeRole(AGGREGATOR_ROLE, _aggregator);
     }
 
     function _addAsset(
