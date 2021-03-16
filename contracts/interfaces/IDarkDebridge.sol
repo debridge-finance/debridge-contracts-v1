@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-interface IDebridge {
+interface IDarkDebridge {
     function deposit(bytes32 _commitment) external payable;
 
     function externalDeposit(bytes32 _commitment) external payable;

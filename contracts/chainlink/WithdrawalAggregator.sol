@@ -3,7 +3,7 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../interfaces/ILightDebridge.sol";
+import "../interfaces/ILightDarkDebridge.sol";
 import "./Aggregator.sol";
 
 contract WithdrawalAggregator is Aggregator {
@@ -20,7 +20,7 @@ contract WithdrawalAggregator is Aggregator {
     }
 
     mapping(bytes32 => WithdrawalInfo) public getCommintmentInfo;
-    mapping(bytes32 => ILightDebridge) public getDebridge;
+    mapping(bytes32 => ILightDarkDebridge) public getDebridge;
 
     event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
     event Broadcasted(bytes32 debridgeId, bytes32 commitment);
@@ -76,7 +76,7 @@ contract WithdrawalAggregator is Aggregator {
         _payOracle(msg.sender);
     }
 
-    function setDebridge(bytes32 _debridgeId, ILightDebridge _debridge)
+    function setDebridge(bytes32 _debridgeId, ILightDarkDebridge _debridge)
         external
         onlyAdmin
     {
