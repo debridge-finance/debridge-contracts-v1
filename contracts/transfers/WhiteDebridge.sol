@@ -212,11 +212,11 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         );
     }
 
-    function addAggregator(address _aggregator) external onlyAdmin() {
+    function addAggregator(address _aggregator) external {
         grantRole(AGGREGATOR_ROLE, _aggregator);
     }
 
-    function removeAggregator(address _aggregator) external onlyAdmin() {
+    function removeAggregator(address _aggregator) external {
         revokeRole(AGGREGATOR_ROLE, _aggregator);
     }
 
@@ -237,5 +237,13 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             debridge.isSupported[_supportedChainIds[i]] = true;
         }
+    }
+
+    function getDebridgeId(uint256 _chainId, address _tokenAddress)
+        external
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 }

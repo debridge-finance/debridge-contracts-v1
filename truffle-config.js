@@ -43,14 +43,20 @@ module.exports = {
     // options below to some value.
     //
     development: {
-      host: "127.0.0.1", // Localhost (default: none)
-      port: 8545, // Standard Ethereum port (default: none)
       network_id: "*", // Any network (default: none)
+      provider: () =>
+        new HDWalletProvider(
+          [process.env.DEPLOYER_PRIVATE_KEY],
+          "http://127.0.0.1:8545",
+          0,
+          1
+        ),
     },
     test: {
       host: "127.0.0.1", // Localhost (default: none)
       port: 8545, // Standard Ethereum port (default: none)
-      network_id: "*", // Any network (default: none)
+      network_id: "*", // Any network (default: none),
+      from: process.env.DEPLOYER_ACCOUNT,
     },
     kovan: {
       network_id: "42",
@@ -63,6 +69,20 @@ module.exports = {
         ),
       gasPrice: 10000000000, // 80 gwei
       gas: 6900000,
+      from: process.env.DEPLOYER_ACCOUNT,
+      timeoutBlocks: 5000,
+      skipDryRun: true,
+    },
+    bsctest: {
+      network_id: "97",
+      provider: () =>
+        new HDWalletProvider(
+          [process.env.DEPLOYER_PRIVATE_KEY],
+          "https://data-seed-prebsc-2-s3.binance.org:8545/",
+          0,
+          1
+        ),
+      gasPrice: 1000000000, // 80 gwei
       from: process.env.DEPLOYER_ACCOUNT,
       timeoutBlocks: 5000,
       skipDryRun: true,

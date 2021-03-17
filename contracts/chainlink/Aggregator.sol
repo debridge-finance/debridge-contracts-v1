@@ -37,6 +37,7 @@ contract Aggregator is AccessControl {
         payment = _payment;
         link = _link;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(ORACLE_ROLE, msg.sender);
     }
 
     function setMinConfirmations(uint256 _minConfirmations) external onlyAdmin {
@@ -101,6 +102,14 @@ contract Aggregator is AccessControl {
     ) external {
         require(_data.length == 0, "transfer doesn't accept calldata");
         updateAvailableFunds();
+    }
+
+    function addOracle(address _aggregator) external {
+        grantRole(ORACLE_ROLE, _aggregator);
+    }
+
+    function removeOracle(address _aggregator) external {
+        revokeRole(ORACLE_ROLE, _aggregator);
     }
 
     function _payOracle(address _oracle) internal {
