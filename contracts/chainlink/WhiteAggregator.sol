@@ -29,7 +29,7 @@ contract WhiteAggregator is Aggregator {
         require(!mintInfo.hasVerified[msg.sender], "submit: submitted already");
         mintInfo.confirmations += 1;
         mintInfo.hasVerified[msg.sender] = true;
-        if (mintInfo.confirmations == minConfirmations) {
+        if (mintInfo.confirmations >= minConfirmations) {
             mintInfo.confirmed = true;
         }
         _payOracle(msg.sender);
@@ -40,7 +40,7 @@ contract WhiteAggregator is Aggregator {
         require(!burnInfo.hasVerified[msg.sender], "submit: submitted already");
         burnInfo.confirmations += 1;
         burnInfo.hasVerified[msg.sender] = true;
-        if (burnInfo.confirmations == minConfirmations) {
+        if (burnInfo.confirmations >= minConfirmations) {
             burnInfo.confirmed = true;
         }
         _payOracle(msg.sender);

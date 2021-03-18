@@ -16,7 +16,10 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
 
     constructor(string memory _name, string memory _symbol)
         ERC20(_name, _symbol)
-    {}
+    {
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
+    }
 
     function mint(address _receiver, uint256 _amount)
         external

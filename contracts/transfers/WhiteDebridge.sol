@@ -26,8 +26,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     uint256 public nonce;
     IWhiteAggregator public aggregator;
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
-    mapping(bytes32 => bool) public isMintConfirmed; // mintId  => confirmed
-    mapping(bytes32 => bool) public isBurntConfirmed; // mintId  => confirmed
+    mapping(bytes32 => bool) public isSubmissionUsed; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
 
     event Sent(
         bytes32 sentId,
@@ -65,7 +64,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256[] memory _supportedChainIds
     ) {
         chainId = _chainId;
-        bytes32 debridgeId = keccak256(abi.encodePacked(_chainId, address(0)));
+        bytes32 debridgeId = getDebridgeId(_chainId, address(0));
         _addAsset(
             debridgeId,
             address(0),
@@ -84,8 +83,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _amount,
         uint256 _chainIdTo
     ) external payable override {
-        bytes32 debridgeId =
-            keccak256(abi.encodePacked(chainId, _tokenAddress));
+        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         require(
             debridge.isSupported[_chainIdTo],
@@ -110,8 +108,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             collectedFees += transferFee;
             _amount -= transferFee;
         }
-        bytes32 sentId =
-            keccak256(abi.encodePacked(debridgeId, _amount, _receiver, nonce));
+        bytes32 sentId = getSubmisionId(debridgeId, _amount, _receiver, nonce);
         emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo);
         nonce++;
     }
@@ -123,21 +120,19 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _nonce
     ) external override {
         bytes32 burntId =
-            keccak256(
-                abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
-            );
-        require(aggregator.isBurntConfirmed(burntId), "mint: not confirmed");
+            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
+        require(aggregator.isBurntConfirmed(burntId), "claim: not confirmed");
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId == chainId, "send: wrong targed target chain");
+        require(
+            debridge.chainId == chainId,
+            "claim: wrong targed target chain"
+        );
+        require(!isSubmissionUsed[burntId], "claim: already used");
+        isSubmissionUsed[burntId] = true;
         if (debridge.tokenAddress == address(0)) {
             payable(_receiver).transfer(_amount);
         } else {
             IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
-        }
-        uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;
-        if (transferFee > 0) {
-            collectedFees += transferFee;
-            _amount -= transferFee;
         }
         emit Claimed(_amount, _receiver, _debridgeId);
     }
@@ -158,7 +153,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             _amount -= transferFee;
         }
         bytes32 burntId =
-            keccak256(abi.encodePacked(_debridgeId, _amount, _receiver, nonce));
+            getSubmisionId(_debridgeId, _amount, _receiver, nonce);
         emit Burnt(
             burntId,
             _debridgeId,
@@ -170,14 +165,6 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         nonce++;
     }
 
-    function submitMint(bytes32 _mintId) external override onlyAggregator() {
-        isMintConfirmed[_mintId] = true;
-    }
-
-    function submitBurnt(bytes32 _burntId) external override onlyAggregator() {
-        isBurntConfirmed[_burntId] = true;
-    }
-
     function mint(
         bytes32 _debridgeId,
         uint256 _amount,
@@ -185,17 +172,12 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _nonce
     ) external override {
         bytes32 mintId =
-            keccak256(
-                abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
-            );
+            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
         require(aggregator.isMintConfirmed(mintId), "mint: not confirmed");
+        require(!isSubmissionUsed[mintId], "mint: already used");
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        isSubmissionUsed[mintId] = true;
         IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
-        uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;
-        if (transferFee > 0) {
-            collectedFees += transferFee;
-            _amount -= transferFee;
-        }
         emit Minted(_amount, _receiver, _debridgeId);
     }
 
@@ -205,8 +187,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _transferFee,
         uint256[] memory _supportedChainIds
     ) external override onlyAdmin() {
-        bytes32 debridgeId =
-            keccak256(abi.encodePacked(chainId, _tokenAddress));
+        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         _addAsset(
             debridgeId,
             _tokenAddress,
@@ -270,10 +251,22 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     }
 
     function getDebridgeId(uint256 _chainId, address _tokenAddress)
-        external
+        public
         pure
         returns (bytes32)
     {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
+    }
+
+    function getSubmisionId(
+        bytes32 _debridgeId,
+        uint256 _amount,
+        address _receiver,
+        uint256 _nonce
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
+            );
     }
 }

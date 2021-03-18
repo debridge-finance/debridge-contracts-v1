@@ -29,10 +29,6 @@ interface IWhiteDebridge {
         uint256 _nonce
     ) external;
 
-    function submitMint(bytes32 _mintId) external;
-
-    function submitBurnt(bytes32 _burntId) external;
-
     function addNativelAsset(
         address _tokenAddress,
         uint256 _minAmount,
