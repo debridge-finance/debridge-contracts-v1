@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interfaces/IWhiteDebridge.sol";
+import "../interfaces/IWhiteAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
 contract WhiteDebridge is AccessControl, IWhiteDebridge {
@@ -24,9 +25,13 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     uint256 public chainId;
     uint256 public collectedFees;
     uint256 public nonce;
+    IWhiteAggregator public aggregator;
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
+    mapping(bytes32 => bool) public isMintConfirmed; // mintId  => confirmed
+    mapping(bytes32 => bool) public isBurntConfirmed; // mintId  => confirmed
 
     event Sent(
+        bytes32 sentId,
         bytes32 debridgeId,
         uint256 amount,
         address receiver,
@@ -35,6 +40,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     );
     event Minted(uint256 amount, address receiver, bytes32 debridgeId);
     event Burnt(
+        bytes32 burntId,
         bytes32 debridgeId,
         uint256 amount,
         address receiver,
@@ -59,6 +65,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _chainId,
         uint256 _minAmount,
         uint256 _transferFee,
+        IWhiteAggregator _aggregator,
         uint256[] memory _supportedChainIds
     ) {
         chainId = _chainId;
@@ -71,8 +78,8 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             _transferFee,
             _supportedChainIds
         );
+        aggregator = _aggregator;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(AGGREGATOR_ROLE, msg.sender);
     }
 
     function send(
@@ -107,15 +114,23 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             collectedFees += transferFee;
             _amount -= transferFee;
         }
-        emit Sent(debridgeId, _amount, _receiver, nonce, _chainIdTo);
+        bytes32 sentId =
+            keccak256(abi.encodePacked(debridgeId, _amount, _receiver, nonce));
+        emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo);
         nonce++;
     }
 
     function claim(
         bytes32 _debridgeId,
+        uint256 _amount,
         address _receiver,
-        uint256 _amount
+        uint256 _nonce
     ) external override onlyAggregator() {
+        bytes32 burntId =
+            keccak256(
+                abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
+            );
+        require(aggregator.isBurntConfirmed(burntId), "mint: not confirmed");
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId == chainId, "send: wrong targed target chain");
         if (debridge.tokenAddress == address(0)) {
@@ -146,15 +161,38 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             collectedFees += transferFee;
             _amount -= transferFee;
         }
-        emit Burnt(_debridgeId, _amount, _receiver, nonce, debridge.chainId);
+        bytes32 burntId =
+            keccak256(abi.encodePacked(_debridgeId, _amount, _receiver, nonce));
+        emit Burnt(
+            burntId,
+            _debridgeId,
+            _amount,
+            _receiver,
+            nonce,
+            debridge.chainId
+        );
         nonce++;
+    }
+
+    function submitMint(bytes32 _mintId) external override onlyAggregator() {
+        isMintConfirmed[_mintId] = true;
+    }
+
+    function submitBurnt(bytes32 _burntId) external override onlyAggregator() {
+        isBurntConfirmed[_burntId] = true;
     }
 
     function mint(
         bytes32 _debridgeId,
+        uint256 _amount,
         address _receiver,
-        uint256 _amount
-    ) external override onlyAggregator() {
+        uint256 _nonce
+    ) external override {
+        bytes32 mintId =
+            keccak256(
+                abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
+            );
+        require(aggregator.isMintConfirmed(mintId), "mint: not confirmed");
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
         uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;

@@ -11,8 +11,9 @@ interface IWhiteDebridge {
 
     function claim(
         bytes32 _debridgeId,
+        uint256 _amount,
         address _receiver,
-        uint256 _amount
+        uint256 _nonce
     ) external;
 
     function burn(
@@ -23,9 +24,14 @@ interface IWhiteDebridge {
 
     function mint(
         bytes32 _debridgeId,
+        uint256 _amount,
         address _receiver,
-        uint256 _amount
+        uint256 _nonce
     ) external;
+
+    function submitMint(bytes32 _mintId) external;
+
+    function submitBurnt(bytes32 _burntId) external;
 
     function addNativelAsset(
         address _tokenAddress,
