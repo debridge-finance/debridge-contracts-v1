@@ -1,12 +1,15 @@
 const WhiteAggregator = artifacts.require("WhiteAggregator");
-const MockToken = artifacts.require("MockToken");
+const MockLinkToken = artifacts.require("MockLinkToken");
 
-module.exports = async function (deployer, network) {
+module.exports = async function (deployer, network, accounts) {
   let link;
   switch (network) {
     case "development":
-      await deployer.deploy(MockToken, "Link Token", "dLINK", 18);
-      link = (await MockToken.deployed()).address;
+    case "bsctest":
+      await deployer.deploy(MockLinkToken, "Link Token", "dLINK", 18);
+      const linkToken = await MockLinkToken.deployed();
+      await linkToken.mint(accounts[0], web3.utils.toWei("100"));
+      link = (await MockLinkToken.deployed()).address;
       break;
     case "kovan":
       link = "0xa36085F69e2889c224210F603D836748e7dC0088";
@@ -14,7 +17,7 @@ module.exports = async function (deployer, network) {
     case "bsc":
       link = "0x404460c6a5ede2d891e8297795264fde62adbb75";
       break;
-    case "testbsc":
+    case "bsctest":
       link = "0x84b9b910527ad5c03a9ca831909e21e236ea7b06";
       break;
     default:
