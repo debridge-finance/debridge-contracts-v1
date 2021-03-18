@@ -67,7 +67,7 @@ module.exports = {
           0,
           1
         ),
-      gasPrice: 10000000000, // 80 gwei
+      gasPrice: 5000000000, // 80 gwei
       gas: 6900000,
       from: process.env.DEPLOYER_ACCOUNT,
       timeoutBlocks: 5000,
@@ -82,7 +82,6 @@ module.exports = {
           0,
           1
         ),
-      gasPrice: 1000000000, // 80 gwei
       from: process.env.DEPLOYER_ACCOUNT,
       timeoutBlocks: 5000,
       skipDryRun: true,
@@ -157,5 +156,6 @@ module.exports = {
   plugins: ["truffle-plugin-verify"],
   api_keys: {
     etherscan: process.env.ETHERSCAN_API_KEY,
+    // bscscan: process.env.BSCSCAN_API_KEY,
   },
 };

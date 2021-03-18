@@ -27,6 +27,7 @@ module.exports = async function (deployer, network) {
   await deployer.deploy(WhiteAggregator, initialOraclesCount, "10000000", link);
 
   const whiteAggregatorInstance = await WhiteAggregator.deployed();
-  for (let oracle of initialOracles)
+  for (let oracle of initialOracles) {
     await whiteAggregatorInstance.addOracle(oracle);
+  }
 };

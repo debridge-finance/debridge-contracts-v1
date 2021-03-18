@@ -27,18 +27,18 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
 
     event Sent(
-        uint256 nonce,
+        bytes32 debridgeId,
         uint256 amount,
         address receiver,
-        bytes32 debridgeId,
+        uint256 nonce,
         uint256 chainIdTo
     );
     event Minted(uint256 amount, address receiver, bytes32 debridgeId);
     event Burnt(
-        uint256 nonce,
+        bytes32 debridgeId,
         uint256 amount,
         address receiver,
-        bytes32 debridgeId,
+        uint256 nonce,
         uint256 chainIdTo
     );
     event Claimed(uint256 amount, address receiver, bytes32 debridgeId);
@@ -107,7 +107,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             collectedFees += transferFee;
             _amount -= transferFee;
         }
-        emit Sent(nonce, _amount, _receiver, debridgeId, _chainIdTo);
+        emit Sent(debridgeId, _amount, _receiver, nonce, _chainIdTo);
         nonce++;
     }
 
@@ -146,7 +146,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             collectedFees += transferFee;
             _amount -= transferFee;
         }
-        emit Burnt(nonce, _amount, _receiver, _debridgeId, debridge.chainId);
+        emit Burnt(_debridgeId, _amount, _receiver, nonce, debridge.chainId);
         nonce++;
     }
 
