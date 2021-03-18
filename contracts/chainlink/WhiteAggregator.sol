@@ -3,7 +3,6 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../interfaces/IWhiteDebridge.sol";
 import "./Aggregator.sol";
 
 contract WhiteAggregator is Aggregator {
@@ -15,7 +14,6 @@ contract WhiteAggregator is Aggregator {
 
     mapping(bytes32 => SubmissionInfo) public getMintInfo;
     mapping(bytes32 => SubmissionInfo) public getBurntInfo;
-    mapping(bytes32 => IWhiteDebridge) public getDebridge;
 
     event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
     event Broadcasted(bytes32 debridgeId, bytes32 commitment);
@@ -46,13 +44,6 @@ contract WhiteAggregator is Aggregator {
             burnInfo.confirmed = true;
         }
         _payOracle(msg.sender);
-    }
-
-    function setDebridge(bytes32 _debridgeId, IWhiteDebridge _debridge)
-        external
-        onlyAdmin
-    {
-        getDebridge[_debridgeId] = _debridge;
     }
 
     function isMintConfirmed(bytes32 _mintId) external view returns (bool) {

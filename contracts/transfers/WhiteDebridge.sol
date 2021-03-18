@@ -21,7 +21,6 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     }
 
     uint256 public constant DENOMINATOR = 1e18;
-    bytes32 public constant AGGREGATOR_ROLE = keccak256("AGGREGATOR_ROLE");
     uint256 public chainId;
     uint256 public collectedFees;
     uint256 public nonce;
@@ -50,10 +49,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     event Claimed(uint256 amount, address receiver, bytes32 debridgeId);
 
     modifier onlyAggregator {
-        require(
-            hasRole(AGGREGATOR_ROLE, msg.sender),
-            "onlyAggregator: bad role"
-        );
+        require(address(aggregator) == msg.sender, "onlyAggregator: bad role");
         _;
     }
     modifier onlyAdmin {
@@ -125,7 +121,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _amount,
         address _receiver,
         uint256 _nonce
-    ) external override onlyAggregator() {
+    ) external override {
         bytes32 burntId =
             keccak256(
                 abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
@@ -250,12 +246,8 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         );
     }
 
-    function addAggregator(address _aggregator) external {
-        grantRole(AGGREGATOR_ROLE, _aggregator);
-    }
-
-    function removeAggregator(address _aggregator) external {
-        revokeRole(AGGREGATOR_ROLE, _aggregator);
+    function setAggregator(IWhiteAggregator _aggregator) external {
+        aggregator = _aggregator;
     }
 
     function _addAsset(
