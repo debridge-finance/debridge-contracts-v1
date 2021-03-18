@@ -101,7 +101,7 @@ contract Aggregator is AccessControl {
         bytes calldata _data
     ) external {
         require(msg.sender == address(link), "onTokenTransfer: not the Link");
-        // require(_data.length == 0, "transfer doesn't accept calldata");
+        require(_data.length == 0, "transfer doesn't accept calldata");
         updateAvailableFunds();
     }
 

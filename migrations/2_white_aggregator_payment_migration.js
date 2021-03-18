@@ -27,6 +27,6 @@ module.exports = async function (deployer, network) {
   await linkTokenInstance.transferAndCall(
     WhiteAggregator.address.toString(),
     amount,
-    0
+    "0x"
   );
 };

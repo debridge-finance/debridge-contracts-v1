@@ -7,23 +7,28 @@ import "./Aggregator.sol";
 
 contract WhiteAggregator is Aggregator {
     struct SubmissionInfo {
-        bool confirmed;
-        uint256 confirmations;
-        mapping(address => bool) hasVerified;
+        bool confirmed; // whether is confirmed
+        uint256 confirmations; // received confirmations count
+        mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
-    mapping(bytes32 => SubmissionInfo) public getMintInfo;
-    mapping(bytes32 => SubmissionInfo) public getBurntInfo;
+    mapping(bytes32 => SubmissionInfo) public getMintInfo; // mint id => submission info
+    mapping(bytes32 => SubmissionInfo) public getBurntInfo; // burnt id => submission info
 
-    event Confirmed(bytes32 commitment, bytes32 debridgeId, address operator);
-    event Broadcasted(bytes32 debridgeId, bytes32 commitment);
+    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed
 
+    /// @dev Constructor that initializes the most important configurations.
+    /// @param _minConfirmations Minimal required confirmations.
+    /// @param _payment Oracle reward.
+    /// @param _link Link token to pay to oracles.
     constructor(
         uint256 _minConfirmations,
         uint128 _payment,
         IERC20 _link
     ) Aggregator(_minConfirmations, _payment, _link) {}
 
+    /// @dev Confirms the mint request.
+    /// @param _mintId Submission identifier.
     function submitMint(bytes32 _mintId) external onlyOracle {
         SubmissionInfo storage mintInfo = getMintInfo[_mintId];
         require(!mintInfo.hasVerified[msg.sender], "submit: submitted already");
@@ -33,8 +38,11 @@ contract WhiteAggregator is Aggregator {
             mintInfo.confirmed = true;
         }
         _payOracle(msg.sender);
+        emit Confirmed(_mintId, msg.sender);
     }
 
+    /// @dev Confirms the burnnt request.
+    /// @param _burntId Submission identifier.
     function submitBurn(bytes32 _burntId) external onlyOracle {
         SubmissionInfo storage burnInfo = getBurntInfo[_burntId];
         require(!burnInfo.hasVerified[msg.sender], "submit: submitted already");
@@ -43,6 +51,7 @@ contract WhiteAggregator is Aggregator {
         if (burnInfo.confirmations >= minConfirmations) {
             burnInfo.confirmed = true;
         }
+        emit Confirmed(_burntId, msg.sender);
         _payOracle(msg.sender);
     }
 
