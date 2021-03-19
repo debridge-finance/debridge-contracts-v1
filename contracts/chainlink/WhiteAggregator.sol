@@ -55,10 +55,16 @@ contract WhiteAggregator is Aggregator {
         _payOracle(msg.sender);
     }
 
+    /// @dev Returns whether mint request is confirmed.
+    /// @param _mintId Submission identifier.
+    /// @return Whether mint request is confirmed.
     function isMintConfirmed(bytes32 _mintId) external view returns (bool) {
         return getMintInfo[_mintId].confirmed;
     }
 
+    /// @dev Returns whether burnnt request is confirmed.
+    /// @param _burntId Submission identifier.
+    /// @return Whether burnnt request is confirmed.
     function isBurntConfirmed(bytes32 _burntId) external view returns (bool) {
         return getBurntInfo[_burntId].confirmed;
     }
