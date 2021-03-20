@@ -1,15 +1,12 @@
 const WhiteDebridge = artifacts.require("WhiteDebridge");
+const WhiteAggregator = artifacts.require("WhiteAggregator");
 
 module.exports = async function (deployer, network) {
   const whiteDebridgeInstance = await WhiteDebridge.deployed();
   const otherAssetInfos = require("../assets/debridge.json")[network];
   for (let otherAssetInfo of otherAssetInfos) {
-    const debridgeId = await whiteDebridgeInstance.getDebridgeId(
-      otherAssetInfo.chainId,
-      otherAssetInfo.tokenAddress
-    );
     await whiteDebridgeInstance.addExternalAsset(
-      debridgeId,
+      otherAssetInfo.tokenAddress,
       otherAssetInfo.chainId,
       otherAssetInfo.minAmount,
       otherAssetInfo.transferFee,
@@ -18,4 +15,7 @@ module.exports = async function (deployer, network) {
       otherAssetInfo.symbol
     );
   }
+  console.log("Network: " + network);
+  console.log("WhiteAggregator:" + WhiteAggregator.address);
+  console.log("WhiteDebridge:" + WhiteDebridge.address);
 };

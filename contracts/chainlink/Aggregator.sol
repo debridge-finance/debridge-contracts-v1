@@ -70,6 +70,7 @@ contract Aggregator is AccessControl {
         assert(link.transfer(_recipient, uint256(amount)));
     }
 
+    /// @dev Updates available rewards to be distributed.
     function updateAvailableFunds() public {
         availableFunds = link.balanceOf(address(this)) - allocatedFunds;
     }
@@ -130,6 +131,8 @@ contract Aggregator is AccessControl {
 
     /* INTERNAL */
 
+    /// @dev Assess teh oracle rewards.
+    /// @param _oracle Oracle address.
     function _payOracle(address _oracle) internal {
         availableFunds -= payment;
         allocatedFunds += payment;
@@ -138,6 +141,9 @@ contract Aggregator is AccessControl {
 
     /* VIEW */
 
+    /// @dev Withdraws oracle reward.
+    /// @param _oracle Oracle address.
+    /// @return Oracle rewards.
     function withdrawablePayment(address _oracle)
         external
         view

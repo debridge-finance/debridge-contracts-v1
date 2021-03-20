@@ -4,8 +4,9 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Aggregator.sol";
+import "../interfaces/IWhiteAggregator.sol";
 
-contract WhiteAggregator is Aggregator {
+contract WhiteAggregator is Aggregator, IWhiteAggregator {
     struct SubmissionInfo {
         bool confirmed; // whether is confirmed
         uint256 confirmations; // received confirmations count
@@ -29,7 +30,7 @@ contract WhiteAggregator is Aggregator {
 
     /// @dev Confirms the mint request.
     /// @param _mintId Submission identifier.
-    function submitMint(bytes32 _mintId) external onlyOracle {
+    function submitMint(bytes32 _mintId) external override onlyOracle {
         SubmissionInfo storage mintInfo = getMintInfo[_mintId];
         require(!mintInfo.hasVerified[msg.sender], "submit: submitted already");
         mintInfo.confirmations += 1;
@@ -43,7 +44,7 @@ contract WhiteAggregator is Aggregator {
 
     /// @dev Confirms the burnnt request.
     /// @param _burntId Submission identifier.
-    function submitBurn(bytes32 _burntId) external onlyOracle {
+    function submitBurn(bytes32 _burntId) external override onlyOracle {
         SubmissionInfo storage burnInfo = getBurntInfo[_burntId];
         require(!burnInfo.hasVerified[msg.sender], "submit: submitted already");
         burnInfo.confirmations += 1;
@@ -58,14 +59,24 @@ contract WhiteAggregator is Aggregator {
     /// @dev Returns whether mint request is confirmed.
     /// @param _mintId Submission identifier.
     /// @return Whether mint request is confirmed.
-    function isMintConfirmed(bytes32 _mintId) external view returns (bool) {
+    function isMintConfirmed(bytes32 _mintId)
+        external
+        view
+        override
+        returns (bool)
+    {
         return getMintInfo[_mintId].confirmed;
     }
 
     /// @dev Returns whether burnnt request is confirmed.
     /// @param _burntId Submission identifier.
     /// @return Whether burnnt request is confirmed.
-    function isBurntConfirmed(bytes32 _burntId) external view returns (bool) {
+    function isBurntConfirmed(bytes32 _burntId)
+        external
+        view
+        override
+        returns (bool)
+    {
         return getBurntInfo[_burntId].confirmed;
     }
 }

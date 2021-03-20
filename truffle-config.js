@@ -51,6 +51,8 @@ module.exports = {
           0,
           1
         ),
+      gas: 10000000,
+      skipDryRun: false,
     },
     test: {
       host: "127.0.0.1", // Localhost (default: none)
@@ -79,6 +81,19 @@ module.exports = {
         new HDWalletProvider(
           [process.env.DEPLOYER_PRIVATE_KEY],
           "https://data-seed-prebsc-2-s3.binance.org:8545/",
+          0,
+          1
+        ),
+      from: process.env.DEPLOYER_ACCOUNT,
+      timeoutBlocks: 5000,
+      skipDryRun: true,
+    },
+    bsc: {
+      network_id: "56",
+      provider: () =>
+        new HDWalletProvider(
+          [process.env.DEPLOYER_PRIVATE_KEY],
+          "https://bsc-dataseed.binance.org/",
           0,
           1
         ),
@@ -146,8 +161,8 @@ module.exports = {
       settings: {
         // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
-          enabled: false,
-          runs: 200,
+          enabled: true,
+          runs: 1000,
         },
         //  evmVersion: "byzantium"
       },

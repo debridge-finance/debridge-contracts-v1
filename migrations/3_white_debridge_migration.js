@@ -13,7 +13,7 @@ module.exports = async function (deployer, network) {
       break;
     case "kovan":
       chainId = 42;
-      supportedChainIds = [97];
+      supportedChainIds = [56];
       break;
     case "bsc":
       chainId = 56;
@@ -33,7 +33,7 @@ module.exports = async function (deployer, network) {
     chainId,
     minAmount,
     transferFee,
-    whiteAggregatorInstance.address,
+    whiteAggregatorInstance.address.toString(),
     supportedChainIds
   );
 };

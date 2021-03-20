@@ -326,6 +326,9 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
 
     /* VIEW */
 
+    /// @dev Calculates asset identifier.
+    /// @param _tokenAddress Address of the asset on the other chain.
+    /// @param _chainId Current chain id.
     function getDebridgeId(uint256 _chainId, address _tokenAddress)
         public
         pure
@@ -334,6 +337,11 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
+    /// @dev Calculate submission id.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
     function getSubmisionId(
         bytes32 _debridgeId,
         uint256 _amount,
