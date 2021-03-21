@@ -6,6 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interfaces/IWhiteDebridge.sol";
+import "../interfaces/IFeeProxy.sol";
+import "../interfaces/IWETH.sol";
+import "../interfaces/IDefiController.sol";
 import "../interfaces/IWhiteAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
@@ -18,15 +21,20 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 minAmount; // minimal amount to transfer
         uint256 transferFee; // transfer fee rate
         uint256 collectedFees; // total collected fees that can be used to buy LINK
+        uint256 balance; // total locked assets
+        uint256 minReserves; // minimal hot reserves
         mapping(uint256 => bool) isSupported; // wheter the chain for the asset is supported
     }
 
     uint256 public constant DENOMINATOR = 1e18; // accuacy multiplyer
     uint256 public chainId; // current chain id
-    uint256 public nonce; // global counter for transfers
     IWhiteAggregator public aggregator; // chainlink aggregator address
+    IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
+    IDefiController public defiController; // proxy to use the locked assets in Defi protocols
+    IWETH public weth; // wrapped native token contract
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
+    mapping(address => uint256) public getUserNonce; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
 
     event Sent(
         bytes32 sentId,
@@ -51,6 +59,13 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         require(address(aggregator) == msg.sender, "onlyAggregator: bad role");
         _;
     }
+    modifier onlyDefiController {
+        require(
+            address(defiController) == msg.sender,
+            "defiController: bad role"
+        );
+        _;
+    }
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
@@ -59,20 +74,25 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /* EXTERNAL */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _chainId Current chain id.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
     /// @param _transferFee Transfer fee rate.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     constructor(
-        uint256 _chainId,
         uint256 _minAmount,
         uint256 _transferFee,
         IWhiteAggregator _aggregator,
-        uint256[] memory _supportedChainIds
+        uint256[] memory _supportedChainIds,
+        IWETH _weth,
+        IFeeProxy _feeProxy,
+        IDefiController _defiController
     ) {
-        chainId = _chainId;
-        bytes32 debridgeId = getDebridgeId(_chainId, address(0));
+        uint256 cid;
+        assembly {
+            cid := chainid()
+        }
+        chainId = cid;
+        bytes32 debridgeId = getDebridgeId(chainId, address(0));
         _addAsset(
             debridgeId,
             address(0),
@@ -82,6 +102,9 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             _supportedChainIds
         );
         aggregator = _aggregator;
+        weth = _weth;
+        feeProxy = _feeProxy;
+        _defiController = defiController;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -117,9 +140,11 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             debridge.collectedFees += transferFee;
             _amount -= transferFee;
         }
+        debridge.balance += _amount;
+        uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId = getSubmisionId(_debridgeId, _amount, _receiver, nonce);
         emit Sent(sentId, _debridgeId, _amount, _receiver, nonce, _chainIdTo);
-        nonce++;
+        getUserNonce[_receiver]++;
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -158,6 +183,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
         wrappedAsset.burn(_amount);
+        uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
             getSubmisionId(_debridgeId, _amount, _receiver, nonce);
         emit Burnt(
@@ -168,7 +194,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             nonce,
             debridge.chainId
         );
-        nonce++;
+        getUserNonce[_receiver]++;
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -190,10 +216,12 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         require(!isSubmissionUsed[burntId], "claim: already used");
         isSubmissionUsed[burntId] = true;
         uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;
+        debridge.balance -= _amount;
         if (transferFee > 0) {
             debridge.collectedFees += transferFee;
             _amount -= transferFee;
         }
+        _ensureReserves(debridge, _amount);
         if (debridge.tokenAddress == address(0)) {
             payable(_receiver).transfer(_amount);
         } else {
@@ -274,6 +302,28 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         aggregator = _aggregator;
     }
 
+    /// @dev Set fee converter proxy.
+    /// @param _feeProxy Submission aggregator address.
+    function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin() {
+        feeProxy = _feeProxy;
+    }
+
+    /// @dev Set defi controoler.
+    /// @param _defiController Submission aggregator address.
+    function setDefiController(IDefiController _defiController)
+        external
+        onlyAdmin()
+    {
+        // TODO: claim all the reserves before
+        defiController = _defiController;
+    }
+
+    /// @dev Set wrapped native asset address.
+    /// @param _weth Submission aggregator address.
+    function setWeth(IWETH _weth) external onlyAdmin() {
+        weth = _weth;
+    }
+
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
@@ -294,6 +344,88 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             payable(_receiver).transfer(_amount);
         } else {
             IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+        }
+    }
+
+    /// @dev Request the assets to be used in defi protocol.
+    /// @param _tokenAddress Asset address.
+    /// @param _amount Submission aggregator address.
+    function requestReserves(address _tokenAddress, uint256 _amount)
+        external
+        onlyDefiController()
+    {
+        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
+        DebridgeInfo storage debridge = getDebridge[debridgeId];
+        uint256 minReserves =
+            (debridge.balance * debridge.minReserves) / DENOMINATOR;
+        require(
+            minReserves + _amount > debridge.balance,
+            "requestReserves: not enough reserves"
+        );
+        debridge.balance -= _amount;
+        if (debridge.tokenAddress == address(0)) {
+            payable(address(defiController)).transfer(_amount);
+        } else {
+            IERC20(debridge.tokenAddress).safeTransfer(
+                address(defiController),
+                _amount
+            );
+        }
+    }
+
+    /// @dev Return the assets that were used in defi protocol.
+    /// @param _tokenAddress Asset address.
+    /// @param _amount Submission aggregator address.
+    function returnReserves(address _tokenAddress, uint256 _amount)
+        external
+        payable
+        onlyDefiController()
+    {
+        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
+        DebridgeInfo storage debridge = getDebridge[debridgeId];
+        if (debridge.tokenAddress == address(0)) {
+            debridge.balance += msg.value;
+        } else {
+            IERC20(debridge.tokenAddress).safeTransferFrom(
+                address(defiController),
+                address(this),
+                _amount
+            );
+            debridge.balance += _amount;
+        }
+    }
+
+    /// @dev Fund aggregator.
+    /// @param _debridgeId Asset identifier.
+    /// @param _amount Submission aggregator address.
+    function fundAggregator(bytes32 _debridgeId, uint256 _amount)
+        external
+        onlyAdmin()
+    {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(
+            debridge.chainId == chainId,
+            "fundAggregator: wrong target chain"
+        );
+        require(
+            debridge.collectedFees >= _amount,
+            "fundAggregator: not enough fee"
+        );
+        debridge.collectedFees -= _amount;
+        if (debridge.tokenAddress == address(0)) {
+            weth.deposit{value: _amount}();
+            weth.transfer(address(feeProxy), _amount);
+            feeProxy.swapToLink(address(weth), _amount, address(aggregator));
+        } else {
+            IERC20(debridge.tokenAddress).safeTransfer(
+                address(feeProxy),
+                _amount
+            );
+            feeProxy.swapToLink(
+                debridge.tokenAddress,
+                _amount,
+                address(aggregator)
+            );
         }
     }
 
@@ -321,6 +453,25 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         debridge.transferFee = _transferFee;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             debridge.isSupported[_supportedChainIds[i]] = true;
+        }
+    }
+
+    /// @dev Request the assets to be used in defi protocol.
+    /// @param _debridge Asset info.
+    /// @param _amount Submission aggregator address.
+    function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount)
+        internal
+    {
+        uint256 minReserves =
+            (_debridge.balance * _debridge.minReserves) / DENOMINATOR;
+        if (minReserves + _amount < _debridge.balance) {
+            uint256 requestedReserves =
+                _debridge.balance - minReserves + _amount;
+            defiController.claimReserve(
+                _debridge.tokenAddress,
+                requestedReserves
+            );
+            _debridge.balance += requestedReserves;
         }
     }
 

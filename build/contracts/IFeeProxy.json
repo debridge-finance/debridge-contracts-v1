@@ -1,0 +1,361 @@
+{
+  "contractName": "IFeeProxy",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_erc20Token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_receiver",
+          "type": "address"
+        }
+      ],
+      "name": "swapToLink",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_erc20Token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"}],\"name\":\"swapToLink\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IFeeProxy.sol\":\"IFeeProxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IFeeProxy.sol\":{\"keccak256\":\"0x4e7735ab689112f0874a7ed4a72e8ebae451837076b05683d19c8efcf6e46a4f\",\"urls\":[\"bzz-raw://66eeba4b7910cde01fda76b6076095634c3454403e65869575aa46ab22027385\",\"dweb:/ipfs/QmWdHNwyRJsQbPUBsrFq4aqTUji6mbyo5ZZJtRYYuw8QKE\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.8.2;\n\ninterface IFeeProxy {\n    function swapToLink(\n        address _erc20Token,\n        uint256 _amount,\n        address _receiver\n    ) external;\n}\n",
+  "sourcePath": "/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IFeeProxy.sol",
+  "ast": {
+    "absolutePath": "/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IFeeProxy.sol",
+    "exportedSymbols": {
+      "IFeeProxy": [
+        1044
+      ]
+    },
+    "id": 1045,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1034,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:7"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 1044,
+        "linearizedBaseContracts": [
+          1044
+        ],
+        "name": "IFeeProxy",
+        "nameLocation": "35:9:7",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "d66a30a8",
+            "id": 1043,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "swapToLink",
+            "nameLocation": "60:10:7",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1041,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1036,
+                  "mutability": "mutable",
+                  "name": "_erc20Token",
+                  "nameLocation": "88:11:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1043,
+                  "src": "80:19:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1035,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "80:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1038,
+                  "mutability": "mutable",
+                  "name": "_amount",
+                  "nameLocation": "117:7:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1043,
+                  "src": "109:15:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1037,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "109:7:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1040,
+                  "mutability": "mutable",
+                  "name": "_receiver",
+                  "nameLocation": "142:9:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1043,
+                  "src": "134:17:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1039,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "134:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "70:87:7"
+            },
+            "returnParameters": {
+              "id": 1042,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "166:0:7"
+            },
+            "scope": 1044,
+            "src": "51:116:7",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1045,
+        "src": "25:144:7"
+      }
+    ],
+    "src": "0:170:7"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IFeeProxy.sol",
+    "exportedSymbols": {
+      "IFeeProxy": [
+        1044
+      ]
+    },
+    "id": 1045,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1034,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:7"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 1044,
+        "linearizedBaseContracts": [
+          1044
+        ],
+        "name": "IFeeProxy",
+        "nameLocation": "35:9:7",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "d66a30a8",
+            "id": 1043,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "swapToLink",
+            "nameLocation": "60:10:7",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1041,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1036,
+                  "mutability": "mutable",
+                  "name": "_erc20Token",
+                  "nameLocation": "88:11:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1043,
+                  "src": "80:19:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1035,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "80:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1038,
+                  "mutability": "mutable",
+                  "name": "_amount",
+                  "nameLocation": "117:7:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1043,
+                  "src": "109:15:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1037,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "109:7:7",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1040,
+                  "mutability": "mutable",
+                  "name": "_receiver",
+                  "nameLocation": "142:9:7",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1043,
+                  "src": "134:17:7",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 1039,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "134:7:7",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "70:87:7"
+            },
+            "returnParameters": {
+              "id": 1042,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "166:0:7"
+            },
+            "scope": 1044,
+            "src": "51:116:7",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1045,
+        "src": "25:144:7"
+      }
+    ],
+    "src": "0:170:7"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.2+commit.661d1103.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.4",
+  "updatedAt": "2021-03-21T15:57:52.132Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
