@@ -28,8 +28,10 @@ ganache-cli --account "0x0c2528af4d3abb4a8e605d6564105218338535e4b4214074ca588a1
 
 # Ideas Backlog
 
-[ ] add swap for collected fees to LINK
+- [ ] add swap for collected fees to LINK
 
-[ ] make the wrapped assets to support permits (allows to make off-chain approves)
+- [ ] make the wrapped assets to support permits (allows to make off-chain approves)
 
-[ ] use assets in other protocols
+- [ ] use assets in other protocols
+
+- [ ] support NFT to make transfer fee lower

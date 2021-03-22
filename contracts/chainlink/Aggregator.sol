@@ -8,7 +8,6 @@ contract Aggregator is AccessControl {
     struct OracleInfo {
         uint128 withdrawable; // amount of withdrawable LINKs
         address admin; // current oracle admin
-        address pendingAdmin; // new admin
     }
 
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
@@ -119,8 +118,10 @@ contract Aggregator is AccessControl {
 
     /// @dev Add new oracle.
     /// @param _oracle Oracle address.
-    function addOracle(address _oracle) external {
+    /// @param _admin Admin address.
+    function addOracle(address _oracle, address _admin) external {
         grantRole(ORACLE_ROLE, _oracle);
+        getRracleInfo[_oracle].admin = _admin;
     }
 
     /// @dev Remove oracle.
