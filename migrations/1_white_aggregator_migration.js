@@ -1,8 +1,9 @@
 const WhiteAggregator = artifacts.require("WhiteAggregator");
-const MockLinkToken = artifacts.require("MockLinkToken");
 const { getLinkAddress } = require("./utils");
 
 module.exports = async function (deployer, network, accounts) {
+  if (network == "test") return;
+
   const link = getLinkAddress(deployer, network, accounts);
 
   const initialOraclesCount = process.env.ORACLES_COUNT;

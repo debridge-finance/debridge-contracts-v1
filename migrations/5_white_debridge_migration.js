@@ -5,6 +5,8 @@ const DefiController = artifacts.require("DefiController");
 const { getWeth } = require("./utils");
 
 module.exports = async function (deployer, network) {
+  if (network == "test") return;
+
   let minAmount = process.env.MIN_TRANSFER_AMOUNT;
   let transferFee = process.env.TRANSFER_FEE;
   let supportedChainIds = JSON.parse(process.env.SUPPORTED_CHAINS);

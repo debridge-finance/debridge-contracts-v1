@@ -4,6 +4,8 @@ const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
 
 module.exports = async function (_deployer, network) {
+  if (network == "test") return;
+
   const whiteDebridgeInstance = await WhiteDebridge.deployed();
   const otherAssetInfos = require("../assets/debridge.json")[network];
   for (let otherAssetInfo of otherAssetInfos) {
