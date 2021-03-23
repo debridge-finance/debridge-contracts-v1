@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "precompile": "mkdir -p build/contracts/ && cp precompiled/* build/contracts/",
     "compile": "truffle compile",
     "migrate": "truffle migrate",
     "verify": "truffle run verify WhiteAggregator WhiteDebridge  ",

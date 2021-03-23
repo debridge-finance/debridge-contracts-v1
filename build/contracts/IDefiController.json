@@ -20,7 +20,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"claimReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IDefiController.sol\":\"IDefiController\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IDefiController.sol\":{\"keccak256\":\"0xfb5ba95b9c3664797f8bda7e88035567a9ca4427727f8193378d1acc801a532e\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6dbcd113dd902ad12fbedddd66688106b57c109f75fc59580d0452463293dd2f\",\"dweb:/ipfs/QmfShRd95QMU63sgg1c2DgXAZRq6AXaDMnBNhyBK1YSqmL\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"claimReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol\":\"IDefiController\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol\":{\"keccak256\":\"0xfb5ba95b9c3664797f8bda7e88035567a9ca4427727f8193378d1acc801a532e\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6dbcd113dd902ad12fbedddd66688106b57c109f75fc59580d0452463293dd2f\",\"dweb:/ipfs/QmfShRd95QMU63sgg1c2DgXAZRq6AXaDMnBNhyBK1YSqmL\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -29,20 +29,20 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IDefiController {\n    function claimReserve(address _tokenAddress, uint256 _amount) external;\n}\n",
-  "sourcePath": "/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IDefiController.sol",
+  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol",
   "ast": {
-    "absolutePath": "/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol",
     "exportedSymbols": {
       "IDefiController": [
-        1017
+        1024
       ]
     },
-    "id": 1018,
+    "id": 1025,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1009,
+        "id": 1016,
         "literals": [
           "solidity",
           "^",
@@ -58,9 +58,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1017,
+        "id": 1024,
         "linearizedBaseContracts": [
-          1017
+          1024
         ],
         "name": "IDefiController",
         "nameLocation": "67:15:5",
@@ -68,7 +68,7 @@
         "nodes": [
           {
             "functionSelector": "09e62b91",
-            "id": 1016,
+            "id": 1023,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -76,17 +76,17 @@
             "nameLocation": "98:12:5",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1014,
+              "id": 1021,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1011,
+                  "id": 1018,
                   "mutability": "mutable",
                   "name": "_tokenAddress",
                   "nameLocation": "119:13:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1016,
+                  "scope": 1023,
                   "src": "111:21:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -95,7 +95,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1010,
+                    "id": 1017,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "111:7:5",
@@ -109,12 +109,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1013,
+                  "id": 1020,
                   "mutability": "mutable",
                   "name": "_amount",
                   "nameLocation": "142:7:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1016,
+                  "scope": 1023,
                   "src": "134:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -123,7 +123,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1012,
+                    "id": 1019,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "134:7:5",
@@ -138,37 +138,37 @@
               "src": "110:40:5"
             },
             "returnParameters": {
-              "id": 1015,
+              "id": 1022,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "159:0:5"
             },
-            "scope": 1017,
+            "scope": 1024,
             "src": "89:71:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1018,
+        "scope": 1025,
         "src": "57:105:5"
       }
     ],
     "src": "32:131:5"
   },
   "legacyAST": {
-    "absolutePath": "/Users/kstasi/Documents/work/debridge-contracts/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol",
     "exportedSymbols": {
       "IDefiController": [
-        1017
+        1024
       ]
     },
-    "id": 1018,
+    "id": 1025,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1009,
+        "id": 1016,
         "literals": [
           "solidity",
           "^",
@@ -184,9 +184,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1017,
+        "id": 1024,
         "linearizedBaseContracts": [
-          1017
+          1024
         ],
         "name": "IDefiController",
         "nameLocation": "67:15:5",
@@ -194,7 +194,7 @@
         "nodes": [
           {
             "functionSelector": "09e62b91",
-            "id": 1016,
+            "id": 1023,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -202,17 +202,17 @@
             "nameLocation": "98:12:5",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1014,
+              "id": 1021,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1011,
+                  "id": 1018,
                   "mutability": "mutable",
                   "name": "_tokenAddress",
                   "nameLocation": "119:13:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1016,
+                  "scope": 1023,
                   "src": "111:21:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -221,7 +221,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1010,
+                    "id": 1017,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "111:7:5",
@@ -235,12 +235,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1013,
+                  "id": 1020,
                   "mutability": "mutable",
                   "name": "_amount",
                   "nameLocation": "142:7:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1016,
+                  "scope": 1023,
                   "src": "134:15:5",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -249,7 +249,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1012,
+                    "id": 1019,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "134:7:5",
@@ -264,19 +264,19 @@
               "src": "110:40:5"
             },
             "returnParameters": {
-              "id": 1015,
+              "id": 1022,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "159:0:5"
             },
-            "scope": 1017,
+            "scope": 1024,
             "src": "89:71:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1018,
+        "scope": 1025,
         "src": "57:105:5"
       }
     ],
@@ -288,7 +288,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-03-21T15:57:52.130Z",
+  "updatedAt": "2021-03-22T18:54:34.277Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
