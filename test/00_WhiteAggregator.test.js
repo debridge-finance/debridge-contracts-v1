@@ -1,7 +1,7 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const WhiteAggregator = artifacts.require("WhiteAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
-const { toWei, fromWei } = web3.utils;
+const { toWei, fromWei, toBN } = web3.utils;
 
 contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
   before(async function () {
@@ -51,7 +51,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
     assert.equal(payment, this.oraclePayment);
     assert.equal(link, this.linkToken.address);
   });
-  // `setMinConfirmations`, `setPayment`, `addOracle`, `removeOracle`
+
   context("Test setting configurations by different users", () => {
     it("should set min confirmations if called by the admin", async function () {
       const newConfirmations = 2;
@@ -124,6 +124,278 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
           from: bob,
         }),
         "onlyAdmin: bad role"
+      );
+    });
+  });
+
+  context("Test funding the contract", () => {
+    before(async function () {
+      const amount = toWei("100");
+      await this.linkToken.mint(alice, amount, {
+        from: alice,
+      });
+    });
+
+    it("should update virtual balances once the tokens are transfered with callback", async function () {
+      const amount = toWei("10");
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      await this.linkToken.transferAndCall(
+        this.whiteAggregator.address.toString(),
+        amount,
+        "0x",
+        {
+          from: alice,
+        }
+      );
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      assert.equal(
+        prevAvailableFunds.add(toBN(amount)).toString(),
+        newAvailableFunds.toString()
+      );
+    });
+
+    it("should update virtual balances once the tokens are transfered and the update method is called", async function () {
+      const amount = toWei("10");
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      await this.linkToken.transfer(
+        this.whiteAggregator.address.toString(),
+        amount,
+        {
+          from: alice,
+        }
+      );
+      await this.whiteAggregator.updateAvailableFunds({
+        from: alice,
+      });
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      assert.equal(
+        prevAvailableFunds.add(toBN(amount)).toString(),
+        newAvailableFunds.toString()
+      );
+    });
+  });
+
+  context("Test withdrawing unallocated funds from the contract", () => {
+    it("should withdraw unallocated funds by the admin", async function () {
+      const amount = toWei("5");
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      await this.whiteAggregator.withdrawFunds(bob, amount, {
+        from: alice,
+      });
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      assert.equal(
+        prevAvailableFunds.sub(toBN(amount)).toString(),
+        newAvailableFunds.toString()
+      );
+    });
+
+    it("should reject withdrawing unallocated funds if called by the non-admin", async function () {
+      const amount = toWei("5");
+      expectRevert(
+        this.whiteAggregator.withdrawFunds(devid, amount, {
+          from: bob,
+        }),
+        "onlyAdmin: bad role"
+      );
+    });
+
+    it("should reject withdrawing more than available", async function () {
+      const amount = toWei("50");
+      expectRevert(
+        this.whiteAggregator.withdrawFunds(devid, amount, {
+          from: alice,
+        }),
+        "insufficient reserve funds"
+      );
+    });
+  });
+
+  context("Test data submission", () => {
+    it("should submit mint identifier by the oracle", async function () {
+      const submission =
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      const prevAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      const payment = await this.whiteAggregator.payment();
+      await this.whiteAggregator.submitMint(submission, {
+        from: bob,
+      });
+      const mintInfo = await this.whiteAggregator.getMintInfo(submission);
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      const newAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      assert.equal(mintInfo.confirmations, 1);
+      assert.ok(!mintInfo.confirmed);
+      assert.equal(
+        prevAvailableFunds.sub(toBN(payment)).toString(),
+        newAvailableFunds.toString()
+      );
+      assert.equal(
+        prevAllocatedFunds.add(toBN(payment)).toString(),
+        newAllocatedFunds.toString()
+      );
+    });
+
+    it("should submit burnt identifier by the oracle", async function () {
+      const submission =
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      const prevAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      const payment = await this.whiteAggregator.payment();
+      await this.whiteAggregator.submitBurn(submission, {
+        from: bob,
+      });
+      const burntInfo = await this.whiteAggregator.getBurntInfo(submission);
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      const newAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      assert.equal(burntInfo.confirmations, 1);
+      assert.ok(!burntInfo.confirmed);
+      assert.equal(
+        prevAvailableFunds.sub(toBN(payment)).toString(),
+        newAvailableFunds.toString()
+      );
+      assert.equal(
+        prevAllocatedFunds.add(toBN(payment)).toString(),
+        newAllocatedFunds.toString()
+      );
+    });
+
+    it("should submit mint identifier by the second oracle", async function () {
+      const submission =
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      const prevAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      const payment = await this.whiteAggregator.payment();
+      await this.whiteAggregator.submitMint(submission, {
+        from: alice,
+      });
+      const mintInfo = await this.whiteAggregator.getMintInfo(submission);
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      const newAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      assert.equal(mintInfo.confirmations, 2);
+      assert.ok(mintInfo.confirmed);
+      assert.equal(
+        prevAvailableFunds.sub(toBN(payment)).toString(),
+        newAvailableFunds.toString()
+      );
+      assert.equal(
+        prevAllocatedFunds.add(toBN(payment)).toString(),
+        newAllocatedFunds.toString()
+      );
+    });
+
+    it("should submit burnt identifier by the second oracle", async function () {
+      const submission =
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      const prevAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      const payment = await this.whiteAggregator.payment();
+      await this.whiteAggregator.submitBurn(submission, {
+        from: alice,
+      });
+      const burntInfo = await this.whiteAggregator.getBurntInfo(submission);
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      const newAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      assert.equal(burntInfo.confirmations, 2);
+      assert.ok(burntInfo.confirmed);
+      assert.equal(
+        prevAvailableFunds.sub(toBN(payment)).toString(),
+        newAvailableFunds.toString()
+      );
+      assert.equal(
+        prevAllocatedFunds.add(toBN(payment)).toString(),
+        newAllocatedFunds.toString()
+      );
+    });
+
+    it("should submit mint identifier by the extra oracle", async function () {
+      const submission =
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      const prevAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      const payment = await this.whiteAggregator.payment();
+      await this.whiteAggregator.submitMint(submission, {
+        from: eve,
+      });
+      const mintInfo = await this.whiteAggregator.getMintInfo(submission);
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      const newAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      assert.equal(mintInfo.confirmations, 3);
+      assert.ok(mintInfo.confirmed);
+      assert.equal(
+        prevAvailableFunds.sub(toBN(payment)).toString(),
+        newAvailableFunds.toString()
+      );
+      assert.equal(
+        prevAllocatedFunds.add(toBN(payment)).toString(),
+        newAllocatedFunds.toString()
+      );
+    });
+
+    it("should submit burnt identifier by the extra oracle", async function () {
+      const submission =
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      const prevAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      const payment = await this.whiteAggregator.payment();
+      await this.whiteAggregator.submitBurn(submission, {
+        from: eve,
+      });
+      const burntInfo = await this.whiteAggregator.getBurntInfo(submission);
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      const newAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      assert.equal(burntInfo.confirmations, 3);
+      assert.ok(burntInfo.confirmed);
+      assert.equal(
+        prevAvailableFunds.sub(toBN(payment)).toString(),
+        newAvailableFunds.toString()
+      );
+      assert.equal(
+        prevAllocatedFunds.add(toBN(payment)).toString(),
+        newAllocatedFunds.toString()
+      );
+    });
+
+    it("should reject submition of mint identifier if called by the non-admin", async function () {
+      const submission =
+        "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
+      expectRevert(
+        this.whiteAggregator.submitMint(submission, {
+          from: devid,
+        }),
+        "onlyOracle: bad role"
+      );
+    });
+
+    it("should reject submition of burnt identifier if called by the non-admin", async function () {
+      const submission =
+        "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
+      expectRevert(
+        this.whiteAggregator.submitBurn(submission, {
+          from: devid,
+        }),
+        "onlyOracle: bad role"
+      );
+    });
+
+    it("should reject submition of dublicated mint identifiers with the same id by the same oracle", async function () {
+      const submission =
+        "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
+      expectRevert(
+        this.whiteAggregator.submitMint(submission, {
+          from: bob,
+        }),
+        "onlyOracle: bad role"
+      );
+    });
+
+    it("should reject submition of dublicated burnt identifiers with the same id by the same oracle", async function () {
+      const submission =
+        "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
+      expectRevert(
+        this.whiteAggregator.submitBurn(submission, {
+          from: bob,
+        }),
+        "onlyOracle: bad role"
       );
     });
   });

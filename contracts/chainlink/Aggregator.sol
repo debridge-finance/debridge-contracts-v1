@@ -119,14 +119,14 @@ contract Aggregator is AccessControl {
     /// @dev Add new oracle.
     /// @param _oracle Oracle address.
     /// @param _admin Admin address.
-    function addOracle(address _oracle, address _admin) external {
+    function addOracle(address _oracle, address _admin) external onlyAdmin {
         grantRole(ORACLE_ROLE, _oracle);
         getRracleInfo[_oracle].admin = _admin;
     }
 
     /// @dev Remove oracle.
     /// @param _oracle Oracle address.
-    function removeOracle(address _oracle) external {
+    function removeOracle(address _oracle) external onlyAdmin {
         revokeRole(ORACLE_ROLE, _oracle);
     }
 

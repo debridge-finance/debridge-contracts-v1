@@ -23,18 +23,13 @@
 
 **Scenario 1**: Update configs by:
 
-- [ ] admin
-- [ ] one without admin permissions
+- [x] admin
+- [x] one without admin permissions
 
 **Scenario 2**: Withdraw unalocated Links:
 
-- [ ] admin
-- [ ] one without admin permissions
-
-**Scenario 3**: Withdraw unalocated Links:
-
-- [ ] admin
-- [ ] one without admin permissions
+- [x] admin
+- [x] one without admin permissions
 
 ### Test Item: oracle-only functions
 
@@ -62,19 +57,19 @@
 
 **Scenario 1**: Test call by:
 
-- [ ] oracle
-- [ ] one without oracle permissions
+- [x] oracle
+- [x] one without oracle permissions
 
 **Scenario 2**: Test confirmation:
 
-- [ ] once
-- [ ] twice
+- [x] once
+- [x] twice
 
 **Scenario 3**: Test number of confirmation by different oracles:
 
-- [ ] 1 confirmations out of 3 (2 is required)
-- [ ] 2 confirmations out of 3 (2 is required)
-- [ ] 2 confirmations out of 3 (2 is required)
+- [x] 1 confirmations out of 3 (2 is required)
+- [x] 2 confirmations out of 3 (2 is required)
+- [x] 2 confirmations out of 3 (2 is required)
 
 ## Test Item: WrappedAsset
 
