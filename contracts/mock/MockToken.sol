@@ -4,7 +4,6 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interfaces/IWrappedAsset.sol";
 
 contract MockToken is ERC20 {
     uint8 private _decimals;

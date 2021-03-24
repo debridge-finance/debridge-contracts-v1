@@ -2,6 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS } = require("./utils.spec");
 const WhiteAggregator = artifacts.require("WhiteAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
+const MockToken = artifacts.require("MockToken");
 const WhiteDebridge = artifacts.require("WhiteDebridge");
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
@@ -10,6 +11,9 @@ const { toWei, fromWei, toBN } = web3.utils;
 
 contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
   before(async function () {
+    this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
+      from: alice,
+    });
     this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
@@ -50,6 +54,7 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
     });
     const minAmount = toWei("1");
     const transferFee = toWei("0.001");
+    const minReserves = toWei("0.2");
     const supportedChainIds = [42];
     this.weth = await WETH9.new({
       from: alice,
@@ -57,6 +62,7 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
     this.whiteDebridge = await WhiteDebridge.new(
       minAmount,
       transferFee,
+      minReserves,
       ZERO_ADDRESS,
       supportedChainIds,
       ZERO_ADDRESS,
@@ -135,6 +141,102 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
     it("should reject setting weth if called by the non-admin", async function () {
       await expectRevert(
         this.whiteDebridge.setWeth(ZERO_ADDRESS, {
+          from: bob,
+        }),
+        "onlyAdmin: bad role"
+      );
+    });
+  });
+
+  context("Test managing assets", () => {
+    it("should add external asset if called by the admin", async function () {
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const chainId = 56;
+      const minAmount = toWei("100");
+      const transferFee = toWei("0.01");
+      const minReserves = toWei("0.2");
+      const supportedChainIds = [42, 3];
+      const name = "MUSD";
+      const symbol = "Magic Dollar";
+      await this.whiteDebridge.addExternalAsset(
+        tokenAddress,
+        chainId,
+        minAmount,
+        transferFee,
+        minReserves,
+        supportedChainIds,
+        name,
+        symbol,
+        {
+          from: alice,
+        }
+      );
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(debridge.chainId.toString(), chainId);
+      assert.equal(debridge.minAmount.toString(), minAmount);
+      assert.equal(debridge.transferFee.toString(), transferFee);
+      assert.equal(debridge.collectedFees.toString(), "0");
+      assert.equal(debridge.balance.toString(), "0");
+      assert.equal(debridge.minReserves.toString(), minReserves);
+    });
+
+    it("should add native asset if called by the admin", async function () {
+      const tokenAddress = this.mockToken.address;
+      const chainId = await this.whiteDebridge.chainId();
+      const minAmount = toWei("100");
+      const transferFee = toWei("0.01");
+      const minReserves = toWei("0.2");
+      const supportedChainIds = [42, 3];
+      await this.whiteDebridge.addNativeAsset(
+        tokenAddress,
+        minAmount,
+        transferFee,
+        minReserves,
+        supportedChainIds,
+        {
+          from: alice,
+        }
+      );
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(debridge.tokenAddress, tokenAddress);
+      assert.equal(debridge.chainId.toString(), chainId);
+      assert.equal(debridge.minAmount.toString(), minAmount);
+      assert.equal(debridge.transferFee.toString(), transferFee);
+      assert.equal(debridge.collectedFees.toString(), "0");
+      assert.equal(debridge.balance.toString(), "0");
+      assert.equal(debridge.minReserves.toString(), minReserves);
+    });
+
+    it("should reject adding external asset if called by the non-admin", async function () {
+      await expectRevert(
+        this.whiteDebridge.addExternalAsset(
+          ZERO_ADDRESS,
+          0,
+          0,
+          0,
+          0,
+          [0],
+          "name",
+          "symbol",
+          {
+            from: bob,
+          }
+        ),
+        "onlyAdmin: bad role"
+      );
+    });
+
+    it("should reject setting native asset if called by the non-admin", async function () {
+      await expectRevert(
+        this.whiteDebridge.addNativeAsset(ZERO_ADDRESS, 0, 0, 0, [0], {
           from: bob,
         }),
         "onlyAdmin: bad role"

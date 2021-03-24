@@ -154,19 +154,19 @@
 
 **Scope**: Test adding/removing assets.
 
-**Action**: Invoke the `setChainIdSupport`, `addNativelAsset`, `addExternalAsset` methods.
+**Action**: Invoke the `setChainIdSupport`, `addNativeAsset`, `addExternalAsset` methods.
 
 **Verification Steps**: Verify the operation works fine.
 
 **Scenario 1**: Add asset by:
 
-- [ ] admin
-- [ ] not admin
+- [x] admin
+- [x] not admin
 
 **Scenario 2**: Add asset:
 
-- [ ] new
-- [ ] added before
+- [x] new
+- [x] added before
 
 **Scope**: Test fee managemnet.
 
@@ -198,14 +198,136 @@
 
 **Scope**: Test send.
 
-**Action**: Invoke the `setAggregator`, `setFeeProxy`, `setDefiController`, `setWeth` methods.
+**Action**: Invoke the `send` methods.
 
 **Verification Steps**: Verify the operation works fine.
 
-**Scenario 1**: Call each of the methods by:
+**Scenario 1**: Call send with different chains when:
+
+- [ ] the current chain's asset
+- [ ] the outside asset
+
+**Scenario 2**: Call send with different target chains when:
+
+- [ ] the target chain is supported
+- [ ] the target chain isn't supported
+
+**Scenario 3**: Call send with different amounts:
+
+- [ ] the amount is enough
+- [ ] to few tokens
+
+**Scenario 4**: Call send with different assets:
+
+- [ ] the ERC20
+- [ ] native token
+
+**Scope**: Test mint.
+
+**Action**: Invoke the `mint` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call mint with different approvals when:
+
+- [ ] the mint is approves
+- [ ] the mint isn't approved
+
+**Scenario 2**: Call mint few times:
+
+- [ ] first time
+- [ ] second time
+
+**Scenario 3**: Call mint with different chains:
+
+- [ ] supported chain
+- [ ] prohibited chain
+
+**Scope**: Test burn.
+
+**Action**: Invoke the `burn` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call burn with different chains when:
+
+- [ ] with the current chain
+- [ ] with the different chain
+
+**Scenario 2**: Call burn with diffrent amounts when:
+
+- [ ] enough tokens are transfered
+- [ ] too few tokens are sent
+
+**Scope**: Test claim.
+
+**Action**: Invoke the `claim` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call claim with different chains when:
+
+- [ ] the current chain's asset
+- [ ] the outside asset
+
+**Scenario 2**: Call claim with different confirmations when:
+
+- [ ] the burnt is confiremd
+- [ ] the burnt isn't confirmed
+
+**Scenario 3**: Call claim few times:
+
+- [ ] in the first time
+- [ ] in the second time
+
+**Scenario 4**: Call claim with different assets:
+
+- [ ] the ERC20
+- [ ] native token
+
+### Test Item: fee management
+
+**Scope**: Test fee withdrawal.
+
+**Action**: Invoke the `withdrawFee` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `withdrawFee` by :
 
 - [ ] admin
-- [ ] not admin
+- [ ] non-admin
+
+**Scenario 2**: Call `withdrawFees` with different chains when:
+
+- [ ] the current chain's asset
+- [ ] the outside asset
+
+**Scenario 3**: Call `withdrawFee` with different assets:
+
+- [ ] the ERC20
+- [ ] native token
+
+**Scope**: Test fund aggregator.
+
+**Action**: Invoke the `fundAggregator` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `fundAggregator` by :
+
+- [ ] admin
+- [ ] non-admin
+
+**Scenario 2**: Call `fundAggregator` with different chains when:
+
+- [ ] the current chain's asset
+- [ ] the outside asset
+
+**Scenario 3**: Call `fundAggregator` with different assets:
+
+- [ ] the ERC20
+- [ ] native token
 
 ## Test Item: FeeProxy
 
@@ -225,3 +347,19 @@
 
 - [ ] swap native asset
 - [ ] swap token
+
+  - [ ] function send
+  - [ ] function mint
+  - [ ] function burn
+  - [ ] function claim
+  - [x] function addNativeAsset
+  - [x] function addExternalAsset
+  - [x] function setChainIdSupport
+  - [x] function setAggregator
+  - [x] function setFeeProxy
+  - [x] function setDefiController
+  - [x] function setWeth
+  - [ ] function withdrawFee
+  - [ ] function requestReserves
+  - [ ] function returnReserves
+  - [ ] function fundAggregator

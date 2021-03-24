@@ -76,11 +76,13 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
     /// @param _transferFee Transfer fee rate.
+    /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     constructor(
         uint256 _minAmount,
         uint256 _transferFee,
+        uint256 _minReserves,
         IWhiteAggregator _aggregator,
         uint256[] memory _supportedChainIds,
         IWETH _weth,
@@ -99,6 +101,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             chainId,
             _minAmount,
             _transferFee,
+            _minReserves,
             _supportedChainIds
         );
         aggregator = _aggregator;
@@ -236,11 +239,13 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /// @param _tokenAddress Address of the asset on the current chain.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
     /// @param _transferFee Transfer fee rate.
+    /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    function addNativelAsset(
+    function addNativeAsset(
         address _tokenAddress,
         uint256 _minAmount,
         uint256 _transferFee,
+        uint256 _minReserves,
         uint256[] memory _supportedChainIds
     ) external override onlyAdmin() {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
@@ -250,6 +255,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             chainId,
             _minAmount,
             _transferFee,
+            _minReserves,
             _supportedChainIds
         );
     }
@@ -259,6 +265,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /// @param _chainId Current chain id.
     /// @param _minAmount Minimal amount of the asset to be wrapped.
     /// @param _transferFee Transfer fee rate.
+    /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where the token of the current chain can be transfered.
     /// @param _name Wrapped asset name.
     /// @param _symbol Wrapped asset symbol.
@@ -267,6 +274,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _chainId,
         uint256 _minAmount,
         uint256 _transferFee,
+        uint256 _minReserves,
         uint256[] memory _supportedChainIds,
         string memory _name,
         string memory _symbol
@@ -279,6 +287,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             _chainId,
             _minAmount,
             _transferFee,
+            _minReserves,
             _supportedChainIds
         );
     }
@@ -437,6 +446,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /// @param _chainId Current chain id.
     /// @param _minAmount Minimal amount of the asset to be wrapped.
     /// @param _transferFee Transfer fee rate.
+    /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where the token of the current chain can be transfered.
     function _addAsset(
         bytes32 _debridgeId,
@@ -444,6 +454,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _chainId,
         uint256 _minAmount,
         uint256 _transferFee,
+        uint256 _minReserves,
         uint256[] memory _supportedChainIds
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
@@ -451,6 +462,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         debridge.chainId = _chainId;
         debridge.minAmount = _minAmount;
         debridge.transferFee = _transferFee;
+        debridge.minReserves = _minReserves;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             debridge.isSupported[_supportedChainIds[i]] = true;
         }
