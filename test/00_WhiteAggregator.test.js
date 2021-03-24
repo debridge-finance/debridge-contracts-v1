@@ -63,7 +63,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
     });
 
     it("should set oracle payment if called by the admin", async function () {
-      const newPayment = toWei("0.0001");
+      const newPayment = toWei("0.1");
       await this.whiteAggregator.setPayment(newPayment, {
         from: alice,
       });
@@ -75,7 +75,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
       await this.whiteAggregator.addOracle(devid, eve, {
         from: alice,
       });
-      const oracleInfo = await this.whiteAggregator.getRracleInfo(devid);
+      const oracleInfo = await this.whiteAggregator.getOracleInfo(devid);
       assert.ok(oracleInfo.withdrawable, 0);
       assert.ok(oracleInfo.admin, eve);
     });
@@ -84,14 +84,14 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
       await this.whiteAggregator.removeOracle(devid, {
         from: alice,
       });
-      const oracleInfo = await this.whiteAggregator.getRracleInfo(devid);
+      const oracleInfo = await this.whiteAggregator.getOracleInfo(devid);
       assert.ok(oracleInfo.withdrawable, 0);
       assert.ok(oracleInfo.admin, eve);
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function () {
       const newConfirmations = 2;
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.setMinConfirmations(newConfirmations, {
           from: bob,
         }),
@@ -101,7 +101,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
 
     it("should reject setting oracle payment if called by the non-admin", async function () {
       const newPayment = toWei("0.0001");
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.setPayment(newPayment, {
           from: bob,
         }),
@@ -110,7 +110,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
     });
 
     it("should reject adding the new oracle if called by the non-admin", async function () {
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.addOracle(devid, eve, {
           from: bob,
         }),
@@ -119,7 +119,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
     });
 
     it("should reject removing the new oracle if called by the non-admin", async function () {
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.removeOracle(devid, {
           from: bob,
         }),
@@ -191,7 +191,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
 
     it("should reject withdrawing unallocated funds if called by the non-admin", async function () {
       const amount = toWei("5");
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.withdrawFunds(devid, amount, {
           from: bob,
         }),
@@ -201,7 +201,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
 
     it("should reject withdrawing more than available", async function () {
       const amount = toWei("50");
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.withdrawFunds(devid, amount, {
           from: alice,
         }),
@@ -358,7 +358,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
     it("should reject submition of mint identifier if called by the non-admin", async function () {
       const submission =
         "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.submitMint(submission, {
           from: devid,
         }),
@@ -369,7 +369,7 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
     it("should reject submition of burnt identifier if called by the non-admin", async function () {
       const submission =
         "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
-      expectRevert(
+      await expectRevert(
         this.whiteAggregator.submitBurn(submission, {
           from: devid,
         }),
@@ -379,23 +379,67 @@ contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
 
     it("should reject submition of dublicated mint identifiers with the same id by the same oracle", async function () {
       const submission =
-        "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
-      expectRevert(
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      await expectRevert(
         this.whiteAggregator.submitMint(submission, {
           from: bob,
         }),
-        "onlyOracle: bad role"
+        "submit: submitted already"
       );
     });
 
     it("should reject submition of dublicated burnt identifiers with the same id by the same oracle", async function () {
       const submission =
-        "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
-      expectRevert(
+        "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
+      await expectRevert(
         this.whiteAggregator.submitBurn(submission, {
           from: bob,
         }),
-        "onlyOracle: bad role"
+        "submit: submitted already"
+      );
+    });
+  });
+
+  context("Test withdrawal oracle reward", () => {
+    it("should withdraw the reward by the oracle admin", async function () {
+      const prevAvailableFunds = await this.whiteAggregator.availableFunds();
+      const prevAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      const amount = toWei("0.1");
+      const prevOracleInfo = await this.whiteAggregator.getOracleInfo(bob);
+      await this.whiteAggregator.withdrawPayment(bob, carol, amount, {
+        from: carol,
+      });
+      const newOracleInfo = await this.whiteAggregator.getOracleInfo(bob);
+      const newAvailableFunds = await this.whiteAggregator.availableFunds();
+      const newAllocatedFunds = await this.whiteAggregator.allocatedFunds();
+      assert.equal(
+        prevOracleInfo.withdrawable.sub(toBN(amount)).toString(),
+        newOracleInfo.withdrawable.toString()
+      );
+      assert.equal(prevAvailableFunds.toString(), newAvailableFunds.toString());
+      assert.equal(
+        prevAllocatedFunds.sub(toBN(amount)).toString(),
+        newAllocatedFunds.toString()
+      );
+    });
+
+    it("should reject withdrawing by non-admint", async function () {
+      const amount = toWei("50");
+      await expectRevert(
+        this.whiteAggregator.withdrawPayment(bob, carol, amount, {
+          from: bob,
+        }),
+        "withdrawPayment: only callable by admin"
+      );
+    });
+
+    it("should reject withdrawing more than available", async function () {
+      const amount = toWei("50");
+      await expectRevert(
+        this.whiteAggregator.withdrawPayment(bob, carol, amount, {
+          from: carol,
+        }),
+        "withdrawPayment: insufficient withdrawable funds"
       );
     });
   });

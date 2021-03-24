@@ -41,13 +41,13 @@
 
 **Scenario 1**: Withdraw by:
 
-- [ ] admin
-- [ ] one without admin permissions
+- [x] admin
+- [x] one without admin permissions
 
 **Scenario 2**: Withdraw amount:
 
-- [ ] less then total reward
-- [ ] higher then total reward
+- [x] less then total reward
+- [x] higher then total reward
 
 **Scope**: Test the oracles-related functions of the contract.
 
