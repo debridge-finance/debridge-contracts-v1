@@ -123,11 +123,8 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _chainIdTo
     ) external payable override {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId == chainId, "send: not native chain chain");
-        require(
-            debridge.isSupported[_chainIdTo],
-            "send: wrong targed target chain"
-        );
+        require(debridge.chainId == chainId, "send: not native chain");
+        require(debridge.isSupported[_chainIdTo], "send: wrong targed chain");
         require(_amount >= debridge.minAmount, "send: amount too low");
         if (debridge.tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");

@@ -243,4 +243,146 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
   });
+
+  context("Test send method", () => {
+    it("should send native tokens from the current chain", async function () {
+      const tokenAddress = ZERO_ADDRESS;
+      const chainId = await this.whiteDebridge.chainId();
+      const receiver = bob;
+      const amount = toBN(toWei("1"));
+      const chainIdTo = 42;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const balance = toBN(
+        await web3.eth.getBalance(this.whiteDebridge.address)
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
+      await this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
+        value: amount,
+        from: alice,
+      });
+      const newBalance = toBN(
+        await web3.eth.getBalance(this.whiteDebridge.address)
+      );
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(balance.add(amount).toString(), newBalance.toString());
+      assert.equal(
+        debridge.collectedFees.add(fees).toString(),
+        newDebridge.collectedFees.toString()
+      );
+    });
+
+    it("should send ERC20 tokens from the current chain", async function () {
+      const tokenAddress = this.mockToken.address;
+      const chainId = await this.whiteDebridge.chainId();
+      const receiver = bob;
+      const amount = toBN(toWei("100"));
+      const chainIdTo = 42;
+      await this.mockToken.mint(alice, amount, {
+        from: alice,
+      });
+      await this.mockToken.approve(this.whiteDebridge.address, amount, {
+        from: alice,
+      });
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const balance = toBN(
+        await this.mockToken.balanceOf(this.whiteDebridge.address)
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
+      await this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
+        from: alice,
+      });
+      const newBalance = toBN(
+        await this.mockToken.balanceOf(this.whiteDebridge.address)
+      );
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(balance.add(amount).toString(), newBalance.toString());
+      assert.equal(
+        debridge.collectedFees.add(fees).toString(),
+        newDebridge.collectedFees.toString()
+      );
+    });
+
+    it("should reject sending too mismatched amount of native tokens", async function () {
+      const tokenAddress = ZERO_ADDRESS;
+      const receiver = bob;
+      const chainId = await this.whiteDebridge.chainId();
+      const amount = toBN(toWei("1"));
+      const chainIdTo = 42;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
+          value: toWei("0.1"),
+          from: alice,
+        }),
+        "send: amount mismatch"
+      );
+    });
+
+    it("should reject sending too few tokens", async function () {
+      const tokenAddress = ZERO_ADDRESS;
+      const receiver = bob;
+      const chainId = await this.whiteDebridge.chainId();
+      const amount = toBN(toWei("0.1"));
+      const chainIdTo = 42;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
+          value: amount,
+          from: alice,
+        }),
+        "send: amount too low"
+      );
+    });
+
+    it("should reject sending tokens to unsupported chain", async function () {
+      const tokenAddress = ZERO_ADDRESS;
+      const receiver = bob;
+      const chainId = await this.whiteDebridge.chainId();
+      const amount = toBN(toWei("1"));
+      const chainIdTo = chainId;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
+          value: amount,
+          from: alice,
+        }),
+        "send: wrong targed chain"
+      );
+    });
+
+    it("should reject sending tokens originated on the other chain", async function () {
+      const tokenAddress = ZERO_ADDRESS;
+      const receiver = bob;
+      const amount = toBN(toWei("1"));
+      const chainIdTo = 42;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        42,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
+          value: amount,
+          from: alice,
+        }),
+        "send: not native chain"
+      );
+    });
+  });
 });

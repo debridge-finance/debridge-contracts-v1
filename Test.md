@@ -204,23 +204,23 @@
 
 **Scenario 1**: Call send with different chains when:
 
-- [ ] the current chain's asset
-- [ ] the outside asset
+- [x] the current chain's asset
+- [x] the outside asset
 
 **Scenario 2**: Call send with different target chains when:
 
-- [ ] the target chain is supported
-- [ ] the target chain isn't supported
+- [x] the target chain is supported
+- [x] the target chain isn't supported
 
 **Scenario 3**: Call send with different amounts:
 
-- [ ] the amount is enough
-- [ ] to few tokens
+- [x] the amount is enough
+- [x] to few tokens
 
 **Scenario 4**: Call send with different assets:
 
-- [ ] the ERC20
-- [ ] native token
+- [x] the ERC20
+- [x] native token
 
 **Scope**: Test mint.
 
