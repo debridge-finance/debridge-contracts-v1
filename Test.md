@@ -149,8 +149,8 @@
 
 **Scenario 1**: Call each of the methods by:
 
-- [ ] admin
-- [ ] not admin
+- [x] admin
+- [x] not admin
 
 **Scope**: Test adding/removing assets.
 
