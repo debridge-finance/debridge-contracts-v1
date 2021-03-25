@@ -364,11 +364,11 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         uint256 minReserves =
             (debridge.balance * debridge.minReserves) / DENOMINATOR;
+        uint256 balance = getBalance(debridge.tokenAddress);
         require(
-            minReserves + _amount > debridge.balance,
+            minReserves + _amount > balance,
             "requestReserves: not enough reserves"
         );
-        debridge.balance -= _amount;
         if (debridge.tokenAddress == address(0)) {
             payable(address(defiController)).transfer(_amount);
         } else {
@@ -389,15 +389,12 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
-        if (debridge.tokenAddress == address(0)) {
-            debridge.balance += msg.value;
-        } else {
+        if (debridge.tokenAddress != address(0)) {
             IERC20(debridge.tokenAddress).safeTransferFrom(
                 address(defiController),
                 address(this),
                 _amount
             );
-            debridge.balance += _amount;
         }
     }
 
@@ -473,18 +470,29 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     {
         uint256 minReserves =
             (_debridge.balance * _debridge.minReserves) / DENOMINATOR;
-        if (minReserves + _amount < _debridge.balance) {
-            uint256 requestedReserves =
-                _debridge.balance - minReserves + _amount;
+        uint256 balance = getBalance(_debridge.tokenAddress);
+        uint256 requestedReserves =
+            minReserves > _amount ? minReserves : _amount;
+        if (requestedReserves > balance) {
+            requestedReserves = requestedReserves - balance;
             defiController.claimReserve(
                 _debridge.tokenAddress,
                 requestedReserves
             );
-            _debridge.balance += requestedReserves;
         }
     }
 
     /* VIEW */
+
+    /// @dev Check the balance.
+    /// @param _tokenAddress Address of the asset on the other chain.
+    function getBalance(address _tokenAddress) public view returns (uint256) {
+        if (_tokenAddress == address(0)) {
+            return address(this).balance;
+        } else {
+            return IERC20(_tokenAddress).balanceOf(address(this));
+        }
+    }
 
     /// @dev Calculates asset identifier.
     /// @param _tokenAddress Address of the asset on the other chain.

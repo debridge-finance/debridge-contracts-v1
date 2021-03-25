@@ -531,4 +531,142 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
   });
+  context("Test claim method", () => {
+    const tokenAddress = ZERO_ADDRESS;
+    const receiver = bob;
+    const amount = toBN(toWei("0.9"));
+    const nonce = 4;
+    let chainId;
+    let debridgeId;
+    let outsideDebridgeId;
+    let erc20DebridgeId;
+    before(async function () {
+      chainId = await this.whiteDebridge.chainId();
+      debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      outsideDebridgeId = await this.whiteDebridge.getDebridgeId(
+        42,
+        tokenAddress
+      );
+      erc20DebridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        this.mockToken.address
+      );
+      const cuurentChainSubmission = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        amount,
+        receiver,
+        nonce
+      );
+      await this.whiteAggregator.submitBurn(cuurentChainSubmission, {
+        from: bob,
+      });
+      const outsideChainSubmission = await this.whiteDebridge.getSubmisionId(
+        outsideDebridgeId,
+        amount,
+        receiver,
+        nonce
+      );
+      await this.whiteAggregator.submitBurn(outsideChainSubmission, {
+        from: bob,
+      });
+      const erc20Submission = await this.whiteDebridge.getSubmisionId(
+        erc20DebridgeId,
+        amount,
+        receiver,
+        nonce
+      );
+      await this.whiteAggregator.submitBurn(erc20Submission, {
+        from: bob,
+      });
+    });
+
+    it("should claim native token when the submission is approved", async function () {
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const balance = toBN(await web3.eth.getBalance(receiver));
+      await this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, {
+        from: alice,
+      });
+      const newBalance = toBN(await web3.eth.getBalance(receiver));
+      const submissionId = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        amount,
+        receiver,
+        nonce
+      );
+      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+        submissionId
+      );
+      const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(
+        balance.add(amount).sub(fees).toString(),
+        newBalance.toString()
+      );
+      assert.equal(
+        debridge.collectedFees.add(fees).toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.ok(isSubmissionUsed);
+    });
+
+    it("should claim ERC20 when the submission is approved", async function () {
+      const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      const balance = toBN(await this.mockToken.balanceOf(receiver));
+      await this.whiteDebridge.claim(erc20DebridgeId, receiver, amount, nonce, {
+        from: alice,
+      });
+      const newBalance = toBN(await this.mockToken.balanceOf(receiver));
+      const submissionId = await this.whiteDebridge.getSubmisionId(
+        erc20DebridgeId,
+        amount,
+        receiver,
+        nonce
+      );
+      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+        submissionId
+      );
+      const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
+      const newDebridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      assert.equal(
+        balance.add(amount).sub(fees).toString(),
+        newBalance.toString()
+      );
+      assert.equal(
+        debridge.collectedFees.add(fees).toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.ok(isSubmissionUsed);
+    });
+
+    it("should reject claiming with unconfirmed submission", async function () {
+      const nonce = 1;
+      await expectRevert(
+        this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, {
+          from: alice,
+        }),
+        "claim: not confirmed"
+      );
+    });
+
+    it("should reject claiming the token from outside chain", async function () {
+      await expectRevert(
+        this.whiteDebridge.claim(outsideDebridgeId, receiver, amount, nonce, {
+          from: alice,
+        }),
+        "claim: wrong target chain"
+      );
+    });
+
+    it("should reject claiming twice", async function () {
+      await expectRevert(
+        this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, {
+          from: alice,
+        }),
+        "claim: already used"
+      );
+    });
+  });
 });

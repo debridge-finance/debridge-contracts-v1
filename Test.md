@@ -251,13 +251,13 @@
 
 **Scenario 1**: Call burn with different chains when:
 
-- [ ] with the current chain
-- [ ] with the different chain
+- [x] with the current chain
+- [x] with the different chain
 
 **Scenario 2**: Call burn with diffrent amounts when:
 
-- [ ] enough tokens are transfered
-- [ ] too few tokens are sent
+- [x] enough tokens are transfered
+- [x] too few tokens are sent
 
 **Scope**: Test claim.
 
@@ -267,23 +267,23 @@
 
 **Scenario 1**: Call claim with different chains when:
 
-- [ ] the current chain's asset
-- [ ] the outside asset
+- [x] the current chain's asset
+- [x] the outside asset
 
 **Scenario 2**: Call claim with different confirmations when:
 
-- [ ] the burnt is confiremd
-- [ ] the burnt isn't confirmed
+- [x] the burnt is confiremd
+- [x] the burnt isn't confirmed
 
 **Scenario 3**: Call claim few times:
 
-- [ ] in the first time
-- [ ] in the second time
+- [x] in the first time
+- [x] in the second time
 
 **Scenario 4**: Call claim with different assets:
 
-- [ ] the ERC20
-- [ ] native token
+- [x] the ERC20
+- [x] native token
 
 ### Test Item: fee management
 
@@ -350,8 +350,8 @@
 
   - [x] function send
   - [x] function mint
-  - [ ] function burn
-  - [ ] function claim
+  - [x] function burn
+  - [x] function claim
   - [x] function addNativeAsset
   - [x] function addExternalAsset
   - [x] function setChainIdSupport
