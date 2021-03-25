@@ -230,18 +230,18 @@
 
 **Scenario 1**: Call mint with different approvals when:
 
-- [ ] the mint is approves
-- [ ] the mint isn't approved
+- [x] the mint is approved
+- [x] the mint isn't approved
 
 **Scenario 2**: Call mint few times:
 
-- [ ] first time
-- [ ] second time
+- [x] first time
+- [x] second time
 
 **Scenario 3**: Call mint with different chains:
 
-- [ ] supported chain
-- [ ] prohibited chain
+- [x] supported chain
+- [x] prohibited chain
 
 **Scope**: Test burn.
 
@@ -348,8 +348,8 @@
 - [ ] swap native asset
 - [ ] swap token
 
-  - [ ] function send
-  - [ ] function mint
+  - [x] function send
+  - [x] function mint
   - [ ] function burn
   - [ ] function claim
   - [x] function addNativeAsset

@@ -4,6 +4,7 @@ const WhiteAggregator = artifacts.require("WhiteAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WhiteDebridge = artifacts.require("WhiteDebridge");
+const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
 const WETH9 = artifacts.require("WETH9");
@@ -18,7 +19,7 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
       from: alice,
     });
     this.oraclePayment = toWei("0.001");
-    this.minConfirmations = 2;
+    this.minConfirmations = 1;
     this.whiteAggregator = await WhiteAggregator.new(
       this.minConfirmations,
       this.oraclePayment,
@@ -382,6 +383,93 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
           from: alice,
         }),
         "send: not native chain"
+      );
+    });
+  });
+
+  context("Test mint method", () => {
+    const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+    const chainId = 56;
+    const receiver = bob;
+    const amount = toBN(toWei("1"));
+    const nonce = 2;
+    before(async function () {
+      const newSupply = toWei("100");
+      await this.linkToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.linkToken.transferAndCall(
+        this.whiteAggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const submission = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        amount,
+        receiver,
+        nonce
+      );
+      await this.whiteAggregator.submitMint(submission, {
+        from: bob,
+      });
+    });
+
+    it("should mint when the submission is approved", async function () {
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
+      const balance = toBN(await wrappedAsset.balanceOf(receiver));
+      await this.whiteDebridge.mint(debridgeId, receiver, amount, nonce, {
+        from: alice,
+      });
+      const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
+      const submissionId = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        amount,
+        receiver,
+        nonce
+      );
+      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+        submissionId
+      );
+      assert.equal(balance.add(amount).toString(), newBalance.toString());
+      assert.ok(isSubmissionUsed);
+    });
+
+    it("should reject minting with unconfirmed submission", async function () {
+      const nonce = 4;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.mint(debridgeId, receiver, amount, nonce, {
+          from: alice,
+        }),
+        "mint: not confirmed"
+      );
+    });
+
+    it("should reject minting twice", async function () {
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.mint(debridgeId, receiver, amount, nonce, {
+          from: alice,
+        }),
+        "mint: already used"
       );
     });
   });
