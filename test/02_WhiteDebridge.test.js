@@ -391,7 +391,7 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
     const chainId = 56;
     const receiver = bob;
-    const amount = toBN(toWei("1"));
+    const amount = toBN(toWei("100"));
     const nonce = 2;
     before(async function () {
       const newSupply = toWei("100");
@@ -470,6 +470,64 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
           from: alice,
         }),
         "mint: already used"
+      );
+    });
+  });
+
+  context("Test burn method", () => {
+    it("should burning when the amount is suficient", async function () {
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const chainId = 56;
+      const receiver = alice;
+      const amount = toBN(toWei("100"));
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
+      const balance = toBN(await wrappedAsset.balanceOf(bob));
+      await wrappedAsset.approve(this.whiteDebridge.address, amount, {
+        from: bob,
+      });
+      await this.whiteDebridge.burn(debridgeId, receiver, amount, {
+        from: bob,
+      });
+      const newBalance = toBN(await wrappedAsset.balanceOf(bob));
+      assert.equal(balance.sub(amount).toString(), newBalance.toString());
+    });
+
+    it("should reject burning from current chain", async function () {
+      const tokenAddress = ZERO_ADDRESS;
+      const chainId = await this.whiteDebridge.chainId();
+      const receiver = bob;
+      const amount = toBN(toWei("1"));
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.burn(debridgeId, receiver, amount, {
+          from: alice,
+        }),
+        "burn: native asset"
+      );
+    });
+
+    it("should reject burning too few tokens", async function () {
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const chainId = 56;
+      const receiver = bob;
+      const amount = toBN(toWei("0.1"));
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.burn(debridgeId, receiver, amount, {
+          from: alice,
+        }),
+        "burn: amount too low"
       );
     });
   });
