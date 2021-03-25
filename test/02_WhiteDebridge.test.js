@@ -531,6 +531,7 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
   });
+
   context("Test claim method", () => {
     const tokenAddress = ZERO_ADDRESS;
     const receiver = bob;
@@ -666,6 +667,91 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
           from: alice,
         }),
         "claim: already used"
+      );
+    });
+  });
+
+  context("Test fee maangement", () => {
+    const tokenAddress = ZERO_ADDRESS;
+    const receiver = bob;
+    const amount = toBN(toWei("0.001"));
+    let chainId;
+    let debridgeId;
+    let outsideDebridgeId;
+    let erc20DebridgeId;
+
+    before(async function () {
+      chainId = await this.whiteDebridge.chainId();
+      debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      outsideDebridgeId = await this.whiteDebridge.getDebridgeId(
+        42,
+        tokenAddress
+      );
+      erc20DebridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        this.mockToken.address
+      );
+    });
+
+    it("should withdraw fee of native token if it is called by the admin", async function () {
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const balance = toBN(await web3.eth.getBalance(receiver));
+      await this.whiteDebridge.withdrawFee(debridgeId, receiver, amount, {
+        from: alice,
+      });
+      const newBalance = toBN(await web3.eth.getBalance(receiver));
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(
+        debridge.collectedFees.sub(amount).toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.equal(balance.add(amount).toString(), newBalance.toString());
+    });
+
+    it("should withdraw fee of ERC20 token if it is called by the admin", async function () {
+      const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      const balance = toBN(await this.mockToken.balanceOf(receiver));
+      await this.whiteDebridge.withdrawFee(erc20DebridgeId, receiver, amount, {
+        from: alice,
+      });
+      const newBalance = toBN(await this.mockToken.balanceOf(receiver));
+      const newDebridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      assert.equal(
+        debridge.collectedFees.sub(amount).toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.equal(balance.add(amount).toString(), newBalance.toString());
+    });
+
+    it("should reject withdrawing fee by non-admin", async function () {
+      await expectRevert(
+        this.whiteDebridge.withdrawFee(debridgeId, receiver, amount, {
+          from: bob,
+        }),
+        "onlyAdmin: bad role"
+      );
+    });
+
+    it("should reject withdrawing too many fees", async function () {
+      const amount = toBN(toWei("100"));
+      await expectRevert(
+        this.whiteDebridge.withdrawFee(debridgeId, receiver, amount, {
+          from: alice,
+        }),
+        "withdrawFee: not enough fee"
+      );
+    });
+
+    it("should reject withdrawing fees if the token not from current chain", async function () {
+      const amount = toBN(toWei("100"));
+      await expectRevert(
+        this.whiteDebridge.withdrawFee(outsideDebridgeId, receiver, amount, {
+          from: alice,
+        }),
+        "withdrawFee: wrong target chain"
       );
     });
   });

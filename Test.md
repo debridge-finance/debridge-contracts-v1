@@ -295,18 +295,18 @@
 
 **Scenario 1**: Call `withdrawFee` by :
 
-- [ ] admin
-- [ ] non-admin
+- [x] admin
+- [x] non-admin
 
 **Scenario 2**: Call `withdrawFees` with different chains when:
 
-- [ ] the current chain's asset
-- [ ] the outside asset
+- [x] the current chain's asset
+- [x] the outside asset
 
 **Scenario 3**: Call `withdrawFee` with different assets:
 
-- [ ] the ERC20
-- [ ] native token
+- [x] the ERC20
+- [x] native token
 
 **Scope**: Test fund aggregator.
 
