@@ -14,6 +14,22 @@ contract FeeProxy {
         uniswapFactory = _uniswapFactory;
     }
 
+    function getAmountOut(
+        uint256 amountIn,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) internal pure returns (uint256 amountOut) {
+        require(amountIn > 0, "getAmountOut: insuffient amount");
+        require(
+            reserveIn > 0 && reserveOut > 0,
+            "getAmountOut: insuffient liquidity"
+        );
+        uint256 amountInWithFee = amountIn * 997;
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = reserveIn * 1000 + amountInWithFee;
+        amountOut = numerator / denominator;
+    }
+
     function swapToLink(
         address _erc20Token,
         uint256 _amount,
@@ -25,10 +41,13 @@ contract FeeProxy {
             IUniswapV2Pair(uniswapFactory.getPair(linkToken, _erc20Token));
         erc20.transfer(address(uniswapPair), _amount);
         bool linkFirst = linkToken < _erc20Token;
+        (uint256 reserve0, uint256 reserve1, ) = uniswapPair.getReserves();
         if (linkFirst) {
-            uniswapPair.swap(0, _amount, _receiver, "");
+            uint256 amountOut = getAmountOut(_amount, reserve1, reserve0);
+            uniswapPair.swap(amountOut, 0, _receiver, "");
         } else {
-            uniswapPair.swap(_amount, 0, _receiver, "");
+            uint256 amountOut = getAmountOut(_amount, reserve0, reserve1);
+            uniswapPair.swap(0, amountOut, _receiver, "");
         }
     }
 }

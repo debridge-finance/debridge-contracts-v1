@@ -316,18 +316,18 @@
 
 **Scenario 1**: Call `fundAggregator` by :
 
-- [ ] admin
-- [ ] non-admin
+- [x] admin
+- [x] non-admin
 
 **Scenario 2**: Call `fundAggregator` with different chains when:
 
-- [ ] the current chain's asset
-- [ ] the outside asset
+- [x] the current chain's asset
+- [x] the outside asset
 
 **Scenario 3**: Call `fundAggregator` with different assets:
 
-- [ ] the ERC20
-- [ ] native token
+- [x] the ERC20
+- [x] native token
 
 ## Test Item: FeeProxy
 
@@ -347,19 +347,3 @@
 
 - [ ] swap native asset
 - [ ] swap token
-
-  - [x] function send
-  - [x] function mint
-  - [x] function burn
-  - [x] function claim
-  - [x] function addNativeAsset
-  - [x] function addExternalAsset
-  - [x] function setChainIdSupport
-  - [x] function setAggregator
-  - [x] function setFeeProxy
-  - [x] function setDefiController
-  - [x] function setWeth
-  - [ ] function withdrawFee
-  - [ ] function requestReserves
-  - [ ] function returnReserves
-  - [ ] function fundAggregator

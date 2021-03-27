@@ -6,9 +6,12 @@ const MockToken = artifacts.require("MockToken");
 const WhiteDebridge = artifacts.require("WhiteDebridge");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
+const UniswapV2Factory = artifacts.require("UniswapV2Factory");
+const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const DefiController = artifacts.require("DefiController");
 const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
+const MAX = web3.utils.toTwosComplement(-1);
 
 contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
   before(async function () {
@@ -47,9 +50,16 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
         from: alice,
       });
     }
-    this.feeProxy = await FeeProxy.new(this.linkToken.address, ZERO_ADDRESS, {
+    this.uniswapFactory = await UniswapV2Factory.new(carol, {
       from: alice,
     });
+    this.feeProxy = await FeeProxy.new(
+      this.linkToken.address,
+      this.uniswapFactory.address,
+      {
+        from: alice,
+      }
+    );
     this.defiController = await DefiController.new({
       from: alice,
     });
@@ -674,7 +684,7 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
   context("Test fee maangement", () => {
     const tokenAddress = ZERO_ADDRESS;
     const receiver = bob;
-    const amount = toBN(toWei("0.001"));
+    const amount = toBN(toWei("0.00001"));
     let chainId;
     let debridgeId;
     let outsideDebridgeId;
@@ -752,6 +762,149 @@ contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
           from: alice,
         }),
         "withdrawFee: wrong target chain"
+      );
+    });
+  });
+
+  context("Test fund aggregator", async function () {
+    const tokenAddress = ZERO_ADDRESS;
+    const amount = toBN(toWei("0.0001"));
+    let receiver;
+    let chainId;
+    let debridgeId;
+    let outsideDebridgeId;
+    let erc20DebridgeId;
+    let wethUniPool;
+    let mockErc20UniPool;
+
+    before(async function () {
+      receiver = this.whiteAggregator.address.toString();
+      await this.uniswapFactory.createPair(
+        this.linkToken.address,
+        this.weth.address,
+        {
+          from: alice,
+        }
+      );
+      await this.uniswapFactory.createPair(
+        this.linkToken.address,
+        this.mockToken.address,
+        {
+          from: alice,
+        }
+      );
+      const wethUniPoolAddres = await this.uniswapFactory.getPair(
+        this.linkToken.address,
+        this.weth.address
+      );
+      const mockErc20UniPoolAddress = await this.uniswapFactory.getPair(
+        this.linkToken.address,
+        this.mockToken.address
+      );
+      const wethUniPool = await IUniswapV2Pair.at(wethUniPoolAddres);
+      const mockErc20UniPool = await IUniswapV2Pair.at(mockErc20UniPoolAddress);
+      await this.linkToken.approve(wethUniPool.address, MAX, { from: alice });
+      await this.weth.approve(wethUniPool.address, MAX, { from: alice });
+      await this.linkToken.approve(mockErc20UniPool.address, MAX, {
+        from: alice,
+      });
+      await this.mockToken.approve(mockErc20UniPool.address, MAX, {
+        from: alice,
+      });
+
+      await this.linkToken.mint(wethUniPool.address, toWei("100"), {
+        from: alice,
+      });
+      await this.weth.deposit({
+        from: carol,
+        value: toWei("20"),
+      });
+      await this.weth.transfer(wethUniPool.address, toWei("10"), {
+        from: carol,
+      });
+      await this.linkToken.mint(mockErc20UniPool.address, toWei("100"), {
+        from: alice,
+      });
+      await this.mockToken.mint(mockErc20UniPool.address, toWei("100"), {
+        from: alice,
+      });
+
+      await wethUniPool.mint(alice, { from: alice });
+      await mockErc20UniPool.mint(alice, { from: alice });
+
+      chainId = await this.whiteDebridge.chainId();
+      debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      outsideDebridgeId = await this.whiteDebridge.getDebridgeId(
+        42,
+        tokenAddress
+      );
+      erc20DebridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        this.mockToken.address
+      );
+    });
+
+    it("should fund aggregator of native token if it is called by the admin", async function () {
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const balance = toBN(await this.linkToken.balanceOf(receiver));
+      console.log(debridge.collectedFees.toString());
+      await this.whiteDebridge.fundAggregator(debridgeId, amount, {
+        from: alice,
+      });
+      const newBalance = toBN(await this.linkToken.balanceOf(receiver));
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(
+        debridge.collectedFees.sub(amount).toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.ok(newBalance.gt(balance));
+    });
+
+    it("should fund aggregator of ERC20 token if it is called by the admin", async function () {
+      const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      const balance = toBN(await this.linkToken.balanceOf(receiver));
+      console.log(debridge.collectedFees.toString());
+      await this.whiteDebridge.fundAggregator(erc20DebridgeId, amount, {
+        from: alice,
+      });
+      const newBalance = toBN(await this.linkToken.balanceOf(receiver));
+      const newDebridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      assert.equal(
+        debridge.collectedFees.sub(amount).toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.ok(newBalance.gt(balance));
+    });
+
+    it("should reject funding aggregator by non-admin", async function () {
+      await expectRevert(
+        this.whiteDebridge.fundAggregator(debridgeId, amount, {
+          from: bob,
+        }),
+        "onlyAdmin: bad role"
+      );
+    });
+
+    it("should reject funding aggregator with too many fees", async function () {
+      const amount = toBN(toWei("100"));
+      await expectRevert(
+        this.whiteDebridge.fundAggregator(debridgeId, amount, {
+          from: alice,
+        }),
+        "fundAggregator: not enough fee"
+      );
+    });
+
+    it("should reject funding aggregator if the token not from current chain", async function () {
+      const amount = toBN(toWei("0.1"));
+      await expectRevert(
+        this.whiteDebridge.fundAggregator(outsideDebridgeId, amount, {
+          from: alice,
+        }),
+        "fundAggregator: wrong target chain"
       );
     });
   });
