@@ -9,6 +9,7 @@ module.exports = async function (deployer, network) {
 
   let minAmount = process.env.MIN_TRANSFER_AMOUNT;
   let transferFee = process.env.TRANSFER_FEE;
+  let minReserves = process.env.MIN_RESERVES;
   let supportedChainIds = JSON.parse(process.env.SUPPORTED_CHAINS);
   let weth = await getWeth(deployer, network);
 
@@ -16,6 +17,7 @@ module.exports = async function (deployer, network) {
     WhiteDebridge,
     minAmount,
     transferFee,
+    minReserves,
     WhiteAggregator.address.toString(),
     supportedChainIds,
     weth,

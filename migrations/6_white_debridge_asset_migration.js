@@ -14,6 +14,7 @@ module.exports = async function (_deployer, network) {
       otherAssetInfo.chainId,
       otherAssetInfo.minAmount,
       otherAssetInfo.transferFee,
+      otherAssetInfo.minReserves,
       [otherAssetInfo.chainId],
       otherAssetInfo.name,
       otherAssetInfo.symbol
