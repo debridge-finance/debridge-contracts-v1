@@ -38,23 +38,33 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     mapping(address => uint256) public getUserNonce; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
 
     event Sent(
-        bytes32 sentId,
+        bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
         address receiver,
         uint256 nonce,
         uint256 chainIdTo
     ); // emited once the native tokens are locked to be sent to the other chain
-    event Minted(uint256 amount, address receiver, bytes32 debridgeId); // emited once the wrapped tokens are minted on the current chain
+    event Minted(
+        bytes32 submissionId,
+        uint256 amount,
+        address receiver,
+        bytes32 debridgeId
+    ); // emited once the wrapped tokens are minted on the current chain
     event Burnt(
-        bytes32 burntId,
+        bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
         address receiver,
         uint256 nonce,
         uint256 chainIdTo
     ); // emited once the wrapped tokens are sent to the contract
-    event Claimed(uint256 amount, address receiver, bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
+    event Claimed(
+        bytes32 submissionId,
+        uint256 amount,
+        address receiver,
+        bytes32 debridgeId
+    ); // emited once the tokens are withdrawn on native chain
     event PairAdded(
         bytes32 indexed debridgeId,
         address indexed tokenAddress,
@@ -62,15 +72,15 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 minAmount,
         uint256 transferFee,
         uint256 minReserves
-    );
+    ); // emited when new asset is supported
     event ChainSupportAdded(
         bytes32 indexed debridgeId,
         uint256 indexed chainId
-    );
+    ); // emited when the asset is allowed to be spent on other chains
     event ChainSupportRemoved(
         bytes32 indexed debridgeId,
         uint256 indexed chainId
-    );
+    ); // emited when the asset is disallowed to be spent on other chains
 
     modifier onlyAggregator {
         require(address(aggregator) == msg.sender, "onlyAggregator: bad role");
@@ -182,7 +192,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         isSubmissionUsed[mintId] = true;
         IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
-        emit Minted(_amount, _receiver, _debridgeId);
+        emit Minted(mintId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -244,7 +254,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         } else {
             IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
         }
-        emit Claimed(_amount, _receiver, _debridgeId);
+        emit Claimed(burntId, _amount, _receiver, _debridgeId);
     }
 
     /* ADMIN */

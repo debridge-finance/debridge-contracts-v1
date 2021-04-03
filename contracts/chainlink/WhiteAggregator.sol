@@ -17,6 +17,7 @@ contract WhiteAggregator is Aggregator, IWhiteAggregator {
     mapping(bytes32 => SubmissionInfo) public getBurntInfo; // burnt id => submission info
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed
+    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Minimal required confirmations.
@@ -37,6 +38,7 @@ contract WhiteAggregator is Aggregator, IWhiteAggregator {
         mintInfo.hasVerified[msg.sender] = true;
         if (mintInfo.confirmations >= minConfirmations) {
             mintInfo.confirmed = true;
+            emit SubmissionApproved(_mintId);
         }
         _payOracle(msg.sender);
         emit Confirmed(_mintId, msg.sender);
@@ -51,6 +53,7 @@ contract WhiteAggregator is Aggregator, IWhiteAggregator {
         burnInfo.hasVerified[msg.sender] = true;
         if (burnInfo.confirmations >= minConfirmations) {
             burnInfo.confirmed = true;
+            emit SubmissionApproved(_burntId);
         }
         emit Confirmed(_burntId, msg.sender);
         _payOracle(msg.sender);
