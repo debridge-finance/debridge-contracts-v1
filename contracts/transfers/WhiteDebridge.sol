@@ -23,6 +23,7 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 minReserves; // minimal hot reserves
+        uint256[] chainIds; // list of all supported chain ids
         mapping(uint256 => bool) isSupported; // wheter the chain for the asset is supported
     }
 
@@ -54,6 +55,22 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 chainIdTo
     ); // emited once the wrapped tokens are sent to the contract
     event Claimed(uint256 amount, address receiver, bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
+    event PairAdded(
+        bytes32 indexed debridgeId,
+        address indexed tokenAddress,
+        uint256 indexed chainId,
+        uint256 minAmount,
+        uint256 transferFee,
+        uint256 minReserves
+    );
+    event ChainSupportAdded(
+        bytes32 indexed debridgeId,
+        uint256 indexed chainId
+    );
+    event ChainSupportRemoved(
+        bytes32 indexed debridgeId,
+        uint256 indexed chainId
+    );
 
     modifier onlyAggregator {
         require(address(aggregator) == msg.sender, "onlyAggregator: bad role");
@@ -300,6 +317,11 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
     ) external override onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.isSupported[_chainId] = _isSupported;
+        if (_isSupported) {
+            emit ChainSupportAdded(_debridgeId, _chainId);
+        } else {
+            emit ChainSupportRemoved(_debridgeId, _chainId);
+        }
     }
 
     /// @dev Set aggregator address.
@@ -457,9 +479,21 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         debridge.minAmount = _minAmount;
         debridge.transferFee = _transferFee;
         debridge.minReserves = _minReserves;
+        uint256 supportedChainId;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
-            debridge.isSupported[_supportedChainIds[i]] = true;
+            supportedChainId = _supportedChainIds[i];
+            debridge.isSupported[supportedChainId] = true;
+            debridge.chainIds.push(supportedChainId);
+            emit ChainSupportAdded(_debridgeId, supportedChainId);
         }
+        emit PairAdded(
+            _debridgeId,
+            _tokenAddress,
+            _chainId,
+            _minAmount,
+            _transferFee,
+            _minReserves
+        );
     }
 
     /// @dev Request the assets to be used in defi protocol.
@@ -520,5 +554,15 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             keccak256(
                 abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
             );
+    }
+
+    /// @dev Get all supported chain ids.
+    /// @param _debridgeId Asset identifier.
+    function getSupportedChainIds(bytes32 _debridgeId)
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return getDebridge[_debridgeId].chainIds;
     }
 }
