@@ -7,7 +7,7 @@ module.exports = async function (_deployer, network) {
   if (network == "test") return;
 
   const whiteDebridgeInstance = await WhiteDebridge.deployed();
-  const otherAssetInfos = require("../assets/debridge.json")[network];
+  const otherAssetInfos = require("../assets/supportedChains")[network];
   for (let otherAssetInfo of otherAssetInfos) {
     await whiteDebridgeInstance.addExternalAsset(
       otherAssetInfo.tokenAddress,

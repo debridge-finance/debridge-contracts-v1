@@ -3,21 +3,17 @@ const { getLinkAddress } = require("./utils");
 
 module.exports = async function (deployer, network, accounts) {
   if (network == "test") return;
-
   const link = getLinkAddress(deployer, network, accounts);
-
-  const initialOraclesCount = process.env.ORACLES_COUNT;
-  const initialOracles = JSON.parse(process.env.INITIAL_ORACLES);
-  const oraclePayment = process.env.ORACLE_PAYMENT;
+  const debridgeInitParams = require("../assets/debridgeInitParams")[network];
   await deployer.deploy(
     WhiteAggregator,
-    initialOraclesCount,
-    oraclePayment,
+    debridgeInitParams.oracleCount,
+    debridgeInitParams.oraclePayment,
     link
   );
 
   const whiteAggregatorInstance = await WhiteAggregator.deployed();
-  for (let oracle of initialOracles) {
+  for (let oracle of debridgeInitParams.oracles) {
     await whiteAggregatorInstance.addOracle(oracle.address, oracle.admin);
   }
 };

@@ -23,14 +23,11 @@ The transfer of the wrapped asset on chain B back to the original chain A to cha
 ## Test
 
 ```
-ganache-cli --account "0x0c2528af4d3abb4a8e605d6564105218338535e4b4214074ca588a1718702fd2,1000000000000000000"
+yarn start-ganache &
+yarn test
 ```
 
 # Ideas Backlog
-
-- [ ] add swap for collected fees to LINK
-
-- [ ] make the wrapped assets to support permits (allows to make off-chain approves)
 
 - [ ] use assets in other protocols
 

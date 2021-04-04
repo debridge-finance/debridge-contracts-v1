@@ -7,19 +7,16 @@ const { getWeth } = require("./utils");
 module.exports = async function (deployer, network) {
   if (network == "test") return;
 
-  let minAmount = process.env.MIN_TRANSFER_AMOUNT;
-  let transferFee = process.env.TRANSFER_FEE;
-  let minReserves = process.env.MIN_RESERVES;
-  let supportedChainIds = JSON.parse(process.env.SUPPORTED_CHAINS);
+  const debridgeInitParams = require("../assets/debridgeInitParams")[network];
   let weth = await getWeth(deployer, network);
 
   await deployer.deploy(
     WhiteDebridge,
-    minAmount,
-    transferFee,
-    minReserves,
+    debridgeInitParams.minTransferAmount,
+    debridgeInitParams.transferFee,
+    debridgeInitParams.minReserves,
     WhiteAggregator.address.toString(),
-    supportedChainIds,
+    debridgeInitParams.supportedChains,
     weth,
     FeeProxy.address.toString(),
     DefiController.address.toString()
