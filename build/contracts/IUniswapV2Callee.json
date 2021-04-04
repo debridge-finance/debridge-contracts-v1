@@ -30,7 +30,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount0\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount1\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"uniswapV2Call\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Callee.sol\":\"IUniswapV2Callee\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":1000},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Callee.sol\":{\"keccak256\":\"0xbd8f26320fdd23517375b1fe49625d3f7eb68fe4cd8b1e943ce778429479d1a1\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://522bac861a0a4e0637bcc5bcdb847fd5946c7e4b087ca0e955c0342e65f3f991\",\"dweb:/ipfs/QmYPzbfDLLYbJ9GVHDtPHMdX5LNc81UsHbZuzKyDKMoWnd\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount0\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount1\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"uniswapV2Call\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Callee.sol\":\"IUniswapV2Callee\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Callee.sol\":{\"keccak256\":\"0xbd8f26320fdd23517375b1fe49625d3f7eb68fe4cd8b1e943ce778429479d1a1\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://522bac861a0a4e0637bcc5bcdb847fd5946c7e4b087ca0e955c0342e65f3f991\",\"dweb:/ipfs/QmYPzbfDLLYbJ9GVHDtPHMdX5LNc81UsHbZuzKyDKMoWnd\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -44,15 +44,15 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Callee.sol",
     "exportedSymbols": {
       "IUniswapV2Callee": [
-        1120
+        1132
       ]
     },
-    "id": 1121,
+    "id": 1133,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1108,
+        "id": 1120,
         "literals": [
           "solidity",
           "^",
@@ -68,9 +68,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1120,
+        "id": 1132,
         "linearizedBaseContracts": [
-          1120
+          1132
         ],
         "name": "IUniswapV2Callee",
         "nameLocation": "67:16:11",
@@ -78,7 +78,7 @@
         "nodes": [
           {
             "functionSelector": "10d1e85c",
-            "id": 1119,
+            "id": 1131,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -86,17 +86,17 @@
             "nameLocation": "99:13:11",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1117,
+              "id": 1129,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1110,
+                  "id": 1122,
                   "mutability": "mutable",
                   "name": "sender",
                   "nameLocation": "130:6:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "122:14:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -105,7 +105,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1109,
+                    "id": 1121,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "122:7:11",
@@ -119,12 +119,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1112,
+                  "id": 1124,
                   "mutability": "mutable",
                   "name": "amount0",
                   "nameLocation": "154:7:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "146:15:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -133,7 +133,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1111,
+                    "id": 1123,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "146:7:11",
@@ -146,12 +146,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1114,
+                  "id": 1126,
                   "mutability": "mutable",
                   "name": "amount1",
                   "nameLocation": "179:7:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "171:15:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -160,7 +160,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1113,
+                    "id": 1125,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "171:7:11",
@@ -173,12 +173,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1116,
+                  "id": 1128,
                   "mutability": "mutable",
                   "name": "data",
                   "nameLocation": "211:4:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "196:19:11",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -187,7 +187,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1115,
+                    "id": 1127,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "196:5:11",
@@ -202,19 +202,19 @@
               "src": "112:109:11"
             },
             "returnParameters": {
-              "id": 1118,
+              "id": 1130,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "230:0:11"
             },
-            "scope": 1120,
+            "scope": 1132,
             "src": "90:141:11",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1121,
+        "scope": 1133,
         "src": "57:176:11"
       }
     ],
@@ -224,15 +224,15 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Callee.sol",
     "exportedSymbols": {
       "IUniswapV2Callee": [
-        1120
+        1132
       ]
     },
-    "id": 1121,
+    "id": 1133,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1108,
+        "id": 1120,
         "literals": [
           "solidity",
           "^",
@@ -248,9 +248,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1120,
+        "id": 1132,
         "linearizedBaseContracts": [
-          1120
+          1132
         ],
         "name": "IUniswapV2Callee",
         "nameLocation": "67:16:11",
@@ -258,7 +258,7 @@
         "nodes": [
           {
             "functionSelector": "10d1e85c",
-            "id": 1119,
+            "id": 1131,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -266,17 +266,17 @@
             "nameLocation": "99:13:11",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1117,
+              "id": 1129,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1110,
+                  "id": 1122,
                   "mutability": "mutable",
                   "name": "sender",
                   "nameLocation": "130:6:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "122:14:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -285,7 +285,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1109,
+                    "id": 1121,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "122:7:11",
@@ -299,12 +299,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1112,
+                  "id": 1124,
                   "mutability": "mutable",
                   "name": "amount0",
                   "nameLocation": "154:7:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "146:15:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -313,7 +313,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1111,
+                    "id": 1123,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "146:7:11",
@@ -326,12 +326,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1114,
+                  "id": 1126,
                   "mutability": "mutable",
                   "name": "amount1",
                   "nameLocation": "179:7:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "171:15:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -340,7 +340,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1113,
+                    "id": 1125,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "171:7:11",
@@ -353,12 +353,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1116,
+                  "id": 1128,
                   "mutability": "mutable",
                   "name": "data",
                   "nameLocation": "211:4:11",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1119,
+                  "scope": 1131,
                   "src": "196:19:11",
                   "stateVariable": false,
                   "storageLocation": "calldata",
@@ -367,7 +367,7 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1115,
+                    "id": 1127,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
                     "src": "196:5:11",
@@ -382,19 +382,19 @@
               "src": "112:109:11"
             },
             "returnParameters": {
-              "id": 1118,
+              "id": 1130,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "230:0:11"
             },
-            "scope": 1120,
+            "scope": 1132,
             "src": "90:141:11",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1121,
+        "scope": 1133,
         "src": "57:176:11"
       }
     ],
@@ -406,7 +406,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-03-25T02:55:38.816Z",
+  "updatedAt": "2021-04-04T11:19:27.089Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
