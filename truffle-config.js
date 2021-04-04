@@ -99,8 +99,8 @@ module.exports = {
         ),
       from: process.env.DEPLOYER_ACCOUNT,
       timeoutBlocks: 5000,
-      gasPrice: 15000000000, // 5 gwei
-      gas: 4000000,
+      gasPrice: 10000000000, // 5 gwei
+      gas: 6000000,
       skipDryRun: true,
     },
     mainnet: {
