@@ -12,7 +12,7 @@ import "../interfaces/IDefiController.sol";
 import "../interfaces/IWhiteAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
-contract WhiteDebridge is AccessControl, IWhiteDebridge {
+abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
     using SafeERC20 for IERC20;
 
     struct DebridgeInfo {
@@ -174,27 +174,6 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
         getUserNonce[_receiver]++;
     }
 
-    /// @dev Mints wrapped asset on the current chain.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    /// @param _nonce Submission id.
-    function mint(
-        bytes32 _debridgeId,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce
-    ) external override {
-        bytes32 mintId =
-            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
-        require(aggregator.isMintConfirmed(mintId), "mint: not confirmed");
-        require(!isSubmissionUsed[mintId], "mint: already used");
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        isSubmissionUsed[mintId] = true;
-        IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
-        emit Minted(mintId, _amount, _receiver, _debridgeId);
-    }
-
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
@@ -222,39 +201,6 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
             debridge.chainId
         );
         getUserNonce[_receiver]++;
-    }
-
-    /// @dev Unlock the asset on the current chain and transfer to receiver.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _nonce Submission id.
-    function claim(
-        bytes32 _debridgeId,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce
-    ) external override {
-        bytes32 burntId =
-            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
-        require(aggregator.isBurntConfirmed(burntId), "claim: not confirmed");
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId == chainId, "claim: wrong target chain");
-        require(!isSubmissionUsed[burntId], "claim: already used");
-        isSubmissionUsed[burntId] = true;
-        uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;
-        debridge.balance -= _amount;
-        if (transferFee > 0) {
-            debridge.collectedFees += transferFee;
-            _amount -= transferFee;
-        }
-        _ensureReserves(debridge, _amount);
-        if (debridge.tokenAddress == address(0)) {
-            payable(_receiver).transfer(_amount);
-        } else {
-            IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
-        }
-        emit Claimed(burntId, _amount, _receiver, _debridgeId);
     }
 
     /* ADMIN */
@@ -524,6 +470,53 @@ contract WhiteDebridge is AccessControl, IWhiteDebridge {
                 requestedReserves
             );
         }
+    }
+
+    /// @dev Mints wrapped asset on the current chain.
+    /// @param _mintId Submission identifier.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    function _mint(
+        bytes32 _mintId,
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount
+    ) internal {
+        require(!isSubmissionUsed[_mintId], "mint: already used");
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        isSubmissionUsed[_mintId] = true;
+        IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
+        emit Minted(_mintId, _amount, _receiver, _debridgeId);
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    function _claim(
+        bytes32 _burntId,
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount
+    ) internal {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(debridge.chainId == chainId, "claim: wrong target chain");
+        require(!isSubmissionUsed[_burntId], "claim: already used");
+        isSubmissionUsed[_burntId] = true;
+        uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;
+        debridge.balance -= _amount;
+        if (transferFee > 0) {
+            debridge.collectedFees += transferFee;
+            _amount -= transferFee;
+        }
+        _ensureReserves(debridge, _amount);
+        if (debridge.tokenAddress == address(0)) {
+            payable(_receiver).transfer(_amount);
+        } else {
+            IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+        }
+        emit Claimed(_burntId, _amount, _receiver, _debridgeId);
     }
 
     /* VIEW */
