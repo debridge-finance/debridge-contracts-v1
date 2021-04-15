@@ -17,6 +17,9 @@ import "./WhiteDebridge.sol";
 contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     using SafeERC20 for IERC20;
 
+    IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
+    IWETH public weth; // wrapped native token contract
+
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
     /// @param _transferFee Transfer fee rate.
@@ -39,11 +42,12 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             _minReserves,
             _aggregator,
             _supportedChainIds,
-            _weth,
-            _feeProxy,
             _defiController
         )
-    {}
+    {
+        weth = _weth;
+        feeProxy = _feeProxy;
+    }
 
     /// @dev Mints wrapped asset on the current chain.
     /// @param _debridgeId Asset identifier.
@@ -83,5 +87,49 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             "claim: not confirmed"
         );
         _claim(burntId, _debridgeId, _receiver, _amount);
+    }
+
+    /* ADMIN */
+
+    /// @dev Fund aggregator.
+    /// @param _debridgeId Asset identifier.
+    /// @param _amount Submission aggregator address.
+    function fundAggregator(bytes32 _debridgeId, uint256 _amount)
+        external
+        onlyAdmin()
+    {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(
+            debridge.chainId == chainId,
+            "fundAggregator: wrong target chain"
+        );
+        require(
+            debridge.collectedFees >= _amount,
+            "fundAggregator: not enough fee"
+        );
+        debridge.collectedFees -= _amount;
+        if (debridge.tokenAddress == address(0)) {
+            weth.deposit{value: _amount}();
+            weth.transfer(address(feeProxy), _amount);
+            feeProxy.swapToLink(address(weth), _amount, aggregator);
+        } else {
+            IERC20(debridge.tokenAddress).safeTransfer(
+                address(feeProxy),
+                _amount
+            );
+            feeProxy.swapToLink(debridge.tokenAddress, _amount, aggregator);
+        }
+    }
+
+    /// @dev Set fee converter proxy.
+    /// @param _feeProxy Fee proxy address.
+    function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin() {
+        feeProxy = _feeProxy;
+    }
+
+    /// @dev Set wrapped native asset address.
+    /// @param _weth Weth address.
+    function setWeth(IWETH _weth) external onlyAdmin() {
+        weth = _weth;
     }
 }

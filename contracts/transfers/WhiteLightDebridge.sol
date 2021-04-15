@@ -24,8 +24,6 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _minReserves,
         address _aggregator,
         uint256[] memory _supportedChainIds,
-        IWETH _weth,
-        IFeeProxy _feeProxy,
         IDefiController _defiController
     )
         WhiteDebridge(
@@ -34,8 +32,6 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             _minReserves,
             _aggregator,
             _supportedChainIds,
-            _weth,
-            _feeProxy,
             _defiController
         )
     {}
