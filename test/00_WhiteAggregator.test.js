@@ -1,9 +1,9 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const WhiteAggregator = artifacts.require("WhiteAggregator");
+const WhiteAggregator = artifacts.require("WhiteFullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const { toWei, fromWei, toBN } = web3.utils;
 
-contract("WhiteAggregator", function ([alice, bob, carol, eve, devid]) {
+contract("WhiteFullAggregator", function ([alice, bob, carol, eve, devid]) {
   before(async function () {
     this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
       from: alice,

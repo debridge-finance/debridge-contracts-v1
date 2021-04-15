@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Aggregator.sol";
 import "../interfaces/IWhiteAggregator.sol";
 
-contract WhiteAggregator is Aggregator, IWhiteAggregator {
+contract WhiteFullAggregator is Aggregator, IWhiteAggregator {
     struct SubmissionInfo {
         bool confirmed; // whether is confirmed
         uint256 confirmations; // received confirmations count

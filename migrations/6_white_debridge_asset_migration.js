@@ -11,7 +11,7 @@ module.exports = async function (_deployer, network) {
   let WhiteAggregator;
   if (otherAssetInfos.type == "full") {
     WhiteDebridge = artifacts.require("WhiteFullDebridge");
-    WhiteAggregator = artifacts.require("WhiteAggregator");
+    WhiteAggregator = artifacts.require("WhiteFullAggregator");
     console.log("FeeProxy: " + FeeProxy.address);
   } else {
     WhiteDebridge = artifacts.require("WhiteLightDebridge");

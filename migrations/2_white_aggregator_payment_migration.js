@@ -1,4 +1,4 @@
-const WhiteAggregator = artifacts.require("WhiteAggregator");
+const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
 const ILinkToken = artifacts.require("ILinkToken");
 const { getLinkAddress } = require("./utils");
 
@@ -12,7 +12,7 @@ module.exports = async function (deployer, network) {
 
   const linkTokenInstance = await ILinkToken.at(link);
   await linkTokenInstance.transferAndCall(
-    WhiteAggregator.address.toString(),
+    WhiteFullAggregator.address.toString(),
     amount,
     "0x"
   );

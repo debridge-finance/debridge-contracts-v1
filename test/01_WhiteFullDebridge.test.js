@@ -1,9 +1,9 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS } = require("./utils.spec");
-const WhiteAggregator = artifacts.require("WhiteAggregator");
+const WhiteAggregator = artifacts.require("WhiteFullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WhiteDebridge = artifacts.require("WhiteDebridge");
+const WhiteDebridge = artifacts.require("WhiteFullDebridge");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
 const UniswapV2Factory = artifacts.require("UniswapV2Factory");
@@ -13,7 +13,7 @@ const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 
-contract("WhiteDebridge", function ([alice, bob, carol, eve, devid]) {
+contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
   before(async function () {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,

@@ -1,4 +1,4 @@
-const WhiteAggregator = artifacts.require("WhiteAggregator");
+const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
 const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const { getLinkAddress } = require("./utils");
 
@@ -9,12 +9,12 @@ module.exports = async function (deployer, network, accounts) {
   let whiteAggregatorInstance;
   if (debridgeInitParams.type == "full") {
     await deployer.deploy(
-      WhiteAggregator,
+      WhiteFullAggregator,
       debridgeInitParams.oracleCount,
       debridgeInitParams.oraclePayment,
       link
     );
-    whiteAggregatorInstance = await WhiteAggregator.deployed();
+    whiteAggregatorInstance = await WhiteFullAggregator.deployed();
     for (let oracle of debridgeInitParams.oracles) {
       await whiteAggregatorInstance.addOracle(oracle.address, oracle.admin);
     }
