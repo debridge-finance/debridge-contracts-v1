@@ -1,19 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interfaces/IWhiteDebridge.sol";
-import "../interfaces/IFeeProxy.sol";
-import "../interfaces/IWETH.sol";
-import "../interfaces/IDefiController.sol";
-import "../interfaces/IWhiteAggregator.sol";
-import "../periphery/WrappedAsset.sol";
+import "../interfaces/IWhiteLightAggregator.sol";
+import "../interfaces/IWhiteLightDebridge.sol";
 import "./WhiteDebridge.sol";
 
-contract WhiteLightDebridge is WhiteDebridge {
+contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     using SafeERC20 for IERC20;
 
     address public aggregatorAddr;
@@ -28,7 +22,7 @@ contract WhiteLightDebridge is WhiteDebridge {
         uint256 _minAmount,
         uint256 _transferFee,
         uint256 _minReserves,
-        IWhiteAggregator _aggregator,
+        address _aggregator,
         uint256[] memory _supportedChainIds,
         IWETH _weth,
         IFeeProxy _feeProxy,
@@ -51,15 +45,20 @@ contract WhiteLightDebridge is WhiteDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
     function mint(
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes[2][] calldata _trxData
     ) external override {
         bytes32 mintId =
             getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
-        require(aggregator.isMintConfirmed(mintId), "mint: not confirmed");
+        require(
+            IWhiteLightAggregator(aggregator).submitMint(mintId, _trxData),
+            "mint: not confirmed"
+        );
         _mint(mintId, _debridgeId, _receiver, _amount);
     }
 
@@ -68,15 +67,20 @@ contract WhiteLightDebridge is WhiteDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
     function claim(
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes[2][] calldata _trxData
     ) external override {
         bytes32 burntId =
             getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
-        require(aggregator.isBurntConfirmed(burntId), "claim: not confirmed");
+        require(
+            IWhiteLightAggregator(aggregator).submitBurn(burntId, _trxData),
+            "claim: not confirmed"
+        );
         _claim(burntId, _debridgeId, _receiver, _amount);
     }
 }

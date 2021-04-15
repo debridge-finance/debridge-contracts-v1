@@ -9,24 +9,10 @@ interface IWhiteDebridge {
         uint256 _chainIdTo
     ) external payable;
 
-    function mint(
-        bytes32 _debridgeId,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce
-    ) external;
-
     function burn(
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount
-    ) external;
-
-    function claim(
-        bytes32 _debridgeId,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce
     ) external;
 
     function addNativeAsset(

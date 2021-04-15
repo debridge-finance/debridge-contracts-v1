@@ -8,12 +8,13 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interfaces/IWhiteDebridge.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
+import "../interfaces/IWhiteFullDebridge.sol";
 import "../interfaces/IDefiController.sol";
 import "../interfaces/IWhiteAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 import "./WhiteDebridge.sol";
 
-contract WhiteFullDebridge is WhiteDebridge {
+contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     using SafeERC20 for IERC20;
 
     /// @dev Constructor that initializes the most important configurations.
@@ -26,7 +27,7 @@ contract WhiteFullDebridge is WhiteDebridge {
         uint256 _minAmount,
         uint256 _transferFee,
         uint256 _minReserves,
-        IWhiteAggregator _aggregator,
+        address _aggregator,
         uint256[] memory _supportedChainIds,
         IWETH _weth,
         IFeeProxy _feeProxy,
@@ -57,7 +58,10 @@ contract WhiteFullDebridge is WhiteDebridge {
     ) external override {
         bytes32 mintId =
             getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
-        require(aggregator.isMintConfirmed(mintId), "mint: not confirmed");
+        require(
+            IWhiteAggregator(aggregator).isMintConfirmed(mintId),
+            "mint: not confirmed"
+        );
         _mint(mintId, _debridgeId, _receiver, _amount);
     }
 
@@ -74,7 +78,10 @@ contract WhiteFullDebridge is WhiteDebridge {
     ) external override {
         bytes32 burntId =
             getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
-        require(aggregator.isBurntConfirmed(burntId), "claim: not confirmed");
+        require(
+            IWhiteAggregator(aggregator).isBurntConfirmed(burntId),
+            "claim: not confirmed"
+        );
         _claim(burntId, _debridgeId, _receiver, _amount);
     }
 }

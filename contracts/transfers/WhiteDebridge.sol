@@ -29,7 +29,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
 
     uint256 public constant DENOMINATOR = 1e18; // accuacy multiplyer
     uint256 public chainId; // current chain id
-    IWhiteAggregator public aggregator; // chainlink aggregator address
+    address public aggregator; // chainlink aggregator address
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     IWETH public weth; // wrapped native token contract
@@ -83,7 +83,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
     ); // emited when the asset is disallowed to be spent on other chains
 
     modifier onlyAggregator {
-        require(address(aggregator) == msg.sender, "onlyAggregator: bad role");
+        require(aggregator == msg.sender, "onlyAggregator: bad role");
         _;
     }
     modifier onlyDefiController {
@@ -110,7 +110,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
         uint256 _minAmount,
         uint256 _transferFee,
         uint256 _minReserves,
-        IWhiteAggregator _aggregator,
+        address _aggregator,
         uint256[] memory _supportedChainIds,
         IWETH _weth,
         IFeeProxy _feeProxy,
@@ -282,18 +282,18 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
 
     /// @dev Set aggregator address.
     /// @param _aggregator Submission aggregator address.
-    function setAggregator(IWhiteAggregator _aggregator) external onlyAdmin() {
+    function setAggregator(address _aggregator) external onlyAdmin() {
         aggregator = _aggregator;
     }
 
     /// @dev Set fee converter proxy.
-    /// @param _feeProxy Submission aggregator address.
+    /// @param _feeProxy Fee proxy address.
     function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin() {
         feeProxy = _feeProxy;
     }
 
     /// @dev Set defi controoler.
-    /// @param _defiController Submission aggregator address.
+    /// @param _defiController Defi controller address address.
     function setDefiController(IDefiController _defiController)
         external
         onlyAdmin()
@@ -303,7 +303,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
     }
 
     /// @dev Set wrapped native asset address.
-    /// @param _weth Submission aggregator address.
+    /// @param _weth Weth address.
     function setWeth(IWETH _weth) external onlyAdmin() {
         weth = _weth;
     }
@@ -311,7 +311,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
-    /// @param _amount Submission aggregator address.
+    /// @param _amount Amount of tokens to withdraw.
     function withdrawFee(
         bytes32 _debridgeId,
         address _receiver,
@@ -333,7 +333,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
 
     /// @dev Request the assets to be used in defi protocol.
     /// @param _tokenAddress Asset address.
-    /// @param _amount Submission aggregator address.
+    /// @param _amount Amount of tokens to request.
     function requestReserves(address _tokenAddress, uint256 _amount)
         external
         onlyDefiController()
@@ -359,7 +359,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
 
     /// @dev Return the assets that were used in defi protocol.
     /// @param _tokenAddress Asset address.
-    /// @param _amount Submission aggregator address.
+    /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
         external
         payable
@@ -396,17 +396,13 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
         if (debridge.tokenAddress == address(0)) {
             weth.deposit{value: _amount}();
             weth.transfer(address(feeProxy), _amount);
-            feeProxy.swapToLink(address(weth), _amount, address(aggregator));
+            feeProxy.swapToLink(address(weth), _amount, aggregator);
         } else {
             IERC20(debridge.tokenAddress).safeTransfer(
                 address(feeProxy),
                 _amount
             );
-            feeProxy.swapToLink(
-                debridge.tokenAddress,
-                _amount,
-                address(aggregator)
-            );
+            feeProxy.swapToLink(debridge.tokenAddress, _amount, aggregator);
         }
     }
 
@@ -454,7 +450,7 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
 
     /// @dev Request the assets to be used in defi protocol.
     /// @param _debridge Asset info.
-    /// @param _amount Submission aggregator address.
+    /// @param _amount Required amount of tokens.
     function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount)
         internal
     {
