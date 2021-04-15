@@ -1,4 +1,4 @@
-const WhiteDebridge = artifacts.require("WhiteDebridge");
+const WhiteDebridge = artifacts.require("WhiteFullDebridge");
 const WhiteAggregator = artifacts.require("WhiteAggregator");
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");

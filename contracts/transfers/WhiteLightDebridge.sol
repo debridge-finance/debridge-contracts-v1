@@ -13,8 +13,10 @@ import "../interfaces/IWhiteAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 import "./WhiteDebridge.sol";
 
-contract WhiteFullDebridge is WhiteDebridge {
+contract WhiteLightDebridge is WhiteDebridge {
     using SafeERC20 for IERC20;
+
+    address public aggregatorAddr;
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.

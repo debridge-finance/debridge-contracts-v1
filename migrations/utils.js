@@ -61,6 +61,9 @@ module.exports.getWeth = async (deployer, network) => {
   let weth;
   switch (network) {
     case "development":
+      await deployer.deploy(WETH9);
+      weth = (await WETH9.deployed()).address;
+      break;
     case "kovan":
     case "bsctest":
       try {
