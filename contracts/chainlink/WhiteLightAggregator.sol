@@ -48,10 +48,10 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     {
         SubmissionInfo storage mintInfo = getMintInfo[_mintId];
         for (uint256 i = 0; i < _trxData.length; i++) {
+            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_trxData[i][1]);
             bytes memory unsignedTrx =
-                getUnsignedTrx(_trxData[i][0], hex"0b29b943", _mintId);
-            address oracle =
-                recoverSigner(keccak256(unsignedTrx), _trxData[i][1]);
+                getUnsignedTrx(_trxData[i][0], hex"0b29b943", _mintId, v);
+            address oracle = ecrecover(keccak256(unsignedTrx), v, r, s);
             require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
             require(!mintInfo.hasVerified[oracle], "submit: submitted already");
             mintInfo.confirmations += 1;
@@ -75,10 +75,10 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     {
         SubmissionInfo storage burnInfo = getBurntInfo[_burntId];
         for (uint256 i = 0; i < _trxData.length; i++) {
+            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_trxData[i][1]);
             bytes memory unsignedTrx =
-                getUnsignedTrx(_trxData[i][0], hex"c4b56cd0", _burntId);
-            address oracle =
-                recoverSigner(keccak256(unsignedTrx), _trxData[i][1]);
+                getUnsignedTrx(_trxData[i][0], hex"c4b56cd0", _burntId, v);
+            address oracle = ecrecover(keccak256(unsignedTrx), v, r, s);
             require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
             require(!burnInfo.hasVerified[oracle], "submit: submitted already");
             burnInfo.confirmations += 1;
@@ -142,29 +142,46 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     function getUnsignedTrx(
         bytes memory _payloadPart,
         bytes memory _method,
-        bytes32 _submissionId
+        bytes32 _submissionId,
+        uint8 _v
     ) public view returns (bytes memory) {
         return
             concat(
                 concat(
-                    concat(concat(_payloadPart, utilityBytes[0]), _method),
-                    abi.encodePacked(_submissionId)
+                    concat(
+                        concat(concat(_payloadPart, utilityBytes[0]), _method),
+                        abi.encodePacked(_submissionId)
+                    ),
+                    _v == 28 ? bytes(hex"38") : bytes(hex"37")
                 ),
                 utilityBytes[1]
             );
     }
 
-    /// @dev Recovers the signer of the msg.
-    /// @param _msgHash The raw transaction hash.
-    /// @param _signature Signature bytes in format r+s+v.
-    function recoverSigner(bytes32 _msgHash, bytes memory _signature)
-        public
-        pure
-        returns (address)
-    {
+    /// @dev Prepares raw transacton that was signed by the oracle.
+    /// @param _payloadPart First part of the transaction; rlp encoded (nonce + gasprice + startgas) + length of the next rlp encoded element (recipient).
+    /// @param _method The function identifier called by the oracle for the confirmation.
+    /// @param _submissionId Submission identifier.
+    function getTrxSigner(
+        bytes memory _payloadPart,
+        bytes memory _method,
+        bytes32 _submissionId,
+        bytes memory _signature
+    ) public view returns (address) {
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+        bytes memory data =
+            concat(
+                concat(
+                    concat(
+                        concat(concat(_payloadPart, utilityBytes[0]), _method),
+                        abi.encodePacked(_submissionId)
+                    ),
+                    v == 28 ? bytes(hex"38") : bytes(hex"37")
+                ),
+                utilityBytes[1]
+            );
 
-        return ecrecover(_msgHash, v, r, s);
+        return ecrecover(keccak256(data), v, r, s);
     }
 
     /// @dev Splits signature bytes to r,s,v components.
