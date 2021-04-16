@@ -1,6 +1,6 @@
 ## Test cases
 
-## Test Item: WhiteAggregator
+## Test Item: WhiteFullAggregator
 
 ### General requirements
 
@@ -124,7 +124,7 @@
 - [ ] with correct signature
 - [ ] without correct signature
 
-## Test Item: WhiteDebridge
+## Test Item: WhiteFullDebridge
 
 ### General requirements
 
@@ -347,3 +347,176 @@
 
 - [ ] swap native asset
 - [ ] swap token
+
+## Test Item: WhiteLightDebridge
+
+### General requirements
+
+1. Admin can add the support for the assets.
+2. Both native chain's token and ERC20 tokens can be added.
+3. If the asset isn't from the current chain the new wrapped asset (ERC20) is created.
+4. To succeed the token transfer should be supported on both chains.
+5. The transfer fee is charged when the transfer from original chain is started and/or returned back to the original chain.
+6. Part of the fee can be withdrawn.
+7. The aggregator can be replaced.
+8. The part of locked tokens can be used in DEFI protocol.
+9. The transfers must be confirmed by the oracles to be compleated.
+
+### Test Item: admin-only actions
+
+**Scope**: Test configurations.
+
+**Action**: Invoke the `setAggregator`, `setDefiController`, `setWeth` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call each of the methods by:
+
+- [x] admin
+- [x] not admin
+
+**Scope**: Test adding/removing assets.
+
+**Action**: Invoke the `setChainIdSupport`, `addNativeAsset`, `addExternalAsset` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Add asset by:
+
+- [x] admin
+- [x] not admin
+
+**Scenario 2**: Add asset:
+
+- [x] new
+- [x] added before
+
+**Scope**: Test fee managemnet.
+
+**Action**: Invoke the `fundAggregator`, `withdrawFee` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Calle methods by:
+
+- [x] admin
+- [x] not admin
+
+**Scenario 2**: Try to withdraw fee:
+
+- [x] more than collected fee
+- [x] less than collected fee
+
+### Test Item: users actions
+
+**Scope**: Test send.
+
+**Action**: Invoke the `send` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call send with different chains when:
+
+- [x] the current chain's asset
+- [x] the outside asset
+
+**Scenario 2**: Call send with different target chains when:
+
+- [x] the target chain is supported
+- [x] the target chain isn't supported
+
+**Scenario 3**: Call send with different amounts:
+
+- [x] the amount is enough
+- [x] to few tokens
+
+**Scenario 4**: Call send with different assets:
+
+- [x] the ERC20
+- [x] native token
+
+**Scope**: Test mint.
+
+**Action**: Invoke the `mint` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call mint with different approvals when:
+
+- [x] the mint is approved
+- [x] the mint isn't approved
+
+**Scenario 2**: Call mint few times:
+
+- [x] first time
+- [x] second time
+
+**Scenario 3**: Call mint with different chains:
+
+- [x] supported chain
+- [x] prohibited chain
+
+**Scope**: Test burn.
+
+**Action**: Invoke the `burn` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call burn with different chains when:
+
+- [x] with the current chain
+- [ ] with the different chain
+
+**Scenario 2**: Call burn with diffrent amounts when:
+
+- [x] enough tokens are transfered
+- [x] too few tokens are sent
+
+**Scope**: Test claim.
+
+**Action**: Invoke the `claim` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call claim with different chains when:
+
+- [x] the current chain's asset
+- [x] the outside asset
+
+**Scenario 2**: Call claim with different confirmations when:
+
+- [x] the burnt is confiremd
+- [x] the burnt isn't confirmed
+
+**Scenario 3**: Call claim few times:
+
+- [x] in the first time
+- [x] in the second time
+
+**Scenario 4**: Call claim with different assets:
+
+- [x] the ERC20
+- [x] native token
+
+### Test Item: fee management
+
+**Scope**: Test fee withdrawal.
+
+**Action**: Invoke the `withdrawFee` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `withdrawFee` by :
+
+- [x] admin
+- [x] non-admin
+
+**Scenario 2**: Call `withdrawFees` with different chains when:
+
+- [x] the current chain's asset
+- [x] the outside asset
+
+**Scenario 3**: Call `withdrawFee` with different assets:
+
+- [x] the ERC20
+- [x] native token

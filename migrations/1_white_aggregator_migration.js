@@ -22,7 +22,8 @@ module.exports = async function (deployer, network, accounts) {
     await deployer.deploy(
       WhiteLightAggregator,
       debridgeInitParams.oracleCount,
-      debridgeInitParams.utilityBytes
+      debridgeInitParams.utilityBytes,
+      debridgeInitParams.versionBytes
     );
     whiteAggregatorInstance = await WhiteLightAggregator.deployed();
     for (let oracle of debridgeInitParams.oracles) {

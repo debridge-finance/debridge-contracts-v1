@@ -8,7 +8,7 @@
     "migrate": "truffle migrate",
     "verify": "truffle run verify WhiteAggregator WhiteDebridge  ",
     "vefrify": "truffle run verify WhiteAggregator WhiteDebridge ",
-    "start-ganache": "ganache-cli",
+    "start-ganache": "ganache-cli --chainId 1 --seed alice",
     "test": "truffle test --network test"
   },
   "repository": {
@@ -28,8 +28,9 @@
     "@truffle/hdwallet-provider": "^1.2.3",
     "dotenv-flow": "^3.2.0",
     "eth-gas-reporter": "^0.2.22",
+    "ganache-cli": "^6.12.2",
     "truffle": "^5.2.4",
     "truffle-plugin-verify": "^0.5.7",
-    "web3": "^1.3.4"
+    "web3": "^1.3.5"
   }
 }

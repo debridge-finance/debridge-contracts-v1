@@ -8,8 +8,8 @@ import "../interfaces/IWhiteLightAggregator.sol";
 contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
     uint256 public minConfirmations; // minimal required confimations
-    bytes[2] public utilityBytes; // the part of the transaction payload; ["[[aggregatorAddr]]80a4","388080"]
-
+    bytes[2] public utilityBytes; // the part of the transaction payload;
+    bytes public versionBytes; // chain id of the network where the confirmations are collected + v
     mapping(address => bool) public isOracle; // oracle address => oracle details
 
     modifier onlyAdmin {
@@ -32,9 +32,15 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Minimal required confirmations.
     /// @param _utilityBytes Utility bytes to be inserted into the transaction payload.
-    constructor(uint256 _minConfirmations, bytes[2] memory _utilityBytes) {
+    /// @param _versionBytes The bytes that identify the chain where confirmations are sent + v.
+    constructor(
+        uint256 _minConfirmations,
+        bytes[2] memory _utilityBytes,
+        bytes memory _versionBytes
+    ) {
         minConfirmations = _minConfirmations;
         utilityBytes = _utilityBytes;
+        versionBytes = _versionBytes;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -47,22 +53,7 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
         returns (bool)
     {
         SubmissionInfo storage mintInfo = getMintInfo[_mintId];
-        for (uint256 i = 0; i < _trxData.length; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_trxData[i][1]);
-            bytes memory unsignedTrx =
-                getUnsignedTrx(_trxData[i][0], hex"0b29b943", _mintId, v);
-            address oracle = ecrecover(keccak256(unsignedTrx), v, r, s);
-            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
-            require(!mintInfo.hasVerified[oracle], "submit: submitted already");
-            mintInfo.confirmations += 1;
-            mintInfo.hasVerified[oracle] = true;
-            if (mintInfo.confirmations >= minConfirmations) {
-                mintInfo.confirmed = true;
-                emit SubmissionApproved(_mintId);
-            }
-            emit Confirmed(_mintId, oracle);
-        }
-        return mintInfo.confirmed;
+        return _submit(mintInfo, hex"0b29b943", _mintId, _trxData);
     }
 
     /// @dev Confirms the burnnt request.
@@ -74,22 +65,21 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
         returns (bool)
     {
         SubmissionInfo storage burnInfo = getBurntInfo[_burntId];
-        for (uint256 i = 0; i < _trxData.length; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_trxData[i][1]);
-            bytes memory unsignedTrx =
-                getUnsignedTrx(_trxData[i][0], hex"c4b56cd0", _burntId, v);
-            address oracle = ecrecover(keccak256(unsignedTrx), v, r, s);
-            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
-            require(!burnInfo.hasVerified[oracle], "submit: submitted already");
-            burnInfo.confirmations += 1;
-            burnInfo.hasVerified[oracle] = true;
-            if (burnInfo.confirmations >= minConfirmations) {
-                burnInfo.confirmed = true;
-                emit SubmissionApproved(_burntId);
-            }
-            emit Confirmed(_burntId, oracle);
-        }
-        return burnInfo.confirmed;
+        return _submit(burnInfo, hex"c4b56cd0", _burntId, _trxData);
+    }
+
+    /* ADMIN */
+
+    /// @dev Sets utility bytes.
+    /// @param _utilityBytes Utility bytes to be inserted into the transaction payload.
+    function setUtilityBytes(bytes[2] memory _utilityBytes) external onlyAdmin {
+        utilityBytes = _utilityBytes;
+    }
+
+    /// @dev Sets version bytes.
+    /// @param _versionBytes The bytes that identify the chain where confirmations are sent + v.
+    function setVersionBytes(bytes memory _versionBytes) external onlyAdmin {
+        versionBytes = _versionBytes;
     }
 
     /// @dev Sets minimal required confirmations.
@@ -110,6 +100,40 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     function removeOracle(address _oracle) external onlyAdmin {
         revokeRole(ORACLE_ROLE, _oracle);
     }
+
+    /* INTERNAL */
+
+    /// @dev Confirms the burnnt request.
+    /// @param _submissionId Submission identifier.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    function _submit(
+        SubmissionInfo storage _submissionInfo,
+        bytes memory _methodId,
+        bytes32 _submissionId,
+        bytes[2][] memory _trxData
+    ) internal returns (bool) {
+        for (uint256 i = 0; i < _trxData.length; i++) {
+            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_trxData[i][1]);
+            bytes memory unsignedTrx =
+                getUnsignedTrx(_trxData[i][0], _methodId, _submissionId);
+            address oracle = ecrecover(keccak256(unsignedTrx), v, r, s);
+            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
+            require(
+                !_submissionInfo.hasVerified[oracle],
+                "submit: submitted already"
+            );
+            _submissionInfo.confirmations += 1;
+            _submissionInfo.hasVerified[oracle] = true;
+            if (_submissionInfo.confirmations >= minConfirmations) {
+                _submissionInfo.confirmed = true;
+                emit SubmissionApproved(_submissionId);
+            }
+            emit Confirmed(_submissionId, oracle);
+        }
+        return _submissionInfo.confirmed;
+    }
+
+    /* VIEW */
 
     /// @dev Returns whether mint request is confirmed.
     /// @param _mintId Submission identifier.
@@ -142,8 +166,7 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     function getUnsignedTrx(
         bytes memory _payloadPart,
         bytes memory _method,
-        bytes32 _submissionId,
-        uint8 _v
+        bytes32 _submissionId
     ) public view returns (bytes memory) {
         return
             concat(
@@ -152,36 +175,10 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
                         concat(concat(_payloadPart, utilityBytes[0]), _method),
                         abi.encodePacked(_submissionId)
                     ),
-                    _v == 28 ? bytes(hex"38") : bytes(hex"37")
+                    versionBytes // NOTE: the byte must contain the chaind + v
                 ),
                 utilityBytes[1]
             );
-    }
-
-    /// @dev Prepares raw transacton that was signed by the oracle.
-    /// @param _payloadPart First part of the transaction; rlp encoded (nonce + gasprice + startgas) + length of the next rlp encoded element (recipient).
-    /// @param _method The function identifier called by the oracle for the confirmation.
-    /// @param _submissionId Submission identifier.
-    function getTrxSigner(
-        bytes memory _payloadPart,
-        bytes memory _method,
-        bytes32 _submissionId,
-        bytes memory _signature
-    ) public view returns (address) {
-        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
-        bytes memory data =
-            concat(
-                concat(
-                    concat(
-                        concat(concat(_payloadPart, utilityBytes[0]), _method),
-                        abi.encodePacked(_submissionId)
-                    ),
-                    v == 28 ? bytes(hex"38") : bytes(hex"37")
-                ),
-                utilityBytes[1]
-            );
-
-        return ecrecover(keccak256(data), v, r, s);
     }
 
     /// @dev Splits signature bytes to r,s,v components.

@@ -850,7 +850,6 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     it("should fund aggregator of native token if it is called by the admin", async function () {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const balance = toBN(await this.linkToken.balanceOf(receiver));
-      console.log(debridge.collectedFees.toString());
       await this.whiteDebridge.fundAggregator(debridgeId, amount, {
         from: alice,
       });
@@ -866,7 +865,6 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     it("should fund aggregator of ERC20 token if it is called by the admin", async function () {
       const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.linkToken.balanceOf(receiver));
-      console.log(debridge.collectedFees.toString());
       await this.whiteDebridge.fundAggregator(erc20DebridgeId, amount, {
         from: alice,
       });
