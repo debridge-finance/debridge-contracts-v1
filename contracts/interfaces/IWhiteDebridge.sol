@@ -31,12 +31,11 @@ interface IWhiteDebridge {
 
     function addExternalAsset(
         address _tokenAddress,
+        address _wrappedAssetAddress,
         uint256 _chainId,
         uint256 _minAmount,
         uint256 _transferFee,
         uint256 _minReserves,
-        uint256[] memory _supportedChainIds,
-        string memory _name,
-        string memory _symbol
+        uint256[] memory _supportedChainIds
     ) external;
 }

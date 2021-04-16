@@ -1,5 +1,6 @@
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
+const WrappedAsset = artifacts.require("WrappedAsset");
 
 module.exports = async function (_deployer, network) {
   if (network == "test") return;
@@ -22,15 +23,19 @@ module.exports = async function (_deployer, network) {
 
   const whiteDebridgeInstance = await WhiteDebridge.deployed();
   for (let otherAssetInfo of otherAssetInfos) {
+    const wrappedAsset = await WrappedAsset.new(
+      otherAssetInfo.name,
+      otherAssetInfo.symbol,
+      [whiteDebridgeInstance.address]
+    );
     await whiteDebridgeInstance.addExternalAsset(
       otherAssetInfo.tokenAddress,
+      wrappedAsset.address,
       otherAssetInfo.chainId,
       otherAssetInfo.minAmount,
       otherAssetInfo.transferFee,
       otherAssetInfo.minReserves,
-      [otherAssetInfo.chainId],
-      otherAssetInfo.name,
-      otherAssetInfo.symbol
+      [otherAssetInfo.chainId]
     );
   }
 };

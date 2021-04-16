@@ -232,23 +232,20 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /// @param _transferFee Transfer fee rate.
     /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where the token of the current chain can be transfered.
-    /// @param _name Wrapped asset name.
-    /// @param _symbol Wrapped asset symbol.
+    /// @param _wrappedAssetAddress Wrapped asset address.
     function addExternalAsset(
         address _tokenAddress,
+        address _wrappedAssetAddress,
         uint256 _chainId,
         uint256 _minAmount,
         uint256 _transferFee,
         uint256 _minReserves,
-        uint256[] memory _supportedChainIds,
-        string memory _name,
-        string memory _symbol
+        uint256[] memory _supportedChainIds
     ) external override onlyAdmin() {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
-        address tokenAddress = address(new WrappedAsset(_name, _symbol));
         _addAsset(
             debridgeId,
-            tokenAddress,
+            _wrappedAssetAddress,
             _chainId,
             _minAmount,
             _transferFee,

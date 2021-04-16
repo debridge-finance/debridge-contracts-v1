@@ -144,15 +144,22 @@ contract("WhiteLightDebridge", function ([alice, bob, carol, eve, devid]) {
       const supportedChainIds = [42, 3];
       const name = "MUSD";
       const symbol = "Magic Dollar";
+      const wrappedAsset = await WrappedAsset.new(
+        name,
+        symbol,
+        [this.whiteDebridge.address],
+        {
+          from: alice,
+        }
+      );
       await this.whiteDebridge.addExternalAsset(
         tokenAddress,
+        wrappedAsset.address,
         chainId,
         minAmount,
         transferFee,
         minReserves,
         supportedChainIds,
-        name,
-        symbol,
         {
           from: alice,
         }
@@ -179,15 +186,22 @@ contract("WhiteLightDebridge", function ([alice, bob, carol, eve, devid]) {
       const supportedChainIds = [42, 3];
       const name = "MUSD";
       const symbol = "Magic Dollar";
+      const wrappedAsset = await WrappedAsset.new(
+        name,
+        symbol,
+        [this.whiteDebridge.address],
+        {
+          from: alice,
+        }
+      );
       await this.whiteDebridge.addExternalAsset(
         tokenAddress,
+        wrappedAsset.address,
         chainId,
         minAmount,
         transferFee,
         minReserves,
         supportedChainIds,
-        name,
-        symbol,
         {
           from: alice,
         }
@@ -240,13 +254,12 @@ contract("WhiteLightDebridge", function ([alice, bob, carol, eve, devid]) {
       await expectRevert(
         this.whiteDebridge.addExternalAsset(
           ZERO_ADDRESS,
+          ZERO_ADDRESS,
           0,
           0,
           0,
           0,
           [0],
-          "name",
-          "symbol",
           {
             from: bob,
           }

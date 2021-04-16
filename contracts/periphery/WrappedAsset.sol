@@ -19,11 +19,15 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
         _;
     }
 
-    constructor(string memory _name, string memory _symbol)
-        ERC20(_name, _symbol)
-    {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        address[] memory minters
+    ) ERC20(_name, _symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(MINTER_ROLE, msg.sender);
+        for (uint256 i = 0; i < minters.length; i++) {
+            _setupRole(MINTER_ROLE, minters[i]);
+        }
         uint256 chainId;
         assembly {
             chainId := chainid()
