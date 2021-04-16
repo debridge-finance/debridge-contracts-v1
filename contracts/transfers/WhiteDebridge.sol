@@ -272,6 +272,23 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
         }
     }
 
+    /// @dev Add support for the asset.
+    /// @param _debridgeId Asset identifier.
+    /// @param _minAmount Minimal amount of the asset to be wrapped.
+    /// @param _transferFee Transfer fee rate.
+    /// @param _minReserves Minimal reserve ration.
+    function updateAsset(
+        bytes32 _debridgeId,
+        uint256 _minAmount,
+        uint256 _transferFee,
+        uint256 _minReserves
+    ) external onlyAdmin() {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        debridge.minAmount = _minAmount;
+        debridge.transferFee = _transferFee;
+        debridge.minReserves = _minReserves;
+    }
+
     /// @dev Set aggregator address.
     /// @param _aggregator Submission aggregator address.
     function setAggregator(address _aggregator) external onlyAdmin() {
