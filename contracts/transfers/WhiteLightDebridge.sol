@@ -50,7 +50,13 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         bytes[2][] calldata _trxData
     ) external override {
         bytes32 mintId =
-            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         require(
             IWhiteLightAggregator(aggregator).submitMint(mintId, _trxData),
             "mint: not confirmed"
@@ -72,7 +78,13 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         bytes[2][] calldata _trxData
     ) external override {
         bytes32 burntId =
-            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         require(
             IWhiteLightAggregator(aggregator).submitBurn(burntId, _trxData),
             "claim: not confirmed"

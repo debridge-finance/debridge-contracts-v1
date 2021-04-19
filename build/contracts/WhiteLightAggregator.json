@@ -140,8 +140,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -154,8 +153,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -179,8 +177,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -204,8 +201,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -224,8 +220,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -267,8 +262,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -287,8 +281,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -301,8 +294,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -357,8 +349,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -377,8 +368,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -391,8 +381,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -524,8 +513,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -544,8 +532,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -574,8 +561,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -604,8 +590,7 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function",
-      "constant": true
+      "type": "function"
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"},{\"internalType\":\"bytes[2]\",\"name\":\"_utilityBytes\",\"type\":\"bytes[2]\"},{\"internalType\":\"bytes\",\"name\":\"_versionBytes\",\"type\":\"bytes\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"submissionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"Confirmed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"submissionId\",\"type\":\"bytes32\"}],\"name\":\"SubmissionApproved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ORACLE_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"addOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"getBurntInfo\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"confirmed\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"confirmations\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"getMintInfo\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"confirmed\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"confirmations\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payloadPart\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_method\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"getUnsignedTrx\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_burntId\",\"type\":\"bytes32\"}],\"name\":\"isBurntConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_mintId\",\"type\":\"bytes32\"}],\"name\":\"isMintConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isOracle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"removeOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"}],\"name\":\"setMinConfirmations\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[2]\",\"name\":\"_utilityBytes\",\"type\":\"bytes[2]\"}],\"name\":\"setUtilityBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_versionBytes\",\"type\":\"bytes\"}],\"name\":\"setVersionBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"splitSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_burntId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes[2][]\",\"name\":\"_trxData\",\"type\":\"bytes[2][]\"}],\"name\":\"submitBurn\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_mintId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes[2][]\",\"name\":\"_trxData\",\"type\":\"bytes[2][]\"}],\"name\":\"submitMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"utilityBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"versionBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"addOracle(address)\":{\"details\":\"Add new oracle.\",\"params\":{\"_oracle\":\"Oracle address.\"}},\"constructor\":{\"details\":\"Constructor that initializes the most important configurations.\",\"params\":{\"_minConfirmations\":\"Minimal required confirmations.\",\"_utilityBytes\":\"Utility bytes to be inserted into the transaction payload.\",\"_versionBytes\":\"The bytes that identify the chain where confirmations are sent + v.\"}},\"getRoleAdmin(bytes32)\":{\"details\":\"Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.\"},\"getUnsignedTrx(bytes,bytes,bytes32)\":{\"details\":\"Prepares raw transacton that was signed by the oracle.\",\"params\":{\"_method\":\"The function identifier called by the oracle for the confirmation.\",\"_payloadPart\":\"First part of the transaction; rlp encoded (nonce + gasprice + startgas) + length of the next rlp encoded element (recipient).\",\"_submissionId\":\"Submission identifier.\"}},\"grantRole(bytes32,address)\":{\"details\":\"Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.\"},\"hasRole(bytes32,address)\":{\"details\":\"Returns `true` if `account` has been granted `role`.\"},\"isBurntConfirmed(bytes32)\":{\"details\":\"Returns whether burnnt request is confirmed.\",\"params\":{\"_burntId\":\"Submission identifier.\"},\"returns\":{\"_0\":\"Whether burnnt request is confirmed.\"}},\"isMintConfirmed(bytes32)\":{\"details\":\"Returns whether mint request is confirmed.\",\"params\":{\"_mintId\":\"Submission identifier.\"},\"returns\":{\"_0\":\"Whether mint request is confirmed.\"}},\"removeOracle(address)\":{\"details\":\"Remove oracle.\",\"params\":{\"_oracle\":\"Oracle address.\"}},\"renounceRole(bytes32,address)\":{\"details\":\"Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.\"},\"revokeRole(bytes32,address)\":{\"details\":\"Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.\"},\"setMinConfirmations(uint256)\":{\"details\":\"Sets minimal required confirmations.\",\"params\":{\"_minConfirmations\":\"Minimal required confirmations.\"}},\"setUtilityBytes(bytes[2])\":{\"details\":\"Sets utility bytes.\",\"params\":{\"_utilityBytes\":\"Utility bytes to be inserted into the transaction payload.\"}},\"setVersionBytes(bytes)\":{\"details\":\"Sets version bytes.\",\"params\":{\"_versionBytes\":\"The bytes that identify the chain where confirmations are sent + v.\"}},\"splitSignature(bytes)\":{\"details\":\"Splits signature bytes to r,s,v components.\",\"params\":{\"_signature\":\"Signature bytes in format r+s+v.\"}},\"submitBurn(bytes32,bytes[2][])\":{\"details\":\"Confirms the burnnt request.\",\"params\":{\"_burntId\":\"Submission identifier.\",\"_trxData\":\"Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.\"}},\"submitMint(bytes32,bytes[2][])\":{\"details\":\"Confirms the mint request.\",\"params\":{\"_mintId\":\"Submission identifier.\",\"_trxData\":\"Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.\"}},\"supportsInterface(bytes4)\":{\"details\":\"See {IERC165-supportsInterface}.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol\":\"WhiteLightAggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol\":{\"keccak256\":\"0x0be92e193a382ed19ddb2b18d2c1778ccfa78bd9aa5d6ca91190e5f5b40ff914\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://3a85d1ced0949885e839122f3534d2422e80a4de96647dd2267de3c2d19106d6\",\"dweb:/ipfs/QmdGBMcDV6QxnxguYsAzWJtSYVasG9o5dMUFq6TUujh7NA\"]},\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteLightAggregator.sol\":{\"keccak256\":\"0x3a183e03e6ee20f741b0270a7e15c5a653362f442ea26781397151bc3b731064\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://43601884bbe47f7584e7e0d0084e0ccf00d63952ac149aa93371626b3649c1e0\",\"dweb:/ipfs/QmRd7SFkuS6WRmUoqmzZRjeeYqYTPZNYmKVn3RxDnHKX4T\"]},\"@openzeppelin/contracts/access/AccessControl.sol\":{\"keccak256\":\"0x897b526c3c1b6196d7c2202b3dbb04b77513a40633c6083a00e8c11402011710\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e9a87494f94cba588431ee0600b51a4122d93d7f5e081dbf0c49ad09b394c5bf\",\"dweb:/ipfs/QmSuMSXPnbEKi8yLNXAagtaX5YbJaiuuKRdCH9S5BxQdRH\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xf8e8d118a7a8b2e134181f7da655f6266aa3a0f9134b2605747139fcb0c5d835\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ec48567e7ad06acb670980d5cdf3fd7f3949bf12894f02d68c3bb43e75aa84f\",\"dweb:/ipfs/QmaG3R2J9cz92YT77vFjYrjMNU2wHp4ypwYD62HqDUqS5U\"]},\"@openzeppelin/contracts/utils/Context.sol\":{\"keccak256\":\"0xf930d2df426bfcfc1f7415be724f04081c96f4fb9ec8d0e3a521c07692dface0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://fc2bfdea0d2562c76fb3c4cf70a86c6ba25c5a30e8f8515c95aafdf8383f8395\",\"dweb:/ipfs/QmTbFya18786ckJfLYUoWau9jBTKfmWnWm5XSViWvB7PXN\"]},\"@openzeppelin/contracts/utils/introspection/ERC165.sol\":{\"keccak256\":\"0x5718c5df9bd67ac68a796961df938821bb5dc0cd4c6118d77e9145afb187409b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d10e1d9b26042424789246603906ad06143bf9a928f4e99de8b5e3bdc662f549\",\"dweb:/ipfs/Qmejonoaj5MLekPus229rJQHcC6E9dz2xorjHJR84fMfmn\"]},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"keccak256\":\"0xa28007762d9da9db878dd421960c8cb9a10471f47ab5c1b3309bfe48e9e79ff4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://796ab6e88af7bf0e78def0f059310c903af6a312b565344e0ff524a0f26e81c6\",\"dweb:/ipfs/QmcsVgLgzWdor3UnAztUkXKNGcysm1MPneWksF72AvnwBx\"]}},\"version\":1}",
@@ -11039,22 +11024,22 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        4948
+        4971
       ],
       "Context": [
-        6117
+        6140
       ],
       "ERC165": [
-        6141
+        6164
       ],
       "IAccessControl": [
-        4668
+        4691
       ],
       "IERC165": [
-        6153
+        6176
       ],
       "IERC20": [
-        5574
+        5597
       ],
       "IWhiteLightAggregator": [
         2236
@@ -11085,7 +11070,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1194,
-        "sourceUnit": 4949,
+        "sourceUnit": 4972,
         "src": "57:58:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -11097,7 +11082,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1194,
-        "sourceUnit": 5575,
+        "sourceUnit": 5598,
         "src": "116:56:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -11122,7 +11107,7 @@
               "id": 736,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4948,
+              "referencedDeclaration": 4971,
               "src": "257:13:3"
             },
             "id": 737,
@@ -11144,11 +11129,11 @@
         ],
         "contractDependencies": [
           2236,
-          4668,
-          4948,
-          6117,
-          6141,
-          6153
+          4691,
+          4971,
+          6140,
+          6164,
+          6176
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
@@ -11156,11 +11141,11 @@
         "linearizedBaseContracts": [
           1193,
           2236,
-          4948,
-          6141,
-          6153,
-          4668,
-          6117
+          4971,
+          6164,
+          6176,
+          4691,
+          6140
         ],
         "name": "WhiteLightAggregator",
         "nameLocation": "233:20:3",
@@ -11418,7 +11403,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4690,
+                            "referencedDeclaration": 4713,
                             "src": "775:18:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -11467,7 +11452,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4758,
+                          "referencedDeclaration": 4781,
                           "src": "767:7:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -12049,7 +12034,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4690,
+                        "referencedDeclaration": 4713,
                         "src": "2060:18:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -12098,7 +12083,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4862,
+                      "referencedDeclaration": 4885,
                       "src": "2049:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -13414,7 +13399,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4799,
+                      "referencedDeclaration": 4822,
                       "src": "3990:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -13637,7 +13622,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4825,
+                      "referencedDeclaration": 4848,
                       "src": "4203:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -14332,7 +14317,7 @@
                                 "name": "hasRole",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4758,
+                                "referencedDeclaration": 4781,
                                 "src": "5031:7:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -17725,22 +17710,22 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        4948
+        4971
       ],
       "Context": [
-        6117
+        6140
       ],
       "ERC165": [
-        6141
+        6164
       ],
       "IAccessControl": [
-        4668
+        4691
       ],
       "IERC165": [
-        6153
+        6176
       ],
       "IERC20": [
-        5574
+        5597
       ],
       "IWhiteLightAggregator": [
         2236
@@ -17771,7 +17756,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1194,
-        "sourceUnit": 4949,
+        "sourceUnit": 4972,
         "src": "57:58:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17783,7 +17768,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1194,
-        "sourceUnit": 5575,
+        "sourceUnit": 5598,
         "src": "116:56:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17808,7 +17793,7 @@
               "id": 736,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4948,
+              "referencedDeclaration": 4971,
               "src": "257:13:3"
             },
             "id": 737,
@@ -17830,11 +17815,11 @@
         ],
         "contractDependencies": [
           2236,
-          4668,
-          4948,
-          6117,
-          6141,
-          6153
+          4691,
+          4971,
+          6140,
+          6164,
+          6176
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
@@ -17842,11 +17827,11 @@
         "linearizedBaseContracts": [
           1193,
           2236,
-          4948,
-          6141,
-          6153,
-          4668,
-          6117
+          4971,
+          6164,
+          6176,
+          4691,
+          6140
         ],
         "name": "WhiteLightAggregator",
         "nameLocation": "233:20:3",
@@ -18104,7 +18089,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4690,
+                            "referencedDeclaration": 4713,
                             "src": "775:18:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -18153,7 +18138,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4758,
+                          "referencedDeclaration": 4781,
                           "src": "767:7:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -18735,7 +18720,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4690,
+                        "referencedDeclaration": 4713,
                         "src": "2060:18:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -18784,7 +18769,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4862,
+                      "referencedDeclaration": 4885,
                       "src": "2049:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -20100,7 +20085,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4799,
+                      "referencedDeclaration": 4822,
                       "src": "3990:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -20323,7 +20308,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4825,
+                      "referencedDeclaration": 4848,
                       "src": "4203:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -21018,7 +21003,7 @@
                                 "name": "hasRole",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4758,
+                                "referencedDeclaration": 4781,
                                 "src": "5031:7:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -24642,8 +24627,7 @@
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-19T08:28:58.680Z",
-  "networkType": "ethereum",
+  "updatedAt": "2021-04-19T11:07:05.991Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

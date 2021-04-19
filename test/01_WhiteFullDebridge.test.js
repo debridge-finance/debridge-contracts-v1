@@ -429,6 +429,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
       const submission = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        chainId,
         amount,
         receiver,
         nonce
@@ -452,6 +453,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        chainId,
         amount,
         receiver,
         nonce
@@ -574,6 +576,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
       const cuurentChainSubmission = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        chainId,
         amount,
         receiver,
         nonce
@@ -583,6 +586,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       });
       const outsideChainSubmission = await this.whiteDebridge.getSubmisionId(
         outsideDebridgeId,
+        42,
         amount,
         receiver,
         nonce
@@ -592,6 +596,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       });
       const erc20Submission = await this.whiteDebridge.getSubmisionId(
         erc20DebridgeId,
+        chainId,
         amount,
         receiver,
         nonce
@@ -610,6 +615,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       const newBalance = toBN(await web3.eth.getBalance(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        await this.whiteDebridge.chainId(),
         amount,
         receiver,
         nonce
@@ -639,6 +645,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       const newBalance = toBN(await this.mockToken.balanceOf(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         erc20DebridgeId,
+        await this.whiteDebridge.chainId(),
         amount,
         receiver,
         nonce

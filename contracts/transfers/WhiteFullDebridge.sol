@@ -60,7 +60,13 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint256 _nonce
     ) external override {
         bytes32 mintId =
-            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         require(
             IWhiteAggregator(aggregator).isMintConfirmed(mintId),
             "mint: not confirmed"
@@ -80,7 +86,13 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint256 _nonce
     ) external override {
         bytes32 burntId =
-            getSubmisionId(_debridgeId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         require(
             IWhiteAggregator(aggregator).isBurntConfirmed(burntId),
             "claim: not confirmed"

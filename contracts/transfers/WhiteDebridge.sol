@@ -169,7 +169,14 @@ abstract contract WhiteDebridge is
         }
         debridge.balance += _amount;
         uint256 nonce = getUserNonce[_receiver];
-        bytes32 sentId = getSubmisionId(_debridgeId, _amount, _receiver, nonce);
+        bytes32 sentId =
+            getSubmisionId(
+                _debridgeId,
+                debridge.chainId,
+                _amount,
+                _receiver,
+                nonce
+            );
         emit Sent(sentId, _debridgeId, _amount, _receiver, nonce, _chainIdTo);
         getUserNonce[_receiver]++;
     }
@@ -191,7 +198,13 @@ abstract contract WhiteDebridge is
         wrappedAsset.burn(_amount);
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
-            getSubmisionId(_debridgeId, _amount, _receiver, nonce);
+            getSubmisionId(
+                _debridgeId,
+                debridge.chainId,
+                _amount,
+                _receiver,
+                nonce
+            );
         emit Burnt(
             burntId,
             _debridgeId,
@@ -517,13 +530,20 @@ abstract contract WhiteDebridge is
     /// @param _nonce Submission id.
     function getSubmisionId(
         bytes32 _debridgeId,
+        uint256 _chainIdTo,
         uint256 _amount,
         address _receiver,
         uint256 _nonce
     ) public pure returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(_debridgeId, _amount, _receiver, _nonce)
+                abi.encodePacked(
+                    _debridgeId,
+                    _chainIdTo,
+                    _amount,
+                    _receiver,
+                    _nonce
+                )
             );
     }
 

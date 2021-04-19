@@ -158,8 +158,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -172,8 +171,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -186,8 +184,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -200,8 +197,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -225,8 +221,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -269,8 +264,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -283,8 +277,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -327,8 +320,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -370,8 +362,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -408,8 +399,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -428,8 +418,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -484,8 +473,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -498,8 +486,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [],
@@ -512,8 +499,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
@@ -12228,25 +12214,25 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/periphery/WrappedAsset.sol",
     "exportedSymbols": {
       "AccessControl": [
-        4948
+        4971
       ],
       "Context": [
-        6117
+        6140
       ],
       "ERC165": [
-        6141
+        6164
       ],
       "ERC20": [
-        5496
+        5519
       ],
       "IAccessControl": [
-        4668
+        4691
       ],
       "IERC165": [
-        6153
+        6176
       ],
       "IERC20": [
-        5574
+        5597
       ],
       "IWrappedAsset": [
         2289
@@ -12277,7 +12263,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 2917,
-        "sourceUnit": 5497,
+        "sourceUnit": 5520,
         "src": "57:55:27",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12289,7 +12275,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 2917,
-        "sourceUnit": 5575,
+        "sourceUnit": 5598,
         "src": "113:56:27",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12301,7 +12287,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 2917,
-        "sourceUnit": 4949,
+        "sourceUnit": 4972,
         "src": "170:58:27",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12326,7 +12312,7 @@
               "id": 2700,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4948,
+              "referencedDeclaration": 4971,
               "src": "297:13:27"
             },
             "id": 2701,
@@ -12350,7 +12336,7 @@
               "id": 2704,
               "name": "ERC20",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5496,
+              "referencedDeclaration": 5519,
               "src": "327:5:27"
             },
             "id": 2705,
@@ -12360,27 +12346,27 @@
         ],
         "contractDependencies": [
           2289,
-          4668,
-          4948,
-          5496,
-          5574,
-          6117,
-          6141,
-          6153
+          4691,
+          4971,
+          5519,
+          5597,
+          6140,
+          6164,
+          6176
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 2916,
         "linearizedBaseContracts": [
           2916,
-          5496,
+          5519,
           2289,
-          5574,
-          4948,
-          6141,
-          6153,
-          4668,
-          6117
+          5597,
+          4971,
+          6164,
+          6176,
+          4691,
+          6140
         ],
         "name": "WrappedAsset",
         "nameLocation": "281:12:27",
@@ -12650,7 +12636,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4758,
+                          "referencedDeclaration": 4781,
                           "src": "756:7:27",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -12768,7 +12754,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4690,
+                        "referencedDeclaration": 4713,
                         "src": "996:18:27",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -12817,7 +12803,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4862,
+                      "referencedDeclaration": 4885,
                       "src": "985:10:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -12917,7 +12903,7 @@
                             "name": "_setupRole",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4862,
+                            "referencedDeclaration": 4885,
                             "src": "1096:10:27",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -13648,7 +13634,7 @@
                   "id": 2741,
                   "name": "ERC20",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 5496,
+                  "referencedDeclaration": 5519,
                   "src": "953:5:27"
                 },
                 "nodeType": "ModifierInvocation",
@@ -13820,7 +13806,7 @@
                       "name": "_mint",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5377,
+                      "referencedDeclaration": 5400,
                       "src": "1733:5:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -14016,7 +14002,7 @@
                       "name": "_burn",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5439,
+                      "referencedDeclaration": 5462,
                       "src": "1843:5:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -15028,7 +15014,7 @@
                       "name": "_approve",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5484,
+                      "referencedDeclaration": 5507,
                       "src": "2881:8:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$__$",
@@ -15285,25 +15271,25 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/periphery/WrappedAsset.sol",
     "exportedSymbols": {
       "AccessControl": [
-        4948
+        4971
       ],
       "Context": [
-        6117
+        6140
       ],
       "ERC165": [
-        6141
+        6164
       ],
       "ERC20": [
-        5496
+        5519
       ],
       "IAccessControl": [
-        4668
+        4691
       ],
       "IERC165": [
-        6153
+        6176
       ],
       "IERC20": [
-        5574
+        5597
       ],
       "IWrappedAsset": [
         2289
@@ -15334,7 +15320,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 2917,
-        "sourceUnit": 5497,
+        "sourceUnit": 5520,
         "src": "57:55:27",
         "symbolAliases": [],
         "unitAlias": ""
@@ -15346,7 +15332,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 2917,
-        "sourceUnit": 5575,
+        "sourceUnit": 5598,
         "src": "113:56:27",
         "symbolAliases": [],
         "unitAlias": ""
@@ -15358,7 +15344,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 2917,
-        "sourceUnit": 4949,
+        "sourceUnit": 4972,
         "src": "170:58:27",
         "symbolAliases": [],
         "unitAlias": ""
@@ -15383,7 +15369,7 @@
               "id": 2700,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 4948,
+              "referencedDeclaration": 4971,
               "src": "297:13:27"
             },
             "id": 2701,
@@ -15407,7 +15393,7 @@
               "id": 2704,
               "name": "ERC20",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5496,
+              "referencedDeclaration": 5519,
               "src": "327:5:27"
             },
             "id": 2705,
@@ -15417,27 +15403,27 @@
         ],
         "contractDependencies": [
           2289,
-          4668,
-          4948,
-          5496,
-          5574,
-          6117,
-          6141,
-          6153
+          4691,
+          4971,
+          5519,
+          5597,
+          6140,
+          6164,
+          6176
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 2916,
         "linearizedBaseContracts": [
           2916,
-          5496,
+          5519,
           2289,
-          5574,
-          4948,
-          6141,
-          6153,
-          4668,
-          6117
+          5597,
+          4971,
+          6164,
+          6176,
+          4691,
+          6140
         ],
         "name": "WrappedAsset",
         "nameLocation": "281:12:27",
@@ -15707,7 +15693,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4758,
+                          "referencedDeclaration": 4781,
                           "src": "756:7:27",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -15825,7 +15811,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4690,
+                        "referencedDeclaration": 4713,
                         "src": "996:18:27",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -15874,7 +15860,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4862,
+                      "referencedDeclaration": 4885,
                       "src": "985:10:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -15974,7 +15960,7 @@
                             "name": "_setupRole",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4862,
+                            "referencedDeclaration": 4885,
                             "src": "1096:10:27",
                             "typeDescriptions": {
                               "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -16705,7 +16691,7 @@
                   "id": 2741,
                   "name": "ERC20",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 5496,
+                  "referencedDeclaration": 5519,
                   "src": "953:5:27"
                 },
                 "nodeType": "ModifierInvocation",
@@ -16877,7 +16863,7 @@
                       "name": "_mint",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5377,
+                      "referencedDeclaration": 5400,
                       "src": "1733:5:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -17073,7 +17059,7 @@
                       "name": "_burn",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5439,
+                      "referencedDeclaration": 5462,
                       "src": "1843:5:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_uint256_$returns$__$",
@@ -18085,7 +18071,7 @@
                       "name": "_approve",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5484,
+                      "referencedDeclaration": 5507,
                       "src": "2881:8:27",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$__$",
@@ -18344,8 +18330,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-19T08:28:58.647Z",
-  "networkType": "ethereum",
+  "updatedAt": "2021-04-19T11:07:06.121Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

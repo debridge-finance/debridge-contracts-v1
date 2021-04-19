@@ -2,7 +2,7 @@ const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
 const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const { getLinkAddress } = require("./utils");
 
-module.exports = async function (deployer, network, accounts) {
+module.exports = async function(deployer, network, accounts) {
   if (network == "test") return;
   const link = getLinkAddress(deployer, network, accounts);
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
