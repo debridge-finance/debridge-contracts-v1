@@ -41,7 +41,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       from: alice,
     });
     this.oraclePayment = toWei("0.001");
-    this.minConfirmations = 6;
+    this.minConfirmations = 3;
     this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     this.aggregatorInstance = new web3.eth.Contract(
       WhiteFullAggregator.abi,
