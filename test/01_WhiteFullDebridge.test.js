@@ -9,6 +9,7 @@ const FeeProxy = artifacts.require("FeeProxy");
 const UniswapV2Factory = artifacts.require("UniswapV2Factory");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const DefiController = artifacts.require("DefiController");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
@@ -70,18 +71,18 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     this.weth = await WETH9.new({
       from: alice,
     });
-    this.whiteDebridge = await WhiteDebridge.new(
-      minAmount,
-      transferFee,
-      minReserves,
-      ZERO_ADDRESS,
-      supportedChainIds,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      {
-        from: alice,
-      }
+    this.whiteDebridge = await deployProxy(
+      WhiteDebridge,
+      [
+        minAmount,
+        transferFee,
+        minReserves,
+        ZERO_ADDRESS,
+        supportedChainIds,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+      ]
     );
   });
 

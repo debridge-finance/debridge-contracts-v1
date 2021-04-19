@@ -1,6 +1,7 @@
 const Web3 = require("web3");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS } = require("./utils.spec");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
 const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
@@ -83,16 +84,16 @@ contract("WhiteLightDebridge", function ([alice, bob, carol, eve, devid]) {
     this.weth = await WETH9.new({
       from: alice,
     });
-    this.whiteDebridge = await WhiteDebridge.new(
-      minAmount,
-      transferFee,
-      minReserves,
-      ZERO_ADDRESS,
-      supportedChainIds,
-      ZERO_ADDRESS,
-      {
-        from: alice,
-      }
+    this.whiteDebridge = await deployProxy(
+      WhiteDebridge,
+      [
+        minAmount,
+        transferFee,
+        minReserves,
+        ZERO_ADDRESS,
+        supportedChainIds,
+        ZERO_ADDRESS,
+      ]
     );
   });
 

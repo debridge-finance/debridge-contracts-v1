@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "../interfaces/IWhiteDebridge.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
@@ -12,7 +13,11 @@ import "../interfaces/IDefiController.sol";
 import "../interfaces/IWhiteAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
-abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
+abstract contract WhiteDebridge is
+    AccessControl,
+    IWhiteDebridge,
+    Initializable
+{
     using SafeERC20 for IERC20;
 
     struct DebridgeInfo {
@@ -104,14 +109,14 @@ abstract contract WhiteDebridge is AccessControl, IWhiteDebridge {
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    constructor(
+    function _initialize(
         uint256 _minAmount,
         uint256 _transferFee,
         uint256 _minReserves,
         address _aggregator,
         uint256[] memory _supportedChainIds,
         IDefiController _defiController
-    ) {
+    ) internal {
         uint256 cid;
         assembly {
             cid := chainid()

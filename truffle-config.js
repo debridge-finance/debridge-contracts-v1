@@ -43,22 +43,16 @@ module.exports = {
     // options below to some value.
     //
     development: {
-      network_id: "*", // Any network (default: none)
-      provider: () =>
-        new HDWalletProvider(
-          [process.env.DEPLOYER_PRIVATE_KEY],
-          "http://127.0.0.1:8545",
-          0,
-          1
-        ),
-      gas: 10000000,
-      skipDryRun: false,
+      host: "127.0.0.1", // Localhost (default: none)
+      port: 8545, // Standard Ethereum port (default: none)
+      network_id: "*", // Any network (default: none),
+      // from: process.env.TEST_DEPLOYER_ACCOUNT,
     },
     test: {
       host: "127.0.0.1", // Localhost (default: none)
       port: 8545, // Standard Ethereum port (default: none)
       network_id: "*", // Any network (default: none),
-      from: process.env.DEPLOYER_ACCOUNT,
+      // from: process.env.TEST_DEPLOYER_ACCOUNT,
     },
     kovan: {
       network_id: "42",

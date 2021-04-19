@@ -18,23 +18,23 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    constructor(
+    function initialize(
         uint256 _minAmount,
         uint256 _transferFee,
         uint256 _minReserves,
         address _aggregator,
         uint256[] memory _supportedChainIds,
         IDefiController _defiController
-    )
-        WhiteDebridge(
+    ) public payable initializer {
+        super._initialize(
             _minAmount,
             _transferFee,
             _minReserves,
             _aggregator,
             _supportedChainIds,
             _defiController
-        )
-    {}
+        );
+    }
 
     /// @dev Mints wrapped asset on the current chain.
     /// @param _debridgeId Asset identifier.

@@ -5,6 +5,7 @@ const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
 const { getWeth } = require("./utils");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 
 module.exports = async function (deployer, network) {
   if (network == "test") return;
@@ -12,26 +13,52 @@ module.exports = async function (deployer, network) {
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
   if (debridgeInitParams.type == "full") {
     let weth = await getWeth(deployer, network);
-    await deployer.deploy(
+    await deployProxy(
       WhiteDebridge,
-      debridgeInitParams.minTransferAmount,
-      debridgeInitParams.transferFee,
-      debridgeInitParams.minReserves,
-      WhiteFullAggregator.address.toString(),
-      debridgeInitParams.supportedChains,
-      weth,
-      FeeProxy.address.toString(),
-      DefiController.address.toString()
+      [
+        debridgeInitParams.minTransferAmount,
+        debridgeInitParams.transferFee,
+        debridgeInitParams.minReserves,
+        WhiteFullAggregator.address.toString(),
+        debridgeInitParams.supportedChains,
+        weth,
+        FeeProxy.address.toString(),
+        DefiController.address.toString(),
+      ],
+      { deployer }
     );
+    // await deployer.deploy(
+    //   WhiteDebridge,
+    //   debridgeInitParams.minTransferAmount,
+    //   debridgeInitParams.transferFee,
+    //   debridgeInitParams.minReserves,
+    //   WhiteFullAggregator.address.toString(),
+    //   debridgeInitParams.supportedChains,
+    //   weth,
+    //   FeeProxy.address.toString(),
+    //   DefiController.address.toString()
+    // );
   } else {
-    await deployer.deploy(
+    await deployProxy(
       WhiteLightDebridge,
-      debridgeInitParams.minTransferAmount,
-      debridgeInitParams.transferFee,
-      debridgeInitParams.minReserves,
-      WhiteLightAggregator.address.toString(),
-      debridgeInitParams.supportedChains,
-      DefiController.address.toString()
+      [
+        debridgeInitParams.minTransferAmount,
+        debridgeInitParams.transferFee,
+        debridgeInitParams.minReserves,
+        WhiteLightAggregator.address.toString(),
+        debridgeInitParams.supportedChains,
+        DefiController.address.toString(),
+      ],
+      { deployer }
     );
+    // await deployer.deploy(
+    //   WhiteLightDebridge,
+    //   debridgeInitParams.minTransferAmount,
+    //   debridgeInitParams.transferFee,
+    //   debridgeInitParams.minReserves,
+    //   WhiteLightAggregator.address.toString(),
+    //   debridgeInitParams.supportedChains,
+    //   DefiController.address.toString()
+    // );
   }
 };
