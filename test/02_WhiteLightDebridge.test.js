@@ -32,7 +32,7 @@ web3.extend({
   ],
 });
 
-contract("WhiteLightDebridge", function([alice, bob, carol, eve, devid]) {
+contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -41,7 +41,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, devid]) {
       from: alice,
     });
     this.oraclePayment = toWei("0.001");
-    this.minConfirmations = 1;
+    this.minConfirmations = 6;
     this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     this.aggregatorInstance = new web3.eth.Contract(
       WhiteFullAggregator.abi,
@@ -70,6 +70,14 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, devid]) {
       },
       {
         address: eve,
+        admin: carol,
+      },
+      {
+        address: fei,
+        admin: eve,
+      },
+      {
+        address: devid,
         admin: carol,
       },
     ];

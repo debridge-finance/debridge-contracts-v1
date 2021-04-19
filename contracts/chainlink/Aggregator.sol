@@ -68,6 +68,33 @@ contract Aggregator is AccessControl {
         assert(link.transfer(_recipient, _amount));
     }
 
+    /// @dev Updates oracle's address.
+    /// @param _oracle Oracle address.
+    /// @param _newOracle Oracle address.
+    function updateOracleAddress(address _oracle, address _newOracle) external {
+        require(
+            getOracleInfo[_oracle].admin == msg.sender,
+            "updateOracleAddress: only callable by admin"
+        );
+        getOracleInfo[_newOracle].admin = msg.sender;
+        getOracleInfo[_newOracle].withdrawable = getOracleInfo[_oracle]
+            .withdrawable;
+        delete getOracleInfo[_oracle];
+    }
+
+    /// @dev Updates oracle's admin address.
+    /// @param _oracle Oracle address.
+    /// @param _newOracleAdmin Oracle address.
+    function updateOracleAddminAddress(address _oracle, address _newOracleAdmin)
+        external
+    {
+        require(
+            getOracleInfo[_oracle].admin == msg.sender,
+            "updateOracleAddminAddress: only callable by admin"
+        );
+        getOracleInfo[_oracle].admin = _newOracleAdmin;
+    }
+
     /// @dev Updates available rewards to be distributed.
     function updateAvailableFunds() public {
         availableFunds = link.balanceOf(address(this)) - allocatedFunds;

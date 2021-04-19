@@ -127,6 +127,7 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
             if (_submissionInfo.confirmations >= minConfirmations) {
                 _submissionInfo.confirmed = true;
                 emit SubmissionApproved(_submissionId);
+                return _submissionInfo.confirmed;
             }
             emit Confirmed(_submissionId, oracle);
         }

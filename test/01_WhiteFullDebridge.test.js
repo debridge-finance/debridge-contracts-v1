@@ -14,8 +14,8 @@ const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 
-contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
-  before(async function () {
+contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
+  before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
@@ -71,23 +71,20 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     this.weth = await WETH9.new({
       from: alice,
     });
-    this.whiteDebridge = await deployProxy(
-      WhiteDebridge,
-      [
-        minAmount,
-        transferFee,
-        minReserves,
-        ZERO_ADDRESS,
-        supportedChainIds,
-        ZERO_ADDRESS,
-        ZERO_ADDRESS,
-        ZERO_ADDRESS,
-      ]
-    );
+    this.whiteDebridge = await deployProxy(WhiteDebridge, [
+      minAmount,
+      transferFee,
+      minReserves,
+      ZERO_ADDRESS,
+      supportedChainIds,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+    ]);
   });
 
   context("Test setting configurations by different users", () => {
-    it("should set aggregator if called by the admin", async function () {
+    it("should set aggregator if called by the admin", async function() {
       const aggregator = this.whiteAggregator.address;
       await this.whiteDebridge.setAggregator(aggregator, {
         from: alice,
@@ -96,7 +93,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(aggregator, newAggregator);
     });
 
-    it("should set fee proxy if called by the admin", async function () {
+    it("should set fee proxy if called by the admin", async function() {
       const feeProxy = this.feeProxy.address;
       await this.whiteDebridge.setFeeProxy(feeProxy, {
         from: alice,
@@ -105,7 +102,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(feeProxy, newFeeProxy);
     });
 
-    it("should set defi controller if called by the admin", async function () {
+    it("should set defi controller if called by the admin", async function() {
       const defiController = this.defiController.address;
       await this.whiteDebridge.setDefiController(defiController, {
         from: alice,
@@ -114,7 +111,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(defiController, newDefiController);
     });
 
-    it("should set weth if called by the admin", async function () {
+    it("should set weth if called by the admin", async function() {
       const weth = this.weth.address;
       await this.whiteDebridge.setWeth(weth, {
         from: alice,
@@ -123,7 +120,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(weth, newWeth);
     });
 
-    it("should reject setting aggregator if called by the non-admin", async function () {
+    it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.setAggregator(ZERO_ADDRESS, {
           from: bob,
@@ -132,7 +129,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject setting fee proxy if called by the non-admin", async function () {
+    it("should reject setting fee proxy if called by the non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.setFeeProxy(ZERO_ADDRESS, {
           from: bob,
@@ -141,7 +138,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject setting defi controller if called by the non-admin", async function () {
+    it("should reject setting defi controller if called by the non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.setDefiController(ZERO_ADDRESS, {
           from: bob,
@@ -150,7 +147,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject setting weth if called by the non-admin", async function () {
+    it("should reject setting weth if called by the non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.setWeth(ZERO_ADDRESS, {
           from: bob,
@@ -161,7 +158,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
   });
 
   context("Test managing assets", () => {
-    it("should add external asset if called by the admin", async function () {
+    it("should add external asset if called by the admin", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
       const minAmount = toWei("100");
@@ -203,7 +200,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(debridge.minReserves.toString(), minReserves);
     });
 
-    it("should add native asset if called by the admin", async function () {
+    it("should add native asset if called by the admin", async function() {
       const tokenAddress = this.mockToken.address;
       const chainId = await this.whiteDebridge.chainId();
       const minAmount = toWei("100");
@@ -234,7 +231,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(debridge.minReserves.toString(), minReserves);
     });
 
-    it("should reject adding external asset if called by the non-admin", async function () {
+    it("should reject adding external asset if called by the non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.addExternalAsset(
           ZERO_ADDRESS,
@@ -252,7 +249,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject setting native asset if called by the non-admin", async function () {
+    it("should reject setting native asset if called by the non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.addNativeAsset(ZERO_ADDRESS, 0, 0, 0, [0], {
           from: bob,
@@ -263,7 +260,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
   });
 
   context("Test send method", () => {
-    it("should send native tokens from the current chain", async function () {
+    it("should send native tokens from the current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const chainId = await this.whiteDebridge.chainId();
       const receiver = bob;
@@ -293,7 +290,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should send ERC20 tokens from the current chain", async function () {
+    it("should send ERC20 tokens from the current chain", async function() {
       const tokenAddress = this.mockToken.address;
       const chainId = await this.whiteDebridge.chainId();
       const receiver = bob;
@@ -328,7 +325,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject sending too mismatched amount of native tokens", async function () {
+    it("should reject sending too mismatched amount of native tokens", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
       const chainId = await this.whiteDebridge.chainId();
@@ -347,7 +344,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject sending too few tokens", async function () {
+    it("should reject sending too few tokens", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
       const chainId = await this.whiteDebridge.chainId();
@@ -366,7 +363,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject sending tokens to unsupported chain", async function () {
+    it("should reject sending tokens to unsupported chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
       const chainId = await this.whiteDebridge.chainId();
@@ -385,7 +382,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject sending tokens originated on the other chain", async function () {
+    it("should reject sending tokens originated on the other chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
       const amount = toBN(toWei("1"));
@@ -410,7 +407,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     const receiver = bob;
     const amount = toBN(toWei("100"));
     const nonce = 2;
-    before(async function () {
+    before(async function() {
       const newSupply = toWei("100");
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
@@ -439,7 +436,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       });
     });
 
-    it("should mint when the submission is approved", async function () {
+    it("should mint when the submission is approved", async function() {
       const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
@@ -465,7 +462,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.ok(isSubmissionUsed);
     });
 
-    it("should reject minting with unconfirmed submission", async function () {
+    it("should reject minting with unconfirmed submission", async function() {
       const nonce = 4;
       const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
@@ -479,7 +476,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject minting twice", async function () {
+    it("should reject minting twice", async function() {
       const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
@@ -494,7 +491,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
   });
 
   context("Test burn method", () => {
-    it("should burning when the amount is suficient", async function () {
+    it("should burning when the amount is suficient", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
       const receiver = alice;
@@ -516,7 +513,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
     });
 
-    it("should reject burning from current chain", async function () {
+    it("should reject burning from current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const chainId = await this.whiteDebridge.chainId();
       const receiver = bob;
@@ -533,7 +530,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject burning too few tokens", async function () {
+    it("should reject burning too few tokens", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
       const receiver = bob;
@@ -560,15 +557,15 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     let debridgeId;
     let outsideDebridgeId;
     let erc20DebridgeId;
-    before(async function () {
+    before(async function() {
       chainId = await this.whiteDebridge.chainId();
       debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       outsideDebridgeId = await this.whiteDebridge.getDebridgeId(
-        42,
-        tokenAddress
+        56,
+        "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
       );
       erc20DebridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
@@ -586,7 +583,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       });
       const outsideChainSubmission = await this.whiteDebridge.getSubmisionId(
         outsideDebridgeId,
-        42,
+        56,
         amount,
         receiver,
         nonce
@@ -606,7 +603,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       });
     });
 
-    it("should claim native token when the submission is approved", async function () {
+    it("should claim native token when the submission is approved", async function() {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
       await this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, {
@@ -626,7 +623,10 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
       const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
       assert.equal(
-        balance.add(amount).sub(fees).toString(),
+        balance
+          .add(amount)
+          .sub(fees)
+          .toString(),
         newBalance.toString()
       );
       assert.equal(
@@ -636,7 +636,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.ok(isSubmissionUsed);
     });
 
-    it("should claim ERC20 when the submission is approved", async function () {
+    it("should claim ERC20 when the submission is approved", async function() {
       const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
       await this.whiteDebridge.claim(erc20DebridgeId, receiver, amount, nonce, {
@@ -656,7 +656,10 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
       const newDebridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
       assert.equal(
-        balance.add(amount).sub(fees).toString(),
+        balance
+          .add(amount)
+          .sub(fees)
+          .toString(),
         newBalance.toString()
       );
       assert.equal(
@@ -666,7 +669,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.ok(isSubmissionUsed);
     });
 
-    it("should reject claiming with unconfirmed submission", async function () {
+    it("should reject claiming with unconfirmed submission", async function() {
       const nonce = 1;
       await expectRevert(
         this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, {
@@ -676,7 +679,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject claiming the token from outside chain", async function () {
+    it("should reject claiming the token from outside chain", async function() {
       await expectRevert(
         this.whiteDebridge.claim(outsideDebridgeId, receiver, amount, nonce, {
           from: alice,
@@ -685,7 +688,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject claiming twice", async function () {
+    it("should reject claiming twice", async function() {
       await expectRevert(
         this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, {
           from: alice,
@@ -704,7 +707,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     let outsideDebridgeId;
     let erc20DebridgeId;
 
-    before(async function () {
+    before(async function() {
       chainId = await this.whiteDebridge.chainId();
       debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
@@ -720,7 +723,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should withdraw fee of native token if it is called by the admin", async function () {
+    it("should withdraw fee of native token if it is called by the admin", async function() {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
       await this.whiteDebridge.withdrawFee(debridgeId, receiver, amount, {
@@ -735,7 +738,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(balance.add(amount).toString(), newBalance.toString());
     });
 
-    it("should withdraw fee of ERC20 token if it is called by the admin", async function () {
+    it("should withdraw fee of ERC20 token if it is called by the admin", async function() {
       const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
       await this.whiteDebridge.withdrawFee(erc20DebridgeId, receiver, amount, {
@@ -750,7 +753,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.equal(balance.add(amount).toString(), newBalance.toString());
     });
 
-    it("should reject withdrawing fee by non-admin", async function () {
+    it("should reject withdrawing fee by non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.withdrawFee(debridgeId, receiver, amount, {
           from: bob,
@@ -759,7 +762,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject withdrawing too many fees", async function () {
+    it("should reject withdrawing too many fees", async function() {
       const amount = toBN(toWei("100"));
       await expectRevert(
         this.whiteDebridge.withdrawFee(debridgeId, receiver, amount, {
@@ -769,7 +772,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject withdrawing fees if the token not from current chain", async function () {
+    it("should reject withdrawing fees if the token not from current chain", async function() {
       const amount = toBN(toWei("100"));
       await expectRevert(
         this.whiteDebridge.withdrawFee(outsideDebridgeId, receiver, amount, {
@@ -780,7 +783,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     });
   });
 
-  context("Test fund aggregator", async function () {
+  context("Test fund aggregator", async function() {
     const tokenAddress = ZERO_ADDRESS;
     const amount = toBN(toWei("0.0001"));
     let receiver;
@@ -791,7 +794,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
     let wethUniPool;
     let mockErc20UniPool;
 
-    before(async function () {
+    before(async function() {
       receiver = this.whiteAggregator.address.toString();
       await this.uniswapFactory.createPair(
         this.linkToken.address,
@@ -861,7 +864,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should fund aggregator of native token if it is called by the admin", async function () {
+    it("should fund aggregator of native token if it is called by the admin", async function() {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const balance = toBN(await this.linkToken.balanceOf(receiver));
       await this.whiteDebridge.fundAggregator(debridgeId, amount, {
@@ -876,7 +879,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.ok(newBalance.gt(balance));
     });
 
-    it("should fund aggregator of ERC20 token if it is called by the admin", async function () {
+    it("should fund aggregator of ERC20 token if it is called by the admin", async function() {
       const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.linkToken.balanceOf(receiver));
       await this.whiteDebridge.fundAggregator(erc20DebridgeId, amount, {
@@ -891,7 +894,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       assert.ok(newBalance.gt(balance));
     });
 
-    it("should reject funding aggregator by non-admin", async function () {
+    it("should reject funding aggregator by non-admin", async function() {
       await expectRevert(
         this.whiteDebridge.fundAggregator(debridgeId, amount, {
           from: bob,
@@ -900,7 +903,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject funding aggregator with too many fees", async function () {
+    it("should reject funding aggregator with too many fees", async function() {
       const amount = toBN(toWei("100"));
       await expectRevert(
         this.whiteDebridge.fundAggregator(debridgeId, amount, {
@@ -910,7 +913,7 @@ contract("WhiteFullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject funding aggregator if the token not from current chain", async function () {
+    it("should reject funding aggregator if the token not from current chain", async function() {
       const amount = toBN(toWei("0.1"));
       await expectRevert(
         this.whiteDebridge.fundAggregator(outsideDebridgeId, amount, {
