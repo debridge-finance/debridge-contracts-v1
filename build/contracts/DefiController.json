@@ -1829,28 +1829,28 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/periphery/DefiController.sol",
     "exportedSymbols": {
       "AccessControl": [
-        5018
+        5381
       ],
       "Context": [
-        6187
+        6550
       ],
       "DefiController": [
-        2558
+        2620
       ],
       "ERC165": [
-        6211
+        6574
       ],
       "ERC20": [
-        5566
+        5929
       ],
       "IAccessControl": [
-        4738
+        5101
       ],
       "IERC165": [
-        6223
+        6586
       ],
       "IERC20": [
-        5644
+        6007
       ],
       "IUniswapV2Factory": [
         1825
@@ -1859,12 +1859,12 @@
         2067
       ]
     },
-    "id": 2559,
+    "id": 2621,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2546,
+        "id": 2608,
         "literals": [
           "solidity",
           "^",
@@ -1877,11 +1877,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         "file": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "id": 2547,
+        "id": 2609,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
-        "sourceUnit": 5567,
+        "scope": 2621,
+        "sourceUnit": 5930,
         "src": "57:55:25",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1889,11 +1889,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "file": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "id": 2548,
+        "id": 2610,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
-        "sourceUnit": 5645,
+        "scope": 2621,
+        "sourceUnit": 6008,
         "src": "113:56:25",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1901,11 +1901,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/access/AccessControl.sol",
         "file": "@openzeppelin/contracts/access/AccessControl.sol",
-        "id": 2549,
+        "id": 2611,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
-        "sourceUnit": 5019,
+        "scope": 2621,
+        "sourceUnit": 5382,
         "src": "170:58:25",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1913,10 +1913,10 @@
       {
         "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Pair.sol",
         "file": "../interfaces/IUniswapV2Pair.sol",
-        "id": 2550,
+        "id": 2612,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
+        "scope": 2621,
         "sourceUnit": 2068,
         "src": "229:42:25",
         "symbolAliases": [],
@@ -1925,10 +1925,10 @@
       {
         "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Factory.sol",
         "file": "../interfaces/IUniswapV2Factory.sol",
-        "id": 2551,
+        "id": 2613,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
+        "scope": 2621,
         "sourceUnit": 1826,
         "src": "272:45:25",
         "symbolAliases": [],
@@ -1939,34 +1939,34 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 2552,
+              "id": 2614,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5018,
+              "referencedDeclaration": 5381,
               "src": "346:13:25"
             },
-            "id": 2553,
+            "id": 2615,
             "nodeType": "InheritanceSpecifier",
             "src": "346:13:25"
           }
         ],
         "contractDependencies": [
-          4738,
-          5018,
-          6187,
-          6211,
-          6223
+          5101,
+          5381,
+          6550,
+          6574,
+          6586
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 2558,
+        "id": 2620,
         "linearizedBaseContracts": [
-          2558,
-          5018,
-          6211,
-          6223,
-          4738,
-          6187
+          2620,
+          5381,
+          6574,
+          6586,
+          5101,
+          6550
         ],
         "name": "DefiController",
         "nameLocation": "328:14:25",
@@ -1974,12 +1974,12 @@
         "nodes": [
           {
             "body": {
-              "id": 2556,
+              "id": 2618,
               "nodeType": "Block",
               "src": "380:2:25",
               "statements": []
             },
-            "id": 2557,
+            "id": 2619,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [],
@@ -1987,25 +1987,25 @@
             "nameLocation": "-1:-1:-1",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2554,
+              "id": 2616,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "377:2:25"
             },
             "returnParameters": {
-              "id": 2555,
+              "id": 2617,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "380:0:25"
             },
-            "scope": 2558,
+            "scope": 2620,
             "src": "366:16:25",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
           }
         ],
-        "scope": 2559,
+        "scope": 2621,
         "src": "319:65:25"
       }
     ],
@@ -2015,28 +2015,28 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/periphery/DefiController.sol",
     "exportedSymbols": {
       "AccessControl": [
-        5018
+        5381
       ],
       "Context": [
-        6187
+        6550
       ],
       "DefiController": [
-        2558
+        2620
       ],
       "ERC165": [
-        6211
+        6574
       ],
       "ERC20": [
-        5566
+        5929
       ],
       "IAccessControl": [
-        4738
+        5101
       ],
       "IERC165": [
-        6223
+        6586
       ],
       "IERC20": [
-        5644
+        6007
       ],
       "IUniswapV2Factory": [
         1825
@@ -2045,12 +2045,12 @@
         2067
       ]
     },
-    "id": 2559,
+    "id": 2621,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2546,
+        "id": 2608,
         "literals": [
           "solidity",
           "^",
@@ -2063,11 +2063,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
         "file": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-        "id": 2547,
+        "id": 2609,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
-        "sourceUnit": 5567,
+        "scope": 2621,
+        "sourceUnit": 5930,
         "src": "57:55:25",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2075,11 +2075,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "file": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "id": 2548,
+        "id": 2610,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
-        "sourceUnit": 5645,
+        "scope": 2621,
+        "sourceUnit": 6008,
         "src": "113:56:25",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2087,11 +2087,11 @@
       {
         "absolutePath": "@openzeppelin/contracts/access/AccessControl.sol",
         "file": "@openzeppelin/contracts/access/AccessControl.sol",
-        "id": 2549,
+        "id": 2611,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
-        "sourceUnit": 5019,
+        "scope": 2621,
+        "sourceUnit": 5382,
         "src": "170:58:25",
         "symbolAliases": [],
         "unitAlias": ""
@@ -2099,10 +2099,10 @@
       {
         "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Pair.sol",
         "file": "../interfaces/IUniswapV2Pair.sol",
-        "id": 2550,
+        "id": 2612,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
+        "scope": 2621,
         "sourceUnit": 2068,
         "src": "229:42:25",
         "symbolAliases": [],
@@ -2111,10 +2111,10 @@
       {
         "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IUniswapV2Factory.sol",
         "file": "../interfaces/IUniswapV2Factory.sol",
-        "id": 2551,
+        "id": 2613,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 2559,
+        "scope": 2621,
         "sourceUnit": 1826,
         "src": "272:45:25",
         "symbolAliases": [],
@@ -2125,34 +2125,34 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 2552,
+              "id": 2614,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5018,
+              "referencedDeclaration": 5381,
               "src": "346:13:25"
             },
-            "id": 2553,
+            "id": 2615,
             "nodeType": "InheritanceSpecifier",
             "src": "346:13:25"
           }
         ],
         "contractDependencies": [
-          4738,
-          5018,
-          6187,
-          6211,
-          6223
+          5101,
+          5381,
+          6550,
+          6574,
+          6586
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 2558,
+        "id": 2620,
         "linearizedBaseContracts": [
-          2558,
-          5018,
-          6211,
-          6223,
-          4738,
-          6187
+          2620,
+          5381,
+          6574,
+          6586,
+          5101,
+          6550
         ],
         "name": "DefiController",
         "nameLocation": "328:14:25",
@@ -2160,12 +2160,12 @@
         "nodes": [
           {
             "body": {
-              "id": 2556,
+              "id": 2618,
               "nodeType": "Block",
               "src": "380:2:25",
               "statements": []
             },
-            "id": 2557,
+            "id": 2619,
             "implemented": true,
             "kind": "constructor",
             "modifiers": [],
@@ -2173,25 +2173,25 @@
             "nameLocation": "-1:-1:-1",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2554,
+              "id": 2616,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "377:2:25"
             },
             "returnParameters": {
-              "id": 2555,
+              "id": 2617,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "380:0:25"
             },
-            "scope": 2558,
+            "scope": 2620,
             "src": "366:16:25",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
           }
         ],
-        "scope": 2559,
+        "scope": 2621,
         "src": "319:65:25"
       }
     ],
@@ -2228,7 +2228,7 @@
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-20T17:23:44.154Z",
+  "updatedAt": "2021-04-20T19:27:19.659Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

@@ -62,6 +62,45 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         _mint(mintId, _debridgeId, _receiver, _amount);
     }
 
+    /// @dev Mints wrapped asset on the current chain.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    /// @param _nonce Submission id.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _aggregatorVersion Aggregator version.
+    function mintWithOldAggregator(
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        bytes[2][] calldata _trxData,
+        uint8 _aggregatorVersion
+    ) external override {
+        bytes32 mintId =
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteLightAggregator(aggregatorInfo.aggregator).submitMint(
+                mintId,
+                _trxData
+            ),
+            "mint: not confirmed"
+        );
+        _mint(mintId, _debridgeId, _receiver, _amount);
+    }
+
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
@@ -85,6 +124,45 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             );
         require(
             IWhiteLightAggregator(aggregator).submitBurn(burntId, _trxData),
+            "claim: not confirmed"
+        );
+        _claim(burntId, _debridgeId, _receiver, _amount);
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _aggregatorVersion Aggregator version.
+    function claimWithOldAggregator(
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        bytes[2][] calldata _trxData,
+        uint8 _aggregatorVersion
+    ) external override {
+        bytes32 burntId =
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteLightAggregator(aggregatorInfo.aggregator).submitBurn(
+                burntId,
+                _trxData
+            ),
             "claim: not confirmed"
         );
         _claim(burntId, _debridgeId, _receiver, _amount);

@@ -12342,25 +12342,25 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        5018
+        5381
       ],
       "Context": [
-        6187
+        6550
       ],
       "ERC165": [
-        6211
+        6574
       ],
       "IAccessControl": [
-        4738
+        5101
       ],
       "IERC165": [
-        6223
+        6586
       ],
       "IERC20": [
-        5644
+        6007
       ],
       "IWhiteLightAggregator": [
-        2285
+        2311
       ],
       "WhiteLightAggregator": [
         1242
@@ -12388,7 +12388,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 5019,
+        "sourceUnit": 5382,
         "src": "57:58:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12400,7 +12400,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 5645,
+        "sourceUnit": 6008,
         "src": "116:56:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12412,7 +12412,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 2286,
+        "sourceUnit": 2312,
         "src": "173:49:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12425,7 +12425,7 @@
               "id": 806,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5018,
+              "referencedDeclaration": 5381,
               "src": "257:13:3"
             },
             "id": 807,
@@ -12437,7 +12437,7 @@
               "id": 808,
               "name": "IWhiteLightAggregator",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 2285,
+              "referencedDeclaration": 2311,
               "src": "272:21:3"
             },
             "id": 809,
@@ -12446,24 +12446,24 @@
           }
         ],
         "contractDependencies": [
-          2285,
-          4738,
-          5018,
-          6187,
-          6211,
-          6223
+          2311,
+          5101,
+          5381,
+          6550,
+          6574,
+          6586
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 1242,
         "linearizedBaseContracts": [
           1242,
-          2285,
-          5018,
-          6211,
-          6223,
-          4738,
-          6187
+          2311,
+          5381,
+          6574,
+          6586,
+          5101,
+          6550
         ],
         "name": "WhiteLightAggregator",
         "nameLocation": "233:20:3",
@@ -12721,7 +12721,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4760,
+                            "referencedDeclaration": 5123,
                             "src": "775:18:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -12770,7 +12770,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4828,
+                          "referencedDeclaration": 5191,
                           "src": "767:7:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -13352,7 +13352,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4760,
+                        "referencedDeclaration": 5123,
                         "src": "2060:18:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -13401,7 +13401,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4932,
+                      "referencedDeclaration": 5295,
                       "src": "2049:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -13569,7 +13569,7 @@
           },
           {
             "baseFunctions": [
-              2258
+              2284
             ],
             "body": {
               "id": 927,
@@ -13921,7 +13921,7 @@
           },
           {
             "baseFunctions": [
-              2270
+              2296
             ],
             "body": {
               "id": 956,
@@ -14717,7 +14717,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4869,
+                      "referencedDeclaration": 5232,
                       "src": "3990:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -14940,7 +14940,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4895,
+                      "referencedDeclaration": 5258,
                       "src": "4203:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -15635,7 +15635,7 @@
                                 "name": "hasRole",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4828,
+                                "referencedDeclaration": 5191,
                                 "src": "5031:7:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -16677,7 +16677,7 @@
           },
           {
             "baseFunctions": [
-              2277
+              2303
             ],
             "body": {
               "id": 1173,
@@ -16840,7 +16840,7 @@
           },
           {
             "baseFunctions": [
-              2284
+              2310
             ],
             "body": {
               "id": 1188,
@@ -17901,25 +17901,25 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        5018
+        5381
       ],
       "Context": [
-        6187
+        6550
       ],
       "ERC165": [
-        6211
+        6574
       ],
       "IAccessControl": [
-        4738
+        5101
       ],
       "IERC165": [
-        6223
+        6586
       ],
       "IERC20": [
-        5644
+        6007
       ],
       "IWhiteLightAggregator": [
-        2285
+        2311
       ],
       "WhiteLightAggregator": [
         1242
@@ -17947,7 +17947,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 5019,
+        "sourceUnit": 5382,
         "src": "57:58:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17959,7 +17959,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 5645,
+        "sourceUnit": 6008,
         "src": "116:56:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17971,7 +17971,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 2286,
+        "sourceUnit": 2312,
         "src": "173:49:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17984,7 +17984,7 @@
               "id": 806,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5018,
+              "referencedDeclaration": 5381,
               "src": "257:13:3"
             },
             "id": 807,
@@ -17996,7 +17996,7 @@
               "id": 808,
               "name": "IWhiteLightAggregator",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 2285,
+              "referencedDeclaration": 2311,
               "src": "272:21:3"
             },
             "id": 809,
@@ -18005,24 +18005,24 @@
           }
         ],
         "contractDependencies": [
-          2285,
-          4738,
-          5018,
-          6187,
-          6211,
-          6223
+          2311,
+          5101,
+          5381,
+          6550,
+          6574,
+          6586
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 1242,
         "linearizedBaseContracts": [
           1242,
-          2285,
-          5018,
-          6211,
-          6223,
-          4738,
-          6187
+          2311,
+          5381,
+          6574,
+          6586,
+          5101,
+          6550
         ],
         "name": "WhiteLightAggregator",
         "nameLocation": "233:20:3",
@@ -18280,7 +18280,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4760,
+                            "referencedDeclaration": 5123,
                             "src": "775:18:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -18329,7 +18329,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4828,
+                          "referencedDeclaration": 5191,
                           "src": "767:7:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -18911,7 +18911,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4760,
+                        "referencedDeclaration": 5123,
                         "src": "2060:18:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -18960,7 +18960,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4932,
+                      "referencedDeclaration": 5295,
                       "src": "2049:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -19128,7 +19128,7 @@
           },
           {
             "baseFunctions": [
-              2258
+              2284
             ],
             "body": {
               "id": 927,
@@ -19480,7 +19480,7 @@
           },
           {
             "baseFunctions": [
-              2270
+              2296
             ],
             "body": {
               "id": 956,
@@ -20276,7 +20276,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4869,
+                      "referencedDeclaration": 5232,
                       "src": "3990:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -20499,7 +20499,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4895,
+                      "referencedDeclaration": 5258,
                       "src": "4203:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -21194,7 +21194,7 @@
                                 "name": "hasRole",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 4828,
+                                "referencedDeclaration": 5191,
                                 "src": "5031:7:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -22236,7 +22236,7 @@
           },
           {
             "baseFunctions": [
-              2277
+              2303
             ],
             "body": {
               "id": 1173,
@@ -22399,7 +22399,7 @@
           },
           {
             "baseFunctions": [
-              2284
+              2310
             ],
             "body": {
               "id": 1188,
@@ -23805,7 +23805,7 @@
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-20T17:23:44.066Z",
+  "updatedAt": "2021-04-20T19:27:19.370Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

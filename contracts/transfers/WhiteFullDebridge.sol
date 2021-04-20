@@ -74,6 +74,40 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         _mint(mintId, _debridgeId, _receiver, _amount);
     }
 
+    /// @dev Mints wrapped asset on the current chain.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    /// @param _nonce Submission id.
+    /// @param _aggregatorVersion Aggregator version.
+    function mintWithOldAggregator(
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        uint8 _aggregatorVersion
+    ) external override {
+        bytes32 mintId =
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteAggregator(aggregatorInfo.aggregator).isMintConfirmed(mintId),
+            "mint: not confirmed"
+        );
+        _mint(mintId, _debridgeId, _receiver, _amount);
+    }
+
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
@@ -95,6 +129,42 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             );
         require(
             IWhiteAggregator(aggregator).isBurntConfirmed(burntId),
+            "claim: not confirmed"
+        );
+        _claim(burntId, _debridgeId, _receiver, _amount);
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
+    /// @param _aggregatorVersion Aggregator version.
+    function claimWithOldAggregator(
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        uint8 _aggregatorVersion
+    ) external override {
+        bytes32 burntId =
+            getSubmisionId(
+                _debridgeId,
+                getDebridge[_debridgeId].chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteAggregator(aggregatorInfo.aggregator).isBurntConfirmed(
+                burntId
+            ),
             "claim: not confirmed"
         );
         _claim(burntId, _debridgeId, _receiver, _amount);

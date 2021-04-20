@@ -32,13 +32,20 @@ abstract contract WhiteDebridge is
         mapping(uint256 => bool) isSupported; // wheter the chain for the asset is supported
     }
 
+    struct AggregatorInfo {
+        address aggregator; // aggregator address
+        bool isValid; // if is still valid
+    }
+
     uint256 public constant DENOMINATOR = 1e18; // accuacy multiplyer
     uint256 public chainId; // current chain id
     address public aggregator; // chainlink aggregator address
+    uint8 public aggregatorVersion; // aggregators number
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
-    mapping(address => uint256) public getUserNonce; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
+    mapping(address => uint256) public getUserNonce; // userAddress => transactions count
+    mapping(uint8 => AggregatorInfo) public getOldAggregator; // counter => agrgregator info
 
     event Sent(
         bytes32 submissionId,
@@ -310,7 +317,23 @@ abstract contract WhiteDebridge is
     /// @dev Set aggregator address.
     /// @param _aggregator Submission aggregator address.
     function setAggregator(address _aggregator) external onlyAdmin() {
+        getOldAggregator[aggregatorVersion] = AggregatorInfo(aggregator, true);
         aggregator = _aggregator;
+        aggregatorVersion++;
+    }
+
+    /// @dev Set aggregator address.
+    /// @param _aggregatorVersion Submission aggregator address.
+    /// @param _isValid Is valid.
+    function manageOldAggregator(uint8 _aggregatorVersion, bool _isValid)
+        external
+        onlyAdmin()
+    {
+        require(
+            _aggregatorVersion < aggregatorVersion,
+            "manageOldAggregator: version too high"
+        );
+        getOldAggregator[_aggregatorVersion].isValid = _isValid;
     }
 
     /// @dev Set defi controoler.
