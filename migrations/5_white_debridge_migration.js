@@ -7,7 +7,7 @@ const DefiController = artifacts.require("DefiController");
 const { getWeth } = require("./utils");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 
-module.exports = async function (deployer, network) {
+module.exports = async function(deployer, network) {
   if (network == "test") return;
 
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
@@ -27,17 +27,6 @@ module.exports = async function (deployer, network) {
       ],
       { deployer }
     );
-    // await deployer.deploy(
-    //   WhiteDebridge,
-    //   debridgeInitParams.minTransferAmount,
-    //   debridgeInitParams.transferFee,
-    //   debridgeInitParams.minReserves,
-    //   WhiteFullAggregator.address.toString(),
-    //   debridgeInitParams.supportedChains,
-    //   weth,
-    //   FeeProxy.address.toString(),
-    //   DefiController.address.toString()
-    // );
   } else {
     await deployProxy(
       WhiteLightDebridge,
@@ -51,14 +40,5 @@ module.exports = async function (deployer, network) {
       ],
       { deployer }
     );
-    // await deployer.deploy(
-    //   WhiteLightDebridge,
-    //   debridgeInitParams.minTransferAmount,
-    //   debridgeInitParams.transferFee,
-    //   debridgeInitParams.minReserves,
-    //   WhiteLightAggregator.address.toString(),
-    //   debridgeInitParams.supportedChains,
-    //   DefiController.address.toString()
-    // );
   }
 };

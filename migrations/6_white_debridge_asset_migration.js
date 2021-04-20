@@ -2,15 +2,16 @@ const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
 const WrappedAsset = artifacts.require("WrappedAsset");
 
-module.exports = async function (_deployer, network) {
+module.exports = async function(_deployer, network) {
   if (network == "test") return;
   console.log("Network:  " + network);
   console.log("DefiController: " + DefiController.address);
 
   const otherAssetInfos = require("../assets/supportedChains")[network];
+  const debridgeInitParams = require("../assets/debridgeInitParams")[network];
   let WhiteDebridge;
   let WhiteAggregator;
-  if (otherAssetInfos.type == "full") {
+  if (debridgeInitParams.type == "full") {
     WhiteDebridge = artifacts.require("WhiteFullDebridge");
     WhiteAggregator = artifacts.require("WhiteFullAggregator");
     console.log("FeeProxy: " + FeeProxy.address);

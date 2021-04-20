@@ -18,10 +18,11 @@ module.exports.getLinkAddress = async (deployer, network, accounts) => {
       link = (await MockLinkToken.deployed()).address;
       break;
     case "kovan":
+    case "kovantest":
       link = "0xa36085F69e2889c224210F603D836748e7dC0088";
       break;
     case "bsctest":
-      link = "0x84b9b910527ad5c03a9ca831909e21e236ea7b06";
+      link = "0xdc338BB3E05D51148822f263907228a1897D4df6";
       break;
     case "bsc":
       link = "0x89F3A11E8d3B7a9F29bDB3CdC1f04c7e6095B357";
@@ -46,8 +47,11 @@ module.exports.getUniswapFactory = async (deployer, network) => {
       break;
     case "kovan":
     case "ethereum":
+    case "kovantest":
       uniswapFactory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
       break;
+    case "bsctest":
+      uniswapFactory = "0x07E5b90f3761015Ee0BA6e20Ea45652C6Bf5Ce00";
     case "bsc":
       uniswapFactory = "0xBCfCcbde45cE874adCB698cC183deBcF17952812";
       break;
@@ -65,6 +69,7 @@ module.exports.getWeth = async (deployer, network) => {
       weth = (await WETH9.deployed()).address;
       break;
     case "kovan":
+    case "kovantest":
     case "bsctest":
       try {
         await WETH9.deployed();

@@ -10,8 +10,6 @@ import "./WhiteDebridge.sol";
 contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     using SafeERC20 for IERC20;
 
-    address public aggregatorAddr;
-
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
     /// @param _transferFee Transfer fee rate.

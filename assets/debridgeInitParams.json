@@ -1,9 +1,9 @@
 {
   "kovan": {
-    "oracleCount": 1,
+    "oracleCount": 2,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
-    "transferFee": "10000000000000000",
+    "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
     "oracles": [
       {
@@ -23,11 +23,35 @@
     ],
     "versionBytes": "0x38"
   },
-  "bsctest": {
-    "oracleCount": 1,
+  "kovantest": {
+    "oracleCount": 2,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
-    "transferFee": "10000000000000000",
+    "transferFee": "5000000000000000",
+    "minReserves": "100000000000000000",
+    "oracles": [
+      {
+        "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
+        "address": "0x0b341A3fD55d4cc8aDb856859Bd426231a21a0d3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      }
+    ],
+    "supportedChains": [97],
+    "type": "light",
+    "utilityBytes": [
+      "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce80a4",
+      "0x8080"
+    ],
+    "versionBytes": "0x61"
+  },
+  "bsctest": {
+    "oracleCount": 2,
+    "oraclePayment": "100000000",
+    "minTransferAmount": "1000000000",
+    "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
     "oracles": [
       {
@@ -46,7 +70,7 @@
     "oracleCount": 1,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
-    "transferFee": "10000000000000000",
+    "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
     "oracles": [
       {
@@ -65,7 +89,7 @@
     "oracleCount": 1,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
-    "transferFee": "10000000000000000",
+    "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
     "oracles": [
       {
