@@ -177,13 +177,7 @@ abstract contract WhiteDebridge is
         debridge.balance += _amount;
         uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId =
-            getSubmisionId(
-                _debridgeId,
-                debridge.chainId,
-                _amount,
-                _receiver,
-                nonce
-            );
+            getSubmisionId(_debridgeId, _chainIdTo, _amount, _receiver, nonce);
         emit Sent(sentId, _debridgeId, _amount, _receiver, nonce, _chainIdTo);
         getUserNonce[_receiver]++;
     }
