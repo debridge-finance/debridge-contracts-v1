@@ -18,6 +18,9 @@ module.exports.getLinkAddress = async (deployer, network, accounts) => {
       link = (await MockLinkToken.deployed()).address;
       break;
     case "kovan":
+    case "hecotest":
+      link = "0xdc338BB3E05D51148822f263907228a1897D4df6";
+      break;
     case "kovantest":
       link = "0xa36085F69e2889c224210F603D836748e7dC0088";
       break;
@@ -45,6 +48,8 @@ module.exports.getUniswapFactory = async (deployer, network) => {
       }
       uniswapFactory = (await UniswapV2Factory.deployed()).address;
       break;
+    case "hecotest":
+      uniswapFactory = "0x4fDbE004745c62934C5170c931768Ed1Cc8ceC99";
     case "kovan":
     case "ethereum":
     case "kovantest":
@@ -69,6 +74,7 @@ module.exports.getWeth = async (deployer, network) => {
       weth = (await WETH9.deployed()).address;
       break;
     case "kovan":
+    case "hecotest":
     case "kovantest":
     case "bsctest":
       try {

@@ -140,7 +140,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -153,7 +154,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -177,7 +179,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -201,7 +204,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -220,7 +224,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -262,7 +267,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -281,7 +287,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -294,7 +301,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -349,7 +357,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -368,7 +377,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [],
@@ -381,7 +391,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -513,7 +524,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -532,7 +544,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -561,7 +574,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -590,7 +604,8 @@
         }
       ],
       "stateMutability": "pure",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"},{\"internalType\":\"bytes[2]\",\"name\":\"_utilityBytes\",\"type\":\"bytes[2]\"},{\"internalType\":\"bytes\",\"name\":\"_versionBytes\",\"type\":\"bytes\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"submissionId\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"Confirmed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"submissionId\",\"type\":\"bytes32\"}],\"name\":\"SubmissionApproved\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ORACLE_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"addOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"getBurntInfo\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"confirmed\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"confirmations\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"getMintInfo\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"confirmed\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"confirmations\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_payloadPart\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"_method\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"getUnsignedTrx\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_burntId\",\"type\":\"bytes32\"}],\"name\":\"isBurntConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_mintId\",\"type\":\"bytes32\"}],\"name\":\"isMintConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"isOracle\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"removeOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"}],\"name\":\"setMinConfirmations\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[2]\",\"name\":\"_utilityBytes\",\"type\":\"bytes[2]\"}],\"name\":\"setUtilityBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_versionBytes\",\"type\":\"bytes\"}],\"name\":\"setVersionBytes\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"splitSignature\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"r\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"s\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"v\",\"type\":\"uint8\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_burntId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes[2][]\",\"name\":\"_trxData\",\"type\":\"bytes[2][]\"}],\"name\":\"submitBurn\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_mintId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes[2][]\",\"name\":\"_trxData\",\"type\":\"bytes[2][]\"}],\"name\":\"submitMint\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"utilityBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"versionBytes\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"addOracle(address)\":{\"details\":\"Add new oracle.\",\"params\":{\"_oracle\":\"Oracle address.\"}},\"constructor\":{\"details\":\"Constructor that initializes the most important configurations.\",\"params\":{\"_minConfirmations\":\"Minimal required confirmations.\",\"_utilityBytes\":\"Utility bytes to be inserted into the transaction payload.\",\"_versionBytes\":\"The bytes that identify the chain where confirmations are sent + v.\"}},\"getRoleAdmin(bytes32)\":{\"details\":\"Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.\"},\"getUnsignedTrx(bytes,bytes,bytes32)\":{\"details\":\"Prepares raw transacton that was signed by the oracle.\",\"params\":{\"_method\":\"The function identifier called by the oracle for the confirmation.\",\"_payloadPart\":\"First part of the transaction; rlp encoded (nonce + gasprice + startgas) + length of the next rlp encoded element (recipient).\",\"_submissionId\":\"Submission identifier.\"}},\"grantRole(bytes32,address)\":{\"details\":\"Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.\"},\"hasRole(bytes32,address)\":{\"details\":\"Returns `true` if `account` has been granted `role`.\"},\"isBurntConfirmed(bytes32)\":{\"details\":\"Returns whether burnnt request is confirmed.\",\"params\":{\"_burntId\":\"Submission identifier.\"},\"returns\":{\"_0\":\"Whether burnnt request is confirmed.\"}},\"isMintConfirmed(bytes32)\":{\"details\":\"Returns whether mint request is confirmed.\",\"params\":{\"_mintId\":\"Submission identifier.\"},\"returns\":{\"_0\":\"Whether mint request is confirmed.\"}},\"removeOracle(address)\":{\"details\":\"Remove oracle.\",\"params\":{\"_oracle\":\"Oracle address.\"}},\"renounceRole(bytes32,address)\":{\"details\":\"Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.\"},\"revokeRole(bytes32,address)\":{\"details\":\"Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.\"},\"setMinConfirmations(uint256)\":{\"details\":\"Sets minimal required confirmations.\",\"params\":{\"_minConfirmations\":\"Minimal required confirmations.\"}},\"setUtilityBytes(bytes[2])\":{\"details\":\"Sets utility bytes.\",\"params\":{\"_utilityBytes\":\"Utility bytes to be inserted into the transaction payload.\"}},\"setVersionBytes(bytes)\":{\"details\":\"Sets version bytes.\",\"params\":{\"_versionBytes\":\"The bytes that identify the chain where confirmations are sent + v.\"}},\"splitSignature(bytes)\":{\"details\":\"Splits signature bytes to r,s,v components.\",\"params\":{\"_signature\":\"Signature bytes in format r+s+v.\"}},\"submitBurn(bytes32,bytes[2][])\":{\"details\":\"Confirms the burnnt request.\",\"params\":{\"_burntId\":\"Submission identifier.\",\"_trxData\":\"Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.\"}},\"submitMint(bytes32,bytes[2][])\":{\"details\":\"Confirms the mint request.\",\"params\":{\"_mintId\":\"Submission identifier.\",\"_trxData\":\"Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.\"}},\"supportsInterface(bytes4)\":{\"details\":\"See {IERC165-supportsInterface}.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol\":\"WhiteLightAggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol\":{\"keccak256\":\"0xbdf5f2a1c6e58c9653485ad3f7c8ea1ddf3eac9caafc148e23f686c443202cf4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://462e5622ffd2853855a29f8d06685000c95bceac610b1448a81870d5899cab8b\",\"dweb:/ipfs/QmSBbh81oEgGs8Z4SEe8SfpV8Kzg16fKjkwdYV1KC6y8r1\"]},\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteLightAggregator.sol\":{\"keccak256\":\"0x3a183e03e6ee20f741b0270a7e15c5a653362f442ea26781397151bc3b731064\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://43601884bbe47f7584e7e0d0084e0ccf00d63952ac149aa93371626b3649c1e0\",\"dweb:/ipfs/QmRd7SFkuS6WRmUoqmzZRjeeYqYTPZNYmKVn3RxDnHKX4T\"]},\"@openzeppelin/contracts/access/AccessControl.sol\":{\"keccak256\":\"0x897b526c3c1b6196d7c2202b3dbb04b77513a40633c6083a00e8c11402011710\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e9a87494f94cba588431ee0600b51a4122d93d7f5e081dbf0c49ad09b394c5bf\",\"dweb:/ipfs/QmSuMSXPnbEKi8yLNXAagtaX5YbJaiuuKRdCH9S5BxQdRH\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xf8e8d118a7a8b2e134181f7da655f6266aa3a0f9134b2605747139fcb0c5d835\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ec48567e7ad06acb670980d5cdf3fd7f3949bf12894f02d68c3bb43e75aa84f\",\"dweb:/ipfs/QmaG3R2J9cz92YT77vFjYrjMNU2wHp4ypwYD62HqDUqS5U\"]},\"@openzeppelin/contracts/utils/Context.sol\":{\"keccak256\":\"0xf930d2df426bfcfc1f7415be724f04081c96f4fb9ec8d0e3a521c07692dface0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://fc2bfdea0d2562c76fb3c4cf70a86c6ba25c5a30e8f8515c95aafdf8383f8395\",\"dweb:/ipfs/QmTbFya18786ckJfLYUoWau9jBTKfmWnWm5XSViWvB7PXN\"]},\"@openzeppelin/contracts/utils/introspection/ERC165.sol\":{\"keccak256\":\"0x5718c5df9bd67ac68a796961df938821bb5dc0cd4c6118d77e9145afb187409b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d10e1d9b26042424789246603906ad06143bf9a928f4e99de8b5e3bdc662f549\",\"dweb:/ipfs/Qmejonoaj5MLekPus229rJQHcC6E9dz2xorjHJR84fMfmn\"]},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"keccak256\":\"0xa28007762d9da9db878dd421960c8cb9a10471f47ab5c1b3309bfe48e9e79ff4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://796ab6e88af7bf0e78def0f059310c903af6a312b565344e0ff524a0f26e81c6\",\"dweb:/ipfs/QmcsVgLgzWdor3UnAztUkXKNGcysm1MPneWksF72AvnwBx\"]}},\"version\":1}",
@@ -12342,25 +12357,25 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        5381
+        5379
       ],
       "Context": [
-        6550
+        6548
       ],
       "ERC165": [
-        6574
+        6572
       ],
       "IAccessControl": [
-        5101
+        5099
       ],
       "IERC165": [
-        6586
+        6584
       ],
       "IERC20": [
-        6007
+        6005
       ],
       "IWhiteLightAggregator": [
-        2311
+        2313
       ],
       "WhiteLightAggregator": [
         1242
@@ -12388,7 +12403,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 5382,
+        "sourceUnit": 5380,
         "src": "57:58:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12400,7 +12415,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 6008,
+        "sourceUnit": 6006,
         "src": "116:56:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12412,7 +12427,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 2312,
+        "sourceUnit": 2314,
         "src": "173:49:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -12425,7 +12440,7 @@
               "id": 806,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5381,
+              "referencedDeclaration": 5379,
               "src": "257:13:3"
             },
             "id": 807,
@@ -12437,7 +12452,7 @@
               "id": 808,
               "name": "IWhiteLightAggregator",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 2311,
+              "referencedDeclaration": 2313,
               "src": "272:21:3"
             },
             "id": 809,
@@ -12446,24 +12461,24 @@
           }
         ],
         "contractDependencies": [
-          2311,
-          5101,
-          5381,
-          6550,
-          6574,
-          6586
+          2313,
+          5099,
+          5379,
+          6548,
+          6572,
+          6584
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 1242,
         "linearizedBaseContracts": [
           1242,
-          2311,
-          5381,
-          6574,
-          6586,
-          5101,
-          6550
+          2313,
+          5379,
+          6572,
+          6584,
+          5099,
+          6548
         ],
         "name": "WhiteLightAggregator",
         "nameLocation": "233:20:3",
@@ -12721,7 +12736,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5123,
+                            "referencedDeclaration": 5121,
                             "src": "775:18:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -12770,7 +12785,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 5191,
+                          "referencedDeclaration": 5189,
                           "src": "767:7:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -13352,7 +13367,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5123,
+                        "referencedDeclaration": 5121,
                         "src": "2060:18:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -13401,7 +13416,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5295,
+                      "referencedDeclaration": 5293,
                       "src": "2049:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -13569,7 +13584,7 @@
           },
           {
             "baseFunctions": [
-              2284
+              2286
             ],
             "body": {
               "id": 927,
@@ -13921,7 +13936,7 @@
           },
           {
             "baseFunctions": [
-              2296
+              2298
             ],
             "body": {
               "id": 956,
@@ -14717,7 +14732,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5232,
+                      "referencedDeclaration": 5230,
                       "src": "3990:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -14940,7 +14955,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5258,
+                      "referencedDeclaration": 5256,
                       "src": "4203:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -15635,7 +15650,7 @@
                                 "name": "hasRole",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 5191,
+                                "referencedDeclaration": 5189,
                                 "src": "5031:7:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -16677,7 +16692,7 @@
           },
           {
             "baseFunctions": [
-              2303
+              2305
             ],
             "body": {
               "id": 1173,
@@ -16840,7 +16855,7 @@
           },
           {
             "baseFunctions": [
-              2310
+              2312
             ],
             "body": {
               "id": 1188,
@@ -17901,25 +17916,25 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/WhiteLightAggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        5381
+        5379
       ],
       "Context": [
-        6550
+        6548
       ],
       "ERC165": [
-        6574
+        6572
       ],
       "IAccessControl": [
-        5101
+        5099
       ],
       "IERC165": [
-        6586
+        6584
       ],
       "IERC20": [
-        6007
+        6005
       ],
       "IWhiteLightAggregator": [
-        2311
+        2313
       ],
       "WhiteLightAggregator": [
         1242
@@ -17947,7 +17962,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 5382,
+        "sourceUnit": 5380,
         "src": "57:58:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17959,7 +17974,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 6008,
+        "sourceUnit": 6006,
         "src": "116:56:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17971,7 +17986,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 1243,
-        "sourceUnit": 2312,
+        "sourceUnit": 2314,
         "src": "173:49:3",
         "symbolAliases": [],
         "unitAlias": ""
@@ -17984,7 +17999,7 @@
               "id": 806,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 5381,
+              "referencedDeclaration": 5379,
               "src": "257:13:3"
             },
             "id": 807,
@@ -17996,7 +18011,7 @@
               "id": 808,
               "name": "IWhiteLightAggregator",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 2311,
+              "referencedDeclaration": 2313,
               "src": "272:21:3"
             },
             "id": 809,
@@ -18005,24 +18020,24 @@
           }
         ],
         "contractDependencies": [
-          2311,
-          5101,
-          5381,
-          6550,
-          6574,
-          6586
+          2313,
+          5099,
+          5379,
+          6548,
+          6572,
+          6584
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 1242,
         "linearizedBaseContracts": [
           1242,
-          2311,
-          5381,
-          6574,
-          6586,
-          5101,
-          6550
+          2313,
+          5379,
+          6572,
+          6584,
+          5099,
+          6548
         ],
         "name": "WhiteLightAggregator",
         "nameLocation": "233:20:3",
@@ -18280,7 +18295,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 5123,
+                            "referencedDeclaration": 5121,
                             "src": "775:18:3",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -18329,7 +18344,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 5191,
+                          "referencedDeclaration": 5189,
                           "src": "767:7:3",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -18911,7 +18926,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 5123,
+                        "referencedDeclaration": 5121,
                         "src": "2060:18:3",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -18960,7 +18975,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5295,
+                      "referencedDeclaration": 5293,
                       "src": "2049:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -19128,7 +19143,7 @@
           },
           {
             "baseFunctions": [
-              2284
+              2286
             ],
             "body": {
               "id": 927,
@@ -19480,7 +19495,7 @@
           },
           {
             "baseFunctions": [
-              2296
+              2298
             ],
             "body": {
               "id": 956,
@@ -20276,7 +20291,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5232,
+                      "referencedDeclaration": 5230,
                       "src": "3990:9:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -20499,7 +20514,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 5258,
+                      "referencedDeclaration": 5256,
                       "src": "4203:10:3",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -21194,7 +21209,7 @@
                                 "name": "hasRole",
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
-                                "referencedDeclaration": 5191,
+                                "referencedDeclaration": 5189,
                                 "src": "5031:7:3",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -22236,7 +22251,7 @@
           },
           {
             "baseFunctions": [
-              2303
+              2305
             ],
             "body": {
               "id": 1173,
@@ -22399,7 +22414,7 @@
           },
           {
             "baseFunctions": [
-              2310
+              2312
             ],
             "body": {
               "id": 1188,
@@ -23461,6 +23476,120 @@
     "version": "0.8.2+commit.661d1103.Emscripten.clang"
   },
   "networks": {
+    "42": {
+      "events": {
+        "0xd4964a7cd99f5c1fa8f2420fb5e1d3bd26eadf16e2658cf2e29a67dfda38601e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "submissionId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            }
+          ],
+          "name": "Confirmed",
+          "type": "event"
+        },
+        "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "previousAdminRole",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "newAdminRole",
+              "type": "bytes32"
+            }
+          ],
+          "name": "RoleAdminChanged",
+          "type": "event"
+        },
+        "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleGranted",
+          "type": "event"
+        },
+        "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleRevoked",
+          "type": "event"
+        },
+        "0x2a6b4960c287d4d53a338f9c9a9f830f37e7b66e67a0a958f68be89a4eeb939d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "submissionId",
+              "type": "bytes32"
+            }
+          ],
+          "name": "SubmissionApproved",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x14542D51d713f08683D6913Ad49A2e20C87fd069",
+      "transactionHash": "0x90b623b32173cfe77172b63d21ee4fd37076358e78943b22b3ea5c947e2905f3"
+    },
     "1618724822899": {
       "events": {
         "0xd4964a7cd99f5c1fa8f2420fb5e1d3bd26eadf16e2658cf2e29a67dfda38601e": {
@@ -23802,10 +23931,125 @@
       "links": {},
       "address": "0xc257d54d768C53bA0088C570E071a9395Fb7EFF2",
       "transactionHash": "0x0b725f1ff3977bc804bf74c945e86db094a65f42c473735d47583bc15e2adc29"
+    },
+    "1618939122932": {
+      "events": {
+        "0xd4964a7cd99f5c1fa8f2420fb5e1d3bd26eadf16e2658cf2e29a67dfda38601e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "submissionId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            }
+          ],
+          "name": "Confirmed",
+          "type": "event"
+        },
+        "0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "previousAdminRole",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "newAdminRole",
+              "type": "bytes32"
+            }
+          ],
+          "name": "RoleAdminChanged",
+          "type": "event"
+        },
+        "0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleGranted",
+          "type": "event"
+        },
+        "0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "role",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "sender",
+              "type": "address"
+            }
+          ],
+          "name": "RoleRevoked",
+          "type": "event"
+        },
+        "0x2a6b4960c287d4d53a338f9c9a9f830f37e7b66e67a0a958f68be89a4eeb939d": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "bytes32",
+              "name": "submissionId",
+              "type": "bytes32"
+            }
+          ],
+          "name": "SubmissionApproved",
+          "type": "event"
+        }
+      },
+      "links": {},
+      "address": "0x422FF86689afE7E7d0b6904e86ad3895204D5426",
+      "transactionHash": "0x3530be3f472bd42400a9e7ac08458d8f3c5508da0951287111970ee5dd9c6899"
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-20T19:27:19.370Z",
+  "updatedAt": "2021-04-21T18:17:22.417Z",
+  "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
     "methods": {

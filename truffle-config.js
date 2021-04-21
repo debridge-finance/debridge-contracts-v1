@@ -97,6 +97,20 @@ module.exports = {
       timeoutBlocks: 5000,
       skipDryRun: true,
     },
+    hecotest: {
+      network_id: "256",
+      provider: () =>
+        new HDWalletProvider(
+          [process.env.DEPLOYER_PRIVATE_KEY],
+          "wss://ws-testnet.hecochain.com/",
+          0,
+          1
+        ),
+      gasPrice: 1000000000, // 80 gwei
+      from: process.env.DEPLOYER_ACCOUNT,
+      timeoutBlocks: 5000,
+      skipDryRun: true,
+    },
     bsc: {
       network_id: "56",
       provider: () =>

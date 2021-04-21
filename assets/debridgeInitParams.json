@@ -1,28 +1,4 @@
 {
-  "kovan": {
-    "oracleCount": 2,
-    "oraclePayment": "100000000",
-    "minTransferAmount": "1000000000",
-    "transferFee": "5000000000000000",
-    "minReserves": "100000000000000000",
-    "oracles": [
-      {
-        "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      },
-      {
-        "address": "0x0b341A3fD55d4cc8aDb856859Bd426231a21a0d3",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      }
-    ],
-    "supportedChains": [56],
-    "type": "light",
-    "utilityBytes": [
-      "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce80a4",
-      "0x8080"
-    ],
-    "versionBytes": "0x38"
-  },
   "kovantest": {
     "oracleCount": 2,
     "oraclePayment": "100000000",
@@ -31,6 +7,10 @@
     "minReserves": "100000000000000000",
     "oracles": [
       {
+        "address": "0x549314e7ad0a847c9fac3c3a6943d070b76460b3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
         "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       },
@@ -39,13 +19,36 @@
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       }
     ],
-    "supportedChains": [97],
+    "supportedChains": [97, 256],
     "type": "light",
     "utilityBytes": [
-      "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce80a4",
+      "0xf9141B3cBC1105c056e64069e0c667077c27b18e80a4",
       "0x8080"
     ],
     "versionBytes": "0x61"
+  },
+  "hecotest": {
+    "oracleCount": 2,
+    "oraclePayment": "100000000",
+    "minTransferAmount": "1000000000",
+    "transferFee": "5000000000000000",
+    "minReserves": "100000000000000000",
+    "oracles": [
+      {
+        "address": "0x549314e7ad0a847c9fac3c3a6943d070b76460b3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
+        "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
+        "address": "0x0b341A3fD55d4cc8aDb856859Bd426231a21a0d3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      }
+    ],
+    "supportedChains": [42, 97],
+    "type": "full"
   },
   "bsctest": {
     "oracleCount": 2,
@@ -55,6 +58,10 @@
     "minReserves": "100000000000000000",
     "oracles": [
       {
+        "address": "0x549314e7ad0a847c9fac3c3a6943d070b76460b3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
         "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       },
@@ -63,7 +70,7 @@
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       }
     ],
-    "supportedChains": [42],
+    "supportedChains": [42, 256],
     "type": "full"
   },
   "bsc": {
@@ -74,6 +81,10 @@
     "minReserves": "100000000000000000",
     "oracles": [
       {
+        "address": "0x549314e7ad0a847c9fac3c3a6943d070b76460b3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
         "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       },
@@ -85,6 +96,34 @@
     "supportedChains": [42],
     "type": "full"
   },
+  "kovan": {
+    "oracleCount": 2,
+    "oraclePayment": "100000000",
+    "minTransferAmount": "1000000000",
+    "transferFee": "5000000000000000",
+    "minReserves": "100000000000000000",
+    "oracles": [
+      {
+        "address": "0x549314e7ad0a847c9fac3c3a6943d070b76460b3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
+        "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
+      {
+        "address": "0x0b341A3fD55d4cc8aDb856859Bd426231a21a0d3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      }
+    ],
+    "supportedChains": [56, 256],
+    "type": "light",
+    "utilityBytes": [
+      "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce80a4",
+      "0x8080"
+    ],
+    "versionBytes": "0x38"
+  },
   "development": {
     "oracleCount": 1,
     "oraclePayment": "100000000",
@@ -92,6 +131,10 @@
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
     "oracles": [
+      {
+        "address": "0x549314e7ad0a847c9fac3c3a6943d070b76460b3",
+        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+      },
       {
         "address": "0x366fe4f76d5699e032c4a432ae955fa23fa4987a",
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
