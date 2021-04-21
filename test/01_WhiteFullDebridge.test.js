@@ -506,11 +506,17 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       await wrappedAsset.approve(this.whiteDebridge.address, amount, {
         from: bob,
       });
-      await this.whiteDebridge.burn(debridgeId, receiver, amount, {
+      await this.whiteDebridge.burn(debridgeId, receiver, amount, chainId, {
         from: bob,
       });
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
+      assert.equal(
+        debridge.collectedFees.add(fees).toString(),
+        newDebridge.collectedFees.toString()
+      );
     });
 
     it("should reject burning from current chain", async function() {
@@ -523,7 +529,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.burn(debridgeId, receiver, amount, {
+        this.whiteDebridge.burn(debridgeId, receiver, amount, 42, {
           from: alice,
         }),
         "burn: native asset"
@@ -540,7 +546,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.burn(debridgeId, receiver, amount, {
+        this.whiteDebridge.burn(debridgeId, receiver, amount, chainId, {
           from: alice,
         }),
         "burn: amount too low"
@@ -620,17 +626,10 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
         submissionId
       );
-      const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
       const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        balance
-          .add(amount)
-          .sub(fees)
-          .toString(),
-        newBalance.toString()
-      );
-      assert.equal(
-        debridge.collectedFees.add(fees).toString(),
+        debridge.collectedFees.toString(),
         newDebridge.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
@@ -653,17 +652,10 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
         submissionId
       );
-      const fees = debridge.transferFee.mul(amount).div(toBN(toWei("1")));
       const newDebridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        balance
-          .add(amount)
-          .sub(fees)
-          .toString(),
-        newBalance.toString()
-      );
-      assert.equal(
-        debridge.collectedFees.add(fees).toString(),
+        debridge.collectedFees.toString(),
         newDebridge.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
@@ -778,7 +770,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         this.whiteDebridge.withdrawFee(outsideDebridgeId, receiver, amount, {
           from: alice,
         }),
-        "withdrawFee: wrong target chain"
+        "withdrawFee: not enough fee"
       );
     });
   });
@@ -919,7 +911,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         this.whiteDebridge.fundAggregator(outsideDebridgeId, amount, {
           from: alice,
         }),
-        "fundAggregator: wrong target chain"
+        "fundAggregator: not enough fee"
       );
     });
   });

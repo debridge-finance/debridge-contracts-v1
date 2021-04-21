@@ -186,34 +186,28 @@ abstract contract WhiteDebridge is
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _chainIdTo Chain id of the target chain.
     function burn(
         bytes32 _debridgeId,
         address _receiver,
-        uint256 _amount
+        uint256 _amount,
+        uint256 _chainIdTo
     ) external override {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId != chainId, "burn: native asset");
         require(_amount >= debridge.minAmount, "burn: amount too low");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
+        uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;
+        if (transferFee > 0) {
+            debridge.collectedFees += transferFee;
+            _amount -= transferFee;
+        }
         wrappedAsset.burn(_amount);
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
-            getSubmisionId(
-                _debridgeId,
-                debridge.chainId,
-                _amount,
-                _receiver,
-                nonce
-            );
-        emit Burnt(
-            burntId,
-            _debridgeId,
-            _amount,
-            _receiver,
-            nonce,
-            debridge.chainId
-        );
+            getSubmisionId(_debridgeId, _chainIdTo, _amount, _receiver, nonce);
+        emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo);
         getUserNonce[_receiver]++;
     }
 
@@ -350,13 +344,15 @@ abstract contract WhiteDebridge is
         uint256 _amount
     ) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId == chainId, "withdrawFee: wrong target chain");
+        // require(debridge.chainId == chainId, "withdrawFee: wrong target chain");
         require(
             debridge.collectedFees >= _amount,
             "withdrawFee: not enough fee"
         );
         debridge.collectedFees -= _amount;
-        if (debridge.tokenAddress == address(0)) {
+        if (
+            debridge.chainId == chainId && debridge.tokenAddress == address(0)
+        ) {
             payable(_receiver).transfer(_amount);
         } else {
             IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
@@ -484,6 +480,7 @@ abstract contract WhiteDebridge is
         require(!isSubmissionUsed[_mintId], "mint: already used");
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         isSubmissionUsed[_mintId] = true;
+        require(debridge.chainId != chainId, "mint: is native chain");
         IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
         emit Minted(_mintId, _amount, _receiver, _debridgeId);
     }
@@ -502,12 +499,7 @@ abstract contract WhiteDebridge is
         require(debridge.chainId == chainId, "claim: wrong target chain");
         require(!isSubmissionUsed[_burntId], "claim: already used");
         isSubmissionUsed[_burntId] = true;
-        uint256 transferFee = (_amount * debridge.transferFee) / DENOMINATOR;
         debridge.balance -= _amount;
-        if (transferFee > 0) {
-            debridge.collectedFees += transferFee;
-            _amount -= transferFee;
-        }
         _ensureReserves(debridge, _amount);
         if (debridge.tokenAddress == address(0)) {
             payable(_receiver).transfer(_amount);

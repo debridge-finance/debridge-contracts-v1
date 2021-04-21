@@ -181,10 +181,6 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(
-            debridge.chainId == chainId,
-            "fundAggregator: wrong target chain"
-        );
-        require(
             debridge.collectedFees >= _amount,
             "fundAggregator: not enough fee"
         );

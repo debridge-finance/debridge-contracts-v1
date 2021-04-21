@@ -69,6 +69,21 @@ module.exports = {
       timeoutBlocks: 5000,
       skipDryRun: true,
     },
+    kovantest: {
+      network_id: "42",
+      provider: () =>
+        new HDWalletProvider(
+          [process.env.DEPLOYER_PRIVATE_KEY],
+          "https://kovan.infura.io/v3/" + process.env.INFURA_ID,
+          0,
+          1
+        ),
+      gasPrice: 5000000000, // 80 gwei
+      gas: 6900000,
+      from: process.env.DEPLOYER_ACCOUNT,
+      timeoutBlocks: 5000,
+      skipDryRun: true,
+    },
     bsctest: {
       network_id: "97",
       provider: () =>

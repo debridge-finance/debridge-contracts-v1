@@ -12,7 +12,8 @@ interface IWhiteDebridge {
     function burn(
         bytes32 _debridgeId,
         address _receiver,
-        uint256 _amount
+        uint256 _amount,
+        uint256 _chainIdTo
     ) external;
 
     function addNativeAsset(
