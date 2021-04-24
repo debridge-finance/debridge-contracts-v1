@@ -58,12 +58,20 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _nonce Submission id.
     function mint(
         bytes32 _debridgeId,
+        uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce
     ) external override whenNotPaused() {
         bytes32 submissionId =
-            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         require(
             IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
             "mint: not confirmed"
@@ -79,13 +87,21 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _aggregatorVersion Aggregator version.
     function mintWithOldAggregator(
         bytes32 _debridgeId,
+        uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
         uint8 _aggregatorVersion
     ) external override {
         bytes32 submissionId =
-            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
         require(
@@ -108,12 +124,20 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _nonce Submission id.
     function claim(
         bytes32 _debridgeId,
+        uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce
     ) external override whenNotPaused() {
         bytes32 submissionId =
-            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         require(
             IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
             "claim: not confirmed"
@@ -129,13 +153,21 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _aggregatorVersion Aggregator version.
     function claimWithOldAggregator(
         bytes32 _debridgeId,
+        uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
         uint8 _aggregatorVersion
     ) external override {
         bytes32 submissionId =
-            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce
+            );
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
         require(

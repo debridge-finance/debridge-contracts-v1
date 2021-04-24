@@ -465,6 +465,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       currentChainId = await this.whiteDebridge.chainId();
       const submission = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        chainId,
         currentChainId,
         amount,
         receiver,
@@ -527,6 +528,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       }
       await this.whiteDebridge.mint(
         debridgeId,
+        chainId,
         receiver,
         amount,
         nonce,
@@ -538,6 +540,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        chainId,
         currentChainId,
         amount,
         receiver,
@@ -557,9 +560,17 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.mint(debridgeId, receiver, amount, nonce, [], {
-          from: alice,
-        }),
+        this.whiteDebridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
         "mint: not confirmed"
       );
     });
@@ -570,9 +581,17 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.mint(debridgeId, receiver, amount, nonce, [], {
-          from: alice,
-        }),
+        this.whiteDebridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
         "mint: already used"
       );
     });
@@ -651,6 +670,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     const amount = toBN(toWei("0.9"));
     const nonce = 4;
     let chainId;
+    let chainIdFrom = 87;
     let debridgeId;
     let erc20DebridgeId;
 
@@ -666,6 +686,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       );
       const curentChainSubmission = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        chainIdFrom,
         chainId,
         amount,
         receiver,
@@ -692,6 +713,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       }
       const erc20Submission = await this.whiteDebridge.getSubmisionId(
         erc20DebridgeId,
+        chainIdFrom,
         chainId,
         amount,
         receiver,
@@ -753,6 +775,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       }
       await this.whiteDebridge.claim(
         debridgeId,
+        chainIdFrom,
         receiver,
         amount,
         nonce,
@@ -764,6 +787,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const newBalance = toBN(await web3.eth.getBalance(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         debridgeId,
+        chainIdFrom,
         chainId,
         amount,
         receiver,
@@ -816,6 +840,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       }
       await this.whiteDebridge.claim(
         erc20DebridgeId,
+        chainIdFrom,
         receiver,
         amount,
         nonce,
@@ -827,6 +852,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const newBalance = toBN(await this.mockToken.balanceOf(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         erc20DebridgeId,
+        chainIdFrom,
         chainId,
         amount,
         receiver,
@@ -847,18 +873,34 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     it("should reject claiming with unconfirmed submission", async function() {
       const nonce = 1;
       await expectRevert(
-        this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, [], {
-          from: alice,
-        }),
+        this.whiteDebridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
         "claim: not confirmed"
       );
     });
 
     it("should reject claiming twice", async function() {
       await expectRevert(
-        this.whiteDebridge.claim(debridgeId, receiver, amount, nonce, [], {
-          from: alice,
-        }),
+        this.whiteDebridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
         "claim: already used"
       );
     });
