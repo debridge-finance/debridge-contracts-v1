@@ -22,12 +22,14 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
+    /// @param _fixedFee Fixed transfer fee rate.
     /// @param _transferFee Transfer fee rate.
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
         uint256 _minAmount,
+        uint256 _fixedFee,
         uint256 _transferFee,
         uint256 _minReserves,
         address _aggregator,
@@ -38,6 +40,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     ) public payable initializer {
         super._initialize(
             _minAmount,
+            _fixedFee,
             _transferFee,
             _minReserves,
             _aggregator,
@@ -58,8 +61,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce
-    ) external override {
-        bytes32 mintId =
+    ) external override whenNotPaused() {
+        bytes32 submissionId =
             getSubmisionId(
                 _debridgeId,
                 getDebridge[_debridgeId].chainId,
@@ -68,10 +71,10 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _nonce
             );
         require(
-            IWhiteAggregator(aggregator).isMintConfirmed(mintId),
+            IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
             "mint: not confirmed"
         );
-        _mint(mintId, _debridgeId, _receiver, _amount);
+        _mint(submissionId, _debridgeId, _receiver, _amount);
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -87,7 +90,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint256 _nonce,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 mintId =
+        bytes32 submissionId =
             getSubmisionId(
                 _debridgeId,
                 getDebridge[_debridgeId].chainId,
@@ -102,10 +105,12 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         require(
-            IWhiteAggregator(aggregatorInfo.aggregator).isMintConfirmed(mintId),
+            IWhiteAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
+                submissionId
+            ),
             "mint: not confirmed"
         );
-        _mint(mintId, _debridgeId, _receiver, _amount);
+        _mint(submissionId, _debridgeId, _receiver, _amount);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -118,8 +123,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce
-    ) external override {
-        bytes32 burntId =
+    ) external override whenNotPaused() {
+        bytes32 submissionId =
             getSubmisionId(
                 _debridgeId,
                 getDebridge[_debridgeId].chainId,
@@ -128,10 +133,10 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _nonce
             );
         require(
-            IWhiteAggregator(aggregator).isBurntConfirmed(burntId),
+            IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
             "claim: not confirmed"
         );
-        _claim(burntId, _debridgeId, _receiver, _amount);
+        _claim(submissionId, _debridgeId, _receiver, _amount);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -147,7 +152,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint256 _nonce,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 burntId =
+        bytes32 submissionId =
             getSubmisionId(
                 _debridgeId,
                 getDebridge[_debridgeId].chainId,
@@ -162,12 +167,12 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         require(
-            IWhiteAggregator(aggregatorInfo.aggregator).isBurntConfirmed(
-                burntId
+            IWhiteAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
+                submissionId
             ),
             "claim: not confirmed"
         );
-        _claim(burntId, _debridgeId, _receiver, _amount);
+        _claim(submissionId, _debridgeId, _receiver, _amount);
     }
 
     /* ADMIN */

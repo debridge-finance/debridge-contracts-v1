@@ -19,6 +19,7 @@ interface IWhiteDebridge {
     function addNativeAsset(
         address _tokenAddress,
         uint256 _minAmount,
+        uint256 _fixedFee,
         uint256 _transferFee,
         uint256 _minReserves,
         uint256[] memory _supportedChainIds
@@ -35,6 +36,7 @@ interface IWhiteDebridge {
         address _wrappedAssetAddress,
         uint256 _chainId,
         uint256 _minAmount,
+        uint256 _fixedFee,
         uint256 _transferFee,
         uint256 _minReserves,
         uint256[] memory _supportedChainIds

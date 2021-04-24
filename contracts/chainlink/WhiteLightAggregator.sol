@@ -10,7 +10,6 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     uint256 public minConfirmations; // minimal required confimations
     bytes[2] public utilityBytes; // the part of the transaction payload;
     bytes public versionBytes; // chain id of the network where the confirmations are collected + v
-    mapping(address => bool) public isOracle; // oracle address => oracle details
 
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
@@ -23,8 +22,7 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
-    mapping(bytes32 => SubmissionInfo) public getMintInfo; // mint id => submission info
-    mapping(bytes32 => SubmissionInfo) public getBurntInfo; // burnt id => submission info
+    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed
@@ -45,27 +43,35 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     }
 
     /// @dev Confirms the mint request.
-    /// @param _mintId Submission identifier.
+    /// @param _submissionId Submission identifier.
     /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
-    function submitMint(bytes32 _mintId, bytes[2][] memory _trxData)
+    function submit(bytes32 _submissionId, bytes[2][] memory _trxData)
         external
         override
         returns (bool)
     {
-        SubmissionInfo storage mintInfo = getMintInfo[_mintId];
-        return _submit(mintInfo, hex"0b29b943", _mintId, _trxData);
-    }
-
-    /// @dev Confirms the burnnt request.
-    /// @param _burntId Submission identifier.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
-    function submitBurn(bytes32 _burntId, bytes[2][] memory _trxData)
-        external
-        override
-        returns (bool)
-    {
-        SubmissionInfo storage burnInfo = getBurntInfo[_burntId];
-        return _submit(burnInfo, hex"c4b56cd0", _burntId, _trxData);
+        SubmissionInfo storage submissionInfo =
+            getSubmissionInfo[_submissionId];
+        for (uint256 i = 0; i < _trxData.length; i++) {
+            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_trxData[i][1]);
+            bytes memory unsignedTrx =
+                getUnsignedTrx(_trxData[i][0], hex"d9caa3d2", _submissionId);
+            address oracle = ecrecover(keccak256(unsignedTrx), v, r, s);
+            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
+            require(
+                !submissionInfo.hasVerified[oracle],
+                "submit: submitted already"
+            );
+            submissionInfo.confirmations += 1;
+            submissionInfo.hasVerified[oracle] = true;
+            emit Confirmed(_submissionId, oracle);
+            if (submissionInfo.confirmations >= minConfirmations) {
+                submissionInfo.confirmed = true;
+                emit SubmissionApproved(_submissionId);
+                return submissionInfo.confirmed;
+            }
+        }
+        return submissionInfo.confirmed;
     }
 
     /* ADMIN */
@@ -92,7 +98,6 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
     /// @param _oracle Oracle address.
     function addOracle(address _oracle) external onlyAdmin {
         grantRole(ORACLE_ROLE, _oracle);
-        isOracle[_oracle] = true;
     }
 
     /// @dev Remove oracle.
@@ -101,63 +106,18 @@ contract WhiteLightAggregator is AccessControl, IWhiteLightAggregator {
         revokeRole(ORACLE_ROLE, _oracle);
     }
 
-    /* INTERNAL */
-
-    /// @dev Confirms the burnnt request.
-    /// @param _submissionId Submission identifier.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
-    function _submit(
-        SubmissionInfo storage _submissionInfo,
-        bytes memory _methodId,
-        bytes32 _submissionId,
-        bytes[2][] memory _trxData
-    ) internal returns (bool) {
-        for (uint256 i = 0; i < _trxData.length; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_trxData[i][1]);
-            bytes memory unsignedTrx =
-                getUnsignedTrx(_trxData[i][0], _methodId, _submissionId);
-            address oracle = ecrecover(keccak256(unsignedTrx), v, r, s);
-            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
-            require(
-                !_submissionInfo.hasVerified[oracle],
-                "submit: submitted already"
-            );
-            _submissionInfo.confirmations += 1;
-            _submissionInfo.hasVerified[oracle] = true;
-            if (_submissionInfo.confirmations >= minConfirmations) {
-                _submissionInfo.confirmed = true;
-                emit SubmissionApproved(_submissionId);
-                return _submissionInfo.confirmed;
-            }
-            emit Confirmed(_submissionId, oracle);
-        }
-        return _submissionInfo.confirmed;
-    }
-
     /* VIEW */
 
     /// @dev Returns whether mint request is confirmed.
-    /// @param _mintId Submission identifier.
+    /// @param _submissionId Submission identifier.
     /// @return Whether mint request is confirmed.
-    function isMintConfirmed(bytes32 _mintId)
+    function isSubmissionConfirmed(bytes32 _submissionId)
         external
         view
         override
         returns (bool)
     {
-        return getMintInfo[_mintId].confirmed;
-    }
-
-    /// @dev Returns whether burnnt request is confirmed.
-    /// @param _burntId Submission identifier.
-    /// @return Whether burnnt request is confirmed.
-    function isBurntConfirmed(bytes32 _burntId)
-        external
-        view
-        override
-        returns (bool)
-    {
-        return getBurntInfo[_burntId].confirmed;
+        return getSubmissionInfo[_submissionId].confirmed;
     }
 
     /// @dev Prepares raw transacton that was signed by the oracle.

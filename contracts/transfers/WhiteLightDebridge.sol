@@ -12,12 +12,14 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
+    /// @param _fixedFee Fixed transfer fee rate.
     /// @param _transferFee Transfer fee rate.
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
         uint256 _minAmount,
+        uint256 _fixedFee,
         uint256 _transferFee,
         uint256 _minReserves,
         address _aggregator,
@@ -26,6 +28,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     ) public payable initializer {
         super._initialize(
             _minAmount,
+            _fixedFee,
             _transferFee,
             _minReserves,
             _aggregator,
@@ -47,19 +50,13 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _nonce,
         bytes[2][] calldata _trxData
     ) external override {
-        bytes32 mintId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+        bytes32 submissionId =
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         require(
-            IWhiteLightAggregator(aggregator).submitMint(mintId, _trxData),
+            IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "mint: not confirmed"
         );
-        _mint(mintId, _debridgeId, _receiver, _amount);
+        _mint(submissionId, _debridgeId, _receiver, _amount);
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -77,14 +74,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         bytes[2][] calldata _trxData,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 mintId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+        bytes32 submissionId =
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
         require(
@@ -92,13 +83,13 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         require(
-            IWhiteLightAggregator(aggregatorInfo.aggregator).submitMint(
-                mintId,
+            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+                submissionId,
                 _trxData
             ),
             "mint: not confirmed"
         );
-        _mint(mintId, _debridgeId, _receiver, _amount);
+        _mint(submissionId, _debridgeId, _receiver, _amount);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -114,19 +105,13 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _nonce,
         bytes[2][] calldata _trxData
     ) external override {
-        bytes32 burntId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+        bytes32 submissionId =
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         require(
-            IWhiteLightAggregator(aggregator).submitBurn(burntId, _trxData),
+            IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "claim: not confirmed"
         );
-        _claim(burntId, _debridgeId, _receiver, _amount);
+        _claim(submissionId, _debridgeId, _receiver, _amount);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -144,27 +129,21 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         bytes[2][] calldata _trxData,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 burntId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+        bytes32 submissionId =
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
         require(
             aggregatorInfo.isValid,
-            "mintWithOldAggregator: invalidAggregator"
+            "mintWithOldAggregator: invalid aggregator"
         );
         require(
-            IWhiteLightAggregator(aggregatorInfo.aggregator).submitBurn(
-                burntId,
+            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+                submissionId,
                 _trxData
             ),
             "claim: not confirmed"
         );
-        _claim(burntId, _debridgeId, _receiver, _amount);
+        _claim(submissionId, _debridgeId, _receiver, _amount);
     }
 }

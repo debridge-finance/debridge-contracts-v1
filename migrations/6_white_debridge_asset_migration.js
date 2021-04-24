@@ -34,6 +34,7 @@ module.exports = async function(_deployer, network) {
       wrappedAsset.address,
       otherAssetInfo.chainId,
       otherAssetInfo.minAmount,
+      otherAssetInfo.fixedFee,
       otherAssetInfo.transferFee,
       otherAssetInfo.minReserves,
       [otherAssetInfo.chainId]

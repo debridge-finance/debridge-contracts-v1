@@ -17,11 +17,11 @@ module.exports.getLinkAddress = async (deployer, network, accounts) => {
       }
       link = (await MockLinkToken.deployed()).address;
       break;
-    case "kovan":
     case "hecotest":
       link = "0xdc338BB3E05D51148822f263907228a1897D4df6";
       break;
     case "kovantest":
+    case "kovan":
       link = "0xa36085F69e2889c224210F603D836748e7dC0088";
       break;
     case "bsctest":
