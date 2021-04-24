@@ -63,13 +63,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint256 _nonce
     ) external override whenNotPaused() {
         bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         require(
             IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
             "mint: not confirmed"
@@ -91,13 +85,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint8 _aggregatorVersion
     ) external override {
         bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
         require(
@@ -125,13 +113,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint256 _nonce
     ) external override whenNotPaused() {
         bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         require(
             IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
             "claim: not confirmed"
@@ -153,13 +135,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint8 _aggregatorVersion
     ) external override {
         bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                getDebridge[_debridgeId].chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+            getSubmisionId(_debridgeId, chainId, _amount, _receiver, _nonce);
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
         require(

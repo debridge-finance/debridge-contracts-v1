@@ -51,7 +51,7 @@
 
 **Scope**: Test the oracles-related functions of the contract.
 
-**Action**: Invoke the `submitMint`, `submitBurn` methods.
+**Action**: Invoke the `submit`, `submit` methods.
 
 **Verification Steps**: Verify the operation only from authorized actors are permitted and the changes take effect.
 

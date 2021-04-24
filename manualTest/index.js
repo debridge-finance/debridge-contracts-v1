@@ -209,9 +209,108 @@ async function burnEthToHeco() {
     signedTx.raw || signedTx.rawTransaction
   );
 }
-async function mintOnHeco() {}
-async function burnHecoToBsc() {}
-async function claimOnBsc() {}
+async function mintOnHeco() {
+  const tokenAddress = ZERO_ADDRESS;
+  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const receiver = senderAddress;
+  const amount = toBN("98803000000000000");
+  const nonce = 0;
+  const debridgeId = await hecoInfo.whiteDebridgeInstance.methods
+    .getDebridgeId(chainId, tokenAddress)
+    .call();
+  const tx = {
+    from: senderAddress,
+    to: hecoInfo.whiteDebridgeInstance.options.address,
+    value: 0,
+    gasPrice: toWei("5", "gwei"),
+    gas: 300000,
+    data: hecoInfo.whiteDebridgeInstance.methods
+      .mint(debridgeId, receiver, amount, nonce)
+      .encodeABI(),
+  };
+  const signedTx = await hecoWeb3.eth.accounts.signTransaction(tx, privKey);
+  console.log(signedTx);
+  await hecoWeb3.eth.sendSignedTransaction(
+    signedTx.raw || signedTx.rawTransaction
+  );
+}
+async function burnHecoToBsc() {
+  const tokenAddress = ZERO_ADDRESS;
+  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const receiver = senderAddress;
+  const amount = toBN("98803000000000000");
+  const chainIdTo = await bscInfo.whiteDebridgeInstance.methods
+    .chainId()
+    .call();
+  const debridgeId = await hecoInfo.whiteDebridgeInstance.methods
+    .getDebridgeId(chainId, tokenAddress)
+    .call();
+  const debridge = await hecoInfo.whiteDebridgeInstance.methods
+    .getDebridge(debridgeId)
+    .call();
+  const wrappedAsset = new hecoWeb3.eth.Contract(
+    wrappedAssetAbi,
+    debridge.tokenAddress
+  );
+  const approveTx = {
+    from: senderAddress,
+    to: wrappedAsset.options.address,
+    value: 0,
+    gasPrice: toWei("5", "gwei"),
+    gas: 300000,
+    data: wrappedAsset.methods
+      .approve(hecoInfo.whiteDebridgeInstance.options.address, amount)
+      .encodeABI(),
+  };
+  const signedApproveTx = await hecoWeb3.eth.accounts.signTransaction(
+    approveTx,
+    privKey
+  );
+  console.log(signedApproveTx);
+  await hecoWeb3.eth.sendSignedTransaction(
+    signedApproveTx.raw || signedApproveTx.rawTransaction
+  );
+  const tx = {
+    from: senderAddress,
+    to: hecoInfo.whiteDebridgeInstance.options.address,
+    value: 0,
+    gasPrice: toWei("5", "gwei"),
+    gas: 300000,
+    data: hecoInfo.whiteDebridgeInstance.methods
+      .burn(debridgeId, receiver, amount, chainIdTo)
+      .encodeABI(),
+  };
+  const signedTx = await hecoWeb3.eth.accounts.signTransaction(tx, privKey);
+  console.log(signedTx);
+  await hecoWeb3.eth.sendSignedTransaction(
+    signedTx.raw || signedTx.rawTransaction
+  );
+}
+async function claimOnBsc() {
+  const tokenAddress = ZERO_ADDRESS;
+  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const receiver = senderAddress;
+  const amount = toBN("98208985000000000");
+  const nonce = 0;
+  const debridgeId = await bscInfo.whiteDebridgeInstance.methods
+    .getDebridgeId(chainId, tokenAddress)
+    .call();
+  const tx = {
+    from: senderAddress,
+    to: bscInfo.whiteDebridgeInstance.options.address,
+    value: 0,
+    gasPrice: toWei("5", "gwei"),
+    gas: 300000,
+    data: bscInfo.whiteDebridgeInstance.methods
+      .claim(debridgeId, receiver, amount, nonce)
+      .encodeABI(),
+  };
+  const signedTx = await bscWeb3.eth.accounts.signTransaction(tx, privKey);
+  console.log(signedTx);
+  await bscWeb3.eth.sendSignedTransaction(
+    signedTx.raw || signedTx.rawTransaction
+  );
+}
 
 // sendBscToEth().catch(console.log);
 // confirmSubmit(
@@ -221,8 +320,16 @@ async function claimOnBsc() {}
 // ).catch(console.log);
 // mintOnEth().catch(console.log);
 // burnEthToHeco().catch(console.log);
-confirmSubmit(
-  hecoInfo,
-  hecoWeb3,
-  "0x7ffe7870ec9c1430bbf4f2fbc366971d69109e6c4a088f9e6730905351cd8f53"
-).catch(console.log);
+// confirmSubmit(
+//   hecoInfo,
+//   hecoWeb3,
+//   "0x7ffe7870ec9c1430bbf4f2fbc366971d69109e6c4a088f9e6730905351cd8f53"
+// ).catch(console.log);
+// mintOnHeco().catch(console.log);
+// burnHecoToBsc().catch(console.log);
+// confirmSubmit(
+//   bscInfo,
+//   bscWeb3,
+//   "0x795d7fa2a37461bcdb942c41f5bcd392311f60a9d25b3cd55a1eff2a78d449df"
+// ).catch(console.log);
+// claimOnBsc().catch(console.log);
