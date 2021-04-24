@@ -455,15 +455,17 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     const nonce = 1;
     const tokenAddress = "0x0000000000000000000000000000000000000000";
     const chainId = 42;
+    let currentChainId;
 
     before(async function() {
       debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
       );
+      currentChainId = await this.whiteDebridge.chainId();
       const submission = await this.whiteDebridge.getSubmisionId(
         debridgeId,
-        chainId,
+        currentChainId,
         amount,
         receiver,
         nonce
@@ -536,7 +538,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         debridgeId,
-        chainId,
+        currentChainId,
         amount,
         receiver,
         nonce

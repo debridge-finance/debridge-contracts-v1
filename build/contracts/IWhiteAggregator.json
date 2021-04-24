@@ -5,11 +5,11 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "_mintId",
+          "name": "_submissionId",
           "type": "bytes32"
         }
       ],
-      "name": "submitMint",
+      "name": "submit",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -18,43 +18,11 @@
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "_burntId",
+          "name": "_submissionId",
           "type": "bytes32"
         }
       ],
-      "name": "submitBurn",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "_mintId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "isMintConfirmed",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "_burntId",
-          "type": "bytes32"
-        }
-      ],
-      "name": "isBurntConfirmed",
+      "name": "isSubmissionConfirmed",
       "outputs": [
         {
           "internalType": "bool",
@@ -66,7 +34,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_burntId\",\"type\":\"bytes32\"}],\"name\":\"isBurntConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_mintId\",\"type\":\"bytes32\"}],\"name\":\"isMintConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_burntId\",\"type\":\"bytes32\"}],\"name\":\"submitBurn\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_mintId\",\"type\":\"bytes32\"}],\"name\":\"submitMint\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteAggregator.sol\":\"IWhiteAggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteAggregator.sol\":{\"keccak256\":\"0xd05773a799644c570dedebec8d203ce884b02b6a1e59b43b715c0902f4130bbe\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://875c26eaec04098bb0747aa849f9b67eefb14dcf52c12a4dce16f5827de194af\",\"dweb:/ipfs/QmcRSSLEj7x5kLGYWDqnV3H8mnuSFCbTan5g3oJAAWvWFf\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"isSubmissionConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"submit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteAggregator.sol\":\"IWhiteAggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteAggregator.sol\":{\"keccak256\":\"0x97b1d68996ac3c88278d1794738b6a26f69c78aa48bbeb8274b35186bd7a5806\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d33544eb5f672d6a4ffbff7e9cf8894a794cfcdeb6fa3fd39543ad057af0fd2f\",\"dweb:/ipfs/QmQS1eEfYXs9Xjshoj8hdFT8rHocG4UgvNKeUDo9LF1Kff\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -74,21 +42,21 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IWhiteAggregator {\n    function submitMint(bytes32 _mintId) external;\n\n    function submitBurn(bytes32 _burntId) external;\n\n    function isMintConfirmed(bytes32 _mintId) external view returns (bool);\n\n    function isBurntConfirmed(bytes32 _burntId) external view returns (bool);\n}\n",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IWhiteAggregator {\n    function submit(bytes32 _submissionId) external;\n\n    function isSubmissionConfirmed(bytes32 _submissionId)\n        external\n        view\n        returns (bool);\n}\n",
   "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteAggregator.sol",
   "ast": {
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteAggregator.sol",
     "exportedSymbols": {
       "IWhiteAggregator": [
-        2155
+        1969
       ]
     },
-    "id": 2156,
+    "id": 1970,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2130,
+        "id": 1956,
         "literals": [
           "solidity",
           "^",
@@ -104,36 +72,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 2155,
+        "id": 1969,
         "linearizedBaseContracts": [
-          2155
+          1969
         ],
         "name": "IWhiteAggregator",
         "nameLocation": "67:16:17",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "functionSelector": "0b29b943",
-            "id": 2135,
+            "functionSelector": "d9caa3d2",
+            "id": 1961,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "submitMint",
-            "nameLocation": "99:10:17",
+            "name": "submit",
+            "nameLocation": "99:6:17",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2133,
+              "id": 1959,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2132,
+                  "id": 1958,
                   "mutability": "mutable",
-                  "name": "_mintId",
-                  "nameLocation": "118:7:17",
+                  "name": "_submissionId",
+                  "nameLocation": "114:13:17",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2135,
-                  "src": "110:15:17",
+                  "scope": 1961,
+                  "src": "106:21:17",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -141,10 +109,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2131,
+                    "id": 1957,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "110:7:17",
+                    "src": "106:7:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -153,42 +121,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "109:17:17"
+              "src": "105:23:17"
             },
             "returnParameters": {
-              "id": 2134,
+              "id": 1960,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "135:0:17"
+              "src": "137:0:17"
             },
-            "scope": 2155,
-            "src": "90:46:17",
+            "scope": 1969,
+            "src": "90:48:17",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "functionSelector": "c4b56cd0",
-            "id": 2140,
+            "functionSelector": "2f99e4da",
+            "id": 1968,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "submitBurn",
-            "nameLocation": "151:10:17",
+            "name": "isSubmissionConfirmed",
+            "nameLocation": "153:21:17",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2138,
+              "id": 1964,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2137,
+                  "id": 1963,
                   "mutability": "mutable",
-                  "name": "_burntId",
-                  "nameLocation": "170:8:17",
+                  "name": "_submissionId",
+                  "nameLocation": "183:13:17",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2140,
-                  "src": "162:16:17",
+                  "scope": 1968,
+                  "src": "175:21:17",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -196,10 +164,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2136,
+                    "id": 1962,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "162:7:17",
+                    "src": "175:7:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -208,76 +176,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "161:18:17"
+              "src": "174:23:17"
             },
             "returnParameters": {
-              "id": 2139,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "188:0:17"
-            },
-            "scope": 2155,
-            "src": "142:47:17",
-            "stateMutability": "nonpayable",
-            "virtual": false,
-            "visibility": "external"
-          },
-          {
-            "functionSelector": "a1e5c7b1",
-            "id": 2147,
-            "implemented": false,
-            "kind": "function",
-            "modifiers": [],
-            "name": "isMintConfirmed",
-            "nameLocation": "204:15:17",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 2143,
+              "id": 1967,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2142,
-                  "mutability": "mutable",
-                  "name": "_mintId",
-                  "nameLocation": "228:7:17",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 2147,
-                  "src": "220:15:17",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
-                  },
-                  "typeName": {
-                    "id": 2141,
-                    "name": "bytes32",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "220:7:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "219:17:17"
-            },
-            "returnParameters": {
-              "id": 2146,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 2145,
+                  "id": 1966,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2147,
-                  "src": "260:4:17",
+                  "scope": 1968,
+                  "src": "245:4:17",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -285,10 +198,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2144,
+                    "id": 1965,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "260:4:17",
+                    "src": "245:4:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -297,117 +210,34 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "259:6:17"
+              "src": "244:6:17"
             },
-            "scope": 2155,
-            "src": "195:71:17",
-            "stateMutability": "view",
-            "virtual": false,
-            "visibility": "external"
-          },
-          {
-            "functionSelector": "a61ece18",
-            "id": 2154,
-            "implemented": false,
-            "kind": "function",
-            "modifiers": [],
-            "name": "isBurntConfirmed",
-            "nameLocation": "281:16:17",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 2150,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 2149,
-                  "mutability": "mutable",
-                  "name": "_burntId",
-                  "nameLocation": "306:8:17",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 2154,
-                  "src": "298:16:17",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
-                  },
-                  "typeName": {
-                    "id": 2148,
-                    "name": "bytes32",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "298:7:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "297:18:17"
-            },
-            "returnParameters": {
-              "id": 2153,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 2152,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 2154,
-                  "src": "339:4:17",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 2151,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "339:4:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "338:6:17"
-            },
-            "scope": 2155,
-            "src": "272:73:17",
+            "scope": 1969,
+            "src": "144:107:17",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 2156,
-        "src": "57:290:17"
+        "scope": 1970,
+        "src": "57:196:17"
       }
     ],
-    "src": "32:316:17"
+    "src": "32:222:17"
   },
   "legacyAST": {
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteAggregator.sol",
     "exportedSymbols": {
       "IWhiteAggregator": [
-        2155
+        1969
       ]
     },
-    "id": 2156,
+    "id": 1970,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 2130,
+        "id": 1956,
         "literals": [
           "solidity",
           "^",
@@ -423,36 +253,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 2155,
+        "id": 1969,
         "linearizedBaseContracts": [
-          2155
+          1969
         ],
         "name": "IWhiteAggregator",
         "nameLocation": "67:16:17",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "functionSelector": "0b29b943",
-            "id": 2135,
+            "functionSelector": "d9caa3d2",
+            "id": 1961,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "submitMint",
-            "nameLocation": "99:10:17",
+            "name": "submit",
+            "nameLocation": "99:6:17",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2133,
+              "id": 1959,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2132,
+                  "id": 1958,
                   "mutability": "mutable",
-                  "name": "_mintId",
-                  "nameLocation": "118:7:17",
+                  "name": "_submissionId",
+                  "nameLocation": "114:13:17",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2135,
-                  "src": "110:15:17",
+                  "scope": 1961,
+                  "src": "106:21:17",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -460,10 +290,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2131,
+                    "id": 1957,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "110:7:17",
+                    "src": "106:7:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -472,42 +302,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "109:17:17"
+              "src": "105:23:17"
             },
             "returnParameters": {
-              "id": 2134,
+              "id": 1960,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "135:0:17"
+              "src": "137:0:17"
             },
-            "scope": 2155,
-            "src": "90:46:17",
+            "scope": 1969,
+            "src": "90:48:17",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           },
           {
-            "functionSelector": "c4b56cd0",
-            "id": 2140,
+            "functionSelector": "2f99e4da",
+            "id": 1968,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "submitBurn",
-            "nameLocation": "151:10:17",
+            "name": "isSubmissionConfirmed",
+            "nameLocation": "153:21:17",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 2138,
+              "id": 1964,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2137,
+                  "id": 1963,
                   "mutability": "mutable",
-                  "name": "_burntId",
-                  "nameLocation": "170:8:17",
+                  "name": "_submissionId",
+                  "nameLocation": "183:13:17",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2140,
-                  "src": "162:16:17",
+                  "scope": 1968,
+                  "src": "175:21:17",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -515,10 +345,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 2136,
+                    "id": 1962,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "162:7:17",
+                    "src": "175:7:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -527,76 +357,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "161:18:17"
+              "src": "174:23:17"
             },
             "returnParameters": {
-              "id": 2139,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "188:0:17"
-            },
-            "scope": 2155,
-            "src": "142:47:17",
-            "stateMutability": "nonpayable",
-            "virtual": false,
-            "visibility": "external"
-          },
-          {
-            "functionSelector": "a1e5c7b1",
-            "id": 2147,
-            "implemented": false,
-            "kind": "function",
-            "modifiers": [],
-            "name": "isMintConfirmed",
-            "nameLocation": "204:15:17",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 2143,
+              "id": 1967,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 2142,
-                  "mutability": "mutable",
-                  "name": "_mintId",
-                  "nameLocation": "228:7:17",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 2147,
-                  "src": "220:15:17",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
-                  },
-                  "typeName": {
-                    "id": 2141,
-                    "name": "bytes32",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "220:7:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "219:17:17"
-            },
-            "returnParameters": {
-              "id": 2146,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 2145,
+                  "id": 1966,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 2147,
-                  "src": "260:4:17",
+                  "scope": 1968,
+                  "src": "245:4:17",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -604,10 +379,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 2144,
+                    "id": 1965,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "260:4:17",
+                    "src": "245:4:17",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -616,103 +391,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "259:6:17"
+              "src": "244:6:17"
             },
-            "scope": 2155,
-            "src": "195:71:17",
-            "stateMutability": "view",
-            "virtual": false,
-            "visibility": "external"
-          },
-          {
-            "functionSelector": "a61ece18",
-            "id": 2154,
-            "implemented": false,
-            "kind": "function",
-            "modifiers": [],
-            "name": "isBurntConfirmed",
-            "nameLocation": "281:16:17",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 2150,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 2149,
-                  "mutability": "mutable",
-                  "name": "_burntId",
-                  "nameLocation": "306:8:17",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 2154,
-                  "src": "298:16:17",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bytes32",
-                    "typeString": "bytes32"
-                  },
-                  "typeName": {
-                    "id": 2148,
-                    "name": "bytes32",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "298:7:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bytes32",
-                      "typeString": "bytes32"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "297:18:17"
-            },
-            "returnParameters": {
-              "id": 2153,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 2152,
-                  "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 2154,
-                  "src": "339:4:17",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
-                  },
-                  "typeName": {
-                    "id": 2151,
-                    "name": "bool",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "339:4:17",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
-                    }
-                  },
-                  "visibility": "internal"
-                }
-              ],
-              "src": "338:6:17"
-            },
-            "scope": 2155,
-            "src": "272:73:17",
+            "scope": 1969,
+            "src": "144:107:17",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 2156,
-        "src": "57:290:17"
+        "scope": 1970,
+        "src": "57:196:17"
       }
     ],
-    "src": "32:316:17"
+    "src": "32:222:17"
   },
   "compiler": {
     "name": "solc",
@@ -720,7 +412,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-21T17:20:30.649Z",
+  "updatedAt": "2021-04-24T05:28:34.106Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
