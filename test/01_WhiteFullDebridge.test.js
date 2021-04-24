@@ -422,7 +422,9 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
     const receiver = bob;
     const amount = toBN(toWei("100"));
     const nonce = 2;
+    let currentChainId;
     before(async function() {
+      currentChainId = await this.whiteDebridge.chainId();
       const newSupply = toWei("100");
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
@@ -441,7 +443,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       const submission = await this.whiteDebridge.getSubmisionId(
         debridgeId,
-        chainId,
+        currentChainId,
         amount,
         receiver,
         nonce
@@ -465,7 +467,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
       const submissionId = await this.whiteDebridge.getSubmisionId(
         debridgeId,
-        chainId,
+        currentChainId,
         amount,
         receiver,
         nonce
@@ -694,7 +696,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         this.whiteDebridge.claim(outsideDebridgeId, receiver, amount, nonce, {
           from: alice,
         }),
-        "claim: wrong target chain"
+        "claim: not confirmed"
       );
     });
 

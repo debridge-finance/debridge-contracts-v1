@@ -13,7 +13,7 @@ const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 const Tx = require("ethereumjs-tx");
-const bscWeb3 = new Web3(process.env.BSC_PROVIDER);
+const bscWeb3 = new Web3(process.env.TEST_BSC_PROVIDER);
 const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 
 web3.extend({
