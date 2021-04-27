@@ -60,12 +60,15 @@ contract OracleManager is Ownable {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(
             oracle.admin == msg.sender,
-            "withdrawStake: only callable by admin"
+            "requestUnstake: only callable by admin"
         );
+        if (_amount == 0) {
+            return;
+        }
         uint256 available = oracle.stake;
         require(
             available >= _amount,
-            "withdrawStake: insufficient withdrawable funds"
+            "requestUnstake: insufficient withdrawable funds"
         );
         oracle.stake = available - _amount;
         totalLocked -= _amount;
@@ -87,8 +90,16 @@ contract OracleManager is Ownable {
             oracle.admin == msg.sender,
             "executeUnstake: only callable by admin"
         );
+        require(
+            _withdrawalId < oracle.withdrawalCount,
+            "executeUnstake: withdrawal not exists"
+        );
         WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
-        require(!withdrawal.executed, "executeUnstake: alreaddy executed");
+        require(!withdrawal.executed, "executeUnstake: already executed");
+        require(
+            withdrawal.timelock < block.timestamp,
+            "executeUnstake: too early"
+        );
         withdrawal.executed = true;
         require(
             token.transfer(withdrawal.receiver, withdrawal.amount),
@@ -97,6 +108,34 @@ contract OracleManager is Ownable {
     }
 
     /* ADMIN */
+
+    /// @dev Change withdrawal timelock.
+    /// @param _newTimelock Oracle address.
+    function setTimelock(uint256 _newTimelock) external onlyOwner() {
+        timelock = _newTimelock;
+    }
+
+    /// @dev Add new oracle.
+    /// @param _oracle Oracle address.
+    /// @param _admin Admin address.
+    function addOracle(address _oracle, address _admin) external onlyOwner() {
+        getOracleInfo[_oracle].admin = _admin;
+    }
+
+    /// @dev Cancel unstake.
+    /// @param _oracle Oracle address.
+    /// @param _withdrawalId Withdrawal identifier.
+    function cancelUnstake(address _oracle, uint256 _withdrawalId)
+        external
+        onlyOwner()
+    {
+        OracleInfo storage oracle = getOracleInfo[_oracle];
+        WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
+        require(!withdrawal.executed, "cancelUnstake: already executed");
+        withdrawal.executed = true;
+        oracle.stake += withdrawal.amount;
+        totalLocked += withdrawal.amount;
+    }
 
     /// @dev Withdraws confiscated tokens.
     /// @param _oracle Oracle address.

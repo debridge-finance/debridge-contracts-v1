@@ -541,9 +541,9 @@
 
 **Scenario 1**: Call `stake`:
 
-- [ ] 0 tokens
-- [ ] normal amount of tokens
-- [ ] too many tokens
+- [x] 0 tokens
+- [x] normal amount of tokens
+- [x] too many tokens
 
 **Scope**: Test staking different amount of times.
 
@@ -553,8 +553,8 @@
 
 **Scenario 1**: Call `stake`:
 
-- [ ] first time
-- [ ] 10 times
+- [x] first time
+- [x] other times
 
 ### Test Item: RequestUnstake
 
@@ -566,8 +566,8 @@
 
 **Scenario 1**: Call `requestUnstake`:
 
-- [ ] by admin
-- [ ] by non-admin
+- [x] by admin
+- [x] by non-admin
 
 **Scope**: Test unstaking different amounts.
 
@@ -577,9 +577,9 @@
 
 **Scenario 1**: Call `requestUnstake`:
 
-- [ ] 0 tokens
-- [ ] normal amount of tokens
-- [ ] too many tokens
+- [x] 0 tokens
+- [x] normal amount of tokens
+- [x] too many tokens
 
 **Scope**: Test unstaking different amount of times.
 
@@ -589,8 +589,8 @@
 
 **Scenario 1**: Call `requestUnstake`:
 
-- [ ] first time
-- [ ] 10 times
+- [x] first time
+- [x] twice
 
 ### Test Item: ExecuteUnstake
 
@@ -602,9 +602,19 @@
 
 **Scenario 1**: Call `executeUnstake`:
 
-- [ ] 0 tokens
-- [ ] normal amount of tokens
-- [ ] too many tokens
+- [x] noraml withdrawal id
+- [x] withdrawal id from future
+
+**Scope**: Test unstaking at the different time.
+
+**Action**: Invoke the `executeUnstake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `executeUnstake`:
+
+- [x] before timelock passed
+- [x] after timelock passed
 
 **Scope**: Test unstaking different amount of times.
 
@@ -614,8 +624,8 @@
 
 **Scenario 1**: Call `executeUnstake`:
 
-- [ ] first time
-- [ ] 10 times
+- [x] first time
+- [x] twice
 
 ### Test Item: Liquidate
 
