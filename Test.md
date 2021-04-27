@@ -1,4 +1,4 @@
-## Test cases
+# Test cases
 
 ## Test Item: WhiteFullAggregator
 
@@ -520,3 +520,149 @@
 
 - [x] the ERC20
 - [x] native token
+
+## Test Item: Oracle Manager
+
+### General requirements
+
+1. Oracle can stake any amount of gov token.
+2. Oracle can request unstake any amount of gov token.
+3. Oracle can execute unstake after timelock.
+4. Owner can liquidate the part of stake.
+5. Owner can withdraw liquidated stake.
+
+### Test Item: Stake
+
+**Scope**: Test staking different amounts.
+
+**Action**: Invoke the `stake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `stake`:
+
+- [ ] 0 tokens
+- [ ] normal amount of tokens
+- [ ] too many tokens
+
+**Scope**: Test staking different amount of times.
+
+**Action**: Invoke the `stake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `stake`:
+
+- [ ] first time
+- [ ] 10 times
+
+### Test Item: RequestUnstake
+
+**Scope**: Test unstaking permissions.
+
+**Action**: Invoke the `requestUnstake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `requestUnstake`:
+
+- [ ] by admin
+- [ ] by non-admin
+
+**Scope**: Test unstaking different amounts.
+
+**Action**: Invoke the `requestUnstake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `requestUnstake`:
+
+- [ ] 0 tokens
+- [ ] normal amount of tokens
+- [ ] too many tokens
+
+**Scope**: Test unstaking different amount of times.
+
+**Action**: Invoke the `requestUnstake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `requestUnstake`:
+
+- [ ] first time
+- [ ] 10 times
+
+### Test Item: ExecuteUnstake
+
+**Scope**: Test unstaking different amounts.
+
+**Action**: Invoke the `executeUnstake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `executeUnstake`:
+
+- [ ] 0 tokens
+- [ ] normal amount of tokens
+- [ ] too many tokens
+
+**Scope**: Test unstaking different amount of times.
+
+**Action**: Invoke the `executeUnstake` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `executeUnstake`:
+
+- [ ] first time
+- [ ] 10 times
+
+### Test Item: Liquidate
+
+**Scope**: Test liquidate permissions.
+
+**Action**: Invoke the `liquidate` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `liquidate`:
+
+- [ ] by admin
+- [ ] by non-admin
+
+**Scope**: Test liquidate different amounts.
+
+**Action**: Invoke the `liquidate` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `liquidate`:
+
+- [ ] 0 tokens
+- [ ] normal amount of tokens
+- [ ] too many tokens
+
+### Test Item: withdrawFunds
+
+**Scope**: Test liquidate permissions.
+
+**Action**: Invoke the `withdrawFunds` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `withdrawFunds`:
+
+- [ ] by admin
+- [ ] by non-admin
+
+**Scope**: Test liquidate different amounts.
+
+**Action**: Invoke the `withdrawFunds` methods.
+
+**Verification Steps**: Verify the operation works fine.
+
+**Scenario 1**: Call `withdrawFunds`:
+
+- [ ] 0 tokens
+- [ ] normal amount of tokens
+- [ ] too many tokens

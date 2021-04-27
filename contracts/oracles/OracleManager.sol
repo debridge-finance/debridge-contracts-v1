@@ -81,20 +81,18 @@ contract OracleManager is Ownable {
     /// @dev Withdraw stake.
     /// @param _oracle Oracle address.
     /// @param _withdrawalId Withdrawal identifier.
-    function executeWithdrawal(address _oracle, uint256 _withdrawalId)
-        external
-    {
+    function executeUnstake(address _oracle, uint256 _withdrawalId) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(
             oracle.admin == msg.sender,
-            "executeWithdrawal: only callable by admin"
+            "executeUnstake: only callable by admin"
         );
         WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
-        require(!withdrawal.executed, "executeWithdrawal: alreaddy executed");
+        require(!withdrawal.executed, "executeUnstake: alreaddy executed");
         withdrawal.executed = true;
         require(
             token.transfer(withdrawal.receiver, withdrawal.amount),
-            "executeWithdrawal: transfer failed"
+            "executeUnstake: transfer failed"
         );
     }
 
@@ -103,11 +101,11 @@ contract OracleManager is Ownable {
     /// @dev Withdraws confiscated tokens.
     /// @param _oracle Oracle address.
     /// @param _amount Amount to withdraw.
-    function confiscate(address _oracle, uint256 _amount) external onlyOwner() {
+    function liquidate(address _oracle, uint256 _amount) external onlyOwner() {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(
             oracle.stake >= _amount,
-            "confiscate: insufficient confiscate amount"
+            "liquidate: insufficient confiscate amount"
         );
         oracle.stake -= _amount;
         confiscatedFunds += _amount;
