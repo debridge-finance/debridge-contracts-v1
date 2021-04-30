@@ -31,7 +31,6 @@ abstract contract WhiteDebridge is
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 minReserves; // minimal hot reserves
-        uint256[] chainIds; // list of all supported chain ids
         mapping(uint256 => bool) isSupported; // wheter the chain for the asset is supported
     }
 
@@ -44,6 +43,7 @@ abstract contract WhiteDebridge is
     uint256 public chainId; // current chain id
     address public aggregator; // chainlink aggregator address
     uint8 public aggregatorVersion; // aggregators number
+    uint256[] public chainIds; // list of all supported chain ids
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
@@ -95,6 +95,7 @@ abstract contract WhiteDebridge is
         bytes32 indexed debridgeId,
         uint256 indexed chainId
     ); // emited when the asset is disallowed to be spent on other chains
+    event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
 
     modifier onlyAggregator {
         require(aggregator == msg.sender, "onlyAggregator: bad role");
@@ -147,7 +148,7 @@ abstract contract WhiteDebridge is
             _supportedChainIds
         );
         aggregator = _aggregator;
-
+        chainIds = _supportedChainIds;
         _defiController = defiController;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -211,6 +212,7 @@ abstract contract WhiteDebridge is
     ) external override whenNotPaused() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId != chainId, "burn: native asset");
+        require(debridge.isSupported[_chainIdTo], "send: wrong targed chain");
         require(_amount >= debridge.minAmount, "burn: amount too low");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
@@ -314,6 +316,13 @@ abstract contract WhiteDebridge is
         } else {
             emit ChainSupportRemoved(_debridgeId, _chainId);
         }
+    }
+
+    /// @dev Set support for the chains.
+    /// @param _chainIds All supported chain ids.
+    function setChainIds(uint256[] memory _chainIds) external onlyAdmin() {
+        chainIds = _chainIds;
+        emit ChainsSupportUpdated(_chainIds);
     }
 
     /// @dev Add support for the asset.
@@ -480,7 +489,6 @@ abstract contract WhiteDebridge is
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             supportedChainId = _supportedChainIds[i];
             debridge.isSupported[supportedChainId] = true;
-            debridge.chainIds.push(supportedChainId);
             emit ChainSupportAdded(_debridgeId, supportedChainId);
         }
         emit PairAdded(
@@ -606,13 +614,14 @@ abstract contract WhiteDebridge is
             );
     }
 
-    /// @dev Get all supported chain ids.
+    /// @dev Check if transfer to chain is supported.
     /// @param _debridgeId Asset identifier.
-    function getSupportedChainIds(bytes32 _debridgeId)
+    /// @param _chainId Chain identifier.
+    function isChainIdSupported(bytes32 _debridgeId, uint256 _chainId)
         public
         view
-        returns (uint256[] memory)
+        returns (bool)
     {
-        return getDebridge[_debridgeId].chainIds;
+        return getDebridge[_debridgeId].isSupported[_chainId];
     }
 }
