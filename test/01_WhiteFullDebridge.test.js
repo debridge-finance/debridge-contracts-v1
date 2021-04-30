@@ -68,7 +68,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
     const fixedFee = toWei("0.00001");
     const transferFee = toWei("0.001");
     const minReserves = toWei("0.2");
-    const supportedChainIds = [42];
+    const supportedChainIds = [42, 56];
     this.weth = await WETH9.new({
       from: alice,
     });
@@ -167,7 +167,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
-      const supportedChainIds = [42, 3];
+      const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
       const wrappedAsset = await WrappedAsset.new(
