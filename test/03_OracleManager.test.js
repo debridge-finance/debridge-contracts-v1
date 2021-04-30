@@ -3,10 +3,12 @@ const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const OracleManager = artifacts.require("OracleManager");
 const GovToken = artifacts.require("GovToken");
 const { toWei, fromWei, toBN } = web3.utils;
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-contract.only("OracleManager", function([alice, bob, carol, eve, devid]) {
+
+contract("OracleManager", function([alice, bob, carol, eve, devid]) {
   before(async function() {
     this.govToken = await GovToken.new(toWei("3200000"), {
       from: alice,
@@ -210,6 +212,201 @@ contract.only("OracleManager", function([alice, bob, carol, eve, devid]) {
           from: alice,
         }),
         "executeUnstake: withdrawal not exists"
+      );
+    });
+  });
+
+  context("Test liquidate different amounts", () => {
+    it("should execute liquidate 0 tokens", async function() {
+      const amount = toWei("0");
+      const prevOracleInfo = await this.oracleManager.getOracleInfo(bob);
+      const prevTotalLocked = await this.oracleManager.totalLocked();
+      const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      await this.oracleManager.liquidate(bob, amount, {
+        from: alice,
+      });
+      const currentOracleInfo = await this.oracleManager.getOracleInfo(bob);
+      const currentTotalLocked = await this.oracleManager.totalLocked();
+      const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      assert.equal(
+        prevOracleInfo.stake.sub(toBN(amount)).toString(),
+        currentOracleInfo.stake.toString()
+      );
+      assert.equal(
+        prevTotalLocked.sub(toBN(amount)).toString(),
+        currentTotalLocked.toString()
+      );
+      assert.equal(
+        prevConfiscatedFunds.add(toBN(amount)).toString(),
+        currentConfiscatedFunds.toString()
+      );
+    });
+
+    it("should execute liquidate of normal amount of tokens", async function() {
+      const amount = toWei("10");
+      const prevOracleInfo = await this.oracleManager.getOracleInfo(bob);
+      const prevTotalLocked = await this.oracleManager.totalLocked();
+      const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      await this.oracleManager.liquidate(bob, amount, {
+        from: alice,
+      });
+      const currentOracleInfo = await this.oracleManager.getOracleInfo(bob);
+      const currentTotalLocked = await this.oracleManager.totalLocked();
+      const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      assert.equal(
+        prevOracleInfo.stake.sub(toBN(amount)).toString(),
+        currentOracleInfo.stake.toString()
+      );
+      assert.equal(
+        prevTotalLocked.sub(toBN(amount)).toString(),
+        currentTotalLocked.toString()
+      );
+      assert.equal(
+        prevConfiscatedFunds.add(toBN(amount)).toString(),
+        currentConfiscatedFunds.toString()
+      );
+    });
+
+    it("fail in case of liquidate of too many tokens", async function() {
+      const amount = toWei("1000");
+      await expectRevert(
+        this.oracleManager.liquidate(bob, amount, {
+          from: alice,
+        }),
+        "liquidate: insufficient balance"
+      );
+    });
+  });
+
+  context("Test liquidate by different users", () => {
+    it("should execute liquidate by admin", async function() {
+      const amount = toWei("2");
+      const prevOracleInfo = await this.oracleManager.getOracleInfo(bob);
+      const prevTotalLocked = await this.oracleManager.totalLocked();
+      const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      await this.oracleManager.liquidate(bob, amount, {
+        from: alice,
+      });
+      const currentOracleInfo = await this.oracleManager.getOracleInfo(bob);
+      const currentTotalLocked = await this.oracleManager.totalLocked();
+      const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      assert.equal(
+        prevOracleInfo.stake.sub(toBN(amount)).toString(),
+        currentOracleInfo.stake.toString()
+      );
+      assert.equal(
+        prevTotalLocked.sub(toBN(amount)).toString(),
+        currentTotalLocked.toString()
+      );
+      assert.equal(
+        prevConfiscatedFunds.add(toBN(amount)).toString(),
+        currentConfiscatedFunds.toString()
+      );
+    });
+
+    it("fail in case of liquidate by non-admin", async function() {
+      const amount = toWei("1");
+      await expectRevert(
+        this.oracleManager.liquidate(bob, amount, {
+          from: carol,
+        }),
+        "Ownable: caller is not the owner"
+      );
+    });
+  });
+
+  context("Test withdraw different liquidated amounts", () => {
+    it("should execute withdrawal of 0 liquidated tokens", async function() {
+      const amount = toWei("0");
+      const recepient = alice;
+      const prevAliceGovBalance = toBN(
+        await this.govToken.balanceOf(recepient)
+      );
+      const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      await this.oracleManager.withdrawFunds(recepient, amount, {
+        from: alice,
+      });
+      const currentAliceGovBalance = toBN(
+        await this.govToken.balanceOf(recepient)
+      );
+      const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      assert.equal(
+        prevAliceGovBalance.add(toBN(amount)).toString(),
+        currentAliceGovBalance.toString()
+      );
+      assert.equal(
+        prevConfiscatedFunds.sub(toBN(amount)).toString(),
+        currentConfiscatedFunds.toString()
+      );
+    });
+
+    it("should execute liquidate of normal amount of tokens", async function() {
+      const amount = toWei("10");
+      const recepient = alice;
+      const prevAliceGovBalance = toBN(
+        await this.govToken.balanceOf(recepient)
+      );
+      const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      await this.oracleManager.withdrawFunds(recepient, amount, {
+        from: alice,
+      });
+      const currentAliceGovBalance = toBN(
+        await this.govToken.balanceOf(recepient)
+      );
+      const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      assert.equal(
+        prevAliceGovBalance.add(toBN(amount)).toString(),
+        currentAliceGovBalance.toString()
+      );
+      assert.equal(
+        prevConfiscatedFunds.sub(toBN(amount)).toString(),
+        currentConfiscatedFunds.toString()
+      );
+    });
+
+    it("fail in case of withdrawal of too many tokens", async function() {
+      const amount = toWei("1000");
+      await expectRevert(
+        this.oracleManager.withdrawFunds(alice, amount, {
+          from: alice,
+        }),
+        "withdrawFunds: insufficient reserve funds"
+      );
+    });
+  });
+
+  context("Test withdraw liquidated funds by different users", () => {
+    it("should execute withdrawal by the admin", async function() {
+      const amount = toWei("1");
+      const recepient = alice;
+      const prevAliceGovBalance = toBN(
+        await this.govToken.balanceOf(recepient)
+      );
+      const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      await this.oracleManager.withdrawFunds(recepient, amount, {
+        from: alice,
+      });
+      const currentAliceGovBalance = toBN(
+        await this.govToken.balanceOf(recepient)
+      );
+      const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
+      assert.equal(
+        prevAliceGovBalance.add(toBN(amount)).toString(),
+        currentAliceGovBalance.toString()
+      );
+      assert.equal(
+        prevConfiscatedFunds.sub(toBN(amount)).toString(),
+        currentConfiscatedFunds.toString()
+      );
+    });
+
+    it("fail in case of withdrawal by non-admin", async function() {
+      const amount = toWei("1");
+      await expectRevert(
+        this.oracleManager.withdrawFunds(alice, amount, {
+          from: bob,
+        }),
+        "Ownable: caller is not the owner"
       );
     });
   });

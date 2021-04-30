@@ -142,10 +142,7 @@ contract OracleManager is Ownable {
     /// @param _amount Amount to withdraw.
     function liquidate(address _oracle, uint256 _amount) external onlyOwner() {
         OracleInfo storage oracle = getOracleInfo[_oracle];
-        require(
-            oracle.stake >= _amount,
-            "liquidate: insufficient confiscate amount"
-        );
+        require(oracle.stake >= _amount, "liquidate: insufficient balance");
         oracle.stake -= _amount;
         confiscatedFunds += _amount;
         totalLocked -= _amount;

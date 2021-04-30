@@ -637,20 +637,14 @@
 
 **Scenario 1**: Call `liquidate`:
 
-- [ ] by admin
-- [ ] by non-admin
+- [x] by admin
+- [x] by non-admin
 
-**Scope**: Test liquidate different amounts.
+**Scenario 2**: Call `liquidate`:
 
-**Action**: Invoke the `liquidate` methods.
-
-**Verification Steps**: Verify the operation works fine.
-
-**Scenario 1**: Call `liquidate`:
-
-- [ ] 0 tokens
-- [ ] normal amount of tokens
-- [ ] too many tokens
+- [x] 0 tokens
+- [x] normal amount of tokens
+- [x] too many tokens
 
 ### Test Item: withdrawFunds
 
@@ -662,8 +656,8 @@
 
 **Scenario 1**: Call `withdrawFunds`:
 
-- [ ] by admin
-- [ ] by non-admin
+- [x] by admin
+- [x] by non-admin
 
 **Scope**: Test liquidate different amounts.
 
@@ -673,6 +667,6 @@
 
 **Scenario 1**: Call `withdrawFunds`:
 
-- [ ] 0 tokens
-- [ ] normal amount of tokens
-- [ ] too many tokens
+- [x] 0 tokens
+- [x] normal amount of tokens
+- [x] too many tokens
