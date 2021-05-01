@@ -45,6 +45,40 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
     /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    function autoMint(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        bytes[2][] calldata _trxData,
+        uint256 _claimFee,
+        bytes memory _data
+    ) external {
+        bytes32 submissionId =
+            getAutoSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce,
+                _claimFee,
+                _data
+            );
+        require(
+            IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
+            "mint: not confirmed"
+        );
+        _mint(submissionId, _debridgeId, _receiver, _amount, _claimFee, _data);
+    }
+
+    /// @dev Mints wrapped asset on the current chain.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    /// @param _nonce Submission id.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
     function mint(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -66,7 +100,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount);
+        _mint(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -107,7 +141,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             ),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount);
+        _mint(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -137,7 +171,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount);
+        _claim(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -171,14 +205,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "claim: not confirmed"
         );
-        _autoClaim(
-            submissionId,
-            _debridgeId,
-            _receiver,
-            _amount,
-            _claimFee,
-            _data
-        );
+        _claim(submissionId, _debridgeId, _receiver, _amount, _claimFee, _data);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -219,6 +246,6 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             ),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount);
+        _claim(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
     }
 }
