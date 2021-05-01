@@ -11,6 +11,7 @@ import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDefiController.sol";
 import "../interfaces/IWhiteAggregator.sol";
+import "../interfaces/ICallProxy.sol";
 import "../periphery/WrappedAsset.sol";
 import "../periphery/Pausable.sol";
 
@@ -42,6 +43,7 @@ abstract contract WhiteDebridge is
     uint256 public constant DENOMINATOR = 1e18; // accuacy multiplyer
     uint256 public chainId; // current chain id
     address public aggregator; // chainlink aggregator address
+    address public callProxy; // proxy to execute user's calls
     uint8 public aggregatorVersion; // aggregators number
     uint256[] public chainIds; // list of all supported chain ids
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
@@ -107,6 +109,7 @@ abstract contract WhiteDebridge is
         uint256 indexed chainId
     ); // emited when the asset is disallowed to be spent on other chains
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
+    event CallProxyUpdated(address callProxy); // emited when the new call proxy set
 
     modifier onlyAggregator {
         require(aggregator == msg.sender, "onlyAggregator: bad role");
@@ -139,6 +142,7 @@ abstract contract WhiteDebridge is
         uint256 _transferFee,
         uint256 _minReserves,
         address _aggregator,
+        address _callProxy,
         uint256[] memory _supportedChainIds,
         IDefiController _defiController
     ) internal {
@@ -159,6 +163,7 @@ abstract contract WhiteDebridge is
             _supportedChainIds
         );
         aggregator = _aggregator;
+        callProxy = _callProxy;
         chainIds = _supportedChainIds;
         _defiController = defiController;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -363,6 +368,13 @@ abstract contract WhiteDebridge is
         emit ChainsSupportUpdated(_chainIds);
     }
 
+    /// @dev Set support for the chains.
+    /// @param _callProxy Address of the proxy that executes external calls.
+    function setChainIds(address _callProxy) external onlyAdmin() {
+        callProxy = _callProxy;
+        emit CallProxyUpdated(_callProxy);
+    }
+
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.
     /// @param _minAmount Minimal amount of the asset to be wrapped.
@@ -495,6 +507,16 @@ abstract contract WhiteDebridge is
         }
     }
 
+    /// @dev Set fee converter proxy.
+    /// @param _debridgeId Asset identifier.
+    /// @param _claimFee Claim fee.
+    function setClaimFee(bytes32 _debridgeId, uint256 _claimFee)
+        external
+        onlyAdmin()
+    {
+        getClaimFee[_debridgeId] = _claimFee;
+    }
+
     /* INTERNAL */
 
     /// @dev Add support for the asset.
@@ -611,11 +633,49 @@ abstract contract WhiteDebridge is
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    function _autoClaim(
+        bytes32 _burntId,
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount,
+        uint256 _claimFee,
+        bytes memory _data
+    ) internal {
+        _amount -= _claimFee;
+        _transferClaimed(
+            _burntId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _claimFee,
+            _data
+        );
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     function _claim(
         bytes32 _burntId,
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount
+    ) internal {
+        _transferClaimed(_burntId, _debridgeId, _receiver, _amount, 0, "0x");
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    function _transferClaimed(
+        bytes32 _burntId,
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount,
+        uint256 _claimFee,
+        bytes memory _data
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId == chainId, "claim: wrong target chain");
@@ -624,7 +684,12 @@ abstract contract WhiteDebridge is
         debridge.balance -= _amount;
         _ensureReserves(debridge, _amount);
         if (debridge.tokenAddress == address(0)) {
-            payable(_receiver).transfer(_amount);
+            if (_claimFee > 0) {
+                payable(msg.sender).transfer(_claimFee);
+                ICallProxy(callProxy).call{value: _amount}(_receiver, _data);
+            } else {
+                payable(_receiver).transfer(_amount);
+            }
         } else {
             IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
         }

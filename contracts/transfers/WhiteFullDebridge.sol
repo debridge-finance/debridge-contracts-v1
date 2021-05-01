@@ -33,6 +33,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         uint256 _transferFee,
         uint256 _minReserves,
         address _aggregator,
+        address _callProxy,
         uint256[] memory _supportedChainIds,
         IWETH _weth,
         IFeeProxy _feeProxy,
@@ -44,6 +45,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             _transferFee,
             _minReserves,
             _aggregator,
+            _callProxy,
             _supportedChainIds,
             _defiController
         );
@@ -115,6 +117,45 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             "mint: not confirmed"
         );
         _mint(submissionId, _debridgeId, _receiver, _amount);
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
+    function autoClaim(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        uint256 _claimFee,
+        bytes memory _data
+    ) external whenNotPaused() {
+        bytes32 submissionId =
+            getAutoSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce,
+                _claimFee,
+                _data
+            );
+        require(
+            IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
+            "claim: not confirmed"
+        );
+        _autoClaim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _claimFee,
+            _data
+        );
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
