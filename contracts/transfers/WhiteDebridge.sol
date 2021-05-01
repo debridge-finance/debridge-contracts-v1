@@ -48,6 +48,7 @@ abstract contract WhiteDebridge is
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
+    mapping(bytes32 => uint256) public getClaimFee; // debridgeId => auto claim fee
     mapping(uint8 => AggregatorInfo) public getOldAggregator; // counter => agrgregator info
 
     event Sent(
@@ -71,6 +72,16 @@ abstract contract WhiteDebridge is
         address receiver,
         uint256 nonce,
         uint256 chainIdTo
+    ); // emited once the wrapped tokens are sent to the contract
+    event AutoBurnt(
+        bytes32 submissionId,
+        bytes32 debridgeId,
+        uint256 amount,
+        address receiver,
+        uint256 nonce,
+        uint256 chainIdTo,
+        uint256 claimFee,
+        bytes data
     ); // emited once the wrapped tokens are sent to the contract
     event Claimed(
         bytes32 submissionId,
@@ -210,20 +221,7 @@ abstract contract WhiteDebridge is
         uint256 _amount,
         uint256 _chainIdTo
     ) external override whenNotPaused() {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId != chainId, "burn: native asset");
-        require(debridge.isSupported[_chainIdTo], "send: wrong targed chain");
-        require(_amount >= debridge.minAmount, "burn: amount too low");
-        IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
-        wrappedAsset.transferFrom(msg.sender, address(this), _amount);
-        uint256 transferFee =
-            debridge.fixedFee + (_amount * debridge.transferFee) / DENOMINATOR;
-        if (transferFee > 0) {
-            require(_amount >= transferFee, "burn: amount not cover fees");
-            debridge.collectedFees += transferFee;
-            _amount -= transferFee;
-        }
-        wrappedAsset.burn(_amount);
+        _burn(_debridgeId, _amount, _chainIdTo);
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
             getSubmisionId(
@@ -235,6 +233,46 @@ abstract contract WhiteDebridge is
                 nonce
             );
         emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo);
+        getUserNonce[_receiver]++;
+    }
+
+    /// @dev Burns wrapped asset and allowss to claim it on the other chain.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _chainIdTo Chain id of the target chain.
+    function autoBurn(
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _amount,
+        uint256 _chainIdTo,
+        bytes memory _data
+    ) external whenNotPaused() {
+        uint256 claimFee = getClaimFee[_debridgeId];
+        require(claimFee != 0, "autoBurn: not supported");
+        _burn(_debridgeId, _amount, _chainIdTo);
+        uint256 nonce = getUserNonce[_receiver];
+        bytes32 burntId =
+            getAutoSubmisionId(
+                _debridgeId,
+                chainId,
+                _chainIdTo,
+                _amount,
+                _receiver,
+                nonce,
+                claimFee,
+                _data
+            );
+        emit AutoBurnt(
+            burntId,
+            _debridgeId,
+            _amount,
+            _receiver,
+            nonce,
+            _chainIdTo,
+            claimFee,
+            _data
+        );
         getUserNonce[_receiver]++;
     }
 
@@ -522,6 +560,34 @@ abstract contract WhiteDebridge is
         }
     }
 
+    /// @dev Burns wrapped asset and allowss to claim it on the other chain.
+    /// @param _debridgeId Asset identifier.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _chainIdTo Chain id of the target chain.
+    function _burn(
+        bytes32 _debridgeId,
+        uint256 _amount,
+        uint256 _chainIdTo
+    ) internal {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(debridge.chainId != chainId, "burn: native asset");
+        require(debridge.isSupported[_chainIdTo], "burn: wrong targed chain");
+        require(
+            _amount >= debridge.minAmount,
+            "burn: only native assets are claimable"
+        );
+        IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
+        wrappedAsset.transferFrom(msg.sender, address(this), _amount);
+        uint256 transferFee =
+            debridge.fixedFee + (_amount * debridge.transferFee) / DENOMINATOR;
+        if (transferFee > 0) {
+            require(_amount >= transferFee, "burn: amount not cover fees");
+            debridge.collectedFees += transferFee;
+            _amount -= transferFee;
+        }
+        wrappedAsset.burn(_amount);
+    }
+
     /// @dev Mints wrapped asset on the current chain.
     /// @param _mintId Submission identifier.
     /// @param _debridgeId Asset identifier.
@@ -610,6 +676,36 @@ abstract contract WhiteDebridge is
                     _amount,
                     _receiver,
                     _nonce
+                )
+            );
+    }
+
+    /// @dev Calculate submission id for auto claimable transfer.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
+    function getAutoSubmisionId(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        uint256 _chainIdTo,
+        uint256 _amount,
+        address _receiver,
+        uint256 _nonce,
+        uint256 _claimFee,
+        bytes memory _data
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _debridgeId,
+                    _chainIdFrom,
+                    _chainIdTo,
+                    _amount,
+                    _receiver,
+                    _nonce,
+                    _claimFee,
+                    _data
                 )
             );
     }
