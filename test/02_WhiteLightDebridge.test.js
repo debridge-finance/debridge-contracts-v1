@@ -8,6 +8,7 @@ const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WhiteDebridge = artifacts.require("WhiteLightDebridge");
 const WrappedAsset = artifacts.require("WrappedAsset");
+const CallProxy = artifacts.require("CallProxy");
 const DefiController = artifacts.require("DefiController");
 const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
@@ -89,6 +90,9 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     this.defiController = await DefiController.new({
       from: alice,
     });
+    this.callProxy = await CallProxy.new({
+      from: alice,
+    });
     const minAmount = toWei("1");
     const fixedFee = toWei("0.00001");
     const transferFee = toWei("0.001");
@@ -103,6 +107,7 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       transferFee,
       minReserves,
       ZERO_ADDRESS,
+      this.callProxy.address.toString(),
       supportedChainIds,
       ZERO_ADDRESS,
     ]);

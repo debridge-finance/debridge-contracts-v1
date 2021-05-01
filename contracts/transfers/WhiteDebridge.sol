@@ -190,7 +190,7 @@ abstract contract WhiteDebridge is
         uint256 _amount,
         uint256 _chainIdTo
     ) external payable override whenNotPaused() {
-        _send(_debridgeId, _amount, _chainIdTo);
+        _amount = _send(_debridgeId, _amount, _chainIdTo);
         uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId =
             getSubmisionId(
@@ -216,7 +216,7 @@ abstract contract WhiteDebridge is
         uint256 _amount,
         uint256 _chainIdTo
     ) external override whenNotPaused() {
-        _burn(_debridgeId, _amount, _chainIdTo);
+        _amount = _burn(_debridgeId, _amount, _chainIdTo);
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
             getSubmisionId(
@@ -244,8 +244,9 @@ abstract contract WhiteDebridge is
         uint256 _claimFee,
         bytes memory _data
     ) external payable whenNotPaused() {
-        require(_amount < _claimFee, "autoSend: proposed fee too high");
-        _send(_debridgeId, _amount, _chainIdTo);
+        require(_claimFee != 0, "autoSend: fee too low");
+        _amount = _send(_debridgeId, _amount, _chainIdTo);
+        require(_amount >= _claimFee, "autoSend: proposed fee too high");
         _amount -= _claimFee;
         uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId =
@@ -285,8 +286,9 @@ abstract contract WhiteDebridge is
         uint256 _claimFee,
         bytes memory _data
     ) external whenNotPaused() {
-        require(_amount < _claimFee, "autoSend: proposed fee too high");
-        _burn(_debridgeId, _amount, _chainIdTo);
+        require(_claimFee != 0, "autoBurn: fee too low");
+        _amount = _burn(_debridgeId, _amount, _chainIdTo);
+        require(_amount >= _claimFee, "autoBurn: proposed fee too high");
         _amount -= _claimFee;
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
@@ -612,7 +614,7 @@ abstract contract WhiteDebridge is
         bytes32 _debridgeId,
         uint256 _amount,
         uint256 _chainIdTo
-    ) internal {
+    ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId == chainId, "send: not native chain");
         require(debridge.isSupported[_chainIdTo], "send: wrong targed chain");
@@ -634,6 +636,7 @@ abstract contract WhiteDebridge is
             _amount -= transferFee;
         }
         debridge.balance += _amount;
+        return _amount;
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -644,14 +647,11 @@ abstract contract WhiteDebridge is
         bytes32 _debridgeId,
         uint256 _amount,
         uint256 _chainIdTo
-    ) internal {
+    ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId != chainId, "burn: native asset");
         require(debridge.isSupported[_chainIdTo], "burn: wrong targed chain");
-        require(
-            _amount >= debridge.minAmount,
-            "burn: only native assets are claimable"
-        );
+        require(_amount >= debridge.minAmount, "burn: amount too low");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
         uint256 transferFee =
@@ -662,6 +662,7 @@ abstract contract WhiteDebridge is
             _amount -= transferFee;
         }
         wrappedAsset.burn(_amount);
+        return _amount;
     }
 
     /// @dev Mints wrapped asset on the current chain.
