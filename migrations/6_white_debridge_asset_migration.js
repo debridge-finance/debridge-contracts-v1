@@ -1,11 +1,13 @@
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
 const WrappedAsset = artifacts.require("WrappedAsset");
+const CallProxy = artifacts.require("CallProxy");
 
 module.exports = async function(_deployer, network) {
   if (network == "test") return;
   console.log("Network:  " + network);
   console.log("DefiController: " + DefiController.address);
+  console.log("CallProxy: " + CallProxy.address);
 
   const otherAssetInfos = require("../assets/supportedChains")[network];
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
