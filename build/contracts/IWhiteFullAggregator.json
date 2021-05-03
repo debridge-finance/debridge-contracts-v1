@@ -1,0 +1,567 @@
+{
+  "contractName": "IWhiteFullAggregator",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_submissionId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "submit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32[]",
+          "name": "_submissionIds",
+          "type": "bytes32[]"
+        }
+      ],
+      "name": "submitMany",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "_submissionId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isSubmissionConfirmed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"isSubmissionConfirmed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"submit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"_submissionIds\",\"type\":\"bytes32[]\"}],\"name\":\"submitMany\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteFullAggregator.sol\":\"IWhiteFullAggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteFullAggregator.sol\":{\"keccak256\":\"0xfd3c6ea10eee47bf9b49070e791c226138e1fbd383eb9f9f656c6a1b1736f3cf\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0565ae71d1a6eda83acb03181a5f7077b3c261e027acec972119a4625db4520b\",\"dweb:/ipfs/QmYiYSGsbXhmvYWgxr31mGUagmEUwm9ZceMBM5FyhYPANz\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IWhiteFullAggregator {\n    function submit(bytes32 _submissionId) external;\n\n    function submitMany(bytes32[] memory _submissionIds) external;\n\n    function isSubmissionConfirmed(bytes32 _submissionId)\n        external\n        view\n        returns (bool);\n}\n",
+  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteFullAggregator.sol",
+  "ast": {
+    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteFullAggregator.sol",
+    "exportedSymbols": {
+      "IWhiteFullAggregator": [
+        1719
+      ]
+    },
+    "id": 1720,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1700,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:23:17"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 1719,
+        "linearizedBaseContracts": [
+          1719
+        ],
+        "name": "IWhiteFullAggregator",
+        "nameLocation": "67:20:17",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "d9caa3d2",
+            "id": 1705,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "submit",
+            "nameLocation": "103:6:17",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1703,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1702,
+                  "mutability": "mutable",
+                  "name": "_submissionId",
+                  "nameLocation": "118:13:17",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1705,
+                  "src": "110:21:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1701,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "110:7:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "109:23:17"
+            },
+            "returnParameters": {
+              "id": 1704,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "141:0:17"
+            },
+            "scope": 1719,
+            "src": "94:48:17",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "97daa4f7",
+            "id": 1711,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "submitMany",
+            "nameLocation": "157:10:17",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1709,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1708,
+                  "mutability": "mutable",
+                  "name": "_submissionIds",
+                  "nameLocation": "185:14:17",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1711,
+                  "src": "168:31:17",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_bytes32_$dyn_memory_ptr",
+                    "typeString": "bytes32[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 1706,
+                      "name": "bytes32",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "168:7:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes32",
+                        "typeString": "bytes32"
+                      }
+                    },
+                    "id": 1707,
+                    "nodeType": "ArrayTypeName",
+                    "src": "168:9:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_bytes32_$dyn_storage_ptr",
+                      "typeString": "bytes32[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "167:33:17"
+            },
+            "returnParameters": {
+              "id": 1710,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "209:0:17"
+            },
+            "scope": 1719,
+            "src": "148:62:17",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "2f99e4da",
+            "id": 1718,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isSubmissionConfirmed",
+            "nameLocation": "225:21:17",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1714,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1713,
+                  "mutability": "mutable",
+                  "name": "_submissionId",
+                  "nameLocation": "255:13:17",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1718,
+                  "src": "247:21:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1712,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "247:7:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "246:23:17"
+            },
+            "returnParameters": {
+              "id": 1717,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1716,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1718,
+                  "src": "317:4:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1715,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "317:4:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "316:6:17"
+            },
+            "scope": 1719,
+            "src": "216:107:17",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1720,
+        "src": "57:268:17"
+      }
+    ],
+    "src": "32:294:17"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IWhiteFullAggregator.sol",
+    "exportedSymbols": {
+      "IWhiteFullAggregator": [
+        1719
+      ]
+    },
+    "id": 1720,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1700,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:23:17"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 1719,
+        "linearizedBaseContracts": [
+          1719
+        ],
+        "name": "IWhiteFullAggregator",
+        "nameLocation": "67:20:17",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "d9caa3d2",
+            "id": 1705,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "submit",
+            "nameLocation": "103:6:17",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1703,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1702,
+                  "mutability": "mutable",
+                  "name": "_submissionId",
+                  "nameLocation": "118:13:17",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1705,
+                  "src": "110:21:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1701,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "110:7:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "109:23:17"
+            },
+            "returnParameters": {
+              "id": 1704,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "141:0:17"
+            },
+            "scope": 1719,
+            "src": "94:48:17",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "97daa4f7",
+            "id": 1711,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "submitMany",
+            "nameLocation": "157:10:17",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1709,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1708,
+                  "mutability": "mutable",
+                  "name": "_submissionIds",
+                  "nameLocation": "185:14:17",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1711,
+                  "src": "168:31:17",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_bytes32_$dyn_memory_ptr",
+                    "typeString": "bytes32[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 1706,
+                      "name": "bytes32",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "168:7:17",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes32",
+                        "typeString": "bytes32"
+                      }
+                    },
+                    "id": 1707,
+                    "nodeType": "ArrayTypeName",
+                    "src": "168:9:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_bytes32_$dyn_storage_ptr",
+                      "typeString": "bytes32[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "167:33:17"
+            },
+            "returnParameters": {
+              "id": 1710,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "209:0:17"
+            },
+            "scope": 1719,
+            "src": "148:62:17",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "2f99e4da",
+            "id": 1718,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isSubmissionConfirmed",
+            "nameLocation": "225:21:17",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1714,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1713,
+                  "mutability": "mutable",
+                  "name": "_submissionId",
+                  "nameLocation": "255:13:17",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1718,
+                  "src": "247:21:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1712,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "247:7:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "246:23:17"
+            },
+            "returnParameters": {
+              "id": 1717,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1716,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1718,
+                  "src": "317:4:17",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1715,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "317:4:17",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "316:6:17"
+            },
+            "scope": 1719,
+            "src": "216:107:17",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1720,
+        "src": "57:268:17"
+      }
+    ],
+    "src": "32:294:17"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.2+commit.661d1103.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.3.4",
+  "updatedAt": "2021-05-03T11:47:50.915Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
