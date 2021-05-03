@@ -89,6 +89,60 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
     /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    function autoMintWithOldAggregator(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        bytes[2][] calldata _trxData,
+        address _reserveAddress,
+        uint256 _claimFee,
+        bytes memory _data,
+        uint8 _aggregatorVersion
+    ) external {
+        bytes32 submissionId =
+            getAutoSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce,
+                _reserveAddress,
+                _claimFee,
+                _data
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+                submissionId,
+                _trxData
+            ),
+            "mint: not confirmed"
+        );
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
+    }
+
+    /// @dev Mints wrapped asset on the current chain.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    /// @param _nonce Submission id.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
     function mint(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -239,6 +293,60 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             );
         require(
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
+            "claim: not confirmed"
+        );
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
+    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    function autoClaimWithOldAggregator(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        bytes[2][] calldata _trxData,
+        address _reserveAddress,
+        uint256 _claimFee,
+        bytes memory _data,
+        uint8 _aggregatorVersion
+    ) external {
+        bytes32 submissionId =
+            getAutoSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce,
+                _reserveAddress,
+                _claimFee,
+                _data
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalid aggregator"
+        );
+        require(
+            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+                submissionId,
+                _trxData
+            ),
             "claim: not confirmed"
         );
         _claim(

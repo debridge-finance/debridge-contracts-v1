@@ -102,6 +102,56 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    function autoMintWithOldAggregator(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        address _reserveAddress,
+        uint256 _claimFee,
+        bytes memory _data,
+        uint8 _aggregatorVersion
+    ) external whenNotPaused() {
+        bytes32 submissionId =
+            getAutoSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce,
+                _reserveAddress,
+                _claimFee,
+                _data
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteFullAggregator(aggregatorInfo.aggregator)
+                .isSubmissionConfirmed(submissionId),
+            "mint: not confirmed"
+        );
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
+    }
+
+    /// @dev Mints wrapped asset on the current chain.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    /// @param _nonce Submission id.
     function mint(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -211,6 +261,56 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             IWhiteFullAggregator(aggregator).isSubmissionConfirmed(
                 submissionId
             ),
+            "claim: not confirmed"
+        );
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
+    }
+
+    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @param _debridgeId Asset identifier.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
+    function autoClaimWithOldAggregator(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _amount,
+        uint256 _nonce,
+        address _reserveAddress,
+        uint256 _claimFee,
+        bytes memory _data,
+        uint8 _aggregatorVersion
+    ) external whenNotPaused() {
+        bytes32 submissionId =
+            getAutoSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _amount,
+                _receiver,
+                _nonce,
+                _reserveAddress,
+                _claimFee,
+                _data
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteFullAggregator(aggregatorInfo.aggregator)
+                .isSubmissionConfirmed(submissionId),
             "claim: not confirmed"
         );
         _claim(
