@@ -10,7 +10,7 @@ import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IWhiteFullDebridge.sol";
 import "../interfaces/IDefiController.sol";
-import "../interfaces/IWhiteAggregator.sol";
+import "../interfaces/IWhiteFullAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 import "./WhiteDebridge.sol";
 
@@ -64,6 +64,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) external whenNotPaused() {
@@ -75,14 +76,25 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _amount,
                 _receiver,
                 _nonce,
+                _reserveAddress,
                 _claimFee,
                 _data
             );
         require(
-            IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
+            IWhiteFullAggregator(aggregator).isSubmissionConfirmed(
+                submissionId
+            ),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount, _claimFee, _data);
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -107,10 +119,20 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _nonce
             );
         require(
-            IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
+            IWhiteFullAggregator(aggregator).isSubmissionConfirmed(
+                submissionId
+            ),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -143,12 +165,19 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         require(
-            IWhiteAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
-                submissionId
-            ),
+            IWhiteFullAggregator(aggregatorInfo.aggregator)
+                .isSubmissionConfirmed(submissionId),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -162,6 +191,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) external whenNotPaused() {
@@ -173,14 +203,25 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _amount,
                 _receiver,
                 _nonce,
+                _reserveAddress,
                 _claimFee,
                 _data
             );
         require(
-            IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
+            IWhiteFullAggregator(aggregator).isSubmissionConfirmed(
+                submissionId
+            ),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount, _claimFee, _data);
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -205,10 +246,20 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _nonce
             );
         require(
-            IWhiteAggregator(aggregator).isSubmissionConfirmed(submissionId),
+            IWhiteFullAggregator(aggregator).isSubmissionConfirmed(
+                submissionId
+            ),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -241,12 +292,19 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         require(
-            IWhiteAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
-                submissionId
-            ),
+            IWhiteFullAggregator(aggregatorInfo.aggregator)
+                .isSubmissionConfirmed(submissionId),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 
     /* ADMIN */

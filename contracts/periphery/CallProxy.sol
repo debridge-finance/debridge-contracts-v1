@@ -4,25 +4,34 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/ICallProxy.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract CallProxy is ICallProxy {
-    function call(address _receiver, bytes memory _data)
-        external
-        payable
-        override
-        returns (bool)
-    {
-        return externalCall(_receiver, msg.value, _data.length, _data);
+    using SafeERC20 for IERC20;
+
+    function call(
+        address _reserveAddress,
+        address _receiver,
+        bytes memory _data
+    ) external payable override returns (bool _result) {
+        _result = externalCall(_receiver, msg.value, _data.length, _data);
+        if (!_result) {
+            payable(_reserveAddress).transfer(msg.value);
+        }
     }
 
     function callERC20(
         address _token,
+        address _reserveAddress,
         address _receiver,
         bytes memory _data
-    ) external override returns (bool) {
+    ) external override returns (bool _result) {
         uint256 amount = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).transfer(_receiver, amount);
-        return externalCall(_receiver, 0, _data.length, _data);
+        IERC20(_token).safeTransfer(_receiver, amount);
+        _result = externalCall(_receiver, 0, _data.length, _data);
+        if (!_result) {
+            IERC20(_token).safeTransfer(_reserveAddress, amount);
+        }
     }
 
     function externalCall(

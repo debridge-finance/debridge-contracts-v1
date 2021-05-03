@@ -10,7 +10,7 @@ import "../interfaces/IWhiteDebridge.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDefiController.sol";
-import "../interfaces/IWhiteAggregator.sol";
+import "../interfaces/IWhiteFullAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../periphery/WrappedAsset.sol";
 import "../periphery/Pausable.sol";
@@ -241,6 +241,7 @@ abstract contract WhiteDebridge is
         address _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) external payable whenNotPaused() {
@@ -257,6 +258,7 @@ abstract contract WhiteDebridge is
                 _amount,
                 _receiver,
                 nonce,
+                _reserveAddress,
                 _claimFee,
                 _data
             );
@@ -283,6 +285,7 @@ abstract contract WhiteDebridge is
         address _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) external whenNotPaused() {
@@ -299,6 +302,7 @@ abstract contract WhiteDebridge is
                 _amount,
                 _receiver,
                 nonce,
+                _reserveAddress,
                 _claimFee,
                 _data
             );
@@ -675,6 +679,7 @@ abstract contract WhiteDebridge is
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) internal {
@@ -688,6 +693,7 @@ abstract contract WhiteDebridge is
             bool status =
                 ICallProxy(callProxy).callERC20(
                     debridge.tokenAddress,
+                    _reserveAddress,
                     _receiver,
                     _data
                 );
@@ -707,6 +713,7 @@ abstract contract WhiteDebridge is
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) internal {
@@ -721,6 +728,7 @@ abstract contract WhiteDebridge is
                 payable(msg.sender).transfer(_claimFee);
                 bool status =
                     ICallProxy(callProxy).call{value: _amount}(
+                        _reserveAddress,
                         _receiver,
                         _data
                     );
@@ -738,6 +746,7 @@ abstract contract WhiteDebridge is
                 bool status =
                     ICallProxy(callProxy).callERC20(
                         debridge.tokenAddress,
+                        _reserveAddress,
                         _receiver,
                         _data
                     );
@@ -810,6 +819,7 @@ abstract contract WhiteDebridge is
         uint256 _amount,
         address _receiver,
         uint256 _nonce,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) public pure returns (bytes32) {
@@ -822,6 +832,7 @@ abstract contract WhiteDebridge is
                     _amount,
                     _receiver,
                     _nonce,
+                    _reserveAddress,
                     _claimFee,
                     _data
                 )

@@ -1,46 +1,22 @@
-const Web3 = require("web3");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS } = require("./utils.spec");
-const { deployProxy } = require("@openzeppelin/truffle-upgrades");
-const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
-const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
+const WhiteAggregator = artifacts.require("WhiteFullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WhiteDebridge = artifacts.require("WhiteLightDebridge");
+const WhiteDebridge = artifacts.require("WhiteFullDebridge");
 const WrappedAsset = artifacts.require("WrappedAsset");
+const FeeProxy = artifacts.require("FeeProxy");
 const CallProxy = artifacts.require("CallProxy");
+const UniswapV2Factory = artifacts.require("UniswapV2Factory");
+const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const DefiController = artifacts.require("DefiController");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const Tx = require("ethereumjs-tx");
-const bscWeb3 = new Web3(process.env.TEST_BSC_PROVIDER);
-const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 
-web3.extend({
-  property: "eth",
-  methods: [
-    {
-      name: "getTransaction",
-      call: "eth_getTransactionByHash",
-      params: 1,
-    },
-    {
-      name: "getRawTransaction",
-      call: "eth_getRawTransactionByHash",
-      params: 1,
-    },
-  ],
-});
-
-contract("AutoWhiteLightDebridge", function([
-  alice,
-  bob,
-  carol,
-  eve,
-  fei,
-  devid,
-]) {
+contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
+  const reserveAddress = devid;
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -49,16 +25,11 @@ contract("AutoWhiteLightDebridge", function([
       from: alice,
     });
     this.oraclePayment = toWei("0.001");
-    this.minConfirmations = 3;
-    this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
-    this.aggregatorInstance = new web3.eth.Contract(
-      WhiteFullAggregator.abi,
-      this.fullAggregatorAddress
-    );
-    this.whiteLightAggregator = await WhiteLightAggregator.new(
+    this.minConfirmations = 1;
+    this.whiteAggregator = await WhiteAggregator.new(
       this.minConfirmations,
-      [this.fullAggregatorAddress + "80a4", "0x8080"],
-      "0x38",
+      this.oraclePayment,
+      this.linkToken.address,
       {
         from: alice,
       }
@@ -73,38 +44,36 @@ contract("AutoWhiteLightDebridge", function([
         admin: carol,
       },
       {
-        address: carol,
-        admin: eve,
-      },
-      {
         address: eve,
-        admin: carol,
-      },
-      {
-        address: fei,
-        admin: eve,
-      },
-      {
-        address: devid,
         admin: carol,
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.whiteLightAggregator.addOracle(oracle.address, {
+      await this.whiteAggregator.addOracle(oracle.address, oracle.admin, {
         from: alice,
       });
     }
-    this.defiController = await DefiController.new({
+    this.uniswapFactory = await UniswapV2Factory.new(carol, {
       from: alice,
     });
+    this.feeProxy = await FeeProxy.new(
+      this.linkToken.address,
+      this.uniswapFactory.address,
+      {
+        from: alice,
+      }
+    );
     this.callProxy = await CallProxy.new({
+      from: alice,
+    });
+    this.defiController = await DefiController.new({
       from: alice,
     });
     const minAmount = toWei("1");
     const fixedFee = toWei("0.00001");
     const transferFee = toWei("0.001");
     const minReserves = toWei("0.2");
-    const supportedChainIds = [42];
+    const supportedChainIds = [42, 56];
     this.weth = await WETH9.new({
       from: alice,
     });
@@ -113,9 +82,11 @@ contract("AutoWhiteLightDebridge", function([
       fixedFee,
       transferFee,
       minReserves,
-      this.whiteLightAggregator.address,
+      this.whiteAggregator.address,
       this.callProxy.address.toString(),
       supportedChainIds,
+      this.weth.address,
+      this.feeProxy.address,
       this.defiController.address,
     ]);
   });
@@ -128,13 +99,13 @@ contract("AutoWhiteLightDebridge", function([
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
-      const supportedChainIds = [42, 3];
+      const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
-        [this.whiteDebridge.address],
+        [this.whiteDebridge.address, alice],
         {
           from: alice,
         }
@@ -167,19 +138,19 @@ contract("AutoWhiteLightDebridge", function([
     });
 
     it("should add external native asset if called by the admin", async function() {
-      const tokenAddress = "0x0000000000000000000000000000000000000000";
-      const chainId = 42;
-      const minAmount = toWei("0.0001");
+      const tokenAddress = ZERO_ADDRESS;
+      const chainId = 56;
+      const minAmount = toWei("100");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
-      const supportedChainIds = [42, 3];
+      const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
-        [this.whiteDebridge.address],
+        [this.whiteDebridge.address, alice],
         {
           from: alice,
         }
@@ -244,34 +215,6 @@ contract("AutoWhiteLightDebridge", function([
       assert.equal(debridge.balance.toString(), "0");
       assert.equal(debridge.minReserves.toString(), minReserves);
     });
-
-    it("should reject adding external asset if called by the non-admin", async function() {
-      await expectRevert(
-        this.whiteDebridge.addExternalAsset(
-          ZERO_ADDRESS,
-          ZERO_ADDRESS,
-          0,
-          0,
-          0,
-          0,
-          0,
-          [0],
-          {
-            from: bob,
-          }
-        ),
-        "onlyAdmin: bad role"
-      );
-    });
-
-    it("should reject setting native asset if called by the non-admin", async function() {
-      await expectRevert(
-        this.whiteDebridge.addNativeAsset(ZERO_ADDRESS, 0, 0, 0, 0, [0], {
-          from: bob,
-        }),
-        "onlyAdmin: bad role"
-      );
-    });
   });
 
   context("Test send method", () => {
@@ -280,9 +223,9 @@ contract("AutoWhiteLightDebridge", function([
       const chainId = await this.whiteDebridge.chainId();
       const receiver = bob;
       const amount = toBN(toWei("1"));
-      const claimFee = toBN(toWei("0.1"));
-      const data = "0x";
       const chainIdTo = 42;
+      const claimFee = toBN(toWei("0.0001"));
+      const data = "0x";
       const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
@@ -300,6 +243,7 @@ contract("AutoWhiteLightDebridge", function([
         receiver,
         amount,
         chainIdTo,
+        reserveAddress,
         claimFee,
         data,
         {
@@ -323,9 +267,9 @@ contract("AutoWhiteLightDebridge", function([
       const chainId = await this.whiteDebridge.chainId();
       const receiver = bob;
       const amount = toBN(toWei("100"));
-      const claimFee = toBN(toWei("1"));
-      const data = "0x";
       const chainIdTo = 42;
+      const claimFee = toBN(toWei("0.0001"));
+      const data = "0x";
       await this.mockToken.mint(alice, amount, {
         from: alice,
       });
@@ -349,6 +293,7 @@ contract("AutoWhiteLightDebridge", function([
         receiver,
         amount,
         chainIdTo,
+        reserveAddress,
         claimFee,
         data,
         {
@@ -371,7 +316,7 @@ contract("AutoWhiteLightDebridge", function([
       const receiver = bob;
       const chainId = await this.whiteDebridge.chainId();
       const amount = toBN(toWei("1"));
-      const claimFee = toBN(toWei("0.1"));
+      const claimFee = toBN(toWei("0.0001"));
       const data = "0x";
       const chainIdTo = 42;
       const debridgeId = await this.whiteDebridge.getDebridgeId(
@@ -384,6 +329,7 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           chainIdTo,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -400,9 +346,9 @@ contract("AutoWhiteLightDebridge", function([
       const receiver = bob;
       const chainId = await this.whiteDebridge.chainId();
       const amount = toBN(toWei("0.1"));
-      const chainIdTo = 42;
-      const claimFee = toBN(toWei("0.01"));
+      const claimFee = toBN(toWei("0.0001"));
       const data = "0x";
+      const chainIdTo = 42;
       const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
@@ -413,6 +359,7 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           chainIdTo,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -424,12 +371,72 @@ contract("AutoWhiteLightDebridge", function([
       );
     });
 
+    it("should reject sending with no claim fee", async function() {
+      const tokenAddress = ZERO_ADDRESS;
+      const receiver = bob;
+      const chainId = await this.whiteDebridge.chainId();
+      const amount = toBN(toWei("1"));
+      const claimFee = toBN(toWei("0"));
+      const data = "0x";
+      const chainIdTo = 42;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.autoSend(
+          debridgeId,
+          receiver,
+          amount,
+          chainIdTo,
+          reserveAddress,
+          claimFee,
+          data,
+          {
+            value: amount,
+            from: alice,
+          }
+        ),
+        "autoSend: fee too low"
+      );
+    });
+
+    it("should reject sending with too high fee", async function() {
+      const tokenAddress = ZERO_ADDRESS;
+      const receiver = bob;
+      const chainId = await this.whiteDebridge.chainId();
+      const amount = toBN(toWei("1"));
+      const claimFee = toBN(toWei("10"));
+      const data = "0x";
+      const chainIdTo = 56;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.autoSend(
+          debridgeId,
+          receiver,
+          amount,
+          chainIdTo,
+          reserveAddress,
+          claimFee,
+          data,
+          {
+            value: amount,
+            from: alice,
+          }
+        ),
+        "autoSend: proposed fee too high"
+      );
+    });
+
     it("should reject sending tokens to unsupported chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
       const chainId = await this.whiteDebridge.chainId();
       const amount = toBN(toWei("1"));
-      const claimFee = toBN(toWei("0.1"));
+      const claimFee = toBN(toWei("0.0001"));
       const data = "0x";
       const chainIdTo = chainId;
       const debridgeId = await this.whiteDebridge.getDebridgeId(
@@ -442,6 +449,7 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           chainIdTo,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -457,7 +465,7 @@ contract("AutoWhiteLightDebridge", function([
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
       const amount = toBN(toWei("1"));
-      const claimFee = toBN(toWei("0.1"));
+      const claimFee = toBN(toWei("0.0001"));
       const data = "0x";
       const chainIdTo = 42;
       const debridgeId = await this.whiteDebridge.getDebridgeId(
@@ -470,6 +478,7 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           chainIdTo,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -483,23 +492,32 @@ contract("AutoWhiteLightDebridge", function([
   });
 
   context("Test mint method", () => {
-    let debridgeId;
+    const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+    const chainId = 56;
     const receiver = bob;
-    const amount = toBN(toWei("9"));
+    const amount = toBN(toWei("100"));
     const claimFee = toBN(toWei("1"));
     const data = "0x";
-
-    const nonce = 1;
-    const tokenAddress = "0x0000000000000000000000000000000000000000";
-    const chainId = 42;
+    const nonce = 2;
     let currentChainId;
-
     before(async function() {
-      debridgeId = await this.whiteDebridge.getDebridgeId(
+      currentChainId = await this.whiteDebridge.chainId();
+      const newSupply = toWei("100");
+      await this.linkToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.linkToken.transferAndCall(
+        this.whiteAggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
       );
-      currentChainId = await this.whiteDebridge.chainId();
       const submission = await this.whiteDebridge.getAutoSubmisionId(
         debridgeId,
         chainId,
@@ -507,71 +525,31 @@ contract("AutoWhiteLightDebridge", function([
         amount,
         receiver,
         nonce,
+        reserveAddress,
         claimFee,
         data
       );
-      this.signedTxs = [];
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        const tx = {
-          to: this.fullAggregatorAddress,
-          gas: "3000000",
-          value: 0,
-          gasPrice: toWei("5", "gwei"),
-          nonce: 10,
-          data: this.aggregatorInstance.methods.submit(submission).encodeABI(),
-        };
-        this.signedTx = await bscWeb3.eth.accounts.signTransaction(
-          tx,
-          oracleKey
-        );
-        this.signedTxs.push(
-          await bscWeb3.eth.accounts.signTransaction(tx, oracleKey)
-        );
-      }
+      await this.whiteAggregator.submit(submission, {
+        from: bob,
+      });
     });
 
     it("should mint when the submission is approved", async function() {
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
+      const workerBalance = toBN(await wrappedAsset.balanceOf(alice));
       const balance = toBN(await wrappedAsset.balanceOf(receiver));
-      const trxsData = [];
-      for (let i = 0; i < this.signedTxs.length; i++) {
-        let signedTx = this.signedTxs[i];
-        const tx = new Tx(signedTx.rawTransaction);
-        const rawTx = (({ nonce, from, to, value, gas, gasPrice, input }) => ({
-          nonce,
-          from,
-          to,
-          value,
-          gas,
-          gasPrice,
-          input,
-        }))(tx);
-        const unsignedTx = new Tx(rawTx);
-        const serializedUnsignedTx = unsignedTx.serialize().toString("hex");
-        const trxData = [
-          "0x" +
-            serializedUnsignedTx.substr(
-              0,
-              serializedUnsignedTx.indexOf(
-                this.fullAggregatorAddress.slice(2).toLowerCase()
-              )
-            ),
-          "0x" +
-            ("00" + tx.r.toString("hex")).slice(-64) +
-            ("00" + tx.s.toString("hex")).slice(-64) +
-            (tx.v.toString("hex") == "94" ? "1c" : "1b"),
-        ];
-        trxsData.push(trxData);
-      }
       await this.whiteDebridge.autoMint(
         debridgeId,
         chainId,
         receiver,
         amount,
         nonce,
-        trxsData,
+        reserveAddress,
         claimFee,
         data,
         {
@@ -579,6 +557,7 @@ contract("AutoWhiteLightDebridge", function([
         }
       );
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
+      const newWorkerBalance = toBN(await wrappedAsset.balanceOf(alice));
       const submissionId = await this.whiteDebridge.getAutoSubmisionId(
         debridgeId,
         chainId,
@@ -586,6 +565,7 @@ contract("AutoWhiteLightDebridge", function([
         amount,
         receiver,
         nonce,
+        reserveAddress,
         claimFee,
         data
       );
@@ -593,6 +573,10 @@ contract("AutoWhiteLightDebridge", function([
         submissionId
       );
       assert.equal(balance.add(amount).toString(), newBalance.toString());
+      assert.equal(
+        workerBalance.add(claimFee).toString(),
+        newWorkerBalance.toString()
+      );
       assert.ok(isSubmissionUsed);
     });
 
@@ -609,7 +593,31 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           nonce,
-          [],
+          reserveAddress,
+          claimFee,
+          data,
+          {
+            from: alice,
+          }
+        ),
+        "mint: not confirmed"
+      );
+    });
+
+    it("should reject minting with wrong claim fee", async function() {
+      const claimFee = toBN(toWei("20"));
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.autoMint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -632,7 +640,7 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           nonce,
-          [],
+          reserveAddress,
           claimFee,
           data,
           {
@@ -645,14 +653,14 @@ contract("AutoWhiteLightDebridge", function([
   });
 
   context("Test burn method", () => {
-    const claimFee = "9000000000000";
+    const claimFee = toBN(toWei("1"));
     const data = "0x";
 
     it("should burning when the amount is suficient", async function() {
-      const tokenAddress = "0x0000000000000000000000000000000000000000";
-      const chainId = 42;
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const chainId = 56;
       const receiver = alice;
-      const amount = toBN("999000000000000");
+      const amount = toBN(toWei("100"));
       const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
@@ -668,6 +676,7 @@ contract("AutoWhiteLightDebridge", function([
         receiver,
         amount,
         chainId,
+        reserveAddress,
         claimFee,
         data,
         {
@@ -687,6 +696,64 @@ contract("AutoWhiteLightDebridge", function([
       );
     });
 
+    it("should reject burning with no fee", async function() {
+      const tokenAddress = ZERO_ADDRESS;
+      const chainId = 56;
+      const receiver = bob;
+      const amount = toBN(toWei("1"));
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      await expectRevert(
+        this.whiteDebridge.autoBurn(
+          debridgeId,
+          receiver,
+          amount,
+          42,
+          reserveAddress,
+          0,
+          data,
+          {
+            from: alice,
+          }
+        ),
+        "autoBurn: fee too low"
+      );
+    });
+
+    it("should reject burning with too high fee", async function() {
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const chainId = 56;
+      const receiver = bob;
+      const amount = toBN(toWei("100"));
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
+      await wrappedAsset.mint(alice, amount, { from: alice });
+      await wrappedAsset.approve(this.whiteDebridge.address, amount, {
+        from: alice,
+      });
+      await expectRevert(
+        this.whiteDebridge.autoBurn(
+          debridgeId,
+          receiver,
+          amount,
+          chainId,
+          reserveAddress,
+          toBN(toWei("100")),
+          data,
+          {
+            from: alice,
+          }
+        ),
+        "autoBurn: proposed fee too high"
+      );
+    });
+
     it("should reject burning from current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const chainId = await this.whiteDebridge.chainId();
@@ -701,7 +768,8 @@ contract("AutoWhiteLightDebridge", function([
           debridgeId,
           receiver,
           amount,
-          42,
+          56,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -713,10 +781,10 @@ contract("AutoWhiteLightDebridge", function([
     });
 
     it("should reject burning too few tokens", async function() {
-      const tokenAddress = "0x0000000000000000000000000000000000000000";
-      const chainId = 42;
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const chainId = 56;
       const receiver = bob;
-      const amount = toBN("10");
+      const amount = toBN(toWei("0.1"));
       const debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
@@ -727,6 +795,7 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           chainId,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -739,57 +808,59 @@ contract("AutoWhiteLightDebridge", function([
   });
 
   context("Test claim method", () => {
-    const claimFee = toBN(toWei("0.001"));
-    const data = "0x";
-
     const tokenAddress = ZERO_ADDRESS;
     const receiver = bob;
-    const amount = toBN(toWei("0.9"));
+    const amount = toBN(toWei("0.8"));
     const nonce = 4;
+    const claimFee = toBN(toWei("0.1"));
+    const data = "0x";
+    let chainIdFrom = 50;
     let chainId;
-    let chainIdFrom = 87;
     let debridgeId;
+    let outsideDebridgeId;
     let erc20DebridgeId;
-
     before(async function() {
       chainId = await this.whiteDebridge.chainId();
       debridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         tokenAddress
       );
+      outsideDebridgeId = await this.whiteDebridge.getDebridgeId(
+        56,
+        "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+      );
       erc20DebridgeId = await this.whiteDebridge.getDebridgeId(
         chainId,
         this.mockToken.address
       );
-      const curentChainSubmission = await this.whiteDebridge.getAutoSubmisionId(
+      const cuurentChainSubmission = await this.whiteDebridge.getAutoSubmisionId(
         debridgeId,
         chainIdFrom,
         chainId,
         amount,
         receiver,
         nonce,
+        reserveAddress,
         claimFee,
         data
       );
-      this.signedEthTxs = [];
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        const tx = {
-          to: this.fullAggregatorAddress,
-          gas: "3000000",
-          value: 0,
-          gasPrice: toWei("5", "gwei"),
-          nonce: 10,
-          data: this.aggregatorInstance.methods
-            .submit(curentChainSubmission)
-            .encodeABI(),
-        };
-        this.signedEthTx = await bscWeb3.eth.accounts.signTransaction(
-          tx,
-          oracleKey
-        );
-        this.signedEthTxs.push(this.signedEthTx);
-      }
+      await this.whiteAggregator.submit(cuurentChainSubmission, {
+        from: bob,
+      });
+      const outsideChainSubmission = await this.whiteDebridge.getAutoSubmisionId(
+        outsideDebridgeId,
+        chainIdFrom,
+        56,
+        amount,
+        receiver,
+        nonce,
+        reserveAddress,
+        claimFee,
+        data
+      );
+      await this.whiteAggregator.submit(outsideChainSubmission, {
+        from: bob,
+      });
       const erc20Submission = await this.whiteDebridge.getAutoSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
@@ -797,70 +868,25 @@ contract("AutoWhiteLightDebridge", function([
         amount,
         receiver,
         nonce,
+        reserveAddress,
         claimFee,
         data
       );
-      this.signedErc20Txs = [];
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        const tx = {
-          to: this.fullAggregatorAddress,
-          gas: "3000000",
-          value: 0,
-          gasPrice: toWei("5", "gwei"),
-          nonce: 10,
-          data: this.aggregatorInstance.methods
-            .submit(erc20Submission)
-            .encodeABI(),
-        };
-        this.signedErc20Tx = await bscWeb3.eth.accounts.signTransaction(
-          tx,
-          oracleKey
-        );
-        this.signedErc20Txs.push(this.signedErc20Tx);
-      }
+      await this.whiteAggregator.submit(erc20Submission, {
+        from: bob,
+      });
     });
 
     it("should claim native token when the submission is approved", async function() {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
-      const trxsData = [];
-      for (let i = 0; i < this.signedEthTxs.length; i++) {
-        const signedEthTx = this.signedEthTxs[i];
-        const tx = new Tx(signedEthTx.rawTransaction);
-        const rawTx = (({ nonce, from, to, value, gas, gasPrice, input }) => ({
-          nonce,
-          from,
-          to,
-          value,
-          gas,
-          gasPrice,
-          input,
-        }))(tx);
-        const unsignedTx = new Tx(rawTx);
-        const serializedUnsignedTx = unsignedTx.serialize().toString("hex");
-        const trxData = [
-          "0x" +
-            serializedUnsignedTx.substr(
-              0,
-              serializedUnsignedTx.indexOf(
-                this.fullAggregatorAddress.slice(2).toLowerCase()
-              )
-            ),
-          "0x" +
-            ("00" + tx.r.toString("hex")).slice(-64) +
-            ("00" + tx.s.toString("hex")).slice(-64) +
-            (tx.v.toString("hex") == "94" ? "1c" : "1b"),
-        ];
-        trxsData.push(trxData);
-      }
       await this.whiteDebridge.autoClaim(
         debridgeId,
         chainIdFrom,
         receiver,
         amount,
         nonce,
-        trxsData,
+        reserveAddress,
         claimFee,
         data,
         {
@@ -871,10 +897,11 @@ contract("AutoWhiteLightDebridge", function([
       const submissionId = await this.whiteDebridge.getAutoSubmisionId(
         debridgeId,
         chainIdFrom,
-        chainId,
+        await this.whiteDebridge.chainId(),
         amount,
         receiver,
         nonce,
+        reserveAddress,
         claimFee,
         data
       );
@@ -893,43 +920,13 @@ contract("AutoWhiteLightDebridge", function([
     it("should claim ERC20 when the submission is approved", async function() {
       const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
-      const trxsData = [];
-      for (let i = 0; i < this.signedErc20Txs.length; i++) {
-        const signedErc20Tx = this.signedErc20Txs[i];
-        const tx = new Tx(signedErc20Tx.rawTransaction);
-        const rawTx = (({ nonce, from, to, value, gas, gasPrice, input }) => ({
-          nonce,
-          from,
-          to,
-          value,
-          gas,
-          gasPrice,
-          input,
-        }))(tx);
-        const unsignedTx = new Tx(rawTx);
-        const serializedUnsignedTx = unsignedTx.serialize().toString("hex");
-        const trxData = [
-          "0x" +
-            serializedUnsignedTx.substr(
-              0,
-              serializedUnsignedTx.indexOf(
-                this.fullAggregatorAddress.slice(2).toLowerCase()
-              )
-            ),
-          "0x" +
-            ("00" + tx.r.toString("hex")).slice(-64) +
-            ("00" + tx.s.toString("hex")).slice(-64) +
-            (tx.v.toString("hex") == "94" ? "1c" : "1b"),
-        ];
-        trxsData.push(trxData);
-      }
       await this.whiteDebridge.autoClaim(
         erc20DebridgeId,
         chainIdFrom,
         receiver,
         amount,
         nonce,
-        trxsData,
+        reserveAddress,
         claimFee,
         data,
         {
@@ -940,10 +937,11 @@ contract("AutoWhiteLightDebridge", function([
       const submissionId = await this.whiteDebridge.getAutoSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
-        chainId,
+        await this.whiteDebridge.chainId(),
         amount,
         receiver,
         nonce,
+        reserveAddress,
         claimFee,
         data
       );
@@ -968,7 +966,26 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           nonce,
-          [],
+          reserveAddress,
+          claimFee,
+          data,
+          {
+            from: alice,
+          }
+        ),
+        "claim: not confirmed"
+      );
+    });
+
+    it("should reject claiming the token from outside chain", async function() {
+      await expectRevert(
+        this.whiteDebridge.autoClaim(
+          outsideDebridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          reserveAddress,
           claimFee,
           data,
           {
@@ -987,7 +1004,7 @@ contract("AutoWhiteLightDebridge", function([
           receiver,
           amount,
           nonce,
-          [],
+          reserveAddress,
           claimFee,
           data,
           {

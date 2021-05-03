@@ -52,6 +52,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _amount,
         uint256 _nonce,
         bytes[2][] calldata _trxData,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) external {
@@ -63,6 +64,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _amount,
                 _receiver,
                 _nonce,
+                _reserveAddress,
                 _claimFee,
                 _data
             );
@@ -70,7 +72,15 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount, _claimFee, _data);
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -100,7 +110,15 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -141,7 +159,15 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             ),
             "mint: not confirmed"
         );
-        _mint(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -171,7 +197,15 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -187,6 +221,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _amount,
         uint256 _nonce,
         bytes[2][] calldata _trxData,
+        address _reserveAddress,
         uint256 _claimFee,
         bytes memory _data
     ) external {
@@ -198,6 +233,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _amount,
                 _receiver,
                 _nonce,
+                _reserveAddress,
                 _claimFee,
                 _data
             );
@@ -205,7 +241,15 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount, _claimFee, _data);
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            _reserveAddress,
+            _claimFee,
+            _data
+        );
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -246,6 +290,14 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             ),
             "claim: not confirmed"
         );
-        _claim(submissionId, _debridgeId, _receiver, _amount, 0, "0x");
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            address(0),
+            0,
+            "0x"
+        );
     }
 }
