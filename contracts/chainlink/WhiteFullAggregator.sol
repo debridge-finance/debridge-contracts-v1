@@ -15,8 +15,8 @@ contract WhiteFullAggregator is Aggregator, IWhiteFullAggregator {
 
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
 
-    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed
-    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed
+    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
+    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Minimal required confirmations.
@@ -28,7 +28,7 @@ contract WhiteFullAggregator is Aggregator, IWhiteFullAggregator {
         IERC20 _link
     ) Aggregator(_minConfirmations, _payment, _link) {}
 
-    /// @dev Confirms the transfer request.
+    /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.
     function submitMany(bytes32[] memory _submissionIds)
         external
@@ -46,24 +46,28 @@ contract WhiteFullAggregator is Aggregator, IWhiteFullAggregator {
         _submit(_submissionId);
     }
 
-    /// @dev Confirms the transfer request.
+    /// @dev Confirms single transfer request.
     /// @param _submissionId Submission identifier.
     function _submit(bytes32 _submissionId) internal {
-        SubmissionInfo storage mintInfo = getSubmissionInfo[_submissionId];
-        require(!mintInfo.hasVerified[msg.sender], "submit: submitted already");
-        mintInfo.confirmations += 1;
-        mintInfo.hasVerified[msg.sender] = true;
-        if (mintInfo.confirmations >= minConfirmations) {
-            mintInfo.confirmed = true;
+        SubmissionInfo storage submissionInfo =
+            getSubmissionInfo[_submissionId];
+        require(
+            !submissionInfo.hasVerified[msg.sender],
+            "submit: submitted already"
+        );
+        submissionInfo.confirmations += 1;
+        submissionInfo.hasVerified[msg.sender] = true;
+        if (submissionInfo.confirmations >= minConfirmations) {
+            submissionInfo.confirmed = true;
             emit SubmissionApproved(_submissionId);
         }
         _payOracle(msg.sender);
         emit Confirmed(_submissionId, msg.sender);
     }
 
-    /// @dev Returns whether burnnt request is confirmed.
+    /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
-    /// @return Whether burnnt request is confirmed.
+    /// @return Whether transfer request is confirmed.
     function isSubmissionConfirmed(bytes32 _submissionId)
         external
         view

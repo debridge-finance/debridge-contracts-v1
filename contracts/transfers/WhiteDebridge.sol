@@ -23,16 +23,22 @@ abstract contract WhiteDebridge is
 {
     using SafeERC20 for IERC20;
 
+    struct ChainSupportInfo {
+        bool isSupported; // whether the chain for the asset is supported
+        uint256 fixedFee; // transfer fixed fee
+        uint256 transferFee; // transfer fee rate (in % of transferred amount)
+    }
+
     struct DebridgeInfo {
         address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
         uint256 minAmount; // minimal amount to transfer
-        uint256 fixedFee; // transfer fee rate
-        uint256 transferFee; // transfer fee rate
+        uint256 fixedFee; // transfer fixed fee
+        uint256 transferFee; // transfer fee rate (in % of transferred amount)
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 minReserves; // minimal hot reserves
-        mapping(uint256 => bool) isSupported; // wheter the chain for the asset is supported
+        mapping(uint256 => bool) isSupported; // whether the chain for the asset is supported
     }
 
     struct AggregatorInfo {
@@ -42,9 +48,9 @@ abstract contract WhiteDebridge is
 
     uint256 public constant DENOMINATOR = 1e18; // accuacy multiplyer
     uint256 public chainId; // current chain id
-    address public aggregator; // chainlink aggregator address
+    address public aggregator; // current chainlink aggregator address
     address public callProxy; // proxy to execute user's calls
-    uint8 public aggregatorVersion; // aggregators number
+    uint8 public aggregatorVersion; // aggregators count
     uint256[] public chainIds; // list of all supported chain ids
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
@@ -236,19 +242,22 @@ abstract contract WhiteDebridge is
     /// @param _receiver Receiver address.
     /// @param _amount Amount to be transfered (note: the fee can be applyed).
     /// @param _chainIdTo Chain id of the target chain.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoSend(
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) external payable whenNotPaused() {
-        require(_claimFee != 0, "autoSend: fee too low");
+        require(_executionFee != 0, "autoSend: fee too low");
         _amount = _send(_debridgeId, _amount, _chainIdTo);
-        require(_amount >= _claimFee, "autoSend: proposed fee too high");
-        _amount -= _claimFee;
+        require(_amount >= _executionFee, "autoSend: proposed fee too high");
+        _amount -= _executionFee;
         uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId =
             getAutoSubmisionId(
@@ -258,8 +267,8 @@ abstract contract WhiteDebridge is
                 _amount,
                 _receiver,
                 nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         emit AutoSent(
@@ -269,7 +278,7 @@ abstract contract WhiteDebridge is
             _receiver,
             nonce,
             _chainIdTo,
-            _claimFee,
+            _executionFee,
             _data
         );
         getUserNonce[_receiver]++;
@@ -280,19 +289,22 @@ abstract contract WhiteDebridge is
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _chainIdTo Chain id of the target chain.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoBurn(
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) external whenNotPaused() {
-        require(_claimFee != 0, "autoBurn: fee too low");
+        require(_executionFee != 0, "autoBurn: fee too low");
         _amount = _burn(_debridgeId, _amount, _chainIdTo);
-        require(_amount >= _claimFee, "autoBurn: proposed fee too high");
-        _amount -= _claimFee;
+        require(_amount >= _executionFee, "autoBurn: proposed fee too high");
+        _amount -= _executionFee;
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
             getAutoSubmisionId(
@@ -302,8 +314,8 @@ abstract contract WhiteDebridge is
                 _amount,
                 _receiver,
                 nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         emit AutoBurnt(
@@ -313,7 +325,7 @@ abstract contract WhiteDebridge is
             _receiver,
             nonce,
             _chainIdTo,
-            _claimFee,
+            _executionFee,
             _data
         );
         getUserNonce[_receiver]++;
@@ -351,13 +363,13 @@ abstract contract WhiteDebridge is
 
     /// @dev Add support for the asset from the other chain, deploy new wrapped asset.
     /// @param _tokenAddress Address of the asset on the other chain.
+    /// @param _wrappedAssetAddress Wrapped asset address.
     /// @param _chainId Current chain id.
     /// @param _minAmount Minimal amount of the asset to be wrapped.
     /// @param _fixedFee Transfer fee rate.
     /// @param _transferFee Transfer fee rate.
     /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where the token of the current chain can be transfered.
-    /// @param _wrappedAssetAddress Wrapped asset address.
     function addExternalAsset(
         address _tokenAddress,
         address _wrappedAssetAddress,
@@ -406,9 +418,9 @@ abstract contract WhiteDebridge is
         emit ChainsSupportUpdated(_chainIds);
     }
 
-    /// @dev Set support for the chains.
+    /// @dev Set proxy address.
     /// @param _callProxy Address of the proxy that executes external calls.
-    function setChainIds(address _callProxy) external onlyAdmin() {
+    function setCallProxy(address _callProxy) external onlyAdmin() {
         callProxy = _callProxy;
         emit CallProxyUpdated(_callProxy);
     }
@@ -670,97 +682,106 @@ abstract contract WhiteDebridge is
     }
 
     /// @dev Mints wrapped asset on the current chain.
-    /// @param _mintId Submission identifier.
+    /// @param _submissionId Submission identifier.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function _mint(
-        bytes32 _mintId,
+        bytes32 _submissionId,
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) internal {
-        require(!isSubmissionUsed[_mintId], "mint: already used");
+        require(!isSubmissionUsed[_submissionId], "mint: already used");
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        isSubmissionUsed[_mintId] = true;
+        isSubmissionUsed[_submissionId] = true;
         require(debridge.chainId != chainId, "mint: is native chain");
-        if (_claimFee > 0) {
-            IWrappedAsset(debridge.tokenAddress).mint(msg.sender, _claimFee);
+        if (_executionFee > 0) {
+            IWrappedAsset(debridge.tokenAddress).mint(
+                msg.sender,
+                _executionFee
+            );
             IWrappedAsset(debridge.tokenAddress).mint(callProxy, _amount);
             bool status =
                 ICallProxy(callProxy).callERC20(
                     debridge.tokenAddress,
-                    _reserveAddress,
+                    _fallbackAddress,
                     _receiver,
                     _data
                 );
-            emit AutoRequestExecuted(_mintId, status);
+            emit AutoRequestExecuted(_submissionId, status);
         } else {
             IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
         }
-        emit Minted(_mintId, _amount, _receiver, _debridgeId);
+        emit Minted(_submissionId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function _claim(
-        bytes32 _burntId,
+        bytes32 _submissionId,
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId == chainId, "claim: wrong target chain");
-        require(!isSubmissionUsed[_burntId], "claim: already used");
-        isSubmissionUsed[_burntId] = true;
+        require(!isSubmissionUsed[_submissionId], "claim: already used");
+        isSubmissionUsed[_submissionId] = true;
         debridge.balance -= _amount;
         _ensureReserves(debridge, _amount);
         if (debridge.tokenAddress == address(0)) {
-            if (_claimFee > 0) {
-                payable(msg.sender).transfer(_claimFee);
+            if (_executionFee > 0) {
+                payable(msg.sender).transfer(_executionFee);
                 bool status =
                     ICallProxy(callProxy).call{value: _amount}(
-                        _reserveAddress,
+                        _fallbackAddress,
                         _receiver,
                         _data
                     );
-                emit AutoRequestExecuted(_burntId, status);
+                emit AutoRequestExecuted(_submissionId, status);
             } else {
                 payable(_receiver).transfer(_amount);
             }
         } else {
-            if (_claimFee > 0) {
+            if (_executionFee > 0) {
                 IERC20(debridge.tokenAddress).safeTransfer(
                     msg.sender,
-                    _claimFee
+                    _executionFee
                 );
                 IERC20(debridge.tokenAddress).safeTransfer(callProxy, _amount);
                 bool status =
                     ICallProxy(callProxy).callERC20(
                         debridge.tokenAddress,
-                        _reserveAddress,
+                        _fallbackAddress,
                         _receiver,
                         _data
                     );
-                emit AutoRequestExecuted(_burntId, status);
+                emit AutoRequestExecuted(_submissionId, status);
             } else {
                 IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
             }
         }
-        emit Claimed(_burntId, _amount, _receiver, _debridgeId);
+        emit Claimed(_submissionId, _amount, _receiver, _debridgeId);
     }
 
     /* VIEW */
 
-    /// @dev Check the balance.
+    /// @dev Get the balance.
     /// @param _tokenAddress Address of the asset on the other chain.
     function getBalance(address _tokenAddress) public view returns (uint256) {
         if (_tokenAddress == address(0)) {
@@ -771,8 +792,8 @@ abstract contract WhiteDebridge is
     }
 
     /// @dev Calculates asset identifier.
-    /// @param _tokenAddress Address of the asset on the other chain.
     /// @param _chainId Current chain id.
+    /// @param _tokenAddress Address of the asset on the other chain.
     function getDebridgeId(uint256 _chainId, address _tokenAddress)
         public
         pure
@@ -783,6 +804,8 @@ abstract contract WhiteDebridge is
 
     /// @dev Calculate submission id.
     /// @param _debridgeId Asset identifier.
+    /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
+    /// @param _chainIdTo Chain identifier of the chain where tokens are sent to.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
@@ -809,9 +832,14 @@ abstract contract WhiteDebridge is
 
     /// @dev Calculate submission id for auto claimable transfer.
     /// @param _debridgeId Asset identifier.
+    /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
+    /// @param _chainIdTo Chain identifier of the chain where tokens are sent to.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function getAutoSubmisionId(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -819,8 +847,8 @@ abstract contract WhiteDebridge is
         uint256 _amount,
         address _receiver,
         uint256 _nonce,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) public pure returns (bytes32) {
         return
@@ -832,8 +860,8 @@ abstract contract WhiteDebridge is
                     _amount,
                     _receiver,
                     _nonce,
-                    _reserveAddress,
-                    _claimFee,
+                    _fallbackAddress,
+                    _executionFee,
                     _data
                 )
             );

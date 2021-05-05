@@ -70,7 +70,7 @@ contract Aggregator is AccessControl {
 
     /// @dev Updates oracle's address.
     /// @param _oracle Oracle address.
-    /// @param _newOracle Oracle address.
+    /// @param _newOracle New oracle address.
     function updateOracleAddress(address _oracle, address _newOracle) external {
         require(
             getOracleInfo[_oracle].admin == msg.sender,
@@ -84,13 +84,13 @@ contract Aggregator is AccessControl {
 
     /// @dev Updates oracle's admin address.
     /// @param _oracle Oracle address.
-    /// @param _newOracleAdmin Oracle address.
-    function updateOracleAddminAddress(address _oracle, address _newOracleAdmin)
+    /// @param _newOracleAdmin New oracle address.
+    function updateOracleAdmin(address _oracle, address _newOracleAdmin)
         external
     {
         require(
             getOracleInfo[_oracle].admin == msg.sender,
-            "updateOracleAddminAddress: only callable by admin"
+            "updateOracleAdmin: only callable by admin"
         );
         getOracleInfo[_oracle].admin = _newOracleAdmin;
     }
@@ -100,6 +100,8 @@ contract Aggregator is AccessControl {
         availableFunds = link.balanceOf(address(this)) - allocatedFunds;
     }
 
+    /// @dev Updates link balance.
+    /// @param _data Call data.
     function onTokenTransfer(
         address,
         uint256,
@@ -112,8 +114,8 @@ contract Aggregator is AccessControl {
 
     /* ADMIN */
 
-    /// @dev Withdraws available LINK's.
-    /// @param _recipient Recepient reward.
+    /// @dev Withdraws earned LINK's.
+    /// @param _recipient Reward's recepient.
     /// @param _amount Amount to withdraw.
     function withdrawFunds(address _recipient, uint256 _amount)
         external
@@ -168,14 +170,10 @@ contract Aggregator is AccessControl {
 
     /* VIEW */
 
-    /// @dev Withdraws oracle reward.
+    /// @dev Return's oracle reward.
     /// @param _oracle Oracle address.
     /// @return Oracle rewards.
-    function withdrawablePayment(address _oracle)
-        external
-        view
-        returns (uint256)
-    {
+    function getWithdrawable(address _oracle) external view returns (uint256) {
         return getOracleInfo[_oracle].withdrawable;
     }
 }

@@ -58,14 +58,17 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoMint(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) external whenNotPaused() {
         bytes32 submissionId =
@@ -76,8 +79,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         require(
@@ -91,8 +94,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
@@ -102,14 +105,17 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoMintWithOldAggregator(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external whenNotPaused() {
@@ -121,8 +127,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         AggregatorInfo memory aggregatorInfo =
@@ -141,8 +147,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
@@ -241,8 +247,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) external whenNotPaused() {
         bytes32 submissionId =
@@ -253,8 +259,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         require(
@@ -268,8 +274,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
@@ -279,14 +285,17 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoClaimWithOldAggregator(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external whenNotPaused() {
@@ -298,8 +307,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         AggregatorInfo memory aggregatorInfo =
@@ -318,8 +327,8 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
@@ -329,6 +338,7 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
+
     function claim(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,

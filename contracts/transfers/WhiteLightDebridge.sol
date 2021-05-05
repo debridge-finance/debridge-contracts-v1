@@ -45,6 +45,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
     /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoMint(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -52,8 +55,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _amount,
         uint256 _nonce,
         bytes[2][] calldata _trxData,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) external {
         bytes32 submissionId =
@@ -64,8 +67,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         require(
@@ -77,8 +80,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
@@ -89,6 +92,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
     /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoMintWithOldAggregator(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -96,8 +102,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _amount,
         uint256 _nonce,
         bytes[2][] calldata _trxData,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external {
@@ -109,8 +115,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         AggregatorInfo memory aggregatorInfo =
@@ -131,8 +137,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
@@ -268,6 +274,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
     /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoClaim(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -275,8 +284,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _amount,
         uint256 _nonce,
         bytes[2][] calldata _trxData,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data
     ) external {
         bytes32 submissionId =
@@ -287,8 +296,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         require(
@@ -300,8 +309,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
@@ -312,6 +321,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
     /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _fallbackAddress Receiver of the tokens if the call fails.
+    /// @param _executionFee Fee paid to the transaction executor.
+    /// @param _data Chain id of the target chain.
     function autoClaimWithOldAggregator(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
@@ -319,8 +331,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         uint256 _amount,
         uint256 _nonce,
         bytes[2][] calldata _trxData,
-        address _reserveAddress,
-        uint256 _claimFee,
+        address _fallbackAddress,
+        uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external {
@@ -332,8 +344,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _amount,
                 _receiver,
                 _nonce,
-                _reserveAddress,
-                _claimFee,
+                _fallbackAddress,
+                _executionFee,
                 _data
             );
         AggregatorInfo memory aggregatorInfo =
@@ -354,8 +366,8 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             _debridgeId,
             _receiver,
             _amount,
-            _reserveAddress,
-            _claimFee,
+            _fallbackAddress,
+            _executionFee,
             _data
         );
     }
