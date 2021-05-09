@@ -3,7 +3,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS } = require("./utils.spec");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
-const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
+const WhiteLightVerifier = artifacts.require("WhiteLightVerifier");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WhiteDebridge = artifacts.require("WhiteLightDebridge");
@@ -56,7 +56,7 @@ contract("AutoWhiteLightDebridge", function([
       WhiteFullAggregator.abi,
       this.fullAggregatorAddress
     );
-    this.whiteLightAggregator = await WhiteLightAggregator.new(
+    this.whiteLightAggregator = await WhiteLightVerifier.new(
       this.minConfirmations,
       [this.fullAggregatorAddress + "80a4", "0x8080"],
       "0x38",
