@@ -50,8 +50,6 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     );
     this.whiteLightAggregator = await WhiteLightVerifier.new(
       this.minConfirmations,
-      [this.fullAggregatorAddress + "80a4", "0x8080"],
-      "0x38",
       {
         from: alice,
       }
@@ -564,23 +562,11 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         receiver,
         nonce
       );
-      this.signedTxs = [];
+      this.signatures = [];
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        const tx = {
-          to: this.fullAggregatorAddress,
-          gas: "3000000",
-          value: 0,
-          gasPrice: toWei("5", "gwei"),
-          nonce: 10,
-          data: this.aggregatorInstance.methods.submit(submission).encodeABI(),
-        };
-        this.signedTx = await bscWeb3.eth.accounts.signTransaction(
-          tx,
-          oracleKey
-        );
-        this.signedTxs.push(
-          await bscWeb3.eth.accounts.signTransaction(tx, oracleKey)
+        this.signatures.push(
+          (await bscWeb3.eth.accounts.sign(submission, oracleKey)).signature
         );
       }
     });
@@ -589,43 +575,14 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(receiver));
-      const trxsData = [];
-      for (let i = 0; i < this.signedTxs.length; i++) {
-        let signedTx = this.signedTxs[i];
-        const tx = new Tx(signedTx.rawTransaction);
-        const rawTx = (({ nonce, from, to, value, gas, gasPrice, input }) => ({
-          nonce,
-          from,
-          to,
-          value,
-          gas,
-          gasPrice,
-          input,
-        }))(tx);
-        const unsignedTx = new Tx(rawTx);
-        const serializedUnsignedTx = unsignedTx.serialize().toString("hex");
-        const trxData = [
-          "0x" +
-            serializedUnsignedTx.substr(
-              0,
-              serializedUnsignedTx.indexOf(
-                this.fullAggregatorAddress.slice(2).toLowerCase()
-              )
-            ),
-          "0x" +
-            ("00" + tx.r.toString("hex")).slice(-64) +
-            ("00" + tx.s.toString("hex")).slice(-64) +
-            (tx.v.toString("hex") == "94" ? "1c" : "1b"),
-        ];
-        trxsData.push(trxData);
-      }
+
       await this.whiteDebridge.mint(
         debridgeId,
         chainId,
         receiver,
         amount,
         nonce,
-        trxsData,
+        this.signatures,
         {
           from: alice,
         }
@@ -789,24 +746,13 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         receiver,
         nonce
       );
-      this.signedEthTxs = [];
+      this.ethSignatures = [];
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        const tx = {
-          to: this.fullAggregatorAddress,
-          gas: "3000000",
-          value: 0,
-          gasPrice: toWei("5", "gwei"),
-          nonce: 10,
-          data: this.aggregatorInstance.methods
-            .submit(curentChainSubmission)
-            .encodeABI(),
-        };
-        this.signedEthTx = await bscWeb3.eth.accounts.signTransaction(
-          tx,
-          oracleKey
+        this.ethSignatures.push(
+          (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
+            .signature
         );
-        this.signedEthTxs.push(this.signedEthTx);
       }
       const erc20Submission = await this.whiteDebridge.getSubmisionId(
         erc20DebridgeId,
@@ -816,67 +762,26 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         receiver,
         nonce
       );
-      this.signedErc20Txs = [];
+      this.erc20Signatures = [];
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        const tx = {
-          to: this.fullAggregatorAddress,
-          gas: "3000000",
-          value: 0,
-          gasPrice: toWei("5", "gwei"),
-          nonce: 10,
-          data: this.aggregatorInstance.methods
-            .submit(erc20Submission)
-            .encodeABI(),
-        };
-        this.signedErc20Tx = await bscWeb3.eth.accounts.signTransaction(
-          tx,
-          oracleKey
+        this.erc20Signatures.push(
+          (await bscWeb3.eth.accounts.sign(erc20Submission, oracleKey))
+            .signature
         );
-        this.signedErc20Txs.push(this.signedErc20Tx);
       }
     });
 
     it("should claim native token when the submission is approved", async function() {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
-      const trxsData = [];
-      for (let i = 0; i < this.signedEthTxs.length; i++) {
-        const signedEthTx = this.signedEthTxs[i];
-        const tx = new Tx(signedEthTx.rawTransaction);
-        const rawTx = (({ nonce, from, to, value, gas, gasPrice, input }) => ({
-          nonce,
-          from,
-          to,
-          value,
-          gas,
-          gasPrice,
-          input,
-        }))(tx);
-        const unsignedTx = new Tx(rawTx);
-        const serializedUnsignedTx = unsignedTx.serialize().toString("hex");
-        const trxData = [
-          "0x" +
-            serializedUnsignedTx.substr(
-              0,
-              serializedUnsignedTx.indexOf(
-                this.fullAggregatorAddress.slice(2).toLowerCase()
-              )
-            ),
-          "0x" +
-            ("00" + tx.r.toString("hex")).slice(-64) +
-            ("00" + tx.s.toString("hex")).slice(-64) +
-            (tx.v.toString("hex") == "94" ? "1c" : "1b"),
-        ];
-        trxsData.push(trxData);
-      }
       await this.whiteDebridge.claim(
         debridgeId,
         chainIdFrom,
         receiver,
         amount,
         nonce,
-        trxsData,
+        this.ethSignatures,
         {
           from: alice,
         }
@@ -905,43 +810,13 @@ contract("WhiteLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     it("should claim ERC20 when the submission is approved", async function() {
       const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
-      const trxsData = [];
-      for (let i = 0; i < this.signedErc20Txs.length; i++) {
-        const signedErc20Tx = this.signedErc20Txs[i];
-        const tx = new Tx(signedErc20Tx.rawTransaction);
-        const rawTx = (({ nonce, from, to, value, gas, gasPrice, input }) => ({
-          nonce,
-          from,
-          to,
-          value,
-          gas,
-          gasPrice,
-          input,
-        }))(tx);
-        const unsignedTx = new Tx(rawTx);
-        const serializedUnsignedTx = unsignedTx.serialize().toString("hex");
-        const trxData = [
-          "0x" +
-            serializedUnsignedTx.substr(
-              0,
-              serializedUnsignedTx.indexOf(
-                this.fullAggregatorAddress.slice(2).toLowerCase()
-              )
-            ),
-          "0x" +
-            ("00" + tx.r.toString("hex")).slice(-64) +
-            ("00" + tx.s.toString("hex")).slice(-64) +
-            (tx.v.toString("hex") == "94" ? "1c" : "1b"),
-        ];
-        trxsData.push(trxData);
-      }
       await this.whiteDebridge.claim(
         erc20DebridgeId,
         chainIdFrom,
         receiver,
         amount,
         nonce,
-        trxsData,
+        this.erc20Signatures,
         {
           from: alice,
         }
