@@ -1,6 +1,7 @@
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
 const WrappedAsset = artifacts.require("WrappedAsset");
+const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const CallProxy = artifacts.require("CallProxy");
 
 module.exports = async function(_deployer, network) {
@@ -17,6 +18,7 @@ module.exports = async function(_deployer, network) {
     WhiteDebridge = artifacts.require("WhiteFullDebridge");
     WhiteAggregator = artifacts.require("WhiteFullAggregator");
     console.log("FeeProxy: " + FeeProxy.address);
+    console.log("WhiteLightAggregator: " + WhiteLightAggregator.address);
   } else {
     WhiteDebridge = artifacts.require("WhiteLightDebridge");
     WhiteAggregator = artifacts.require("WhiteLightVerifier");
@@ -25,7 +27,7 @@ module.exports = async function(_deployer, network) {
   console.log("WhiteDebridge: " + WhiteDebridge.address);
 
   const whiteDebridgeInstance = await WhiteDebridge.deployed();
-  for (let otherAssetInfo of otherAssetInfos) {
+  for (const otherAssetInfo of otherAssetInfos) {
     const wrappedAsset = await WrappedAsset.new(
       otherAssetInfo.name,
       otherAssetInfo.symbol,
