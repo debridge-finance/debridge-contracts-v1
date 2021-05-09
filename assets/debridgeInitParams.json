@@ -3,6 +3,7 @@
     "oracleCount": 2,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
+    "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "100000000000000",
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
@@ -21,17 +22,25 @@
       }
     ],
     "supportedChains": [97, 256],
-    "type": "light",
-    "utilityBytes": [
-      "0x8881C44d790364fE06C92cA3FB9EfA69592DccAA80a4",
-      "0x8080"
+    "chainSupportInfo": [
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      },
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      }
     ],
-    "versionBytes": "0x61"
+    "type": "light"
   },
   "hecotest": {
     "oracleCount": 2,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
+    "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "100000000000000",
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
@@ -50,12 +59,25 @@
       }
     ],
     "supportedChains": [42, 97],
+    "chainSupportInfo": [
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      },
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      }
+    ],
     "type": "full"
   },
   "bsctest": {
     "oracleCount": 2,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
+    "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "100000000000000",
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
@@ -74,12 +96,25 @@
       }
     ],
     "supportedChains": [42, 256],
+    "chainSupportInfo": [
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      },
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      }
+    ],
     "type": "full"
   },
   "bsc": {
     "oracleCount": 1,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
+    "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "100000000000000",
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
@@ -98,12 +133,20 @@
       }
     ],
     "supportedChains": [42],
+    "chainSupportInfo": [
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      }
+    ],
     "type": "full"
   },
   "kovan": {
     "oracleCount": 2,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
+    "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "1000000000000000",
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
@@ -122,17 +165,25 @@
       }
     ],
     "supportedChains": [56, 256],
-    "type": "light",
-    "utilityBytes": [
-      "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce80a4",
-      "0x8080"
+    "chainSupportInfo": [
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      },
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      }
     ],
-    "versionBytes": "0x38"
+    "type": "light"
   },
   "development": {
     "oracleCount": 1,
     "oraclePayment": "100000000",
     "minTransferAmount": "1000000000",
+    "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "1000000000000000",
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",
@@ -151,11 +202,13 @@
       }
     ],
     "supportedChains": [42],
-    "type": "light",
-    "utilityBytes": [
-      "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce80a4",
-      "0x8080"
+    "chainSupportInfo": [
+      {
+        "fixedFee": "100000000000000",
+        "transferFee": "5000000000000000",
+        "isSupported": true
+      }
     ],
-    "versionBytes": "0x38"
+    "type": "light"
   }
 }

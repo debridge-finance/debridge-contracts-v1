@@ -1,6 +1,7 @@
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
 const WrappedAsset = artifacts.require("WrappedAsset");
+const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const CallProxy = artifacts.require("CallProxy");
 
 module.exports = async function(_deployer, network) {
@@ -17,15 +18,16 @@ module.exports = async function(_deployer, network) {
     WhiteDebridge = artifacts.require("WhiteFullDebridge");
     WhiteAggregator = artifacts.require("WhiteFullAggregator");
     console.log("FeeProxy: " + FeeProxy.address);
+    console.log("WhiteLightAggregator: " + WhiteLightAggregator.address);
   } else {
     WhiteDebridge = artifacts.require("WhiteLightDebridge");
-    WhiteAggregator = artifacts.require("WhiteLightAggregator");
+    WhiteAggregator = artifacts.require("WhiteLightVerifier");
   }
   console.log("WhiteAggregator: " + WhiteAggregator.address);
   console.log("WhiteDebridge: " + WhiteDebridge.address);
 
   const whiteDebridgeInstance = await WhiteDebridge.deployed();
-  for (let otherAssetInfo of otherAssetInfos) {
+  for (const otherAssetInfo of otherAssetInfos) {
     const wrappedAsset = await WrappedAsset.new(
       otherAssetInfo.name,
       otherAssetInfo.symbol,
@@ -36,10 +38,10 @@ module.exports = async function(_deployer, network) {
       wrappedAsset.address,
       otherAssetInfo.chainId,
       otherAssetInfo.minAmount,
-      otherAssetInfo.fixedFee,
-      otherAssetInfo.transferFee,
+      otherAssetInfo.maxAmount,
       otherAssetInfo.minReserves,
-      [otherAssetInfo.chainId]
+      otherAssetInfo.supportedChains,
+      otherAssetInfo.chainSupportInfo
     );
   }
 };

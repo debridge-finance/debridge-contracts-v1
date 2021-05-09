@@ -8,7 +8,7 @@ const whiteFullAggregatorAbi = require("../build/contracts/WhiteFullAggregator.j
   .abi;
 const whiteFullDebridgeAbi = require("../build/contracts/WhiteFullDebridge.json")
   .abi;
-const whiteLightAggregatorAbi = require("../build/contracts/WhiteLightAggregator.json")
+const whiteLightAggregatorAbi = require("../build/contracts/WhiteLightVerifier.json")
   .abi;
 const whiteLightDebridgeAbi = require("../build/contracts/WhiteLightDebridge.json")
   .abi;

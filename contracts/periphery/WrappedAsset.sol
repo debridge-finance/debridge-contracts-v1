@@ -42,7 +42,7 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
                     "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
                 ),
                 keccak256(bytes(_name)),
-                keccak256(_uintToBytes(chainId)),
+                keccak256(bytes("1")),
                 chainId,
                 address(this)
             )
@@ -107,26 +107,5 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
             "permit: invalid signature"
         );
         _approve(_owner, _spender, _value);
-    }
-
-    /// @dev Converts number to bytes.
-    /// @param _i Number.
-    function _uintToBytes(uint256 _i) internal pure returns (bytes memory) {
-        if (_i == 0) {
-            return "0";
-        }
-        uint256 j = _i;
-        uint256 len;
-        while (j != 0) {
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint256 k = len - 1;
-        while (_i != 0) {
-            bstr[k--] = bytes1(uint8(48 + (_i % 10)));
-            _i /= 10;
-        }
-        return bstr;
     }
 }

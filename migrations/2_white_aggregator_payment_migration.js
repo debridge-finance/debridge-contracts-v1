@@ -1,8 +1,9 @@
 const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
+const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const ILinkToken = artifacts.require("ILinkToken");
 const { getLinkAddress } = require("./utils");
 
-module.exports = async function (deployer, network) {
+module.exports = async function(deployer, network) {
   if (network == "test") return;
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
   if (debridgeInitParams.type == "light") return;
@@ -13,6 +14,11 @@ module.exports = async function (deployer, network) {
   const linkTokenInstance = await ILinkToken.at(link);
   await linkTokenInstance.transferAndCall(
     WhiteFullAggregator.address.toString(),
+    amount,
+    "0x"
+  );
+  await linkTokenInstance.transferAndCall(
+    WhiteLightAggregator.address.toString(),
     amount,
     "0x"
   );

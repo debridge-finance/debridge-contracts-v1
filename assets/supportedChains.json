@@ -4,11 +4,25 @@
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "56",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge BNB",
-      "symbol": "deBNB"
+      "symbol": "deBNB",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
+      "supportedChains": [256, 97]
     }
   ],
   "hecotest": [
@@ -16,11 +30,24 @@
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "97",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge BNB",
       "symbol": "deBNB",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
       "supportedChains": [42, 97]
     },
     {
@@ -32,6 +59,18 @@
       "transferFee": "5000000000000000",
       "name": "Debridge KETH",
       "symbol": "deKETH",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
       "supportedChains": [42, 97]
     }
   ],
@@ -40,22 +79,48 @@
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "97",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge BNB",
       "symbol": "deBNB",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
       "supportedChains": [256, 97]
     },
     {
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "256",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge HT",
       "symbol": "deHT",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
       "supportedChains": [256, 97]
     }
   ],
@@ -64,22 +129,48 @@
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "42",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge KETH",
       "symbol": "deKETH",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
       "supportedChains": [256, 42]
     },
     {
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "256",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge HT",
       "symbol": "deHT",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
       "supportedChains": [256, 42]
     }
   ],
@@ -88,11 +179,25 @@
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "42",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge KETH",
-      "symbol": "deKETH"
+      "symbol": "deKETH",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
+      "supportedChains": [256, 42]
     }
   ],
   "development": [
@@ -100,11 +205,25 @@
       "tokenAddress": "0x0000000000000000000000000000000000000000",
       "chainId": "42",
       "minAmount": "100000",
+      "maxAmount": "1000000000000000000000000000000",
       "minReserves": "100000000000000000",
       "fixedFee": "100000000000000",
       "transferFee": "5000000000000000",
       "name": "Debridge KETH",
-      "symbol": "deKETH"
+      "symbol": "deKETH",
+      "chainSupportInfo": [
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        },
+        {
+          "fixedFee": "100000000000000",
+          "transferFee": "5000000000000000",
+          "isSupported": true
+        }
+      ],
+      "supportedChains": [256, 42]
     }
   ]
 }
