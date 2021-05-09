@@ -72,18 +72,29 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
     const fixedFee = toWei("0.00001");
     const transferFee = toWei("0.001");
     const minReserves = toWei("0.2");
+    const isSupported = true;
     const supportedChainIds = [42, 56];
     this.weth = await WETH9.new({
       from: alice,
     });
     this.whiteDebridge = await deployProxy(WhiteDebridge, [
       minAmount,
-      fixedFee,
-      transferFee,
       minReserves,
       ZERO_ADDRESS,
       this.callProxy.address.toString(),
       supportedChainIds,
+      [
+        {
+          transferFee,
+          fixedFee,
+          isSupported,
+        },
+        {
+          transferFee,
+          fixedFee,
+          isSupported,
+        },
+      ],
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
@@ -165,6 +176,7 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
   });
 
   context("Test managing assets", () => {
+    const isSupported = true;
     it("should add external asset if called by the admin", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
@@ -188,10 +200,25 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         wrappedAsset.address,
         chainId,
         minAmount,
-        fixedFee,
-        transferFee,
         minReserves,
         supportedChainIds,
+        [
+          {
+            transferFee,
+            fixedFee,
+            isSupported,
+          },
+          {
+            transferFee,
+            fixedFee,
+            isSupported,
+          },
+          {
+            transferFee,
+            fixedFee,
+            isSupported,
+          },
+        ],
         {
           from: alice,
         }
@@ -201,10 +228,14 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         tokenAddress
       );
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+        debridgeId,
+        3
+      );
       assert.equal(debridge.chainId.toString(), chainId);
       assert.equal(debridge.minAmount.toString(), minAmount);
-      assert.equal(debridge.fixedFee.toString(), fixedFee);
-      assert.equal(debridge.transferFee.toString(), transferFee);
+      assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
+      assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
       assert.equal(debridge.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
       assert.equal(debridge.minReserves.toString(), minReserves);
@@ -221,10 +252,20 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       await this.whiteDebridge.addNativeAsset(
         tokenAddress,
         minAmount,
-        fixedFee,
-        transferFee,
         minReserves,
         supportedChainIds,
+        [
+          {
+            transferFee,
+            fixedFee,
+            isSupported,
+          },
+          {
+            transferFee,
+            fixedFee,
+            isSupported,
+          },
+        ],
         {
           from: alice,
         }
@@ -234,11 +275,15 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         tokenAddress
       );
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+        debridgeId,
+        3
+      );
       assert.equal(debridge.tokenAddress, tokenAddress);
       assert.equal(debridge.chainId.toString(), chainId);
       assert.equal(debridge.minAmount.toString(), minAmount);
-      assert.equal(debridge.fixedFee.toString(), fixedFee);
-      assert.equal(debridge.transferFee.toString(), transferFee);
+      assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
+      assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
       assert.equal(debridge.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
       assert.equal(debridge.minReserves.toString(), minReserves);
@@ -252,9 +297,14 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
           0,
           0,
           0,
-          0,
-          0,
           [0],
+          [
+            {
+              transferFee: 0,
+              fixedFee: 0,
+              isSupported: false,
+            },
+          ],
           {
             from: bob,
           }
@@ -265,9 +315,22 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
 
     it("should reject setting native asset if called by the non-admin", async function() {
       await expectRevert(
-        this.whiteDebridge.addNativeAsset(ZERO_ADDRESS, 0, 0, 0, 0, [0], {
-          from: bob,
-        }),
+        this.whiteDebridge.addNativeAsset(
+          ZERO_ADDRESS,
+          0,
+          0,
+          [0],
+          [
+            {
+              transferFee: 0,
+              fixedFee: 0,
+              isSupported: false,
+            },
+          ],
+          {
+            from: bob,
+          }
+        ),
         "onlyAdmin: bad role"
       );
     });
@@ -288,10 +351,14 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         await web3.eth.getBalance(this.whiteDebridge.address)
       );
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const fees = debridge.transferFee
+      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+        debridgeId,
+        chainIdTo
+      );
+      const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
         .div(toBN(toWei("1")))
-        .add(debridge.fixedFee);
+        .add(toBN(supportedChainInfo.fixedFee));
       await this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
         value: amount,
         from: alice,
@@ -327,10 +394,14 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         await this.mockToken.balanceOf(this.whiteDebridge.address)
       );
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const fees = debridge.transferFee
+      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+        debridgeId,
+        chainIdTo
+      );
+      const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
         .div(toBN(toWei("1")))
-        .add(debridge.fixedFee);
+        .add(toBN(supportedChainInfo.fixedFee));
       await this.whiteDebridge.send(debridgeId, receiver, amount, chainIdTo, {
         from: alice,
       });
@@ -524,11 +595,11 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
   context("Test burn method", () => {
     it("should burning when the amount is suficient", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const chainId = 56;
+      const chainIdTo = 56;
       const receiver = alice;
       const amount = toBN(toWei("100"));
       const debridgeId = await this.whiteDebridge.getDebridgeId(
-        chainId,
+        chainIdTo,
         tokenAddress
       );
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
@@ -537,16 +608,20 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       await wrappedAsset.approve(this.whiteDebridge.address, amount, {
         from: bob,
       });
-      await this.whiteDebridge.burn(debridgeId, receiver, amount, chainId, {
+      await this.whiteDebridge.burn(debridgeId, receiver, amount, chainIdTo, {
         from: bob,
       });
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const fees = debridge.transferFee
+      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+        debridgeId,
+        chainIdTo
+      );
+      const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
         .div(toBN(toWei("1")))
-        .add(debridge.fixedFee);
+        .add(toBN(supportedChainInfo.fixedFee));
       assert.equal(
         debridge.collectedFees.add(fees).toString(),
         newDebridge.collectedFees.toString()

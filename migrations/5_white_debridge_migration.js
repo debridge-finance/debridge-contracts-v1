@@ -18,12 +18,11 @@ module.exports = async function(deployer, network) {
       WhiteDebridge,
       [
         debridgeInitParams.minTransferAmount,
-        debridgeInitParams.fixedFee,
-        debridgeInitParams.transferFee,
         debridgeInitParams.minReserves,
         WhiteFullAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
+        debridgeInitParams.chainSupportInfo,
         weth,
         FeeProxy.address.toString(),
         DefiController.address.toString(),
@@ -35,12 +34,11 @@ module.exports = async function(deployer, network) {
       WhiteLightDebridge,
       [
         debridgeInitParams.minTransferAmount,
-        debridgeInitParams.fixedFee,
-        debridgeInitParams.transferFee,
         debridgeInitParams.minReserves,
         WhiteLightAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
+        debridgeInitParams.chainSupportInfo,
         DefiController.address.toString(),
       ],
       { deployer }

@@ -2,6 +2,12 @@
 pragma solidity ^0.8.2;
 
 interface IWhiteDebridge {
+    struct ChainSupportInfo {
+        bool isSupported; // whether the chain for the asset is supported
+        uint256 fixedFee; // transfer fixed fee
+        uint256 transferFee; // transfer fee rate (in % of transferred amount)
+    }
+
     function send(
         bytes32 _debridgeId,
         address _receiver,
@@ -19,10 +25,9 @@ interface IWhiteDebridge {
     function addNativeAsset(
         address _tokenAddress,
         uint256 _minAmount,
-        uint256 _fixedFee,
-        uint256 _transferFee,
         uint256 _minReserves,
-        uint256[] memory _supportedChainIds
+        uint256[] memory _supportedChainIds,
+        ChainSupportInfo[] memory _chainSupportInfo
     ) external;
 
     function setChainIdSupport(
@@ -36,9 +41,8 @@ interface IWhiteDebridge {
         address _wrappedAssetAddress,
         uint256 _chainId,
         uint256 _minAmount,
-        uint256 _fixedFee,
-        uint256 _transferFee,
         uint256 _minReserves,
-        uint256[] memory _supportedChainIds
+        uint256[] memory _supportedChainIds,
+        ChainSupportInfo[] memory _chainSupportInfo
     ) external;
 }

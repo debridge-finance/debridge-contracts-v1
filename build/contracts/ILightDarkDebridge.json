@@ -57,15 +57,15 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightDarkDebridge.sol",
     "exportedSymbols": {
       "ILightDarkDebridge": [
-        1088
+        1086
       ]
     },
-    "id": 1089,
+    "id": 1087,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1071,
+        "id": 1069,
         "literals": [
           "solidity",
           "^",
@@ -81,9 +81,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1088,
+        "id": 1086,
         "linearizedBaseContracts": [
-          1088
+          1086
         ],
         "name": "ILightDarkDebridge",
         "nameLocation": "67:18:8",
@@ -91,7 +91,7 @@
         "nodes": [
           {
             "functionSelector": "b214faa5",
-            "id": 1076,
+            "id": 1074,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -99,17 +99,17 @@
             "nameLocation": "101:7:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1074,
+              "id": 1072,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1073,
+                  "id": 1071,
                   "mutability": "mutable",
                   "name": "_commitment",
                   "nameLocation": "117:11:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1076,
+                  "scope": 1074,
                   "src": "109:19:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -118,7 +118,7 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 1072,
+                    "id": 1070,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
                     "src": "109:7:8",
@@ -133,12 +133,12 @@
               "src": "108:21:8"
             },
             "returnParameters": {
-              "id": 1075,
+              "id": 1073,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "146:0:8"
             },
-            "scope": 1088,
+            "scope": 1086,
             "src": "92:55:8",
             "stateMutability": "payable",
             "virtual": false,
@@ -146,7 +146,7 @@
           },
           {
             "functionSelector": "7bfe950c",
-            "id": 1087,
+            "id": 1085,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -154,17 +154,17 @@
             "nameLocation": "162:8:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1085,
+              "id": 1083,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1078,
+                  "id": 1076,
                   "mutability": "mutable",
                   "name": "_recipient",
                   "nameLocation": "196:10:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "180:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -173,7 +173,7 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 1077,
+                    "id": 1075,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "180:15:8",
@@ -187,12 +187,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1080,
+                  "id": 1078,
                   "mutability": "mutable",
                   "name": "_relayer",
                   "nameLocation": "232:8:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "216:24:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -201,7 +201,7 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 1079,
+                    "id": 1077,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "216:15:8",
@@ -215,12 +215,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1082,
+                  "id": 1080,
                   "mutability": "mutable",
                   "name": "_fee",
                   "nameLocation": "258:4:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "250:12:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -229,7 +229,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1081,
+                    "id": 1079,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "250:7:8",
@@ -242,12 +242,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1084,
+                  "id": 1082,
                   "mutability": "mutable",
                   "name": "_refund",
                   "nameLocation": "280:7:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "272:15:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -256,7 +256,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1083,
+                    "id": 1081,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "272:7:8",
@@ -271,19 +271,19 @@
               "src": "170:123:8"
             },
             "returnParameters": {
-              "id": 1086,
+              "id": 1084,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "310:0:8"
             },
-            "scope": 1088,
+            "scope": 1086,
             "src": "153:158:8",
             "stateMutability": "payable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1089,
+        "scope": 1087,
         "src": "57:256:8"
       }
     ],
@@ -293,15 +293,15 @@
     "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightDarkDebridge.sol",
     "exportedSymbols": {
       "ILightDarkDebridge": [
-        1088
+        1086
       ]
     },
-    "id": 1089,
+    "id": 1087,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1071,
+        "id": 1069,
         "literals": [
           "solidity",
           "^",
@@ -317,9 +317,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1088,
+        "id": 1086,
         "linearizedBaseContracts": [
-          1088
+          1086
         ],
         "name": "ILightDarkDebridge",
         "nameLocation": "67:18:8",
@@ -327,7 +327,7 @@
         "nodes": [
           {
             "functionSelector": "b214faa5",
-            "id": 1076,
+            "id": 1074,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -335,17 +335,17 @@
             "nameLocation": "101:7:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1074,
+              "id": 1072,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1073,
+                  "id": 1071,
                   "mutability": "mutable",
                   "name": "_commitment",
                   "nameLocation": "117:11:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1076,
+                  "scope": 1074,
                   "src": "109:19:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -354,7 +354,7 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 1072,
+                    "id": 1070,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
                     "src": "109:7:8",
@@ -369,12 +369,12 @@
               "src": "108:21:8"
             },
             "returnParameters": {
-              "id": 1075,
+              "id": 1073,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "146:0:8"
             },
-            "scope": 1088,
+            "scope": 1086,
             "src": "92:55:8",
             "stateMutability": "payable",
             "virtual": false,
@@ -382,7 +382,7 @@
           },
           {
             "functionSelector": "7bfe950c",
-            "id": 1087,
+            "id": 1085,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -390,17 +390,17 @@
             "nameLocation": "162:8:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1085,
+              "id": 1083,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1078,
+                  "id": 1076,
                   "mutability": "mutable",
                   "name": "_recipient",
                   "nameLocation": "196:10:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "180:26:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -409,7 +409,7 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 1077,
+                    "id": 1075,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "180:15:8",
@@ -423,12 +423,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1080,
+                  "id": 1078,
                   "mutability": "mutable",
                   "name": "_relayer",
                   "nameLocation": "232:8:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "216:24:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -437,7 +437,7 @@
                     "typeString": "address payable"
                   },
                   "typeName": {
-                    "id": 1079,
+                    "id": 1077,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "216:15:8",
@@ -451,12 +451,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1082,
+                  "id": 1080,
                   "mutability": "mutable",
                   "name": "_fee",
                   "nameLocation": "258:4:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "250:12:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -465,7 +465,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1081,
+                    "id": 1079,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "250:7:8",
@@ -478,12 +478,12 @@
                 },
                 {
                   "constant": false,
-                  "id": 1084,
+                  "id": 1082,
                   "mutability": "mutable",
                   "name": "_refund",
                   "nameLocation": "280:7:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1087,
+                  "scope": 1085,
                   "src": "272:15:8",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -492,7 +492,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1083,
+                    "id": 1081,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "272:7:8",
@@ -507,19 +507,19 @@
               "src": "170:123:8"
             },
             "returnParameters": {
-              "id": 1086,
+              "id": 1084,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "310:0:8"
             },
-            "scope": 1088,
+            "scope": 1086,
             "src": "153:158:8",
             "stateMutability": "payable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1089,
+        "scope": 1087,
         "src": "57:256:8"
       }
     ],
@@ -531,7 +531,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-05-03T11:47:50.886Z",
+  "updatedAt": "2021-05-08T03:34:32.382Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

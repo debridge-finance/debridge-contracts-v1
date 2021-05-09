@@ -22,31 +22,27 @@ contract WhiteFullDebridge is WhiteDebridge, IWhiteFullDebridge {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
-    /// @param _fixedFee Fixed transfer fee rate.
-    /// @param _transferFee Transfer fee rate.
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
         uint256 _minAmount,
-        uint256 _fixedFee,
-        uint256 _transferFee,
         uint256 _minReserves,
         address _aggregator,
         address _callProxy,
         uint256[] memory _supportedChainIds,
+        ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
         IFeeProxy _feeProxy,
         IDefiController _defiController
     ) public payable initializer {
         super._initialize(
             _minAmount,
-            _fixedFee,
-            _transferFee,
             _minReserves,
             _aggregator,
             _callProxy,
             _supportedChainIds,
+            _chainSupportInfo,
             _defiController
         );
         weth = _weth;
