@@ -19,7 +19,7 @@ module.exports = async function(_deployer, network) {
     console.log("FeeProxy: " + FeeProxy.address);
   } else {
     WhiteDebridge = artifacts.require("WhiteLightDebridge");
-    WhiteAggregator = artifacts.require("WhiteLightAggregator");
+    WhiteAggregator = artifacts.require("WhiteLightVerifier");
   }
   console.log("WhiteAggregator: " + WhiteAggregator.address);
   console.log("WhiteDebridge: " + WhiteDebridge.address);

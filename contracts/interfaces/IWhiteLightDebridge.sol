@@ -8,7 +8,7 @@ interface IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] memory _trxData
+        bytes[] memory _signatures
     ) external;
 
     function claim(
@@ -17,7 +17,7 @@ interface IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] memory _trxData
+        bytes[] memory _signatures
     ) external;
 
     function mintWithOldAggregator(
@@ -26,7 +26,7 @@ interface IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] memory _trxData,
+        bytes[] memory _signatures,
         uint8 _aggregatorVersion
     ) external;
 
@@ -36,7 +36,7 @@ interface IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] memory _trxData,
+        bytes[] memory _signatures,
         uint8 _aggregatorVersion
     ) external;
 }

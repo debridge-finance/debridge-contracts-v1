@@ -3,7 +3,7 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../interfaces/IWhiteLightAggregator.sol";
+import "../interfaces/IWhiteLightVerifier.sol";
 import "../interfaces/IWhiteLightDebridge.sol";
 import "./WhiteDebridge.sol";
 
@@ -43,7 +43,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     /// @param _fallbackAddress Receiver of the tokens if the call fails.
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
@@ -53,7 +53,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
@@ -71,7 +71,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _data
             );
         require(
-            IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
+            IWhiteLightVerifier(aggregator).submit(submissionId, _signatures),
             "mint: not confirmed"
         );
         _mint(
@@ -90,7 +90,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     /// @param _fallbackAddress Receiver of the tokens if the call fails.
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
@@ -100,7 +100,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
@@ -125,9 +125,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         require(
-            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+            IWhiteLightVerifier(aggregatorInfo.aggregator).submit(
                 submissionId,
-                _trxData
+                _signatures
             ),
             "mint: not confirmed"
         );
@@ -147,14 +147,14 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     function mint(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData
+        bytes[] calldata _signatures
     ) external override {
         bytes32 submissionId =
             getSubmisionId(
@@ -166,7 +166,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _nonce
             );
         require(
-            IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
+            IWhiteLightVerifier(aggregator).submit(submissionId, _signatures),
             "mint: not confirmed"
         );
         _mint(
@@ -185,7 +185,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     /// @param _aggregatorVersion Aggregator version.
     function mintWithOldAggregator(
         bytes32 _debridgeId,
@@ -193,7 +193,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData,
+        bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external override {
         bytes32 submissionId =
@@ -212,9 +212,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         require(
-            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+            IWhiteLightVerifier(aggregatorInfo.aggregator).submit(
                 submissionId,
-                _trxData
+                _signatures
             ),
             "mint: not confirmed"
         );
@@ -234,14 +234,14 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     function claim(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData
+        bytes[] calldata _signatures
     ) external override {
         bytes32 submissionId =
             getSubmisionId(
@@ -253,7 +253,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _nonce
             );
         require(
-            IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
+            IWhiteLightVerifier(aggregator).submit(submissionId, _signatures),
             "claim: not confirmed"
         );
         _claim(
@@ -272,7 +272,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     /// @param _fallbackAddress Receiver of the tokens if the call fails.
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
@@ -282,7 +282,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
@@ -300,7 +300,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
                 _data
             );
         require(
-            IWhiteLightAggregator(aggregator).submit(submissionId, _trxData),
+            IWhiteLightVerifier(aggregator).submit(submissionId, _signatures),
             "claim: not confirmed"
         );
         _claim(
@@ -319,7 +319,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     /// @param _fallbackAddress Receiver of the tokens if the call fails.
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
@@ -329,7 +329,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
@@ -354,9 +354,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             "mintWithOldAggregator: invalid aggregator"
         );
         require(
-            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+            IWhiteLightVerifier(aggregatorInfo.aggregator).submit(
                 submissionId,
-                _trxData
+                _signatures
             ),
             "claim: not confirmed"
         );
@@ -376,7 +376,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
-    /// @param _trxData Array of transactions by oracles of 2 elements - payload up to the receiver address and the signature bytes.
+    /// @param _signatures Array of oracles signatures.
     /// @param _aggregatorVersion Aggregator version.
     function claimWithOldAggregator(
         bytes32 _debridgeId,
@@ -384,7 +384,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[2][] calldata _trxData,
+        bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external override {
         bytes32 submissionId =
@@ -403,9 +403,9 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
             "mintWithOldAggregator: invalid aggregator"
         );
         require(
-            IWhiteLightAggregator(aggregatorInfo.aggregator).submit(
+            IWhiteLightVerifier(aggregatorInfo.aggregator).submit(
                 submissionId,
-                _trxData
+                _signatures
             ),
             "claim: not confirmed"
         );

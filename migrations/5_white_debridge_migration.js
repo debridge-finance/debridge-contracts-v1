@@ -1,7 +1,7 @@
 const WhiteDebridge = artifacts.require("WhiteFullDebridge");
 const WhiteLightDebridge = artifacts.require("WhiteLightDebridge");
 const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
-const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
+const WhiteLightVerifier = artifacts.require("WhiteLightVerifier");
 const CallProxy = artifacts.require("CallProxy");
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
@@ -37,7 +37,7 @@ module.exports = async function(deployer, network) {
         debridgeInitParams.minTransferAmount,
         debridgeInitParams.maxTransferAmount,
         debridgeInitParams.minReserves,
-        WhiteLightAggregator.address.toString(),
+        WhiteLightVerifier.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
         debridgeInitParams.chainSupportInfo,
