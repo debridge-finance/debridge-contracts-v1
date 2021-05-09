@@ -102,6 +102,7 @@ contract("AutoWhiteLightDebridge", function([
       from: alice,
     });
     const minAmount = toWei("1");
+    const maxAmount = toWei("100000000000");
     const fixedFee = toWei("0.00001");
     const transferFee = toWei("0.001");
     const minReserves = toWei("0.2");
@@ -112,6 +113,7 @@ contract("AutoWhiteLightDebridge", function([
     });
     this.whiteDebridge = await deployProxy(WhiteDebridge, [
       minAmount,
+      maxAmount,
       minReserves,
       this.whiteLightAggregator.address,
       this.callProxy.address.toString(),
@@ -133,6 +135,7 @@ contract("AutoWhiteLightDebridge", function([
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
       const minAmount = toWei("100");
+      const maxAmount = toWei("100000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -152,6 +155,7 @@ contract("AutoWhiteLightDebridge", function([
         wrappedAsset.address,
         chainId,
         minAmount,
+        maxAmount,
         minReserves,
         supportedChainIds,
         [
@@ -181,6 +185,7 @@ contract("AutoWhiteLightDebridge", function([
       );
       assert.equal(debridge.chainId.toString(), chainId);
       assert.equal(debridge.minAmount.toString(), minAmount);
+      assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
       assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
       assert.equal(debridge.collectedFees.toString(), "0");
@@ -192,6 +197,7 @@ contract("AutoWhiteLightDebridge", function([
       const tokenAddress = "0x0000000000000000000000000000000000000000";
       const chainId = 42;
       const minAmount = toWei("0.0001");
+      const maxAmount = toWei("100000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -211,6 +217,7 @@ contract("AutoWhiteLightDebridge", function([
         wrappedAsset.address,
         chainId,
         minAmount,
+        maxAmount,
         minReserves,
         supportedChainIds,
         [
@@ -240,6 +247,7 @@ contract("AutoWhiteLightDebridge", function([
       );
       assert.equal(debridge.chainId.toString(), chainId);
       assert.equal(debridge.minAmount.toString(), minAmount);
+      assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
       assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
       assert.equal(debridge.collectedFees.toString(), "0");
@@ -251,6 +259,7 @@ contract("AutoWhiteLightDebridge", function([
       const tokenAddress = this.mockToken.address;
       const chainId = await this.whiteDebridge.chainId();
       const minAmount = toWei("100");
+      const maxAmount = toWei("100000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -258,6 +267,7 @@ contract("AutoWhiteLightDebridge", function([
       await this.whiteDebridge.addNativeAsset(
         tokenAddress,
         minAmount,
+        maxAmount,
         minReserves,
         supportedChainIds,
         [
@@ -288,6 +298,7 @@ contract("AutoWhiteLightDebridge", function([
       assert.equal(debridge.tokenAddress, tokenAddress);
       assert.equal(debridge.chainId.toString(), chainId);
       assert.equal(debridge.minAmount.toString(), minAmount);
+      assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
       assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
       assert.equal(debridge.collectedFees.toString(), "0");
@@ -300,6 +311,7 @@ contract("AutoWhiteLightDebridge", function([
         this.whiteDebridge.addExternalAsset(
           ZERO_ADDRESS,
           ZERO_ADDRESS,
+          0,
           0,
           0,
           0,
@@ -323,6 +335,7 @@ contract("AutoWhiteLightDebridge", function([
       await expectRevert(
         this.whiteDebridge.addNativeAsset(
           ZERO_ADDRESS,
+          0,
           0,
           0,
           [0],

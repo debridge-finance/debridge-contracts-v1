@@ -27,6 +27,7 @@ abstract contract WhiteDebridge is
         address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
         uint256 minAmount; // minimal amount to transfer
+        uint256 maxAmount; // minimal amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 minReserves; // minimal hot reserves
@@ -137,11 +138,13 @@ abstract contract WhiteDebridge is
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
+    /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function _initialize(
         uint256 _minAmount,
+        uint256 _maxAmount,
         uint256 _minReserves,
         address _aggregator,
         address _callProxy,
@@ -160,6 +163,7 @@ abstract contract WhiteDebridge is
             address(0),
             chainId,
             _minAmount,
+            _maxAmount,
             _minReserves,
             _supportedChainIds,
             _chainSupportInfo
@@ -322,11 +326,13 @@ abstract contract WhiteDebridge is
     /// @dev Add support for the asset on the current chain.
     /// @param _tokenAddress Address of the asset on the current chain.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
+    /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function addNativeAsset(
         address _tokenAddress,
         uint256 _minAmount,
+        uint256 _maxAmount,
         uint256 _minReserves,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
@@ -337,6 +343,7 @@ abstract contract WhiteDebridge is
             _tokenAddress,
             chainId,
             _minAmount,
+            _maxAmount,
             _minReserves,
             _supportedChainIds,
             _chainSupportInfo
@@ -348,6 +355,7 @@ abstract contract WhiteDebridge is
     /// @param _wrappedAssetAddress Wrapped asset address.
     /// @param _chainId Current chain id.
     /// @param _minAmount Minimal amount of the asset to be wrapped.
+    /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where the token of the current chain can be transfered.
     function addExternalAsset(
@@ -355,6 +363,7 @@ abstract contract WhiteDebridge is
         address _wrappedAssetAddress,
         uint256 _chainId,
         uint256 _minAmount,
+        uint256 _maxAmount,
         uint256 _minReserves,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
@@ -365,6 +374,7 @@ abstract contract WhiteDebridge is
             _wrappedAssetAddress,
             _chainId,
             _minAmount,
+            _maxAmount,
             _minReserves,
             _supportedChainIds,
             _chainSupportInfo
@@ -406,14 +416,17 @@ abstract contract WhiteDebridge is
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.
     /// @param _minAmount Minimal amount of the asset to be wrapped.
+    /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReserves Minimal reserve ration.
     function updateAsset(
         bytes32 _debridgeId,
         uint256 _minAmount,
+        uint256 _maxAmount,
         uint256 _minReserves
     ) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.minAmount = _minAmount;
+        debridge.maxAmount = _maxAmount;
         debridge.minReserves = _minReserves;
     }
 
@@ -553,6 +566,7 @@ abstract contract WhiteDebridge is
     /// @param _tokenAddress Address of the asset on the other chain.
     /// @param _chainId Current chain id.
     /// @param _minAmount Minimal amount of the asset to be wrapped.
+    /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReserves Minimal reserve ration.
     /// @param _supportedChainIds Chain ids where the token of the current chain can be transfered.
     /// @param _chainSupportInfo Cahin support info.
@@ -561,6 +575,7 @@ abstract contract WhiteDebridge is
         address _tokenAddress,
         uint256 _chainId,
         uint256 _minAmount,
+        uint256 _maxAmount,
         uint256 _minReserves,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
@@ -573,6 +588,7 @@ abstract contract WhiteDebridge is
         debridge.tokenAddress = _tokenAddress;
         debridge.chainId = _chainId;
         debridge.minAmount = _minAmount;
+        debridge.maxAmount = _maxAmount;
         debridge.minReserves = _minReserves;
         uint256 supportedChainId;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
@@ -624,6 +640,7 @@ abstract contract WhiteDebridge is
         require(debridge.chainId == chainId, "send: not native chain");
         require(chainSupportInfo.isSupported, "send: wrong targed chain");
         require(_amount >= debridge.minAmount, "send: amount too low");
+        require(_amount <= debridge.maxAmount, "send: amount too high");
         if (debridge.tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");
         } else {
@@ -661,6 +678,7 @@ abstract contract WhiteDebridge is
         require(debridge.chainId != chainId, "burn: native asset");
         require(chainSupportInfo.isSupported, "burn: wrong targed chain");
         require(_amount >= debridge.minAmount, "burn: amount too low");
+        require(_amount <= debridge.maxAmount, "burn: amount too high");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
         uint256 transferFee =

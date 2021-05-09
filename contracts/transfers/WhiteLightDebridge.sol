@@ -12,11 +12,13 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
+    /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
         uint256 _minAmount,
+        uint256 _maxAmount,
         uint256 _minReserves,
         address _aggregator,
         address _callProxy,
@@ -26,6 +28,7 @@ contract WhiteLightDebridge is WhiteDebridge, IWhiteLightDebridge {
     ) public payable initializer {
         super._initialize(
             _minAmount,
+            _maxAmount,
             _minReserves,
             _aggregator,
             _callProxy,

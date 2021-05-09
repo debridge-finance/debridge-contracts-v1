@@ -18,6 +18,7 @@ module.exports = async function(deployer, network) {
       WhiteDebridge,
       [
         debridgeInitParams.minTransferAmount,
+        debridgeInitParams.maxTransferAmount,
         debridgeInitParams.minReserves,
         WhiteFullAggregator.address.toString(),
         CallProxy.address.toString(),
@@ -34,6 +35,7 @@ module.exports = async function(deployer, network) {
       WhiteLightDebridge,
       [
         debridgeInitParams.minTransferAmount,
+        debridgeInitParams.maxTransferAmount,
         debridgeInitParams.minReserves,
         WhiteLightAggregator.address.toString(),
         CallProxy.address.toString(),
