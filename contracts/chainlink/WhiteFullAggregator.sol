@@ -74,6 +74,8 @@ contract WhiteFullAggregator is Aggregator, IWhiteFullAggregator {
         override
         returns (bool)
     {
-        return getSubmissionInfo[_submissionId].confirmed;
+        return
+            getSubmissionInfo[_submissionId].confirmed ||
+            getSubmissionInfo[_submissionId].confirmations >= minConfirmations;
     }
 }

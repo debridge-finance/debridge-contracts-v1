@@ -89,7 +89,9 @@ contract WhiteLightAggregator is Aggregator, IWhiteLightAggregator {
         override
         returns (bool)
     {
-        return getSubmissionInfo[_submissionId].confirmed;
+        return
+            getSubmissionInfo[_submissionId].confirmed ||
+            getSubmissionInfo[_submissionId].confirmations >= minConfirmations;
     }
 
     /// @dev Prepares raw msg that was signed by the oracle.
