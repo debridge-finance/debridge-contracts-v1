@@ -1,7 +1,7 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const OracleManager = artifacts.require("OracleManager");
-const GovToken = artifacts.require("GovToken");
+const MockLinkToken = artifacts.require("MockLinkToken");
 const { toWei, fromWei, toBN } = web3.utils;
 
 function sleep(ms) {
@@ -10,12 +10,15 @@ function sleep(ms) {
 
 contract("OracleManager", function([alice, bob, carol, eve, devid]) {
   before(async function() {
-    this.govToken = await GovToken.new(toWei("3200000"), {
+    this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
+      from: alice,
+    });
+    await this.linkToken.mint(alice, toWei("3200000"), {
       from: alice,
     });
     this.timelock = 2;
     this.oracleManager = await OracleManager.new(
-      this.govToken.address,
+      this.linkToken.address,
       this.timelock,
       {
         from: alice,
@@ -29,7 +32,7 @@ contract("OracleManager", function([alice, bob, carol, eve, devid]) {
       const amount = 0;
       const prevOracleInfo = await this.oracleManager.getOracleInfo(bob);
       const prevTotalLocked = await this.oracleManager.totalLocked();
-      await this.govToken.approve(this.oracleManager.address, MAX_UINT256);
+      await this.linkToken.approve(this.oracleManager.address, MAX_UINT256);
       await this.oracleManager.stake(bob, amount, {
         from: alice,
       });
@@ -77,7 +80,7 @@ contract("OracleManager", function([alice, bob, carol, eve, devid]) {
       const amount = 0;
       const prevOracleInfo = await this.oracleManager.getOracleInfo(bob);
       const prevTotalLocked = await this.oracleManager.totalLocked();
-      await this.govToken.approve(this.oracleManager.address, MAX_UINT256);
+      await this.linkToken.approve(this.oracleManager.address, MAX_UINT256);
       await this.oracleManager.requestUnstake(bob, alice, amount, {
         from: alice,
       });
@@ -125,7 +128,7 @@ contract("OracleManager", function([alice, bob, carol, eve, devid]) {
       const amount = toWei("10");
       const prevOracleInfo = await this.oracleManager.getOracleInfo(bob);
       const prevTotalLocked = await this.oracleManager.totalLocked();
-      await this.govToken.approve(this.oracleManager.address, MAX_UINT256);
+      await this.linkToken.approve(this.oracleManager.address, MAX_UINT256);
       await this.oracleManager.requestUnstake(bob, alice, amount, {
         from: alice,
       });
@@ -320,14 +323,14 @@ contract("OracleManager", function([alice, bob, carol, eve, devid]) {
       const amount = toWei("0");
       const recepient = alice;
       const prevAliceGovBalance = toBN(
-        await this.govToken.balanceOf(recepient)
+        await this.linkToken.balanceOf(recepient)
       );
       const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
       await this.oracleManager.withdrawFunds(recepient, amount, {
         from: alice,
       });
       const currentAliceGovBalance = toBN(
-        await this.govToken.balanceOf(recepient)
+        await this.linkToken.balanceOf(recepient)
       );
       const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
       assert.equal(
@@ -344,14 +347,14 @@ contract("OracleManager", function([alice, bob, carol, eve, devid]) {
       const amount = toWei("10");
       const recepient = alice;
       const prevAliceGovBalance = toBN(
-        await this.govToken.balanceOf(recepient)
+        await this.linkToken.balanceOf(recepient)
       );
       const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
       await this.oracleManager.withdrawFunds(recepient, amount, {
         from: alice,
       });
       const currentAliceGovBalance = toBN(
-        await this.govToken.balanceOf(recepient)
+        await this.linkToken.balanceOf(recepient)
       );
       const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
       assert.equal(
@@ -380,14 +383,14 @@ contract("OracleManager", function([alice, bob, carol, eve, devid]) {
       const amount = toWei("1");
       const recepient = alice;
       const prevAliceGovBalance = toBN(
-        await this.govToken.balanceOf(recepient)
+        await this.linkToken.balanceOf(recepient)
       );
       const prevConfiscatedFunds = await this.oracleManager.confiscatedFunds();
       await this.oracleManager.withdrawFunds(recepient, amount, {
         from: alice,
       });
       const currentAliceGovBalance = toBN(
-        await this.govToken.balanceOf(recepient)
+        await this.linkToken.balanceOf(recepient)
       );
       const currentConfiscatedFunds = await this.oracleManager.confiscatedFunds();
       assert.equal(
