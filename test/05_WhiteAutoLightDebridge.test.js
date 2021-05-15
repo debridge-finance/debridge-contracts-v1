@@ -1,7 +1,8 @@
 const Web3 = require("web3");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS } = require("./utils.spec");
+const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
 const WhiteLightVerifier = artifacts.require("WhiteLightVerifier");
 const MockLinkToken = artifacts.require("MockLinkToken");
@@ -16,6 +17,8 @@ const MAX = web3.utils.toTwosComplement(-1);
 const Tx = require("ethereumjs-tx");
 const bscWeb3 = new Web3(process.env.TEST_BSC_PROVIDER);
 const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
+const bobPrivKey =
+  "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
 web3.extend({
   property: "eth",
@@ -719,6 +722,15 @@ contract("AutoWhiteLightDebridge", function([
       await wrappedAsset.approve(this.whiteDebridge.address, amount, {
         from: bob,
       });
+      const deadline = MAX_UINT256;
+      const signature = await permit(
+        wrappedAsset,
+        bob,
+        this.whiteDebridge.address,
+        amount,
+        deadline,
+        bobPrivKey
+      );
       await this.whiteDebridge.autoBurn(
         debridgeId,
         receiver,
@@ -727,6 +739,8 @@ contract("AutoWhiteLightDebridge", function([
         reserveAddress,
         claimFee,
         data,
+        deadline,
+        signature,
         {
           from: bob,
         }
@@ -757,6 +771,8 @@ contract("AutoWhiteLightDebridge", function([
         chainId,
         tokenAddress
       );
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
         this.whiteDebridge.autoBurn(
           debridgeId,
@@ -766,6 +782,8 @@ contract("AutoWhiteLightDebridge", function([
           reserveAddress,
           claimFee,
           data,
+          deadline,
+          signature,
           {
             from: alice,
           }
@@ -783,6 +801,8 @@ contract("AutoWhiteLightDebridge", function([
         chainId,
         tokenAddress
       );
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
         this.whiteDebridge.autoBurn(
           debridgeId,
@@ -792,6 +812,8 @@ contract("AutoWhiteLightDebridge", function([
           reserveAddress,
           claimFee,
           data,
+          deadline,
+          signature,
           {
             from: alice,
           }

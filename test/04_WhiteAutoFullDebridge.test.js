@@ -1,5 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS } = require("./utils.spec");
+const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const WhiteAggregator = artifacts.require("WhiteFullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
@@ -11,9 +11,12 @@ const UniswapV2Factory = artifacts.require("UniswapV2Factory");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const DefiController = artifacts.require("DefiController");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
+const bobPrivKey =
+  "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
 contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
   const reserveAddress = devid;
@@ -754,6 +757,15 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       await wrappedAsset.approve(this.whiteDebridge.address, amount, {
         from: bob,
       });
+      const deadline = MAX_UINT256;
+      const signature = await permit(
+        wrappedAsset,
+        bob,
+        this.whiteDebridge.address,
+        amount,
+        deadline,
+        bobPrivKey
+      );
       await this.whiteDebridge.autoBurn(
         debridgeId,
         receiver,
@@ -762,6 +774,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         reserveAddress,
         claimFee,
         data,
+        deadline,
+        signature,
         {
           from: bob,
         }
@@ -792,6 +806,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         chainId,
         tokenAddress
       );
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
         this.whiteDebridge.autoBurn(
           debridgeId,
@@ -801,6 +817,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
           reserveAddress,
           0,
           data,
+          deadline,
+          signature,
           {
             from: alice,
           }
@@ -824,6 +842,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       await wrappedAsset.approve(this.whiteDebridge.address, amount, {
         from: alice,
       });
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
         this.whiteDebridge.autoBurn(
           debridgeId,
@@ -833,6 +853,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
           reserveAddress,
           toBN(toWei("100")),
           data,
+          deadline,
+          signature,
           {
             from: alice,
           }
@@ -850,6 +872,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         chainId,
         tokenAddress
       );
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
         this.whiteDebridge.autoBurn(
           debridgeId,
@@ -859,6 +883,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
           reserveAddress,
           claimFee,
           data,
+          deadline,
+          signature,
           {
             from: alice,
           }
@@ -876,6 +902,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         chainId,
         tokenAddress
       );
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
         this.whiteDebridge.autoBurn(
           debridgeId,
@@ -885,6 +913,8 @@ contract("AutoWhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
           reserveAddress,
           claimFee,
           data,
+          deadline,
+          signature,
           {
             from: alice,
           }

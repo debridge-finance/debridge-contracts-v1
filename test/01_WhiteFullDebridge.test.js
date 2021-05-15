@@ -1,5 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS } = require("./utils.spec");
+const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const WhiteAggregator = artifacts.require("WhiteFullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
@@ -11,9 +11,12 @@ const UniswapV2Factory = artifacts.require("UniswapV2Factory");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const DefiController = artifacts.require("DefiController");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
+const bobPrivKey =
+  "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
 contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
   before(async function() {
@@ -615,12 +618,26 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
       const debridge = await this.whiteDebridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
-      await wrappedAsset.approve(this.whiteDebridge.address, amount, {
-        from: bob,
-      });
-      await this.whiteDebridge.burn(debridgeId, receiver, amount, chainIdTo, {
-        from: bob,
-      });
+      const deadline = MAX_UINT256;
+      const signature = await permit(
+        wrappedAsset,
+        bob,
+        this.whiteDebridge.address,
+        amount,
+        deadline,
+        bobPrivKey
+      );
+      await this.whiteDebridge.burn(
+        debridgeId,
+        receiver,
+        amount,
+        chainIdTo,
+        deadline,
+        signature,
+        {
+          from: bob,
+        }
+      );
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
@@ -647,10 +664,20 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         chainId,
         tokenAddress
       );
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
-        this.whiteDebridge.burn(debridgeId, receiver, amount, 42, {
-          from: alice,
-        }),
+        this.whiteDebridge.burn(
+          debridgeId,
+          receiver,
+          amount,
+          42,
+          deadline,
+          signature,
+          {
+            from: alice,
+          }
+        ),
         "burn: native asset"
       );
     });
@@ -664,10 +691,20 @@ contract("WhiteFullDebridge", function([alice, bob, carol, eve, devid]) {
         chainId,
         tokenAddress
       );
+      const deadline = 0;
+      const signature = "0x";
       await expectRevert(
-        this.whiteDebridge.burn(debridgeId, receiver, amount, chainId, {
-          from: alice,
-        }),
+        this.whiteDebridge.burn(
+          debridgeId,
+          receiver,
+          amount,
+          chainId,
+          deadline,
+          signature,
+          {
+            from: alice,
+          }
+        ),
         "burn: amount too low"
       );
     });
