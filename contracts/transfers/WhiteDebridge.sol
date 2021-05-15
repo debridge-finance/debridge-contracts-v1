@@ -210,9 +210,17 @@ abstract contract WhiteDebridge is
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        uint256 _chainIdTo
+        uint256 _chainIdTo,
+        uint256 _deadline,
+        bytes memory _signature
     ) external override whenNotPaused() {
-        _amount = _burn(_debridgeId, _amount, _chainIdTo);
+        _amount = _burn(
+            _debridgeId,
+            _amount,
+            _chainIdTo,
+            _deadline,
+            _signature
+        );
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
             getSubmisionId(
@@ -289,12 +297,21 @@ abstract contract WhiteDebridge is
         uint256 _chainIdTo,
         address _fallbackAddress,
         uint256 _executionFee,
-        bytes memory _data
+        bytes memory _data,
+        uint256 _deadline,
+        bytes memory _signature
     ) external whenNotPaused() {
         require(_executionFee != 0, "autoBurn: fee too low");
-        _amount = _burn(_debridgeId, _amount, _chainIdTo);
+        _amount = _burn(
+            _debridgeId,
+            _amount,
+            _chainIdTo,
+            _deadline,
+            _signature
+        );
         require(_amount >= _executionFee, "autoBurn: proposed fee too high");
         _amount -= _executionFee;
+
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId =
             getAutoSubmisionId(
@@ -670,7 +687,9 @@ abstract contract WhiteDebridge is
     function _burn(
         bytes32 _debridgeId,
         uint256 _amount,
-        uint256 _chainIdTo
+        uint256 _chainIdTo,
+        uint256 _deadline,
+        bytes memory _signature
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         ChainSupportInfo memory chainSupportInfo =
@@ -680,6 +699,18 @@ abstract contract WhiteDebridge is
         require(_amount >= debridge.minAmount, "burn: amount too low");
         require(_amount <= debridge.maxAmount, "burn: amount too high");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
+        if (_signature.length > 0) {
+            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+            wrappedAsset.permit(
+                msg.sender,
+                address(this),
+                _amount,
+                _deadline,
+                v,
+                r,
+                s
+            );
+        }
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
         uint256 transferFee =
             chainSupportInfo.fixedFee +
@@ -793,6 +824,28 @@ abstract contract WhiteDebridge is
     }
 
     /* VIEW */
+
+    /// @dev Splits signature bytes to r,s,v components.
+    /// @param _signature Signature bytes in format r+s+v.
+    function splitSignature(bytes memory _signature)
+        public
+        pure
+        returns (
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        )
+    {
+        require(
+            _signature.length == 65,
+            "splitSignature: invalid signature length"
+        );
+        assembly {
+            r := mload(add(_signature, 32))
+            s := mload(add(_signature, 64))
+            v := byte(0, mload(add(_signature, 96)))
+        }
+    }
 
     /// @dev Get the balance.
     /// @param _tokenAddress Address of the asset on the other chain.

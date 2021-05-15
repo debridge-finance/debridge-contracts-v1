@@ -19,7 +19,9 @@ interface IWhiteDebridge {
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        uint256 _chainIdTo
+        uint256 _chainIdTo,
+        uint256 _deadline,
+        bytes memory _signature
     ) external;
 
     function addNativeAsset(
