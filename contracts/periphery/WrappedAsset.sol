@@ -83,7 +83,7 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
         bytes32 _r,
         bytes32 _s
     ) external override {
-        require(_deadline >= block.timestamp, "UniswapV2: EXPIRED");
+        require(_deadline >= block.timestamp, "permit: EXPIRED");
         bytes32 digest =
             keccak256(
                 abi.encodePacked(
