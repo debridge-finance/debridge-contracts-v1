@@ -1,5 +1,7 @@
 # Debridge Smart Contracts
 
+UI deployed on [testv2.debridge.finance](https://testv2.debridge.finance/)
+
 The contracts directory contains the following subfolders:
 
 ```jsx
