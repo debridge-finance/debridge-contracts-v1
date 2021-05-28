@@ -71,6 +71,7 @@ contract WhiteLightAggregator is Aggregator, IWhiteLightAggregator {
         address oracle = ecrecover(unsignedMsg, v, r, s);
         require(msg.sender == oracle, "onlyOracle: bad role");
         submissionInfo.confirmations += 1;
+        submissionInfo.signatures.push(_signature);
         submissionInfo.hasVerified[msg.sender] = true;
         if (submissionInfo.confirmations >= minConfirmations) {
             submissionInfo.confirmed = true;
