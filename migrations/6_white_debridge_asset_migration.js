@@ -3,12 +3,14 @@ const DefiController = artifacts.require("DefiController");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const WhiteLightAggregator = artifacts.require("WhiteLightAggregator");
 const CallProxy = artifacts.require("CallProxy");
+const ApproveProxy = artifacts.require("ApproveProxy");
 
 module.exports = async function(_deployer, network) {
   if (network == "test") return;
   console.log("Network:  " + network);
   console.log("DefiController: " + DefiController.address);
   console.log("CallProxy: " + CallProxy.address);
+  console.log("ApproveProxy: " + ApproveProxy.address);
 
   const otherAssetInfos = require("../assets/supportedChains")[network];
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
