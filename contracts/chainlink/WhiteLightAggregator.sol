@@ -95,6 +95,17 @@ contract WhiteLightAggregator is Aggregator, IWhiteLightAggregator {
             getSubmissionInfo[_submissionId].confirmations >= minConfirmations;
     }
 
+    /// @dev Returns whether transfer request is confirmed.
+    /// @param _submissionId Submission identifier.
+    /// @return Oracles signatures.
+    function getSubmissionSignatures(bytes32 _submissionId)
+        external
+        view
+        returns (bytes[] memory)
+    {
+        return getSubmissionInfo[_submissionId].signatures;
+    }
+
     /// @dev Prepares raw msg that was signed by the oracle.
     /// @param _submissionId Submission identifier.
     function getUnsignedMsg(bytes32 _submissionId)

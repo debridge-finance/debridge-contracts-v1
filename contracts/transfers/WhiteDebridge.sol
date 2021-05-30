@@ -67,6 +67,7 @@ abstract contract WhiteDebridge is
         uint256 nonce,
         uint256 chainIdTo,
         uint256 claimFee,
+        address fallbackAddress,
         bytes data
     ); // emited once the native tokens are locked to be sent to the other chain
     event Minted(
@@ -91,6 +92,7 @@ abstract contract WhiteDebridge is
         uint256 nonce,
         uint256 chainIdTo,
         uint256 claimFee,
+        address fallbackAddress,
         bytes data
     ); // emited once the wrapped tokens are sent to the contract
     event Claimed(
@@ -277,6 +279,7 @@ abstract contract WhiteDebridge is
             nonce,
             _chainIdTo,
             _executionFee,
+            _fallbackAddress,
             _data
         );
         getUserNonce[_receiver]++;
@@ -333,6 +336,7 @@ abstract contract WhiteDebridge is
             nonce,
             _chainIdTo,
             _executionFee,
+            _fallbackAddress,
             _data
         );
         getUserNonce[_receiver]++;
