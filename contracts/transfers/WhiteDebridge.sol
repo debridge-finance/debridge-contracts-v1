@@ -104,6 +104,7 @@ abstract contract WhiteDebridge is
         address indexed tokenAddress,
         uint256 indexed chainId,
         uint256 minAmount,
+        uint256 maxAmount,
         uint256 minReserves
     ); // emited when new asset is supported
     event ChainSupportAdded(
@@ -618,6 +619,7 @@ abstract contract WhiteDebridge is
             _tokenAddress,
             _chainId,
             _minAmount,
+            _maxAmount,
             _minReserves
         );
     }
