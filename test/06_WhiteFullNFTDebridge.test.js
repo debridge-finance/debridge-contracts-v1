@@ -515,6 +515,174 @@ contract("WhiteFullNFTDebridge", function([alice, bob, carol, eve]) {
       );
       await expectRevert(wrappedNft.ownerOf(tokenId), "ERC721: owner query for nonexistent token");
     });
+    it('reject when token is not exist', async function() {
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const chainIdTo = 56;
+      const receiver = alice;
+      const tokenId = 2;
+      const debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainIdTo,
+        tokenAddress
+      );
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const wrappedNft = await WrappedNFT.at(debridge.tokenAddress);
+      const deadline = MAX_UINT256;
+      const signature = await permitNFT(
+        wrappedNft,
+        bob,
+        this.whiteDebridge.address,
+        tokenId,
+        deadline,
+        bobPrivKey
+      );
+      await expectRevert(this.whiteDebridge.burn(
+        debridgeId,
+        receiver,
+        tokenId,
+        chainIdTo,
+        deadline,
+        signature,
+        {
+          from: bob,
+        }
+      ), "burn: tokenId not exist");
+    });
+  });
+
+  context("Test claim method", () => {
+    const receiver = bob;
+    const tokenId = 1;
+    const nonce = 4;
+    let chainIdFrom = 50;
+    let chainId;
+    let debridgeId;
+    let outsideDebridgeId;
+    before(async function() {
+      const tokenAddress = this.mockNFTToken.address;
+      chainId = await this.whiteDebridge.chainId();
+      debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      outsideDebridgeId = await this.whiteDebridge.getDebridgeId(
+        56,
+        "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+      );
+      const cuurentChainSubmission = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        chainIdFrom,
+        chainId,
+        tokenId,
+        receiver,
+        nonce
+      );
+      await this.whiteAggregator.submit(cuurentChainSubmission, {
+        from: bob,
+      });
+      const outsideChainSubmission = await this.whiteDebridge.getSubmisionId(
+        outsideDebridgeId,
+        chainIdFrom,
+        56,
+        tokenId,
+        receiver,
+        nonce
+      );
+      await this.whiteAggregator.submit(outsideChainSubmission, {
+        from: bob,
+      });
+    });
+
+    it("should claim native token when the submission is approved", async function() {
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      await this.whiteDebridge.claim(
+        debridgeId,
+        chainIdFrom,
+        receiver,
+        tokenId,
+        nonce,
+        {
+          from: alice,
+        }
+      );
+
+      const newOwner = await this.mockNFTToken.ownerOf(tokenId);
+      const newOwnerInBridge = await this.whiteDebridge.getOwnerOfToken(debridgeId, tokenId);
+
+      const submissionId = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        chainIdFrom,
+        await this.whiteDebridge.chainId(),
+        tokenId,
+        receiver,
+        nonce
+      );
+      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+        submissionId
+      );
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(
+        newOwner,
+        bob
+      );
+      assert.equal(
+        newOwnerInBridge,
+        '0x0000000000000000000000000000000000000000'
+      );
+      assert.equal(
+        debridge.collectedFees.toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.ok(isSubmissionUsed);
+    });
+
+    it("should reject claiming with unconfirmed submission", async function() {
+      const nonce = 1;
+      await expectRevert(
+        this.whiteDebridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          tokenId,
+          nonce,
+          {
+            from: alice,
+          }
+        ),
+        "claim: not confirmed"
+      );
+    });
+
+    it("should reject claiming the token from outside chain", async function() {
+      await expectRevert(
+        this.whiteDebridge.claim(
+          outsideDebridgeId,
+          chainIdFrom,
+          receiver,
+          tokenId,
+          nonce,
+          {
+            from: alice,
+          }
+        ),
+        "claim: not confirmed"
+      );
+    });
+
+    it("should reject claiming twice", async function() {
+      await expectRevert(
+        this.whiteDebridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          tokenId,
+          nonce,
+          {
+            from: alice,
+          }
+        ),
+        "claim: already used"
+      );
+    });
   });
 
   context("Test fee maangement", () => {

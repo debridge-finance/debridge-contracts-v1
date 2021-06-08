@@ -13,8 +13,6 @@ module.exports = async function(_deployer, network) {
     if (debridgeInitParams.type == "full") {
       WhiteDebridge = artifacts.require("WhiteFullNFTDebridge");
       WhiteAggregator = artifacts.require("WhiteFullAggregator");
-      console.log("FeeProxy: " + FeeProxy.address);
-      console.log("WhiteLightAggregator: " + WhiteLightAggregator.address);
     } else {
       WhiteDebridge = artifacts.require("WhiteLightNFTDebridge");
       WhiteAggregator = artifacts.require("WhiteLightVerifier");

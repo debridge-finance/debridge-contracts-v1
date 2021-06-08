@@ -110,6 +110,88 @@ contract WhiteFullNFTDebridge is WhiteNFTDebridge, IWhiteFullNFTDebridge {
         );
     }
 
+    /**
+     * @dev Unlock the asset on the current chain and return to receiver
+     * @param _debridgeId Asset identifier
+     * @param _receiver Receiver address
+     * @param _tokenId Id of token to be transferred
+     * @param _nonce Submission id
+     */
+    function claim(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _tokenId,
+        uint256 _nonce
+    ) external whenNotPaused() {
+        bytes32 submissionId =
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _tokenId,
+                _receiver,
+                _nonce
+            );
+        require(
+            IWhiteFullAggregator(aggregator).isSubmissionConfirmed(
+                submissionId
+            ),
+            "claim: not confirmed"
+        );
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _tokenId
+        );
+    }
+
+    /**
+     * @dev Unlock the asset on the current chain and return to receiver
+     * @param _debridgeId Asset identifier
+     * @param _receiver Receiver address
+     * @param _tokenId Id of token to be transferred
+     * @param _nonce Submission id.
+     * @param _aggregatorVersion Aggregator version
+     */
+    function claimWithOldAggregator(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _tokenId,
+        uint256 _nonce,
+        uint8 _aggregatorVersion
+    ) external {
+        bytes32 submissionId =
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _tokenId,
+                _receiver,
+                _nonce
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalidAggregator"
+        );
+        require(
+            IWhiteFullAggregator(aggregatorInfo.aggregator)
+                .isSubmissionConfirmed(submissionId),
+            "claim: not confirmed"
+        );
+
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _tokenId
+        );
+    }
+
     /* ADMIN */
 
     /// @dev Fund aggregator.

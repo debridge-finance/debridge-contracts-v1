@@ -101,6 +101,91 @@ contract WhiteLightNFTDebridge is WhiteNFTDebridge, IWhiteLightNFTDebridge {
         );
     }
 
+    /**
+     * @dev Unlock the asset on the current chain and transfer to receiver.
+     * @param _debridgeId Asset identifier.
+     * @param _receiver Receiver address.
+     * @param _tokenId Id of token to be transferred
+     * @param _nonce Submission id
+     * @param _signatures Array of oracles signatures
+     */
+    function claim(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _tokenId,
+        uint256 _nonce,
+        bytes[] calldata _signatures
+    ) external {
+        bytes32 submissionId =
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _tokenId,
+                _receiver,
+                _nonce
+            );
+        require(
+            IWhiteLightVerifier(aggregator).submit(submissionId, _signatures),
+            "claim: not confirmed"
+        );
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _tokenId
+        );
+    }
+
+    /** 
+     * @dev Unlock the asset on the current chain and transfer to receiver.
+     * @param _debridgeId Asset identifier.
+     * @param _receiver Receiver address.
+     * @param _tokenId Id of token to be tranferred
+     * @param _nonce Submission id.
+     * @param _signatures Array of oracles signatures.
+     * @param _aggregatorVersion Aggregator version.
+     */
+    function claimWithOldAggregator(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        address _receiver,
+        uint256 _tokenId,
+        uint256 _nonce,
+        bytes[] calldata _signatures,
+        uint8 _aggregatorVersion
+    ) external {
+         bytes32 submissionId =
+            getSubmisionId(
+                _debridgeId,
+                _chainIdFrom,
+                chainId,
+                _tokenId,
+                _receiver,
+                _nonce
+            );
+        AggregatorInfo memory aggregatorInfo =
+            getOldAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "mintWithOldAggregator: invalid aggregator"
+        );
+        require(
+            IWhiteLightVerifier(aggregatorInfo.aggregator).submit(
+                submissionId,
+                _signatures
+            ),
+            "claim: not confirmed"
+        );
+        _claim(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _tokenId
+        );
+    }
+
     /// @dev Set wrapped native asset address.
     /// @param _feeToken Weth address.
     function setFeeToken(address _feeToken) external override onlyAdmin() {

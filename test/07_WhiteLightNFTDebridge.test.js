@@ -554,6 +554,121 @@ contract("WhiteLightNFTDebridge", function([alice, bob, carol, eve, fei, devid])
     });
   });
 
+  context("Test claim method", () => {
+    const receiver = bob;
+    const tokenId = 1;
+    const nonce = 4;
+    let chainId;
+    let chainIdFrom = 87;
+    let debridgeId;
+    let erc20DebridgeId;
+
+    before(async function() {
+      const tokenAddress = this.mockNFTToken.address;
+      chainId = await this.whiteDebridge.chainId();
+      debridgeId = await this.whiteDebridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const curentChainSubmission = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        chainIdFrom,
+        chainId,
+        tokenId,
+        receiver,
+        nonce
+      );
+      this.ethSignatures = [];
+      for (let i = 0; i < oracleKeys.length; i++) {
+        const oracleKey = oracleKeys[i];
+        this.ethSignatures.push(
+          (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
+            .signature
+        );
+      }
+    });
+
+    it("should claim native token when the submission is approved", async function() {
+      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      
+      await this.whiteDebridge.claim(
+        debridgeId,
+        chainIdFrom,
+        receiver,
+        tokenId,
+        nonce,
+        this.ethSignatures,
+        {
+          from: alice,
+        }
+      );
+      
+      const newOwner = await this.mockNFTToken.ownerOf(tokenId);
+      const newOwnerInBridge = await this.whiteDebridge.getOwnerOfToken(debridgeId, tokenId);
+
+      const submissionId = await this.whiteDebridge.getSubmisionId(
+        debridgeId,
+        chainIdFrom,
+        chainId,
+        tokenId,
+        receiver,
+        nonce
+      );
+      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+        submissionId
+      );
+      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      assert.equal(
+        newOwner,
+        bob
+      );
+      assert.equal(
+        newOwnerInBridge,
+        '0x0000000000000000000000000000000000000000'
+      );
+      assert.equal(
+        debridge.collectedFees.toString(),
+        newDebridge.collectedFees.toString()
+      );
+      assert.ok(isSubmissionUsed);
+    });
+
+    it("should reject claiming with unconfirmed submission", async function() {
+      const nonce = 1;
+      await expectRevert(
+        this.whiteDebridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          tokenId,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
+        "claim: not confirmed"
+      );
+    });
+
+    it("should reject claiming twice", async function() {
+      await expectRevert(
+        this.whiteDebridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          tokenId,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
+        "claim: already used"
+      );
+    });
+  });
+
   context("Test fee maangement", () => {
     const receiver = bob;
     const amount = toBN(toWei("0.00001"));

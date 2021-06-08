@@ -70,6 +70,12 @@ abstract contract WhiteNFTDebridge is
         uint256 nonce,
         uint256 chainIdTo
     ); // emited once the wrapped token is sent to the contract
+    event Claimed(
+        bytes32 submissionId,
+        uint256 tokenId,
+        address receiver,
+        bytes32 debridgeId
+    ); // emited once the tokens are withdrawn on native chain
     event PairAdded(
         bytes32 indexed debridgeId,
         address indexed tokenAddress,
@@ -391,6 +397,7 @@ abstract contract WhiteNFTDebridge is
             debridge.chainSupported[_chainIdTo];
         require(debridge.chainId != chainId, "burn: native asset");
         require(chainSupportInfo.isSupported, "burn: wrong targed chain");
+        require(debridge.owners[_tokenId] != address(0), "burn: tokenId not exist");
         IWrappedNFT wrappedNft = IWrappedNFT(debridge.tokenAddress);
         if (_signature.length > 0) {
             (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
@@ -432,6 +439,28 @@ abstract contract WhiteNFTDebridge is
         IWrappedNFT(debridge.tokenAddress).mint(_receiver, _tokenId);
         debridge.owners[_tokenId] = _receiver;
         emit Minted(_submissionId, _tokenId, _receiver, _debridgeId);
+    }
+
+    /**
+     * @dev Unlock the asset on the current chain and transfer to receiver
+     * @param _debridgeId Asset identifier
+     * @param _receiver Receiver address
+     * @param _tokenId Id of token to be transferred.
+     */
+    function _claim(
+        bytes32 _submissionId,
+        bytes32 _debridgeId,
+        address _receiver,
+        uint256 _tokenId
+    ) internal {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(debridge.chainId == chainId, "claim: wrong target chain");
+        require(!isSubmissionUsed[_submissionId], "claim: already used");
+        isSubmissionUsed[_submissionId] = true;
+        delete debridge.owners[_tokenId];
+        IWrappedNFT wrappedNft = IWrappedNFT(debridge.tokenAddress);
+        wrappedNft.transferFrom(address(this), _receiver, _tokenId);
+        emit Claimed(_submissionId, _tokenId, _receiver, _debridgeId);
     }
 
     /* VIEW */
