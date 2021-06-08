@@ -5,11 +5,8 @@ const CallProxy = artifacts.require("CallProxy");
 
 module.exports = async function(_deployer, network) {
     if (network == "test") return;
-    console.log("Network:  " + network);
-    console.log("DefiController: " + DefiController.address);
-    console.log("CallProxy: " + CallProxy.address);
   
-    const otherAssetInfos = require("../assets/supportedChains")[network];
+    const otherAssetInfos = require("../assets/supportedChainsNFT")[network];
     const debridgeInitParams = require("../assets/debridgeInitParams")[network];
     let WhiteDebridge;
     let WhiteAggregator;
@@ -22,8 +19,6 @@ module.exports = async function(_deployer, network) {
       WhiteDebridge = artifacts.require("WhiteLightNFTDebridge");
       WhiteAggregator = artifacts.require("WhiteLightVerifier");
     }
-    console.log("WhiteAggregator: " + WhiteAggregator.address);
-    console.log("WhiteDebridge: " + WhiteDebridge.address);
   
     const whiteDebridgeInstance = await WhiteDebridge.deployed();
     for (const otherAssetInfo of otherAssetInfos) {

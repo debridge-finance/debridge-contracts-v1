@@ -56,16 +56,6 @@ abstract contract WhiteNFTDebridge is
         uint256 nonce,
         uint256 chainIdTo
     ); // emited once the native NFT is locked to be sent to the other chain
-    event AutoSent(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 tokenId,
-        address receiver,
-        uint256 nonce,
-        uint256 chainIdTo,
-        uint256 claimFee,
-        bytes data
-    ); // emited once the native NFT is locked to be sent to the other chain
     event Minted(
         bytes32 submissionId,
         uint256 tokenId,
@@ -79,16 +69,6 @@ abstract contract WhiteNFTDebridge is
         address receiver,
         uint256 nonce,
         uint256 chainIdTo
-    ); // emited once the wrapped token is sent to the contract
-    event AutoBurnt(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 tokenId,
-        address receiver,
-        uint256 nonce,
-        uint256 chainIdTo,
-        uint256 claimFee,
-        bytes data
     ); // emited once the wrapped token is sent to the contract
     event PairAdded(
         bytes32 indexed debridgeId,
