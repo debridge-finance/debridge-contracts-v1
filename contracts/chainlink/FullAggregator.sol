@@ -20,13 +20,25 @@ contract FullAggregator is Aggregator, IFullAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Minimal required confirmations.
-    /// @param _payment Oracle reward.
-    /// @param _link Link token to pay to oracles.
+    /// @param _corePayment Oracle reward.
+    /// @param _bonusPayment Oracle reward.
+    /// @param _coreToken Link token to pay to oracles.
+    /// @param _bonusToken DBR token to pay to oracles.
     constructor(
         uint256 _minConfirmations,
-        uint128 _payment,
-        IERC20 _link
-    ) Aggregator(_minConfirmations, _payment, _link) {}
+        uint256 _corePayment,
+        uint256 _bonusPayment,
+        IERC20 _coreToken,
+        IERC20 _bonusToken
+    )
+        Aggregator(
+            _minConfirmations,
+            _corePayment,
+            _bonusPayment,
+            _coreToken,
+            _bonusToken
+        )
+    {}
 
     /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.

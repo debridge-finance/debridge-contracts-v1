@@ -6,17 +6,22 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Aggregator is AccessControl {
     struct OracleInfo {
-        uint256 withdrawable; // amount of withdrawable LINKs
         address admin; // current oracle admin
+        mapping(IERC20 => uint256) balances; // balances
+    }
+    struct PaymentInfo {
+        uint256 allocatedFunds; // asset's amount payed to oracles
+        uint256 availableFunds; // asset's amount available to be payed to oracles
     }
 
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
     uint256 public minConfirmations; // minimal required confimations
-    uint256 public allocatedFunds; // LINK's amount payed to oracles
-    uint256 public availableFunds; // LINK's amount available to be payed to oracles
-    uint256 public payment; // payment for one submission
-    IERC20 public link; // LINK's token address
+    uint256 public corePayment; // payment for one submission
+    uint256 public bonusPayment; // bonus reward for one submission
+    IERC20 public coreToken; // LINK's token address
+    IERC20 public bonusToken; // DBR's token address
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
+    mapping(IERC20 => PaymentInfo) public getPaymentInfo; // asset address => funds details
 
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
@@ -31,16 +36,22 @@ contract Aggregator is AccessControl {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Minimal required confirmations.
-    /// @param _payment Oracle reward.
-    /// @param _link Link token to pay to oracles.
+    /// @param _corePayment Oracle reward.
+    /// @param _bonusPayment Oracle reward.
+    /// @param _coreToken Link token to pay to oracles.
+    /// @param _bonusToken DBR token to pay to oracles.
     constructor(
         uint256 _minConfirmations,
-        uint128 _payment,
-        IERC20 _link
+        uint256 _corePayment,
+        uint256 _bonusPayment,
+        IERC20 _coreToken,
+        IERC20 _bonusToken
     ) {
         minConfirmations = _minConfirmations;
-        payment = _payment;
-        link = _link;
+        coreToken = _coreToken;
+        bonusToken = _bonusToken;
+        corePayment = _corePayment;
+        bonusPayment = _bonusPayment;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(ORACLE_ROLE, msg.sender);
     }
@@ -52,34 +63,21 @@ contract Aggregator is AccessControl {
     function withdrawPayment(
         address _oracle,
         address _recipient,
+        IERC20 _asset,
         uint256 _amount
     ) external {
         require(
             getOracleInfo[_oracle].admin == msg.sender,
             "withdrawPayment: only callable by admin"
         );
-        uint256 available = getOracleInfo[_oracle].withdrawable;
+        uint256 available = getOracleInfo[_oracle].balances[_asset];
         require(
             available >= _amount,
             "withdrawPayment: insufficient withdrawable funds"
         );
-        getOracleInfo[_oracle].withdrawable = available - _amount;
-        allocatedFunds -= _amount;
-        assert(link.transfer(_recipient, _amount));
-    }
-
-    /// @dev Updates oracle's address.
-    /// @param _oracle Oracle address.
-    /// @param _newOracle New oracle address.
-    function updateOracleAddress(address _oracle, address _newOracle) external {
-        require(
-            getOracleInfo[_oracle].admin == msg.sender,
-            "updateOracleAddress: only callable by admin"
-        );
-        getOracleInfo[_newOracle].admin = msg.sender;
-        getOracleInfo[_newOracle].withdrawable = getOracleInfo[_oracle]
-            .withdrawable;
-        delete getOracleInfo[_oracle];
+        getOracleInfo[_oracle].balances[_asset] = available - _amount;
+        getPaymentInfo[_asset].allocatedFunds -= _amount;
+        assert(_asset.transfer(_recipient, _amount));
     }
 
     /// @dev Updates oracle's admin address.
@@ -96,8 +94,10 @@ contract Aggregator is AccessControl {
     }
 
     /// @dev Updates available rewards to be distributed.
-    function updateAvailableFunds() public {
-        availableFunds = link.balanceOf(address(this)) - allocatedFunds;
+    function updateAvailableFunds(IERC20 _asset) public {
+        getPaymentInfo[_asset].availableFunds =
+            _asset.balanceOf(address(this)) -
+            getPaymentInfo[_asset].allocatedFunds;
     }
 
     /// @dev Updates link balance.
@@ -107,9 +107,8 @@ contract Aggregator is AccessControl {
         uint256,
         bytes calldata _data
     ) external {
-        require(msg.sender == address(link), "onTokenTransfer: not the Link");
         require(_data.length == 0, "transfer doesn't accept calldata");
-        updateAvailableFunds();
+        updateAvailableFunds(IERC20(msg.sender));
     }
 
     /* ADMIN */
@@ -117,19 +116,20 @@ contract Aggregator is AccessControl {
     /// @dev Withdraws earned LINK's.
     /// @param _recipient Reward's recepient.
     /// @param _amount Amount to withdraw.
-    function withdrawFunds(address _recipient, uint256 _amount)
-        external
-        onlyAdmin()
-    {
+    function withdrawFunds(
+        IERC20 _asset,
+        address _recipient,
+        uint256 _amount
+    ) external onlyAdmin() {
         require(
-            uint256(availableFunds) >= _amount,
+            uint256(getPaymentInfo[_asset].availableFunds) >= _amount,
             "insufficient reserve funds"
         );
         require(
-            link.transfer(_recipient, _amount),
+            _asset.transfer(_recipient, _amount),
             "withdrawFunds: transfer failed"
         );
-        updateAvailableFunds();
+        updateAvailableFunds(_asset);
     }
 
     /// @dev Sets minimal required confirmations.
@@ -139,9 +139,14 @@ contract Aggregator is AccessControl {
     }
 
     /// @dev Sets new oracle reward.
-    /// @param _payment Oracle reward.
-    function setPayment(uint128 _payment) external onlyAdmin {
-        payment = _payment;
+    /// @param _corePayment Oracle reward.
+    /// @param _bonusPayment Oracle reward.
+    function setPayment(uint256 _corePayment, uint256 _bonusPayment)
+        external
+        onlyAdmin
+    {
+        corePayment = _corePayment;
+        bonusPayment = _bonusPayment;
     }
 
     /// @dev Add new oracle.
@@ -163,9 +168,12 @@ contract Aggregator is AccessControl {
     /// @dev Assess teh oracle rewards.
     /// @param _oracle Oracle address.
     function _payOracle(address _oracle) internal {
-        availableFunds -= payment;
-        allocatedFunds += payment;
-        getOracleInfo[_oracle].withdrawable += payment;
+        getPaymentInfo[coreToken].availableFunds -= corePayment;
+        getPaymentInfo[coreToken].allocatedFunds += corePayment;
+        getOracleInfo[_oracle].balances[coreToken] += corePayment;
+        getPaymentInfo[bonusToken].availableFunds -= bonusPayment;
+        getPaymentInfo[bonusToken].allocatedFunds += bonusPayment;
+        getOracleInfo[_oracle].balances[bonusToken] += bonusPayment;
     }
 
     /* VIEW */
@@ -173,7 +181,11 @@ contract Aggregator is AccessControl {
     /// @dev Return's oracle reward.
     /// @param _oracle Oracle address.
     /// @return Oracle rewards.
-    function getWithdrawable(address _oracle) external view returns (uint256) {
-        return getOracleInfo[_oracle].withdrawable;
+    function getWithdrawable(IERC20 _asset, address _oracle)
+        external
+        view
+        returns (uint256)
+    {
+        return getOracleInfo[_oracle].balances[_asset];
     }
 }

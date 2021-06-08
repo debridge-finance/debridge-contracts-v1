@@ -2,6 +2,7 @@ const FullAggregator = artifacts.require("FullAggregator");
 const LightAggregator = artifacts.require("LightAggregator");
 const LightVerifier = artifacts.require("LightVerifier");
 const { getLinkAddress } = require("./utils");
+const GovToken = artifacts.require("GovToken");
 
 module.exports = async function(deployer, network, accounts) {
   if (network == "test") return;
@@ -13,13 +14,17 @@ module.exports = async function(deployer, network, accounts) {
       FullAggregator,
       debridgeInitParams.oracleCount,
       debridgeInitParams.oraclePayment,
-      link
+      debridgeInitParams.bonusPayment,
+      link,
+      GovToken.address
     );
     await deployer.deploy(
       LightAggregator,
       debridgeInitParams.oracleCount,
       debridgeInitParams.oraclePayment,
-      link
+      debridgeInitParams.bonusPayment,
+      link,
+      GovToken.address
     );
     aggregatorInstance = await FullAggregator.deployed();
     let lightAggregatorInstance = await LightAggregator.deployed();
