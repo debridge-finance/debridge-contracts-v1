@@ -6,8 +6,8 @@
     "precompile": "mkdir -p build/contracts/ && cp precompiled/* build/contracts/",
     "compile": "truffle compile",
     "migrate": "truffle migrate",
-    "verify": "truffle run verify WhiteAggregator WhiteDebridge  ",
-    "vefrify": "truffle run verify WhiteAggregator WhiteDebridge ",
+    "verify": "truffle run verify Aggregator Debridge  ",
+    "vefrify": "truffle run verify Aggregator Debridge ",
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
     "test": "truffle test --network test"
   },

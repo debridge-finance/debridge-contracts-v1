@@ -1,6 +1,6 @@
 # Test cases
 
-## Test Item: WhiteFullAggregator
+## Test Item: FullAggregator
 
 ### General requirements
 
@@ -124,7 +124,7 @@
 - [ ] with correct signature
 - [ ] without correct signature
 
-## Test Item: WhiteFullDebridge
+## Test Item: FullDebridge
 
 ### General requirements
 
@@ -348,7 +348,7 @@
 - [ ] swap native asset
 - [ ] swap token
 
-## Test Item: WhiteLightDebridge
+## Test Item: LightDebridge
 
 ### General requirements
 

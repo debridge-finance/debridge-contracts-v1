@@ -4,47 +4,43 @@ const Web3 = require("web3");
 const { toBN, toWei, toChecksumAddress, fromWei } = require("web3-utils");
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const wrappedAssetAbi = require("../build/contracts/WrappedAsset.json").abi;
-const whiteFullAggregatorAbi = require("../build/contracts/WhiteFullAggregator.json")
-  .abi;
-const whiteFullDebridgeAbi = require("../build/contracts/WhiteFullDebridge.json")
-  .abi;
-const whiteLightAggregatorAbi = require("../build/contracts/WhiteLightVerifier.json")
-  .abi;
-const whiteLightDebridgeAbi = require("../build/contracts/WhiteLightDebridge.json")
-  .abi;
+const fullAggregatorAbi = require("../build/contracts/FullAggregator.json").abi;
+const fullDebridgeAbi = require("../build/contracts/FullDebridge.json").abi;
+const lightAggregatorAbi = require("../build/contracts/LightVerifier.json").abi;
+const lightDebridgeAbi = require("../build/contracts/LightDebridge.json").abi;
 
 const hecoWeb3 = new Web3(process.env.HECO_PROVIDER);
 const bscWeb3 = new Web3(process.env.BSC_PROVIDER);
 const ethWeb3 = new Web3(process.env.ETH_PROVIDER);
 
 const bscInfo = {
-  whiteAggregatorInstance: new bscWeb3.eth.Contract(
-    whiteFullAggregatorAbi,
-    process.env.BSC_WHITE_AGGREGATOR
+  aggregatorInstance: new bscWeb3.eth.Contract(
+    fullAggregatorAbi,
+    process.env.BSC_AGGREGATOR
   ),
-  whiteDebridgeInstance: new bscWeb3.eth.Contract(
-    whiteFullDebridgeAbi,
-    process.env.BSC_WHITE_DEBRIDGE
+  debridgeInstance: new bscWeb3.eth.Contract(
+    fullDebridgeAbi,
+    process.env.BSC_DEBRIDGE
   ),
 };
 const hecoInfo = {
-  whiteAggregatorInstance: new hecoWeb3.eth.Contract(
-    whiteFullAggregatorAbi,
-    process.env.HECO_WHITE_AGGREGATOR
+  aggregatorInstance: new hecoWeb3.eth.Contract(
+    fullAggregatorAbi,
+    process.env.HECO_AGGREGATOR
   ),
-  whiteDebridgeInstance: new hecoWeb3.eth.Contract(
-    whiteFullDebridgeAbi,
-    process.env.HECO_WHITE_DEBRIDGE
+  debridgeInstance: new hecoWeb3.eth.Contract(
+    fullDebridgeAbi,
+    process.env.HECO_DEBRIDGE
   ),
 };
 const ethInfo = {
-  whiteAggregatorInstance: new ethWeb3.eth.Contract(
-    whiteLightAggregatorAbi,
-    process.env.ETH_WHITE_AGGREGATOR
+  aggregatorInstance: new ethWeb3.eth.Contract(
+    lightAggregatorAbi,
+    process.env.ETH_AGGREGATOR
   ),
-  whiteDebridgeInstance: new ethWeb3.eth.Contract(
-    whiteLightDebridgeAbi,
-    process.env.ETH_WHITE_DEBRIDGE
+  debridgeInstance: new ethWeb3.eth.Contract(
+    lightDebridgeAbi,
+    process.env.ETH_DEBRIDGE
   ),
 };
 const senderAddress = process.env.SENDER_ADDRESS;
@@ -52,24 +48,83 @@ const privKey = process.env.PRIVATE_KEY;
 const oracleAddress = process.env.ORACLE_SENDER_ADDRESS;
 const oraclePrivKey = process.env.ORACLE_PRIVATE_KEY;
 
-async function sendBscToEth() {
+async function sendBscToHeco() {
   const tokenAddress = ZERO_ADDRESS;
-  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
   const receiver = senderAddress;
   const amount = toBN(toWei("0.1"));
-  const chainIdTo = await ethInfo.whiteDebridgeInstance.methods
-    .chainId()
-    .call();
-  const debridgeId = await bscInfo.whiteDebridgeInstance.methods
+  const chainIdTo = await hecoInfo.debridgeInstance.methods.chainId().call();
+  const debridgeId = await bscInfo.debridgeInstance.methods
     .getDebridgeId(chainId, tokenAddress)
     .call();
   const tx = {
     from: senderAddress,
-    to: bscInfo.whiteDebridgeInstance.options.address,
+    to: bscInfo.debridgeInstance.options.address,
     value: amount,
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
-    data: bscInfo.whiteDebridgeInstance.methods
+    data: bscInfo.debridgeInstance.methods
+      .send(debridgeId, receiver, amount, chainIdTo)
+      .encodeABI(),
+  };
+  const signedTx = await bscWeb3.eth.accounts.signTransaction(tx, privKey);
+  console.log(signedTx);
+  await bscWeb3.eth.sendSignedTransaction(
+    signedTx.raw || signedTx.rawTransaction
+  );
+}
+
+async function autosendBscToHeco() {
+  const tokenAddress = ZERO_ADDRESS;
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
+  const receiver = senderAddress;
+  const amount = toBN(toWei("0.1"));
+  const executionFee = toBN(toWei("0.0001"));
+  const chainIdTo = await hecoInfo.debridgeInstance.methods.chainId().call();
+  const debridgeId = await bscInfo.debridgeInstance.methods
+    .getDebridgeId(chainId, tokenAddress)
+    .call();
+  const tx = {
+    from: senderAddress,
+    to: bscInfo.debridgeInstance.options.address,
+    value: amount,
+    gasPrice: toWei("5", "gwei"),
+    gas: 300000,
+    data: bscInfo.debridgeInstance.methods
+      .autoSend(
+        debridgeId,
+        receiver,
+        amount,
+        chainIdTo,
+        receiver,
+        executionFee,
+        "0x"
+      )
+      .encodeABI(),
+  };
+  const signedTx = await bscWeb3.eth.accounts.signTransaction(tx, privKey);
+  console.log(signedTx);
+  await bscWeb3.eth.sendSignedTransaction(
+    signedTx.raw || signedTx.rawTransaction
+  );
+}
+
+async function sendBscToEth() {
+  const tokenAddress = ZERO_ADDRESS;
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
+  const receiver = senderAddress;
+  const amount = toBN(toWei("0.1"));
+  const chainIdTo = await ethInfo.debridgeInstance.methods.chainId().call();
+  const debridgeId = await bscInfo.debridgeInstance.methods
+    .getDebridgeId(chainId, tokenAddress)
+    .call();
+  const tx = {
+    from: senderAddress,
+    to: bscInfo.debridgeInstance.options.address,
+    value: amount,
+    gasPrice: toWei("5", "gwei"),
+    gas: 300000,
+    data: bscInfo.debridgeInstance.methods
       .send(debridgeId, receiver, amount, chainIdTo)
       .encodeABI(),
   };
@@ -83,28 +138,26 @@ async function sendBscToEth() {
 async function confirmSubmit(chainInfo, web3, submissionId) {
   const tx = {
     from: oracleAddress,
-    to: chainInfo.whiteAggregatorInstance.options.address,
+    to: chainInfo.aggregatorInstance.options.address,
     value: 0,
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
-    data: chainInfo.whiteAggregatorInstance.methods
-      .submit(submissionId)
-      .encodeABI(),
+    data: chainInfo.aggregatorInstance.methods.submit(submissionId).encodeABI(),
   };
   const signedTx = await web3.eth.accounts.signTransaction(tx, oraclePrivKey);
   console.log(signedTx);
   await web3.eth.sendSignedTransaction(signedTx.raw || signedTx.rawTransaction);
 }
 async function mintOnEth() {
-  const aggregatorAddress = bscInfo.whiteAggregatorInstance.options.address
+  const aggregatorAddress = bscInfo.aggregatorInstance.options.address
     .slice(2)
     .toLowerCase();
   const tokenAddress = ZERO_ADDRESS;
-  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
   const receiver = senderAddress;
   const amount = toBN("99400000000000000");
   const nonce = 0;
-  const debridgeId = await ethInfo.whiteDebridgeInstance.methods
+  const debridgeId = await ethInfo.debridgeInstance.methods
     .getDebridgeId(chainId, tokenAddress)
     .call();
   const signedTxs = [
@@ -142,11 +195,11 @@ async function mintOnEth() {
   console.log(trxsData);
   const tx = {
     from: senderAddress,
-    to: ethInfo.whiteDebridgeInstance.options.address,
+    to: ethInfo.debridgeInstance.options.address,
     value: 0,
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
-    data: ethInfo.whiteDebridgeInstance.methods
+    data: ethInfo.debridgeInstance.methods
       .mint(debridgeId, receiver, amount, nonce, trxsData)
       .encodeABI(),
   };
@@ -159,16 +212,14 @@ async function mintOnEth() {
 
 async function burnEthToHeco() {
   const tokenAddress = ZERO_ADDRESS;
-  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
   const receiver = senderAddress;
   const amount = toBN("99400000000000000");
-  const chainIdTo = await hecoInfo.whiteDebridgeInstance.methods
-    .chainId()
-    .call();
-  const debridgeId = await ethInfo.whiteDebridgeInstance.methods
+  const chainIdTo = await hecoInfo.debridgeInstance.methods.chainId().call();
+  const debridgeId = await ethInfo.debridgeInstance.methods
     .getDebridgeId(chainId, tokenAddress)
     .call();
-  const debridge = await ethInfo.whiteDebridgeInstance.methods
+  const debridge = await ethInfo.debridgeInstance.methods
     .getDebridge(debridgeId)
     .call();
   const wrappedAsset = new ethWeb3.eth.Contract(
@@ -182,7 +233,7 @@ async function burnEthToHeco() {
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
     data: wrappedAsset.methods
-      .approve(ethInfo.whiteDebridgeInstance.options.address, amount)
+      .approve(ethInfo.debridgeInstance.options.address, amount)
       .encodeABI(),
   };
   const signedApproveTx = await ethWeb3.eth.accounts.signTransaction(
@@ -195,11 +246,11 @@ async function burnEthToHeco() {
   );
   const tx = {
     from: senderAddress,
-    to: ethInfo.whiteDebridgeInstance.options.address,
+    to: ethInfo.debridgeInstance.options.address,
     value: 0,
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
-    data: ethInfo.whiteDebridgeInstance.methods
+    data: ethInfo.debridgeInstance.methods
       .burn(debridgeId, receiver, amount, chainIdTo)
       .encodeABI(),
   };
@@ -211,21 +262,22 @@ async function burnEthToHeco() {
 }
 async function mintOnHeco() {
   const tokenAddress = ZERO_ADDRESS;
-  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
+  const chainIdFrom = await bscInfo.debridgeInstance.methods.chainId().call();
   const receiver = senderAddress;
-  const amount = toBN("98803000000000000");
+  const amount = toBN("99400000000000000");
   const nonce = 0;
-  const debridgeId = await hecoInfo.whiteDebridgeInstance.methods
+  const debridgeId = await hecoInfo.debridgeInstance.methods
     .getDebridgeId(chainId, tokenAddress)
     .call();
   const tx = {
     from: senderAddress,
-    to: hecoInfo.whiteDebridgeInstance.options.address,
+    to: hecoInfo.debridgeInstance.options.address,
     value: 0,
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
-    data: hecoInfo.whiteDebridgeInstance.methods
-      .mint(debridgeId, receiver, amount, nonce)
+    data: hecoInfo.debridgeInstance.methods
+      .mint(debridgeId, chainIdFrom, receiver, amount, nonce)
       .encodeABI(),
   };
   const signedTx = await hecoWeb3.eth.accounts.signTransaction(tx, privKey);
@@ -236,16 +288,14 @@ async function mintOnHeco() {
 }
 async function burnHecoToBsc() {
   const tokenAddress = ZERO_ADDRESS;
-  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
   const receiver = senderAddress;
-  const amount = toBN("98803000000000000");
-  const chainIdTo = await bscInfo.whiteDebridgeInstance.methods
-    .chainId()
-    .call();
-  const debridgeId = await hecoInfo.whiteDebridgeInstance.methods
+  const amount = toBN("99400000000000000");
+  const chainIdTo = await bscInfo.debridgeInstance.methods.chainId().call();
+  const debridgeId = await hecoInfo.debridgeInstance.methods
     .getDebridgeId(chainId, tokenAddress)
     .call();
-  const debridge = await hecoInfo.whiteDebridgeInstance.methods
+  const debridge = await hecoInfo.debridgeInstance.methods
     .getDebridge(debridgeId)
     .call();
   const wrappedAsset = new hecoWeb3.eth.Contract(
@@ -259,7 +309,7 @@ async function burnHecoToBsc() {
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
     data: wrappedAsset.methods
-      .approve(hecoInfo.whiteDebridgeInstance.options.address, amount)
+      .approve(hecoInfo.debridgeInstance.options.address, amount)
       .encodeABI(),
   };
   const signedApproveTx = await hecoWeb3.eth.accounts.signTransaction(
@@ -270,14 +320,16 @@ async function burnHecoToBsc() {
   await hecoWeb3.eth.sendSignedTransaction(
     signedApproveTx.raw || signedApproveTx.rawTransaction
   );
+  const deadline = 0;
+  const signature = "0x";
   const tx = {
     from: senderAddress,
-    to: hecoInfo.whiteDebridgeInstance.options.address,
+    to: hecoInfo.debridgeInstance.options.address,
     value: 0,
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
-    data: hecoInfo.whiteDebridgeInstance.methods
-      .burn(debridgeId, receiver, amount, chainIdTo)
+    data: hecoInfo.debridgeInstance.methods
+      .burn(debridgeId, receiver, amount, chainIdTo, deadline, signature)
       .encodeABI(),
   };
   const signedTx = await hecoWeb3.eth.accounts.signTransaction(tx, privKey);
@@ -288,21 +340,22 @@ async function burnHecoToBsc() {
 }
 async function claimOnBsc() {
   const tokenAddress = ZERO_ADDRESS;
-  const chainId = await bscInfo.whiteDebridgeInstance.methods.chainId().call();
+  const chainId = await bscInfo.debridgeInstance.methods.chainId().call();
+  const chainIdFrom = await hecoInfo.debridgeInstance.methods.chainId().call();
   const receiver = senderAddress;
-  const amount = toBN("98208985000000000");
+  const amount = toBN("98803000000000000");
   const nonce = 0;
-  const debridgeId = await bscInfo.whiteDebridgeInstance.methods
+  const debridgeId = await bscInfo.debridgeInstance.methods
     .getDebridgeId(chainId, tokenAddress)
     .call();
   const tx = {
     from: senderAddress,
-    to: bscInfo.whiteDebridgeInstance.options.address,
+    to: bscInfo.debridgeInstance.options.address,
     value: 0,
     gasPrice: toWei("5", "gwei"),
     gas: 300000,
-    data: bscInfo.whiteDebridgeInstance.methods
-      .claim(debridgeId, receiver, amount, nonce)
+    data: bscInfo.debridgeInstance.methods
+      .claim(debridgeId, chainIdFrom, receiver, amount, nonce)
       .encodeABI(),
   };
   const signedTx = await bscWeb3.eth.accounts.signTransaction(tx, privKey);
@@ -312,7 +365,13 @@ async function claimOnBsc() {
   );
 }
 
-// sendBscToEth().catch(console.log);
+// autosendBscToHeco().catch(console.log);
+// sendBscToHeco().catch(console.log);
+confirmSubmit(
+  hecoInfo,
+  hecoWeb3,
+  "0x010b39f257c212a71cd76f46089ca7d1efc38e52633fddc3c6d043c06a55f1ec"
+).catch(console.log);
 // confirmSubmit(
 //   bscInfo,
 //   bscWeb3,
