@@ -40,7 +40,7 @@ abstract contract WhiteNFTDebridge is
     uint256 public chainId; // current chain id
     address public aggregator; // current chainlink aggregator address
     address public callProxy; // proxy to execute user's calls
-    address public feeToken; // token address of fee
+    IERC20 public feeToken; // token address of fee
     uint8 public aggregatorVersion; // aggregators count
     uint256[] public chainIds; // list of all supported chain ids
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
@@ -109,7 +109,7 @@ abstract contract WhiteNFTDebridge is
     function _initialize(
         address _aggregator,
         address _callProxy,
-        address _feeToken
+        IERC20 _feeToken
     ) internal {
         uint256 cid;
         assembly {
@@ -237,6 +237,12 @@ abstract contract WhiteNFTDebridge is
         }
     }
 
+    /// @dev Set wrapped native asset address.
+    /// @param _feeToken Weth address.
+    function setFeeToken(IERC20 _feeToken) external override onlyAdmin() {
+        feeToken = _feeToken;
+    }
+
     /// @dev Set support for the chains.
     /// @param _chainIds All supported chain ids.
     function setChainIds(uint256[] memory _chainIds) external onlyAdmin() {
@@ -316,7 +322,7 @@ abstract contract WhiteNFTDebridge is
             "withdrawFee: not enough fee"
         );
         debridge.collectedFees -= _amount;
-        IERC20(feeToken).safeTransfer(_receiver, _amount);
+        feeToken.safeTransfer(_receiver, _amount);
     }
 
     /* Internal */
@@ -377,7 +383,7 @@ abstract contract WhiteNFTDebridge is
         uint256 transferFee = chainSupportInfo.fixedFee;
         if (transferFee > 0) {
             debridge.collectedFees += transferFee;
-            IERC20(feeToken).safeTransferFrom(msg.sender, address(this), transferFee);
+            feeToken.safeTransferFrom(msg.sender, address(this), transferFee);
         }
     }
 
@@ -415,7 +421,7 @@ abstract contract WhiteNFTDebridge is
         uint256 transferFee = chainSupportInfo.fixedFee;
         if (transferFee > 0) {
             debridge.collectedFees += transferFee;
-            IERC20(feeToken).safeTransferFrom(msg.sender, address(this), transferFee);
+            feeToken.safeTransferFrom(msg.sender, address(this), transferFee);
         }
         wrappedNft.burn(_tokenId);
     }

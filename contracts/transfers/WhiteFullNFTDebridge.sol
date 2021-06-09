@@ -22,7 +22,7 @@ contract WhiteFullNFTDebridge is WhiteNFTDebridge, IWhiteFullNFTDebridge {
     function initialize(
         address _aggregator,
         address _callProxy,
-        address _feeToken,
+        IERC20 _feeToken,
         IFeeProxy _feeProxy
     ) public initializer {
         super._initialize(
@@ -208,19 +208,13 @@ contract WhiteFullNFTDebridge is WhiteNFTDebridge, IWhiteFullNFTDebridge {
             "fundAggregator: not enough fee"
         );
         debridge.collectedFees -= _amount;
-        IERC20(feeToken).transfer(address(feeProxy), _amount);
-        feeProxy.swapToLink(feeToken, _amount, aggregator);
+        feeToken.transfer(address(feeProxy), _amount);
+        feeProxy.swapToLink(address(feeToken), _amount, aggregator);
     }
 
     /// @dev Set fee converter proxy.
     /// @param _feeProxy Fee proxy address.
     function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin() {
         feeProxy = _feeProxy;
-    }
-
-    /// @dev Set wrapped native asset address.
-    /// @param _feeToken Weth address.
-    function setFeeToken(address _feeToken) external onlyAdmin() {
-        feeToken = _feeToken;
     }
 }

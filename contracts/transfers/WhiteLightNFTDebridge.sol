@@ -11,7 +11,7 @@ contract WhiteLightNFTDebridge is WhiteNFTDebridge, IWhiteLightNFTDebridge {
     function initialize(
         address _aggregator,
         address _callProxy,
-        address _feeToken
+        IERC20 _feeToken
     ) public initializer {
         super._initialize(
             _aggregator,
@@ -184,11 +184,5 @@ contract WhiteLightNFTDebridge is WhiteNFTDebridge, IWhiteLightNFTDebridge {
             _receiver,
             _tokenId
         );
-    }
-
-    /// @dev Set wrapped native asset address.
-    /// @param _feeToken Weth address.
-    function setFeeToken(address _feeToken) external override onlyAdmin() {
-        feeToken = _feeToken;
     }
 }

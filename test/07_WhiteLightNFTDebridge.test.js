@@ -150,6 +150,7 @@ contract("WhiteLightNFTDebridge", function([alice, bob, carol, eve, fei, devid])
       const wrappedNft = await WrappedNFT.new(
         name,
         symbol,
+        "ipfs://cryptopunks",
         [this.whiteDebridge.address],
         {
           from: alice,

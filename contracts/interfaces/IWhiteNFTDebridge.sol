@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IWhiteNFTDebridge {
     struct ChainSupportInfo {
@@ -42,4 +43,6 @@ interface IWhiteNFTDebridge {
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external;
+
+    function setFeeToken(IERC20 _feeToken) external;
 }

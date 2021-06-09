@@ -20,6 +20,4 @@ interface IWhiteLightNFTDebridge {
         bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external;
-
-    function setFeeToken(address _feeToken) external;
 }
