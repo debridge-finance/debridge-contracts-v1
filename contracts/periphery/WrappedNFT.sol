@@ -27,6 +27,7 @@ contract WrappedNFT is AccessControl, IWrappedNFT, ERC721 {
     constructor(
         string memory _name,
         string memory _symbol,
+        string memory _originalBaseURI,
         address[] memory _minters
     ) ERC721(_name, _symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -50,6 +51,8 @@ contract WrappedNFT is AccessControl, IWrappedNFT, ERC721 {
                 address(this)
             )
         );
+
+        baseURI = _originalBaseURI;
     }
 
     /// @dev Issues new token
@@ -114,7 +117,7 @@ contract WrappedNFT is AccessControl, IWrappedNFT, ERC721 {
         return super.supportsInterface(interfaceId);
     }
 
-    function _baseURI() internal view override returns (string) {
-        return string(abi.encodePacked("ipfs://", _symbol));
+    function _baseURI() internal virtual view override returns (string memory) {
+        return baseURI;
     }
 }
