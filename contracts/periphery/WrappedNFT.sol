@@ -50,8 +50,6 @@ contract WrappedNFT is AccessControl, IWrappedNFT, ERC721 {
                 address(this)
             )
         );
-
-        baseURI = string(abi.encodePacked("ipfs://", _symbol));
     }
 
     /// @dev Issues new token
@@ -109,16 +107,14 @@ contract WrappedNFT is AccessControl, IWrappedNFT, ERC721 {
         _approve(_spender, _tokenId);
     }
 
-    /// @dev set base uri of token
-    /// @param _baseURI baseURI to set
-    function _setBaseURI (string memory _baseURI) internal{
-        baseURI = _baseURI;
-    }
-
     /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AccessControl, IERC165) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    function _baseURI() internal view override returns (string) {
+        return string(abi.encodePacked("ipfs://", _symbol));
     }
 }
