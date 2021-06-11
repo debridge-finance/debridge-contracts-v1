@@ -9,19 +9,28 @@ contract Aggregator is AccessControl {
         address admin; // current oracle admin
         mapping(IERC20 => uint256) balances; // balances
     }
+    struct BlockConfirmationsInfo {
+        uint256 count; // current oracle admin
+        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
+    }
     struct PaymentInfo {
         uint256 allocatedFunds; // asset's amount payed to oracles
         uint256 availableFunds; // asset's amount available to be payed to oracles
     }
+    struct ConfirmationInfo {
+        uint256 maxCount;
+        uint256 minConfirmations;
+    }
 
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
-    uint256 public minConfirmations; // minimal required confimations
     uint256 public corePayment; // payment for one submission
     uint256 public bonusPayment; // bonus reward for one submission
     IERC20 public coreToken; // LINK's token address
     IERC20 public bonusToken; // DBR's token address
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
     mapping(IERC20 => PaymentInfo) public getPaymentInfo; // asset address => funds details
+    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
+    ConfirmationInfo[] public getConfirmationsInfo; // levels of confirmation based on the number of confirmations per block
 
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
@@ -35,19 +44,19 @@ contract Aggregator is AccessControl {
     /* PUBLIC */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _minConfirmations Minimal required confirmations.
+    /// @param _confirmationsInfo Confirmations related info.
     /// @param _corePayment Oracle reward.
     /// @param _bonusPayment Oracle reward.
     /// @param _coreToken Link token to pay to oracles.
     /// @param _bonusToken DBR token to pay to oracles.
     constructor(
-        uint256 _minConfirmations,
+        ConfirmationInfo[] memory _confirmationsInfo,
         uint256 _corePayment,
         uint256 _bonusPayment,
         IERC20 _coreToken,
         IERC20 _bonusToken
     ) {
-        minConfirmations = _minConfirmations;
+        setMinConfirmations(_confirmationsInfo);
         coreToken = _coreToken;
         bonusToken = _bonusToken;
         corePayment = _corePayment;
@@ -123,7 +132,7 @@ contract Aggregator is AccessControl {
     ) external onlyAdmin() {
         require(
             uint256(getPaymentInfo[_asset].availableFunds) >= _amount,
-            "insufficient reserve funds"
+            "withdrawFunds: insufficient reserve funds"
         );
         require(
             _asset.transfer(_recipient, _amount),
@@ -133,9 +142,12 @@ contract Aggregator is AccessControl {
     }
 
     /// @dev Sets minimal required confirmations.
-    /// @param _minConfirmations Minimal required confirmations.
-    function setMinConfirmations(uint256 _minConfirmations) external onlyAdmin {
-        minConfirmations = _minConfirmations;
+    /// @param _confirmationsInfo Confirmation info.
+    function setMinConfirmations(ConfirmationInfo[] memory _confirmationsInfo)
+        public
+        onlyAdmin
+    {
+        getConfirmationsInfo = _confirmationsInfo;
     }
 
     /// @dev Sets new oracle reward.

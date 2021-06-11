@@ -6,8 +6,8 @@ interface IFullAggregator {
 
     function submitMany(bytes32[] memory _submissionIds) external;
 
-    function isSubmissionConfirmed(bytes32 _submissionId)
+    function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
-        returns (bool);
+        returns (uint256 _confirmations, bool _blockConfirmationPassed);
 }
