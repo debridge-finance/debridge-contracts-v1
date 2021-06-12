@@ -70,10 +70,9 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _executionFee,
                 _data
             );
-        require(
-            ILightVerifier(aggregator).submit(submissionId, _signatures),
-            "mint: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "autoMint: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -124,13 +123,9 @@ contract LightDebridge is Debridge, ILightDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
-        require(
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            ),
-            "mint: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "autoMintWithOldAggregator: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -165,10 +160,9 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _receiver,
                 _nonce
             );
-        require(
-            ILightVerifier(aggregator).submit(submissionId, _signatures),
-            "mint: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "mint: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -211,13 +205,9 @@ contract LightDebridge is Debridge, ILightDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
-        require(
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            ),
-            "mint: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "mintWithOldAggregator: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -252,10 +242,9 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _receiver,
                 _nonce
             );
-        require(
-            ILightVerifier(aggregator).submit(submissionId, _signatures),
-            "claim: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "claim: not confirmed");
         _claim(
             submissionId,
             _debridgeId,
@@ -299,10 +288,9 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _executionFee,
                 _data
             );
-        require(
-            ILightVerifier(aggregator).submit(submissionId, _signatures),
-            "claim: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "autoClaim: not confirmed");
         _claim(
             submissionId,
             _debridgeId,
@@ -353,13 +341,9 @@ contract LightDebridge is Debridge, ILightDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalid aggregator"
         );
-        require(
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            ),
-            "claim: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "autoClaimWithOldAggregator: not confirmed");
         _claim(
             submissionId,
             _debridgeId,
@@ -402,13 +386,9 @@ contract LightDebridge is Debridge, ILightDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalid aggregator"
         );
-        require(
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            ),
-            "claim: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            ILightVerifier(aggregator).submit(submissionId, _signatures);
+        require(confirmed, "claimWithOldAggregator: not confirmed");
         _claim(
             submissionId,
             _debridgeId,

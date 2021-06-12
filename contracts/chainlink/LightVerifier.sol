@@ -6,8 +6,17 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/ILightVerifier.sol";
 
 contract LightVerifier is AccessControl, ILightVerifier {
+    struct BlockConfirmationsInfo {
+        uint256 count; // current oracle admin
+        bool requireExtraCheck; // current oracle admin
+        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
+    }
+
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
-    uint256 public minConfirmations; // minimal required confimations
+    uint256 public confirmationThreshold; // bonus reward for one submission
+    uint256 public minConfirmations; // minimal required confirmations
+    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
+    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
 
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
@@ -15,7 +24,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     }
 
     struct SubmissionInfo {
-        bool confirmed; // whether is confirmed
+        uint256 block; // confirmation block
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
@@ -26,9 +35,17 @@ contract LightVerifier is AccessControl, ILightVerifier {
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by all the required oracles
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _minConfirmations Minimal required confirmations.
-    constructor(uint256 _minConfirmations) {
+    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
+    /// @param _minConfirmations Common confirmations count.
+    /// @param _excessConfirmations Confirmations count in case of excess activity.
+    constructor(
+        uint256 _confirmationThreshold,
+        uint256 _minConfirmations,
+        uint256 _excessConfirmations
+    ) {
+        confirmationThreshold = _confirmationThreshold;
         minConfirmations = _minConfirmations;
+        excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -38,7 +55,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
         external
         override
-        returns (bool)
+        returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo =
             getSubmissionInfo[_submissionId];
@@ -55,12 +72,30 @@ contract LightVerifier is AccessControl, ILightVerifier {
             submissionInfo.hasVerified[oracle] = true;
             emit Confirmed(_submissionId, oracle);
             if (submissionInfo.confirmations >= minConfirmations) {
-                submissionInfo.confirmed = true;
+                BlockConfirmationsInfo storage _blockConfirmationsInfo =
+                    getConfirmationsPerBlock[block.number];
+                if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
+                    _blockConfirmationsInfo.count += 1;
+                    _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
+                    if (
+                        _blockConfirmationsInfo.count >= confirmationThreshold
+                    ) {
+                        _blockConfirmationsInfo.requireExtraCheck = true;
+                    }
+                }
+                submissionInfo.block = block.number;
                 emit SubmissionApproved(_submissionId);
-                return submissionInfo.confirmed;
             }
         }
-        return submissionInfo.confirmed;
+        return (
+            submissionInfo.confirmations,
+            submissionInfo.confirmations >=
+                (
+                    (getConfirmationsPerBlock[block.number].requireExtraCheck)
+                        ? excessConfirmations
+                        : minConfirmations
+                )
+        );
     }
 
     /* ADMIN */
@@ -85,16 +120,30 @@ contract LightVerifier is AccessControl, ILightVerifier {
 
     /* VIEW */
 
-    /// @dev Returns whether mint request is confirmed.
+    /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
-    /// @return Whether mint request is confirmed.
-    function isSubmissionConfirmed(bytes32 _submissionId)
+    /// @return _confirmations number of confirmation.
+    /// @return _blockConfirmationPassed Whether transfer request is confirmed.
+    function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
         override
-        returns (bool)
+        returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
-        return getSubmissionInfo[_submissionId].confirmed;
+        SubmissionInfo storage submissionInfo =
+            getSubmissionInfo[_submissionId];
+        BlockConfirmationsInfo storage _blockConfirmationsInfo =
+            getConfirmationsPerBlock[submissionInfo.block];
+        _confirmations = submissionInfo.confirmations;
+        return (
+            _confirmations,
+            _confirmations >=
+                (
+                    (_blockConfirmationsInfo.requireExtraCheck)
+                        ? excessConfirmations
+                        : minConfirmations
+                )
+        );
     }
 
     /// @dev Prepares raw msg that was signed by the oracle.

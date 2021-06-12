@@ -82,10 +82,11 @@ contract FullDebridge is Debridge, IFullDebridge {
                 _executionFee,
                 _data
             );
-        require(
-            IFullAggregator(aggregator).isSubmissionConfirmed(submissionId),
-            "mint: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
+                submissionId
+            );
+        require(confirmed, "autoMint: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -134,12 +135,11 @@ contract FullDebridge is Debridge, IFullDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
-        require(
-            IFullAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
                 submissionId
-            ),
-            "mint: not confirmed"
-        );
+            );
+        require(confirmed, "mintWithOldAggregator: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -172,10 +172,11 @@ contract FullDebridge is Debridge, IFullDebridge {
                 _receiver,
                 _nonce
             );
-        require(
-            IFullAggregator(aggregator).isSubmissionConfirmed(submissionId),
-            "mint: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
+                submissionId
+            );
+        require(confirmed, "mint: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -216,12 +217,11 @@ contract FullDebridge is Debridge, IFullDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
-        require(
-            IFullAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
                 submissionId
-            ),
-            "mint: not confirmed"
-        );
+            );
+        require(confirmed, "mintWithOldAggregator: not confirmed");
         _mint(
             submissionId,
             _debridgeId,
@@ -260,10 +260,11 @@ contract FullDebridge is Debridge, IFullDebridge {
                 _executionFee,
                 _data
             );
-        require(
-            IFullAggregator(aggregator).isSubmissionConfirmed(submissionId),
-            "claim: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
+                submissionId
+            );
+        require(confirmed, "autoClaim: not confirmed");
         _claim(
             submissionId,
             _debridgeId,
@@ -308,16 +309,11 @@ contract FullDebridge is Debridge, IFullDebridge {
             );
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
-        require(
-            aggregatorInfo.isValid,
-            "mintWithOldAggregator: invalidAggregator"
-        );
-        require(
-            IFullAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
                 submissionId
-            ),
-            "claim: not confirmed"
-        );
+            );
+        require(confirmed, "autoClaimWithOldAggregator: not confirmed");
         _claim(
             submissionId,
             _debridgeId,
@@ -351,10 +347,11 @@ contract FullDebridge is Debridge, IFullDebridge {
                 _receiver,
                 _nonce
             );
-        require(
-            IFullAggregator(aggregator).isSubmissionConfirmed(submissionId),
-            "claim: not confirmed"
-        );
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
+                submissionId
+            );
+        require(confirmed, "claim: not confirmed");
         _claim(
             submissionId,
             _debridgeId,
@@ -395,12 +392,11 @@ contract FullDebridge is Debridge, IFullDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
-        require(
-            IFullAggregator(aggregatorInfo.aggregator).isSubmissionConfirmed(
+        (uint256 confirmations, bool confirmed) =
+            IFullAggregator(aggregator).getSubmissionConfirmations(
                 submissionId
-            ),
-            "claim: not confirmed"
-        );
+            );
+        require(confirmed, "claimWithOldAggregator: not confirmed");
         _claim(
             submissionId,
             _debridgeId,

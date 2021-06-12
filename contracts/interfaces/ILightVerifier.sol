@@ -4,10 +4,10 @@ pragma solidity ^0.8.2;
 interface ILightVerifier {
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
         external
-        returns (bool);
+        returns (uint256 _confirmations, bool _blockConfirmationPassed);
 
-    function isSubmissionConfirmed(bytes32 _submissionId)
+    function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
-        returns (bool);
+        returns (uint256 _confirmations, bool _blockConfirmationPassed);
 }

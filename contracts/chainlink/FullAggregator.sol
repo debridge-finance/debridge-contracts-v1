@@ -12,33 +12,43 @@ contract FullAggregator is Aggregator, IFullAggregator {
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
+    uint256 public confirmationThreshold; // bonus reward for one submission
+    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
 
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
+    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
 
-    // /// @dev Constructor that initializes the most important configurations.
-    // /// @param _minConfirmations Minimal required confirmations.
-    // /// @param _corePayment Oracle reward.
-    // /// @param _bonusPayment Oracle reward.
-    // /// @param _coreToken Link token to pay to oracles.
-    // /// @param _bonusToken DBR token to pay to oracles.
-    // constructor(
-    //     uint256 _minConfirmations,
-    //     uint256 _corePayment,
-    //     uint256 _bonusPayment,
-    //     IERC20 _coreToken,
-    //     IERC20 _bonusToken
-    // )
-    //     Aggregator(
-    //         _minConfirmations,
-    //         _corePayment,
-    //         _bonusPayment,
-    //         _coreToken,
-    //         _bonusToken
-    //     )
-    // {}
+    /// @dev Constructor that initializes the most important configurations.
+    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
+    /// @param _minConfirmations Common confirmations count.
+    /// @param _excessConfirmations Confirmations count in case of excess activity.
+    /// @param _corePayment Oracle reward.
+    /// @param _bonusPayment Oracle reward.
+    /// @param _coreToken Link token to pay to oracles.
+    /// @param _bonusToken DBR token to pay to oracles.
+    constructor(
+        uint256 _confirmationThreshold,
+        uint256 _minConfirmations,
+        uint256 _excessConfirmations,
+        uint256 _corePayment,
+        uint256 _bonusPayment,
+        IERC20 _coreToken,
+        IERC20 _bonusToken
+    )
+        Aggregator(
+            _minConfirmations,
+            _corePayment,
+            _bonusPayment,
+            _coreToken,
+            _bonusToken
+        )
+    {
+        confirmationThreshold = _confirmationThreshold;
+        excessConfirmations = _excessConfirmations;
+    }
 
     /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.
@@ -69,14 +79,36 @@ contract FullAggregator is Aggregator, IFullAggregator {
         );
         submissionInfo.confirmations += 1;
         submissionInfo.hasVerified[msg.sender] = true;
-        BlockConfirmationsInfo storage _blockConfirmationsInfo =
-            getConfirmationsPerBlock[block.number];
-        if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
-            _blockConfirmationsInfo.count += 1;
-            _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
+        if (submissionInfo.confirmations >= minConfirmations) {
+            BlockConfirmationsInfo storage _blockConfirmationsInfo =
+                getConfirmationsPerBlock[block.number];
+            if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
+                _blockConfirmationsInfo.count += 1;
+                _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
+                if (_blockConfirmationsInfo.count >= confirmationThreshold) {
+                    _blockConfirmationsInfo.requireExtraCheck = true;
+                }
+            }
+            submissionInfo.block = block.number;
+            emit SubmissionApproved(_submissionId);
         }
         _payOracle(msg.sender);
         emit Confirmed(_submissionId, msg.sender);
+    }
+
+    /// @dev Sets minimal required confirmations.
+    /// @param _excessConfirmations Confirmation info.
+    function setExcessConfirmations(uint256 _excessConfirmations)
+        public
+        onlyAdmin
+    {
+        excessConfirmations = _excessConfirmations;
+    }
+
+    /// @dev Sets minimal required confirmations.
+    /// @param _confirmationThreshold Confirmation info.
+    function setThreshold(uint256 _confirmationThreshold) public onlyAdmin {
+        confirmationThreshold = _confirmationThreshold;
     }
 
     /// @dev Returns whether transfer request is confirmed.
@@ -94,21 +126,14 @@ contract FullAggregator is Aggregator, IFullAggregator {
         BlockConfirmationsInfo storage _blockConfirmationsInfo =
             getConfirmationsPerBlock[submissionInfo.block];
         _confirmations = submissionInfo.confirmations;
-        for (uint256 i = 0; i < getConfirmationsInfo.length - 1; i++) {
-            if (
-                getConfirmationsInfo[i].maxCount < _blockConfirmationsInfo.count
-            ) {
-                return (
-                    _confirmations,
-                    _confirmations >= getConfirmationsInfo[i].minConfirmations
-                );
-            }
-        }
         return (
             _confirmations,
             _confirmations >=
-                getConfirmationsInfo[getConfirmationsInfo.length - 1]
-                    .minConfirmations
+                (
+                    (_blockConfirmationsInfo.requireExtraCheck)
+                        ? excessConfirmations
+                        : minConfirmations
+                )
         );
     }
 }
