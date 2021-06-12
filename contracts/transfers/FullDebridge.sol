@@ -19,6 +19,8 @@ contract FullDebridge is Debridge, IFullDebridge {
 
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
+    uint256 public amountThreshold; // bonus reward for one submission
+    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
@@ -27,6 +29,8 @@ contract FullDebridge is Debridge, IFullDebridge {
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
+        uint256 _amountThreshold,
+        uint256 _excessConfirmations,
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
@@ -48,6 +52,8 @@ contract FullDebridge is Debridge, IFullDebridge {
             _chainSupportInfo,
             _defiController
         );
+        amountThreshold = _amountThreshold;
+        excessConfirmations = _excessConfirmations;
         weth = _weth;
         feeProxy = _feeProxy;
     }
@@ -87,6 +93,12 @@ contract FullDebridge is Debridge, IFullDebridge {
                 submissionId
             );
         require(confirmed, "autoMint: not confirmed");
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "autoMint: amount not confirmed"
+            );
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -136,10 +148,15 @@ contract FullDebridge is Debridge, IFullDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
+            IFullAggregator(aggregatorInfo.aggregator)
+                .getSubmissionConfirmations(submissionId);
         require(confirmed, "mintWithOldAggregator: not confirmed");
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "mintWithOldAggregator: amount not confirmed"
+            );
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -177,6 +194,12 @@ contract FullDebridge is Debridge, IFullDebridge {
                 submissionId
             );
         require(confirmed, "mint: not confirmed");
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "mint: amount not confirmed"
+            );
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -218,10 +241,15 @@ contract FullDebridge is Debridge, IFullDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
+            IFullAggregator(aggregatorInfo.aggregator)
+                .getSubmissionConfirmations(submissionId);
         require(confirmed, "mintWithOldAggregator: not confirmed");
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "mintWithOldAggregator: amount not confirmed"
+            );
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -265,6 +293,12 @@ contract FullDebridge is Debridge, IFullDebridge {
                 submissionId
             );
         require(confirmed, "autoClaim: not confirmed");
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "autoClaim: amount not confirmed"
+            );
+        }
         _claim(
             submissionId,
             _debridgeId,
@@ -310,10 +344,15 @@ contract FullDebridge is Debridge, IFullDebridge {
         AggregatorInfo memory aggregatorInfo =
             getOldAggregator[_aggregatorVersion];
         (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
+            IFullAggregator(aggregatorInfo.aggregator)
+                .getSubmissionConfirmations(submissionId);
         require(confirmed, "autoClaimWithOldAggregator: not confirmed");
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "autoClaimWithOldAggregator: amount not confirmed"
+            );
+        }
         _claim(
             submissionId,
             _debridgeId,
@@ -351,6 +390,12 @@ contract FullDebridge is Debridge, IFullDebridge {
             IFullAggregator(aggregator).getSubmissionConfirmations(
                 submissionId
             );
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "claim: amount not confirmed"
+            );
+        }
         require(confirmed, "claim: not confirmed");
         _claim(
             submissionId,
@@ -393,10 +438,15 @@ contract FullDebridge is Debridge, IFullDebridge {
             "mintWithOldAggregator: invalidAggregator"
         );
         (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
+            IFullAggregator(aggregatorInfo.aggregator)
+                .getSubmissionConfirmations(submissionId);
         require(confirmed, "claimWithOldAggregator: not confirmed");
+        if (_amount >= amountThreshold) {
+            require(
+                confirmations >= excessConfirmations,
+                "claimWithOldAggregator: amount not confirmed"
+            );
+        }
         _claim(
             submissionId,
             _debridgeId,
