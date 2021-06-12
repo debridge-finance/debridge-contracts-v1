@@ -55,7 +55,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
         external
         override
-        returns (uint256 _confirmations, bool _blockConfirmationPassed)
+        returns (bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo =
             getSubmissionInfo[_submissionId];
@@ -87,15 +87,12 @@ contract LightVerifier is AccessControl, ILightVerifier {
                 emit SubmissionApproved(_submissionId);
             }
         }
-        return (
-            submissionInfo.confirmations,
-            submissionInfo.confirmations >=
-                (
-                    (getConfirmationsPerBlock[block.number].requireExtraCheck)
-                        ? excessConfirmations
-                        : minConfirmations
-                )
-        );
+        return (submissionInfo.confirmations >=
+            (
+                (getConfirmationsPerBlock[block.number].requireExtraCheck)
+                    ? excessConfirmations
+                    : minConfirmations
+            ));
     }
 
     /* ADMIN */
