@@ -22,21 +22,21 @@ contract FullAggregator is Aggregator, IFullAggregator {
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _excessConfirmations Confirmations count in case of excess activity.
     /// @param _corePayment Oracle reward.
     /// @param _bonusPayment Oracle reward.
     /// @param _coreToken Link token to pay to oracles.
     /// @param _bonusToken DBR token to pay to oracles.
+    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
+    /// @param _excessConfirmations Confirmations count in case of excess activity.
     constructor(
-        uint256 _confirmationThreshold,
         uint256 _minConfirmations,
-        uint256 _excessConfirmations,
         uint256 _corePayment,
         uint256 _bonusPayment,
         IERC20 _coreToken,
-        IERC20 _bonusToken
+        IERC20 _bonusToken,
+        uint256 _confirmationThreshold,
+        uint256 _excessConfirmations
     )
         Aggregator(
             _minConfirmations,

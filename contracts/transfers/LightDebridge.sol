@@ -17,6 +17,7 @@ contract LightDebridge is Debridge, ILightDebridge {
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
+        uint256 _excessConfirmations,
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
@@ -27,6 +28,7 @@ contract LightDebridge is Debridge, ILightDebridge {
         IDefiController _defiController
     ) public payable initializer {
         super._initialize(
+            _excessConfirmations,
             _minAmount,
             _maxAmount,
             _minReserves,
@@ -70,9 +72,17 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _executionFee,
                 _data
             );
-        bool confirmed =
-            ILightVerifier(aggregator).submit(submissionId, _signatures);
-        require(confirmed, "autoMint: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            require(confirmed, "autoMint: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "autoMint: amount not confirmed"
+                );
+            }
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -117,18 +127,22 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _executionFee,
                 _data
             );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
         require(
-            aggregatorInfo.isValid,
+            getOldAggregator[_aggregatorVersion].isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
-        bool confirmed =
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            );
-        require(confirmed, "autoMintWithOldAggregator: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(getOldAggregator[_aggregatorVersion].aggregator)
+                    .submit(submissionId, _signatures);
+            require(confirmed, "autoMintWithOldAggregator: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "autoMintWithOldAggregator: amount not confirmed"
+                );
+            }
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -163,9 +177,17 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _receiver,
                 _nonce
             );
-        bool confirmed =
-            ILightVerifier(aggregator).submit(submissionId, _signatures);
-        require(confirmed, "mint: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            require(confirmed, "mint: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "mint: amount not confirmed"
+                );
+            }
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -208,12 +230,20 @@ contract LightDebridge is Debridge, ILightDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
-        bool confirmed =
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            );
-        require(confirmed, "mintWithOldAggregator: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(aggregatorInfo.aggregator).submit(
+                    submissionId,
+                    _signatures
+                );
+            require(confirmed, "mintWithOldAggregator: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "mintWithOldAggregator: amount not confirmed"
+                );
+            }
+        }
         _mint(
             submissionId,
             _debridgeId,
@@ -248,9 +278,17 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _receiver,
                 _nonce
             );
-        bool confirmed =
-            ILightVerifier(aggregator).submit(submissionId, _signatures);
-        require(confirmed, "claim: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            require(confirmed, "claim: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "claim: amount not confirmed"
+                );
+            }
+        }
         _claim(
             submissionId,
             _debridgeId,
@@ -294,9 +332,17 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _executionFee,
                 _data
             );
-        bool confirmed =
-            ILightVerifier(aggregator).submit(submissionId, _signatures);
-        require(confirmed, "autoClaim: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            require(confirmed, "autoClaim: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "autoClaim: amount not confirmed"
+                );
+            }
+        }
         _claim(
             submissionId,
             _debridgeId,
@@ -341,18 +387,22 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _executionFee,
                 _data
             );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
         require(
-            aggregatorInfo.isValid,
+            getOldAggregator[_aggregatorVersion].isValid,
             "mintWithOldAggregator: invalid aggregator"
         );
-        bool confirmed =
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            );
-        require(confirmed, "autoClaimWithOldAggregator: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(getOldAggregator[_aggregatorVersion].aggregator)
+                    .submit(submissionId, _signatures);
+            require(confirmed, "mintWithOldAggregator: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "mintWithOldAggregator: amount not confirmed"
+                );
+            }
+        }
         _claim(
             submissionId,
             _debridgeId,
@@ -389,18 +439,22 @@ contract LightDebridge is Debridge, ILightDebridge {
                 _receiver,
                 _nonce
             );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
         require(
-            aggregatorInfo.isValid,
-            "mintWithOldAggregator: invalid aggregator"
+            getOldAggregator[_aggregatorVersion].isValid,
+            "claimWithOldAggregator: invalid aggregator"
         );
-        bool confirmed =
-            ILightVerifier(aggregatorInfo.aggregator).submit(
-                submissionId,
-                _signatures
-            );
-        require(confirmed, "claimWithOldAggregator: not confirmed");
+        {
+            (uint256 confirmations, bool confirmed) =
+                ILightVerifier(getOldAggregator[_aggregatorVersion].aggregator)
+                    .submit(submissionId, _signatures);
+            require(confirmed, "claimWithOldAggregator: not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(
+                    confirmations >= excessConfirmations,
+                    "claimWithOldAggregator: amount not confirmed"
+                );
+            }
+        }
         _claim(
             submissionId,
             _debridgeId,

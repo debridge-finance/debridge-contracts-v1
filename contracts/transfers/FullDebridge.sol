@@ -19,8 +19,6 @@ contract FullDebridge is Debridge, IFullDebridge {
 
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
-    uint256 public amountThreshold; // bonus reward for one submission
-    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
@@ -29,7 +27,6 @@ contract FullDebridge is Debridge, IFullDebridge {
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
-        uint256 _amountThreshold,
         uint256 _excessConfirmations,
         uint256 _minAmount,
         uint256 _maxAmount,
@@ -43,6 +40,7 @@ contract FullDebridge is Debridge, IFullDebridge {
         IDefiController _defiController
     ) public payable initializer {
         super._initialize(
+            _excessConfirmations,
             _minAmount,
             _maxAmount,
             _minReserves,
@@ -52,8 +50,6 @@ contract FullDebridge is Debridge, IFullDebridge {
             _chainSupportInfo,
             _defiController
         );
-        amountThreshold = _amountThreshold;
-        excessConfirmations = _excessConfirmations;
         weth = _weth;
         feeProxy = _feeProxy;
     }
@@ -93,7 +89,7 @@ contract FullDebridge is Debridge, IFullDebridge {
                 submissionId
             );
         require(confirmed, "autoMint: not confirmed");
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "autoMint: amount not confirmed"
@@ -151,7 +147,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             IFullAggregator(aggregatorInfo.aggregator)
                 .getSubmissionConfirmations(submissionId);
         require(confirmed, "mintWithOldAggregator: not confirmed");
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "mintWithOldAggregator: amount not confirmed"
@@ -194,7 +190,7 @@ contract FullDebridge is Debridge, IFullDebridge {
                 submissionId
             );
         require(confirmed, "mint: not confirmed");
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "mint: amount not confirmed"
@@ -244,7 +240,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             IFullAggregator(aggregatorInfo.aggregator)
                 .getSubmissionConfirmations(submissionId);
         require(confirmed, "mintWithOldAggregator: not confirmed");
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "mintWithOldAggregator: amount not confirmed"
@@ -293,7 +289,7 @@ contract FullDebridge is Debridge, IFullDebridge {
                 submissionId
             );
         require(confirmed, "autoClaim: not confirmed");
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "autoClaim: amount not confirmed"
@@ -347,7 +343,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             IFullAggregator(aggregatorInfo.aggregator)
                 .getSubmissionConfirmations(submissionId);
         require(confirmed, "autoClaimWithOldAggregator: not confirmed");
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "autoClaimWithOldAggregator: amount not confirmed"
@@ -390,7 +386,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             IFullAggregator(aggregator).getSubmissionConfirmations(
                 submissionId
             );
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "claim: amount not confirmed"
@@ -441,7 +437,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             IFullAggregator(aggregatorInfo.aggregator)
                 .getSubmissionConfirmations(submissionId);
         require(confirmed, "claimWithOldAggregator: not confirmed");
-        if (_amount >= amountThreshold) {
+        if (_amount >= getAmountThreshold[_debridgeId]) {
             require(
                 confirmations >= excessConfirmations,
                 "claimWithOldAggregator: amount not confirmed"

@@ -41,6 +41,7 @@ abstract contract Debridge is
 
     uint256 public constant DENOMINATOR = 1e18; // accuacy multiplyer
     uint256 public chainId; // current chain id
+    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public aggregator; // current chainlink aggregator address
     address public callProxy; // proxy to execute user's calls
     uint8 public aggregatorVersion; // aggregators count
@@ -50,6 +51,7 @@ abstract contract Debridge is
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
     mapping(uint8 => AggregatorInfo) public getOldAggregator; // counter => agrgregator info
+    mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
 
     event Sent(
         bytes32 submissionId,
@@ -145,6 +147,7 @@ abstract contract Debridge is
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function _initialize(
+        uint256 _excessConfirmations,
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
@@ -173,7 +176,8 @@ abstract contract Debridge is
         aggregator = _aggregator;
         callProxy = _callProxy;
         chainIds = _supportedChainIds;
-        _defiController = defiController;
+        defiController = _defiController;
+        excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
