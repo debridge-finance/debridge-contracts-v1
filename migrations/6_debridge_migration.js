@@ -17,6 +17,8 @@ module.exports = async function(deployer, network) {
     await deployProxy(
       Debridge,
       [
+        debridgeInitParams.amountThreshold,
+        debridgeInitParams.excessConfirmations,
         debridgeInitParams.minTransferAmount,
         debridgeInitParams.maxTransferAmount,
         debridgeInitParams.minReserves,

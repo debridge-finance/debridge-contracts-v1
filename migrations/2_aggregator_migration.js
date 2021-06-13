@@ -16,7 +16,9 @@ module.exports = async function(deployer, network, accounts) {
       debridgeInitParams.oraclePayment,
       debridgeInitParams.bonusPayment,
       link,
-      GovToken.address
+      GovToken.address,
+      debridgeInitParams.confirmationThreshold,
+      debridgeInitParams.excessConfirmations
     );
     await deployer.deploy(
       LightAggregator,
@@ -33,7 +35,12 @@ module.exports = async function(deployer, network, accounts) {
       await lightAggregatorInstance.addOracle(oracle.address, oracle.admin);
     }
   } else {
-    await deployer.deploy(LightVerifier, debridgeInitParams.oracleCount);
+    await deployer.deploy(
+      LightVerifier,
+      debridgeInitParams.oracleCount,
+      debridgeInitParams.confirmationThreshold,
+      debridgeInitParams.excessConfirmations
+    );
     aggregatorInstance = await LightVerifier.deployed();
     for (let oracle of debridgeInitParams.oracles) {
       await aggregatorInstance.addOracle(oracle.address);
