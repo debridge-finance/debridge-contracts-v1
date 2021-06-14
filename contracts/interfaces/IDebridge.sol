@@ -29,6 +29,7 @@ interface IDebridge {
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
+        uint256 _amountThreshold,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external;
@@ -46,6 +47,7 @@ interface IDebridge {
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
+        uint256 _amountThreshold,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external;

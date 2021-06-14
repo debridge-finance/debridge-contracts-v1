@@ -17,11 +17,11 @@ module.exports = async function(deployer, network) {
     await deployProxy(
       Debridge,
       [
-        debridgeInitParams.amountThreshold,
         debridgeInitParams.excessConfirmations,
         debridgeInitParams.minTransferAmount,
         debridgeInitParams.maxTransferAmount,
         debridgeInitParams.minReserves,
+        debridgeInitParams.amountThreshold,
         FullAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
@@ -36,9 +36,11 @@ module.exports = async function(deployer, network) {
     await deployProxy(
       LightDebridge,
       [
+        debridgeInitParams.excessConfirmations,
         debridgeInitParams.minTransferAmount,
         debridgeInitParams.maxTransferAmount,
         debridgeInitParams.minReserves,
+        debridgeInitParams.amountThreshold,
         LightVerifier.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,

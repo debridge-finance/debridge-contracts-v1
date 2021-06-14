@@ -151,6 +151,7 @@ abstract contract Debridge is
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
+        uint256 _amountThreshold,
         address _aggregator,
         address _callProxy,
         uint256[] memory _supportedChainIds,
@@ -170,6 +171,7 @@ abstract contract Debridge is
             _minAmount,
             _maxAmount,
             _minReserves,
+            _amountThreshold,
             _supportedChainIds,
             _chainSupportInfo
         );
@@ -359,6 +361,7 @@ abstract contract Debridge is
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
+        uint256 _amountThreshold,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external override onlyAdmin() {
@@ -370,6 +373,7 @@ abstract contract Debridge is
             _minAmount,
             _maxAmount,
             _minReserves,
+            _amountThreshold,
             _supportedChainIds,
             _chainSupportInfo
         );
@@ -390,6 +394,7 @@ abstract contract Debridge is
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
+        uint256 _amountThreshold,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external override onlyAdmin() {
@@ -401,6 +406,7 @@ abstract contract Debridge is
             _minAmount,
             _maxAmount,
             _minReserves,
+            _amountThreshold,
             _supportedChainIds,
             _chainSupportInfo
         );
@@ -447,12 +453,14 @@ abstract contract Debridge is
         bytes32 _debridgeId,
         uint256 _minAmount,
         uint256 _maxAmount,
-        uint256 _minReserves
+        uint256 _minReserves,
+        uint256 _amountThreshold
     ) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.minAmount = _minAmount;
         debridge.maxAmount = _maxAmount;
         debridge.minReserves = _minReserves;
+        getAmountThreshold[_debridgeId]=_amountThreshold;
     }
 
     /// @dev Update asset's fees.
@@ -602,6 +610,7 @@ abstract contract Debridge is
         uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
+        uint256 _amountThreshold,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) internal {
@@ -616,6 +625,7 @@ abstract contract Debridge is
         debridge.maxAmount = _maxAmount;
         debridge.minReserves = _minReserves;
         uint256 supportedChainId;
+        getAmountThreshold[_debridgeId] = _amountThreshold;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             supportedChainId = _supportedChainIds[i];
             debridge.chainSupported[supportedChainId] = _chainSupportInfo[i];

@@ -42,6 +42,7 @@ module.exports = async function(_deployer, network) {
       otherAssetInfo.minAmount,
       otherAssetInfo.maxAmount,
       otherAssetInfo.minReserves,
+      otherAssetInfo.amountThreshold,
       otherAssetInfo.supportedChains,
       otherAssetInfo.chainSupportInfo
     );
