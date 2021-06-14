@@ -2,6 +2,10 @@
   "kovantest": {
     "oracleCount": 1,
     "oraclePayment": "100000000",
+    "bonusPayment": "100000000",
+    "confirmationThreshold": "20",
+    "excessConfirmations": "9",
+    "amountThreshold": "10000000000000000000000",
     "minTransferAmount": "1000000000",
     "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "100000000000000",
@@ -39,6 +43,10 @@
   "hecotest": {
     "oracleCount": 1,
     "oraclePayment": "100000000",
+    "bonusPayment": "100000000",
+    "confirmationThreshold": "20",
+    "excessConfirmations": "9",
+    "amountThreshold": "10000000000000000000000",
     "minTransferAmount": "1000000000",
     "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "100000000000000",
@@ -76,6 +84,10 @@
   "bsctest": {
     "oracleCount": 1,
     "oraclePayment": "100000000",
+    "bonusPayment": "100000000",
+    "confirmationThreshold": "20",
+    "excessConfirmations": "9",
+    "amountThreshold": "10000000000000000000000",
     "minTransferAmount": "1000000000",
     "maxTransferAmount": "1000000000000000000000000000000",
     "fixedFee": "100000000000000",
@@ -110,80 +122,15 @@
     ],
     "type": "full"
   },
-  "bsc": {
-    "oracleCount": 1,
-    "oraclePayment": "100000000",
-    "minTransferAmount": "1000000000",
-    "maxTransferAmount": "1000000000000000000000000000000",
-    "fixedFee": "100000000000000",
-    "transferFee": "5000000000000000",
-    "minReserves": "100000000000000000",
-    "oracles": [
-      {
-        "address": "0xbf6166fa3ef227ed400b1708fa478dcae38969ac",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      },
-      {
-        "address": "0x84065e1a83df795e550564481ae84941318c1df8",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      },
-      {
-        "address": "0xdd5d7c57b1de6c49277243628a187dc071455fef",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      }
-    ],
-    "supportedChains": [42],
-    "chainSupportInfo": [
-      {
-        "fixedFee": "100000000000000",
-        "transferFee": "5000000000000000",
-        "isSupported": true
-      }
-    ],
-    "type": "full"
-  },
-  "kovan": {
-    "oracleCount": 1,
-    "oraclePayment": "100000000",
-    "minTransferAmount": "1000000000",
-    "maxTransferAmount": "1000000000000000000000000000000",
-    "fixedFee": "1000000000000000",
-    "transferFee": "5000000000000000",
-    "minReserves": "100000000000000000",
-    "oracles": [
-      {
-        "address": "0xbf6166fa3ef227ed400b1708fa478dcae38969ac",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      },
-      {
-        "address": "0x84065e1a83df795e550564481ae84941318c1df8",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      },
-      {
-        "address": "0xdd5d7c57b1de6c49277243628a187dc071455fef",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
-      }
-    ],
-    "supportedChains": [56, 256],
-    "chainSupportInfo": [
-      {
-        "fixedFee": "100000000000000",
-        "transferFee": "5000000000000000",
-        "isSupported": true
-      },
-      {
-        "fixedFee": "100000000000000",
-        "transferFee": "5000000000000000",
-        "isSupported": true
-      }
-    ],
-    "type": "light"
-  },
   "development": {
     "oracleCount": 1,
     "oraclePayment": "100000000",
+    "bonusPayment": "100000000",
+    "confirmationThreshold": "20",
+    "excessConfirmations": "9",
     "minTransferAmount": "1000000000",
     "maxTransferAmount": "1000000000000000000000000000000",
+    "amountThreshold": "10000000000000000000000",
     "fixedFee": "1000000000000000",
     "transferFee": "5000000000000000",
     "minReserves": "100000000000000000",

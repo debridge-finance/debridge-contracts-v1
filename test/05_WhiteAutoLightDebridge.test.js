@@ -3,11 +3,11 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
-const WhiteFullAggregator = artifacts.require("WhiteFullAggregator");
-const WhiteLightVerifier = artifacts.require("WhiteLightVerifier");
+const FullAggregator = artifacts.require("FullAggregator");
+const LightVerifier = artifacts.require("LightVerifier");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WhiteDebridge = artifacts.require("WhiteLightDebridge");
+const Debridge = artifacts.require("LightDebridge");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const CallProxy = artifacts.require("CallProxy");
 const DefiController = artifacts.require("DefiController");
@@ -36,14 +36,7 @@ web3.extend({
   ],
 });
 
-contract("AutoWhiteLightDebridge", function([
-  alice,
-  bob,
-  carol,
-  eve,
-  fei,
-  devid,
-]) {
+contract("AutoLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
   const reserveAddress = devid;
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
@@ -56,15 +49,12 @@ contract("AutoWhiteLightDebridge", function([
     this.minConfirmations = 3;
     this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     this.aggregatorInstance = new web3.eth.Contract(
-      WhiteFullAggregator.abi,
+      FullAggregator.abi,
       this.fullAggregatorAddress
     );
-    this.whiteLightAggregator = await WhiteLightVerifier.new(
-      this.minConfirmations,
-      {
-        from: alice,
-      }
-    );
+    this.lightAggregator = await LightVerifier.new(this.minConfirmations, {
+      from: alice,
+    });
     this.initialOracles = [
       {
         address: alice,
@@ -92,7 +82,7 @@ contract("AutoWhiteLightDebridge", function([
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.whiteLightAggregator.addOracle(oracle.address, {
+      await this.lightAggregator.addOracle(oracle.address, {
         from: alice,
       });
     }
@@ -112,11 +102,11 @@ contract("AutoWhiteLightDebridge", function([
     this.weth = await WETH9.new({
       from: alice,
     });
-    this.whiteDebridge = await deployProxy(WhiteDebridge, [
+    this.debridge = await deployProxy(Debridge, [
       minAmount,
       maxAmount,
       minReserves,
-      this.whiteLightAggregator.address,
+      this.lightAggregator.address,
       this.callProxy.address.toString(),
       supportedChainIds,
       [
@@ -146,12 +136,12 @@ contract("AutoWhiteLightDebridge", function([
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
-        [this.whiteDebridge.address],
+        [this.debridge.address],
         {
           from: alice,
         }
       );
-      await this.whiteDebridge.addExternalAsset(
+      await this.debridge.addExternalAsset(
         tokenAddress,
         wrappedAsset.address,
         chainId,
@@ -175,12 +165,12 @@ contract("AutoWhiteLightDebridge", function([
           from: alice,
         }
       );
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+      const debridge = await this.debridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.debridge.getChainIdSupport(
         debridgeId,
         3
       );
@@ -208,12 +198,12 @@ contract("AutoWhiteLightDebridge", function([
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
-        [this.whiteDebridge.address],
+        [this.debridge.address],
         {
           from: alice,
         }
       );
-      await this.whiteDebridge.addExternalAsset(
+      await this.debridge.addExternalAsset(
         tokenAddress,
         wrappedAsset.address,
         chainId,
@@ -237,12 +227,12 @@ contract("AutoWhiteLightDebridge", function([
           from: alice,
         }
       );
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+      const debridge = await this.debridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.debridge.getChainIdSupport(
         debridgeId,
         3
       );
@@ -258,14 +248,14 @@ contract("AutoWhiteLightDebridge", function([
 
     it("should add native asset if called by the admin", async function() {
       const tokenAddress = this.mockToken.address;
-      const chainId = await this.whiteDebridge.chainId();
+      const chainId = await this.debridge.chainId();
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
       const supportedChainIds = [42, 3];
-      await this.whiteDebridge.addNativeAsset(
+      await this.debridge.addNativeAsset(
         tokenAddress,
         minAmount,
         maxAmount,
@@ -287,12 +277,12 @@ contract("AutoWhiteLightDebridge", function([
           from: alice,
         }
       );
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+      const debridge = await this.debridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.debridge.getChainIdSupport(
         debridgeId,
         3
       );
@@ -309,7 +299,7 @@ contract("AutoWhiteLightDebridge", function([
 
     it("should reject adding external asset if called by the non-admin", async function() {
       await expectRevert(
-        this.whiteDebridge.addExternalAsset(
+        this.debridge.addExternalAsset(
           ZERO_ADDRESS,
           ZERO_ADDRESS,
           0,
@@ -334,7 +324,7 @@ contract("AutoWhiteLightDebridge", function([
 
     it("should reject setting native asset if called by the non-admin", async function() {
       await expectRevert(
-        this.whiteDebridge.addNativeAsset(
+        this.debridge.addNativeAsset(
           ZERO_ADDRESS,
           0,
           0,
@@ -359,21 +349,19 @@ contract("AutoWhiteLightDebridge", function([
   context("Test send method", () => {
     it("should send native tokens from the current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
-      const chainId = await this.whiteDebridge.chainId();
+      const chainId = await this.debridge.chainId();
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const claimFee = toBN(toWei("0.1"));
       const data = "0x";
       const chainIdTo = 42;
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
-      const balance = toBN(
-        await web3.eth.getBalance(this.whiteDebridge.address)
-      );
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+      const balance = toBN(await web3.eth.getBalance(this.debridge.address));
+      const debridge = await this.debridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.debridge.getChainIdSupport(
         debridgeId,
         chainIdTo
       );
@@ -381,7 +369,7 @@ contract("AutoWhiteLightDebridge", function([
         .mul(amount)
         .div(toBN(toWei("1")))
         .add(toBN(supportedChainInfo.fixedFee));
-      await this.whiteDebridge.autoSend(
+      await this.debridge.autoSend(
         debridgeId,
         receiver,
         amount,
@@ -394,10 +382,8 @@ contract("AutoWhiteLightDebridge", function([
           from: alice,
         }
       );
-      const newBalance = toBN(
-        await web3.eth.getBalance(this.whiteDebridge.address)
-      );
-      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const newBalance = toBN(await web3.eth.getBalance(this.debridge.address));
+      const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
         debridge.collectedFees.add(fees).toString(),
@@ -407,7 +393,7 @@ contract("AutoWhiteLightDebridge", function([
 
     it("should send ERC20 tokens from the current chain", async function() {
       const tokenAddress = this.mockToken.address;
-      const chainId = await this.whiteDebridge.chainId();
+      const chainId = await this.debridge.chainId();
       const receiver = bob;
       const amount = toBN(toWei("100"));
       const claimFee = toBN(toWei("1"));
@@ -416,18 +402,18 @@ contract("AutoWhiteLightDebridge", function([
       await this.mockToken.mint(alice, amount, {
         from: alice,
       });
-      await this.mockToken.approve(this.whiteDebridge.address, amount, {
+      await this.mockToken.approve(this.debridge.address, amount, {
         from: alice,
       });
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       const balance = toBN(
-        await this.mockToken.balanceOf(this.whiteDebridge.address)
+        await this.mockToken.balanceOf(this.debridge.address)
       );
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+      const debridge = await this.debridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.debridge.getChainIdSupport(
         debridgeId,
         chainIdTo
       );
@@ -435,7 +421,7 @@ contract("AutoWhiteLightDebridge", function([
         .mul(amount)
         .div(toBN(toWei("1")))
         .add(toBN(supportedChainInfo.fixedFee));
-      await this.whiteDebridge.autoSend(
+      await this.debridge.autoSend(
         debridgeId,
         receiver,
         amount,
@@ -448,9 +434,9 @@ contract("AutoWhiteLightDebridge", function([
         }
       );
       const newBalance = toBN(
-        await this.mockToken.balanceOf(this.whiteDebridge.address)
+        await this.mockToken.balanceOf(this.debridge.address)
       );
-      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
         debridge.collectedFees.add(fees).toString(),
@@ -461,17 +447,17 @@ contract("AutoWhiteLightDebridge", function([
     it("should reject sending too mismatched amount of native tokens", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
-      const chainId = await this.whiteDebridge.chainId();
+      const chainId = await this.debridge.chainId();
       const amount = toBN(toWei("1"));
       const claimFee = toBN(toWei("0.1"));
       const data = "0x";
       const chainIdTo = 42;
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.autoSend(
+        this.debridge.autoSend(
           debridgeId,
           receiver,
           amount,
@@ -491,17 +477,17 @@ contract("AutoWhiteLightDebridge", function([
     it("should reject sending too few tokens", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
-      const chainId = await this.whiteDebridge.chainId();
+      const chainId = await this.debridge.chainId();
       const amount = toBN(toWei("0.1"));
       const chainIdTo = 42;
       const claimFee = toBN(toWei("0.01"));
       const data = "0x";
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.autoSend(
+        this.debridge.autoSend(
           debridgeId,
           receiver,
           amount,
@@ -521,17 +507,17 @@ contract("AutoWhiteLightDebridge", function([
     it("should reject sending tokens to unsupported chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
-      const chainId = await this.whiteDebridge.chainId();
+      const chainId = await this.debridge.chainId();
       const amount = toBN(toWei("1"));
       const claimFee = toBN(toWei("0.1"));
       const data = "0x";
       const chainIdTo = chainId;
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.autoSend(
+        this.debridge.autoSend(
           debridgeId,
           receiver,
           amount,
@@ -555,12 +541,9 @@ contract("AutoWhiteLightDebridge", function([
       const claimFee = toBN(toWei("0.1"));
       const data = "0x";
       const chainIdTo = 42;
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
-        42,
-        tokenAddress
-      );
+      const debridgeId = await this.debridge.getDebridgeId(42, tokenAddress);
       await expectRevert(
-        this.whiteDebridge.autoSend(
+        this.debridge.autoSend(
           debridgeId,
           receiver,
           amount,
@@ -591,12 +574,9 @@ contract("AutoWhiteLightDebridge", function([
     let currentChainId;
 
     before(async function() {
-      debridgeId = await this.whiteDebridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      currentChainId = await this.whiteDebridge.chainId();
-      const submission = await this.whiteDebridge.getAutoSubmisionId(
+      debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
+      currentChainId = await this.debridge.chainId();
+      const submission = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainId,
         currentChainId,
@@ -617,10 +597,10 @@ contract("AutoWhiteLightDebridge", function([
     });
 
     it("should mint when the submission is approved", async function() {
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const debridge = await this.debridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(receiver));
-      await this.whiteDebridge.autoMint(
+      await this.debridge.autoMint(
         debridgeId,
         chainId,
         receiver,
@@ -635,7 +615,7 @@ contract("AutoWhiteLightDebridge", function([
         }
       );
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
-      const submissionId = await this.whiteDebridge.getAutoSubmisionId(
+      const submissionId = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainId,
         currentChainId,
@@ -646,7 +626,7 @@ contract("AutoWhiteLightDebridge", function([
         claimFee,
         data
       );
-      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+      const isSubmissionUsed = await this.debridge.isSubmissionUsed(
         submissionId
       );
       assert.equal(balance.add(amount).toString(), newBalance.toString());
@@ -655,12 +635,12 @@ contract("AutoWhiteLightDebridge", function([
 
     it("should reject minting with unconfirmed submission", async function() {
       const nonce = 4;
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.autoMint(
+        this.debridge.autoMint(
           debridgeId,
           chainId,
           receiver,
@@ -679,12 +659,12 @@ contract("AutoWhiteLightDebridge", function([
     });
 
     it("should reject minting twice", async function() {
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       await expectRevert(
-        this.whiteDebridge.autoMint(
+        this.debridge.autoMint(
           debridgeId,
           chainId,
           receiver,
@@ -712,26 +692,26 @@ contract("AutoWhiteLightDebridge", function([
       const chainIdTo = 42;
       const receiver = alice;
       const amount = toBN("999000000000000");
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainIdTo,
         tokenAddress
       );
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const debridge = await this.debridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
-      await wrappedAsset.approve(this.whiteDebridge.address, amount, {
+      await wrappedAsset.approve(this.debridge.address, amount, {
         from: bob,
       });
       const deadline = MAX_UINT256;
       const signature = await permit(
         wrappedAsset,
         bob,
-        this.whiteDebridge.address,
+        this.debridge.address,
         amount,
         deadline,
         bobPrivKey
       );
-      await this.whiteDebridge.autoBurn(
+      await this.debridge.autoBurn(
         debridgeId,
         receiver,
         amount,
@@ -747,8 +727,8 @@ contract("AutoWhiteLightDebridge", function([
       );
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
-      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.whiteDebridge.getChainIdSupport(
+      const newDebridge = await this.debridge.getDebridge(debridgeId);
+      const supportedChainInfo = await this.debridge.getChainIdSupport(
         debridgeId,
         chainIdTo
       );
@@ -764,17 +744,17 @@ contract("AutoWhiteLightDebridge", function([
 
     it("should reject burning from current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
-      const chainId = await this.whiteDebridge.chainId();
+      const chainId = await this.debridge.chainId();
       const receiver = bob;
       const amount = toBN(toWei("1"));
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       const deadline = 0;
       const signature = "0x";
       await expectRevert(
-        this.whiteDebridge.autoBurn(
+        this.debridge.autoBurn(
           debridgeId,
           receiver,
           amount,
@@ -797,14 +777,14 @@ contract("AutoWhiteLightDebridge", function([
       const chainId = 42;
       const receiver = bob;
       const amount = toBN("10");
-      const debridgeId = await this.whiteDebridge.getDebridgeId(
+      const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       const deadline = 0;
       const signature = "0x";
       await expectRevert(
-        this.whiteDebridge.autoBurn(
+        this.debridge.autoBurn(
           debridgeId,
           receiver,
           amount,
@@ -837,16 +817,13 @@ contract("AutoWhiteLightDebridge", function([
     let erc20DebridgeId;
 
     before(async function() {
-      chainId = await this.whiteDebridge.chainId();
-      debridgeId = await this.whiteDebridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      erc20DebridgeId = await this.whiteDebridge.getDebridgeId(
+      chainId = await this.debridge.chainId();
+      debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
+      erc20DebridgeId = await this.debridge.getDebridgeId(
         chainId,
         this.mockToken.address
       );
-      const curentChainSubmission = await this.whiteDebridge.getAutoSubmisionId(
+      const curentChainSubmission = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainIdFrom,
         chainId,
@@ -865,7 +842,7 @@ contract("AutoWhiteLightDebridge", function([
             .signature
         );
       }
-      const erc20Submission = await this.whiteDebridge.getAutoSubmisionId(
+      const erc20Submission = await this.debridge.getAutoSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
         chainId,
@@ -887,9 +864,9 @@ contract("AutoWhiteLightDebridge", function([
     });
 
     it("should claim native token when the submission is approved", async function() {
-      const debridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const debridge = await this.debridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
-      await this.whiteDebridge.autoClaim(
+      await this.debridge.autoClaim(
         debridgeId,
         chainIdFrom,
         receiver,
@@ -904,7 +881,7 @@ contract("AutoWhiteLightDebridge", function([
         }
       );
       const newBalance = toBN(await web3.eth.getBalance(receiver));
-      const submissionId = await this.whiteDebridge.getAutoSubmisionId(
+      const submissionId = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainIdFrom,
         chainId,
@@ -915,10 +892,10 @@ contract("AutoWhiteLightDebridge", function([
         claimFee,
         data
       );
-      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+      const isSubmissionUsed = await this.debridge.isSubmissionUsed(
         submissionId
       );
-      const newDebridge = await this.whiteDebridge.getDebridge(debridgeId);
+      const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
         debridge.collectedFees.toString(),
@@ -928,9 +905,9 @@ contract("AutoWhiteLightDebridge", function([
     });
 
     it("should claim ERC20 when the submission is approved", async function() {
-      const debridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      const debridge = await this.debridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
-      await this.whiteDebridge.autoClaim(
+      await this.debridge.autoClaim(
         erc20DebridgeId,
         chainIdFrom,
         receiver,
@@ -945,7 +922,7 @@ contract("AutoWhiteLightDebridge", function([
         }
       );
       const newBalance = toBN(await this.mockToken.balanceOf(receiver));
-      const submissionId = await this.whiteDebridge.getAutoSubmisionId(
+      const submissionId = await this.debridge.getAutoSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
         chainId,
@@ -956,10 +933,10 @@ contract("AutoWhiteLightDebridge", function([
         claimFee,
         data
       );
-      const isSubmissionUsed = await this.whiteDebridge.isSubmissionUsed(
+      const isSubmissionUsed = await this.debridge.isSubmissionUsed(
         submissionId
       );
-      const newDebridge = await this.whiteDebridge.getDebridge(erc20DebridgeId);
+      const newDebridge = await this.debridge.getDebridge(erc20DebridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
         debridge.collectedFees.toString(),
@@ -971,7 +948,7 @@ contract("AutoWhiteLightDebridge", function([
     it("should reject claiming with unconfirmed submission", async function() {
       const nonce = 1;
       await expectRevert(
-        this.whiteDebridge.autoClaim(
+        this.debridge.autoClaim(
           debridgeId,
           chainIdFrom,
           receiver,
@@ -991,7 +968,7 @@ contract("AutoWhiteLightDebridge", function([
 
     it("should reject claiming twice", async function() {
       await expectRevert(
-        this.whiteDebridge.autoClaim(
+        this.debridge.autoClaim(
           debridgeId,
           chainIdFrom,
           receiver,
