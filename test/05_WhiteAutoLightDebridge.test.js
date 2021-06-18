@@ -18,108 +18,117 @@ const Tx = require("ethereumjs-tx");
 const bscWeb3 = new Web3(process.env.TEST_BSC_PROVIDER);
 const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 const bobPrivKey =
-  "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
+    "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
 web3.extend({
-  property: "eth",
-  methods: [
-    {
-      name: "getTransaction",
-      call: "eth_getTransactionByHash",
-      params: 1,
-    },
-    {
-      name: "getRawTransaction",
-      call: "eth_getRawTransactionByHash",
-      params: 1,
-    },
-  ],
+    property: "eth",
+    methods: [
+        {
+            name: "getTransaction",
+            call: "eth_getTransactionByHash",
+            params: 1,
+        },
+        {
+            name: "getRawTransaction",
+            call: "eth_getRawTransactionByHash",
+            params: 1,
+        },
+    ],
 });
 
-contract("AutoLightDebridge", function([alice, bob, carol, eve, fei, devid]) {
-  const reserveAddress = devid;
-  before(async function() {
-    this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
-      from: alice,
-    });
-    this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
-      from: alice,
-    });
-    this.oraclePayment = toWei("0.001");
-    this.minConfirmations = 3;
-    this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
-    this.aggregatorInstance = new web3.eth.Contract(
-      FullAggregator.abi,
-      this.fullAggregatorAddress
-    );
-    this.lightAggregator = await LightVerifier.new(this.minConfirmations, {
-      from: alice,
-    });
-    this.initialOracles = [
-      {
-        address: alice,
-        admin: alice,
-      },
-      {
-        address: bob,
-        admin: carol,
-      },
-      {
-        address: carol,
-        admin: eve,
-      },
-      {
-        address: eve,
-        admin: carol,
-      },
-      {
-        address: fei,
-        admin: eve,
-      },
-      {
-        address: devid,
-        admin: carol,
-      },
-    ];
-    for (let oracle of this.initialOracles) {
-      await this.lightAggregator.addOracle(oracle.address, {
-        from: alice,
-      });
-    }
-    this.defiController = await DefiController.new({
-      from: alice,
-    });
-    this.callProxy = await CallProxy.new({
-      from: alice,
-    });
-    const minAmount = toWei("1");
-    const maxAmount = toWei("100000000000");
-    const fixedFee = toWei("0.00001");
-    const transferFee = toWei("0.001");
-    const minReserves = toWei("0.2");
-    const supportedChainIds = [42];
-    const isSupported = true;
-    this.weth = await WETH9.new({
-      from: alice,
-    });
-    this.debridge = await deployProxy(Debridge, [
-      minAmount,
-      maxAmount,
-      minReserves,
-      this.lightAggregator.address,
-      this.callProxy.address.toString(),
-      supportedChainIds,
-      [
-        {
-          transferFee,
-          fixedFee,
-          isSupported,
-        },
-      ],
-      this.defiController.address,
-    ]);
-  });
+contract("AutoLightDebridge", function ([alice, bob, carol, eve, fei, devid]) {
+    const reserveAddress = devid;
+    before(async function () {
+        this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
+            from: alice,
+        });
+        this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
+            from: alice,
+        });
+        this.oraclePayment = toWei("0.001");
+        this.minConfirmations = 3;
+        this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
+        this.aggregatorInstance = new web3.eth.Contract(
+            FullAggregator.abi,
+            this.fullAggregatorAddress
+        );
 
+        /// @param _minConfirmations Common confirmations count.
+        /// @param _confirmationThreshold Confirmations per block before extra check enabled.    
+        /// @param _excessConfirmations Confirmations count in case of excess activity.
+        this.confirmationThreshold = 5;//Confirmations per block before extra check enabled.
+        this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+
+        this.lightAggregator = await LightVerifier.new(this.minConfirmations,
+                this.confirmationThreshold,
+                this.excessConfirmations, {
+                from: alice,
+        });
+        this.initialOracles = [
+            {
+                address: alice,
+                admin: alice,
+            },
+            {
+                address: bob,
+                admin: carol,
+            },
+            {
+                address: carol,
+                admin: eve,
+            },
+            {
+                address: eve,
+                admin: carol,
+            },
+            {
+                address: fei,
+                admin: eve,
+            },
+            {
+                address: devid,
+                admin: carol,
+            },
+        ];
+        for (let oracle of this.initialOracles) {
+            await this.lightAggregator.addOracle(oracle.address, {
+                from: alice,
+            });
+        }
+        this.defiController = await DefiController.new({
+            from: alice,
+        });
+        this.callProxy = await CallProxy.new({
+            from: alice,
+        });
+        const minAmount = toWei("1");
+        const maxAmount = toWei("100000000000");
+        const fixedFee = toWei("0.00001");
+        const transferFee = toWei("0.001");
+        const minReserves = toWei("0.2");
+        const supportedChainIds = [42];
+        const isSupported = true;
+        this.weth = await WETH9.new({
+            from: alice,
+        });
+        this.debridge = await deployProxy(Debridge, [
+            minAmount,
+            maxAmount,
+            minReserves,
+            this.lightAggregator.address,
+            this.callProxy.address.toString(),
+            supportedChainIds,
+            [
+                {
+                    transferFee,
+                    fixedFee,
+                    isSupported,
+                },
+            ],
+            this.defiController.address,
+        ]);
+    });
+    
   context("Test managing assets", () => {
     const isSupported = true;
     it("should add external asset if called by the admin", async function() {

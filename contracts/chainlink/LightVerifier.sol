@@ -35,8 +35,8 @@ contract LightVerifier is AccessControl, ILightVerifier {
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by all the required oracles
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _minConfirmations Common confirmations count.
+    /// @param _confirmationThreshold Confirmations per block before extra check enabled.    
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     constructor(
         uint256 _minConfirmations,

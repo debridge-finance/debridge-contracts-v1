@@ -50,10 +50,19 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     this.aggregatorInstance = new web3.eth.Contract(
       FullAggregator.abi,
       this.fullAggregatorAddress
-    );
-    this.lightAggregator = await LightVerifier.new(this.minConfirmations, {
-      from: alice,
-    });
+      );
+
+    /// @param _minConfirmations Common confirmations count.
+    /// @param _confirmationThreshold Confirmations per block before extra check enabled.    
+    /// @param _excessConfirmations Confirmations count in case of excess activity.
+    this.confirmationThreshold = 5;//Confirmations per block before extra check enabled.
+    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+    this.lightAggregator = await LightVerifier.new(this.minConfirmations,
+            this.confirmationThreshold,
+            this.excessConfirmations,
+            {
+                from: alice,
+            });
     this.initialOracles = [
       {
         address: alice,
