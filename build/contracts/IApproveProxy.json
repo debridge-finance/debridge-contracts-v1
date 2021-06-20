@@ -36,7 +36,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"callERC20\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IApproveProxy.sol\":\"IApproveProxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IApproveProxy.sol\":{\"keccak256\":\"0x6925d937701fe4a7934c1abe1b3a6d29c9ac6bd93545a44d7a58ba250396f632\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://882d46a34a8f6eca38056445227ed6fc5fc0b0dcec99ea5079ee12944f731112\",\"dweb:/ipfs/Qma9zNKkaZNxZ9UGEhqx8z88ErcxVPNi4aFvq3E7uY99kG\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"callERC20\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol\":\"IApproveProxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol\":{\"keccak256\":\"0x6925d937701fe4a7934c1abe1b3a6d29c9ac6bd93545a44d7a58ba250396f632\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://882d46a34a8f6eca38056445227ed6fc5fc0b0dcec99ea5079ee12944f731112\",\"dweb:/ipfs/Qma9zNKkaZNxZ9UGEhqx8z88ErcxVPNi4aFvq3E7uY99kG\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -45,9 +45,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IApproveProxy {\n    function callERC20(\n        address _token,\n        address _fallbackAddress,\n        address _receiver,\n        bytes memory _data\n    ) external returns (bool);\n}\n",
-  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
+  "sourcePath": "/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
   "ast": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
     "exportedSymbols": {
       "IApproveProxy": [
         1473
@@ -257,7 +257,7 @@
     "src": "32:220:4"
   },
   "legacyAST": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
     "exportedSymbols": {
       "IApproveProxy": [
         1473
@@ -472,7 +472,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-14T05:19:43.193Z",
+  "updatedAt": "2021-06-20T15:43:29.279Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

@@ -20,7 +20,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"claimReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol\":\"IDefiController\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol\":{\"keccak256\":\"0xfb5ba95b9c3664797f8bda7e88035567a9ca4427727f8193378d1acc801a532e\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6dbcd113dd902ad12fbedddd66688106b57c109f75fc59580d0452463293dd2f\",\"dweb:/ipfs/QmfShRd95QMU63sgg1c2DgXAZRq6AXaDMnBNhyBK1YSqmL\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"claimReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/interfaces/IDefiController.sol\":\"IDefiController\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/interfaces/IDefiController.sol\":{\"keccak256\":\"0xfb5ba95b9c3664797f8bda7e88035567a9ca4427727f8193378d1acc801a532e\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6dbcd113dd902ad12fbedddd66688106b57c109f75fc59580d0452463293dd2f\",\"dweb:/ipfs/QmfShRd95QMU63sgg1c2DgXAZRq6AXaDMnBNhyBK1YSqmL\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -29,9 +29,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IDefiController {\n    function claimReserve(address _tokenAddress, uint256 _amount) external;\n}\n",
-  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol",
+  "sourcePath": "/root/debridge-contracts/contracts/interfaces/IDefiController.sol",
   "ast": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IDefiController.sol",
     "exportedSymbols": {
       "IDefiController": [
         1599
@@ -157,7 +157,7 @@
     "src": "32:131:7"
   },
   "legacyAST": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IDefiController.sol",
     "exportedSymbols": {
       "IDefiController": [
         1599
@@ -288,7 +288,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-14T05:19:43.205Z",
+  "updatedAt": "2021-06-20T15:43:29.281Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
