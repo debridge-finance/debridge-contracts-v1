@@ -20,49 +20,29 @@ const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-web3.extend({
-  property: "eth",
-  methods: [
-    {
-      name: "getTransaction",
-      call: "eth_getTransactionByHash",
-      params: 1,
-    },
-    {
-      name: "getRawTransaction",
-      call: "eth_getRawTransactionByHash",
-      params: 1,
-    },
-  ],
-});
-
-contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
+contract.only("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
-    this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
-      from: alice,
-    });
+    this.amountThreshold = toWei("1000");
     this.oraclePayment = toWei("0.001");
     this.minConfirmations = 3;
     this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     this.aggregatorInstance = new web3.eth.Contract(
       FullAggregator.abi,
       this.fullAggregatorAddress
-      );
-
-    /// @param _minConfirmations Common confirmations count.
-    /// @param _confirmationThreshold Confirmations per block before extra check enabled.    
-    /// @param _excessConfirmations Confirmations count in case of excess activity.
-    this.confirmationThreshold = 5;//Confirmations per block before extra check enabled.
+    );
+    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
-    this.lightAggregator = await LightVerifier.new(this.minConfirmations,
-            this.confirmationThreshold,
-            this.excessConfirmations,
-            {
-                from: alice,
-            });
+    this.lightAggregator = await LightVerifier.new(
+      this.minConfirmations,
+      this.confirmationThreshold,
+      this.excessConfirmations,
+      {
+        from: alice,
+      }
+    );
     this.initialOracles = [
       {
         address: alice,
@@ -111,9 +91,11 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       from: alice,
     });
     this.debridge = await deployProxy(Debridge, [
+      this.excessConfirmations,
       minAmount,
       maxAmount,
       minReserves,
+      this.amountThreshold,
       ZERO_ADDRESS,
       this.callProxy.address.toString(),
       supportedChainIds,
@@ -173,6 +155,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const chainId = 56;
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -194,6 +177,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -235,6 +219,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const chainId = 42;
       const minAmount = toWei("0.0001");
       const maxAmount = toWei("100000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -256,6 +241,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -297,6 +283,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const chainId = await this.debridge.chainId();
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -306,6 +293,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -352,6 +340,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
           0,
           0,
           0,
+          0,
           [0],
           [
             {
@@ -372,6 +361,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       await expectRevert(
         this.debridge.addNativeAsset(
           ZERO_ADDRESS,
+          0,
           0,
           0,
           0,

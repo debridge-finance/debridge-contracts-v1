@@ -16,107 +16,110 @@ const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
-    "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
+  "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
-    before(async function () {
-        this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
-            from: alice,
-        });
-        this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
-            from: alice,
-        });
-        this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
-            from: alice,
-        });
-        this.oraclePayment = toWei("0.001");
-        this.bonusPayment = toWei("0.001");
-        this.minConfirmations = 1;
-        this.confirmationThreshold = 5;//Confirmations per block before extra check enabled.
-        this.excessConfirmations = 3; //Confirmations count in case of excess activity.
-
-        this.aggregator = await Aggregator.new(
-            this.minConfirmations,
-            this.oraclePayment,
-            this.bonusPayment,
-            this.linkToken.address,
-            this.dbrToken.address,
-            this.confirmationThreshold,
-            this.excessConfirmations,
-            {
-                from: alice,
-            }
-        );
-        this.initialOracles = [
-            {
-                address: alice,
-                admin: alice,
-            },
-            {
-                address: bob,
-                admin: carol,
-            },
-            {
-                address: eve,
-                admin: carol,
-            },
-        ];
-        for (let oracle of this.initialOracles) {
-            await this.aggregator.addOracle(oracle.address, oracle.admin, {
-                from: alice,
-            });
-        }
-        this.uniswapFactory = await UniswapV2Factory.new(carol, {
-            from: alice,
-        });
-        this.feeProxy = await FeeProxy.new(
-            this.linkToken.address,
-            this.uniswapFactory.address,
-            {
-                from: alice,
-            }
-        );
-        this.callProxy = await CallProxy.new({
-            from: alice,
-        });
-        this.defiController = await DefiController.new({
-            from: alice,
-        });
-        const minAmount = toWei("1");
-        const maxAmount = toWei("1000000");
-        const fixedFee = toWei("0.00001");
-        const transferFee = toWei("0.001");
-        const minReserves = toWei("0.2");
-        const isSupported = true;
-        const supportedChainIds = [42, 56];
-        this.weth = await WETH9.new({
-            from: alice,
-        });
-        this.debridge = await deployProxy(Debridge, [
-            minAmount,
-            maxAmount,
-            minReserves,
-            ZERO_ADDRESS,
-            this.callProxy.address.toString(),
-            supportedChainIds,
-            [
-                {
-                    transferFee,
-                    fixedFee,
-                    isSupported,
-                },
-                {
-                    transferFee,
-                    fixedFee,
-                    isSupported,
-                },
-            ],
-            ZERO_ADDRESS,
-            ZERO_ADDRESS,
-            ZERO_ADDRESS,
-        ]);
+contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
+  before(async function() {
+    this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
+      from: alice,
     });
-    
+    this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
+      from: alice,
+    });
+    this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
+      from: alice,
+    });
+    this.amountThreshols = toWei("1000");
+    this.oraclePayment = toWei("0.001");
+    this.bonusPayment = toWei("0.001");
+    this.minConfirmations = 1;
+    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+
+    this.aggregator = await Aggregator.new(
+      this.minConfirmations,
+      this.oraclePayment,
+      this.bonusPayment,
+      this.linkToken.address,
+      this.dbrToken.address,
+      this.confirmationThreshold,
+      this.excessConfirmations,
+      {
+        from: alice,
+      }
+    );
+    this.initialOracles = [
+      {
+        address: alice,
+        admin: alice,
+      },
+      {
+        address: bob,
+        admin: carol,
+      },
+      {
+        address: eve,
+        admin: carol,
+      },
+    ];
+    for (let oracle of this.initialOracles) {
+      await this.aggregator.addOracle(oracle.address, oracle.admin, {
+        from: alice,
+      });
+    }
+    this.uniswapFactory = await UniswapV2Factory.new(carol, {
+      from: alice,
+    });
+    this.feeProxy = await FeeProxy.new(
+      this.linkToken.address,
+      this.uniswapFactory.address,
+      {
+        from: alice,
+      }
+    );
+    this.callProxy = await CallProxy.new({
+      from: alice,
+    });
+    this.defiController = await DefiController.new({
+      from: alice,
+    });
+    const minAmount = toWei("1");
+    const maxAmount = toWei("1000000");
+    const fixedFee = toWei("0.00001");
+    const transferFee = toWei("0.001");
+    const minReserves = toWei("0.2");
+    const isSupported = true;
+    const supportedChainIds = [42, 56];
+    this.weth = await WETH9.new({
+      from: alice,
+    });
+    this.debridge = await deployProxy(Debridge, [
+      this.excessConfirmations,
+      minAmount,
+      maxAmount,
+      minReserves,
+      this.amountThreshols,
+      ZERO_ADDRESS,
+      this.callProxy.address.toString(),
+      supportedChainIds,
+      [
+        {
+          transferFee,
+          fixedFee,
+          isSupported,
+        },
+        {
+          transferFee,
+          fixedFee,
+          isSupported,
+        },
+      ],
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+    ]);
+  });
+
   context("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function() {
       const aggregator = this.aggregator.address;
@@ -198,6 +201,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       const chainId = 56;
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -219,6 +223,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -265,6 +270,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       const chainId = await this.debridge.chainId();
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -274,6 +280,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -320,6 +327,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
           0,
           0,
           0,
+          0,
           [0],
           [
             {
@@ -340,6 +348,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       await expectRevert(
         this.debridge.addNativeAsset(
           ZERO_ADDRESS,
+          0,
           0,
           0,
           0,
@@ -522,6 +531,17 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
       });
+      await this.dbrToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.dbrToken.transferAndCall(
+        this.aggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
       await this.linkToken.transferAndCall(
         this.aggregator.address.toString(),
         newSupply,
