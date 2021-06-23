@@ -70,10 +70,10 @@ contract OracleManager is Ownable {
     event UnstakeCancelled(address oracle, uint256 withdrawalId);
     event UnstakePaused(address oracle, uint256 withdrawalId, uint256 timestamp);
     event UnstakeResumed(address oracle, uint256 withdrawalId, uint256 timestamp);
-    event liquidated(address oracle, uint256 collatoralId, uint256 amount);
-    event depositedToStrategy(address oracle, uint256 amount, uint256 strategy, uint256 collatoralId);
-    event withdrawedFromStrategy(address oracle, uint256 amount, uint256 strategy, uint256 collatoralId);
-    event withdrawedFunds(address recipient, uint256 collatoralId, uint256 amount);
+    event Liquidated(address oracle, uint256 collatoralId, uint256 amount);
+    event DepositedToStrategy(address oracle, uint256 amount, uint256 strategy, uint256 collatoralId);
+    event WithdrawedFromStrategy(address oracle, uint256 amount, uint256 strategy, uint256 collatoralId);
+    event WithdrawedFunds(address recipient, uint256 collatoralId, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
 
@@ -142,11 +142,11 @@ contract OracleManager is Ownable {
         if (_amount == 0) {
             return;
         }
-        uint256 available = oracle.stake[_collatoralId];
         require(
             _collatoralId < collatorals.length,
             "requestUnstake: undefined collatoral"
         );
+        uint256 available = oracle.stake[_collatoralId];
         require(
             available >= _amount,
             "requestUnstake: insufficient withdrawable funds"
@@ -274,7 +274,7 @@ contract OracleManager is Ownable {
         require(oracle.stake[strategy.stakeToken] >= _amount, "depositToStrategy: Insufficient fund");
         // strategyController.deposit(_strategy, address(collatoral.token), _amount);
         oracle.stake[strategy.stakeToken] -= _amount;
-        emit depositedToStrategy(_oracle, _amount, _strategy, strategy.stakeToken);
+        emit DepositedToStrategy(_oracle, _amount, _strategy, strategy.stakeToken);
     }
 
     /**
@@ -287,7 +287,7 @@ contract OracleManager is Ownable {
         Collatoral storage collatoral = collatorals[strategy.rewardToken];
         // strategyController.withdraw(_strategy, address(collatoral.token), _amount);
         oracle.stake[strategy.rewardToken] += _amount;
-        emit withdrawedFromStrategy(_oracle, _amount, _strategy, strategy.rewardToken);
+        emit WithdrawedFromStrategy(_oracle, _amount, _strategy, strategy.rewardToken);
     }
 
     /**
@@ -347,7 +347,11 @@ contract OracleManager is Ownable {
      * @param _token Address of token
      */
     function addCollatoral(IERC20 _token) external onlyOwner() {
-        collatorals.push(Collatoral(IERC20(_token), 0, 0));
+        for (uint256 i = 0; i < collatorals.length; i ++) {
+            if (address(collatorals[i].token) == address(_token))
+                return;
+        }
+        collatorals.push(Collatoral(_token, 0, 0));
     }
 
     /**
@@ -374,7 +378,7 @@ contract OracleManager is Ownable {
         withdrawal.executed = true;
         oracle.stake[withdrawal.collatoralId] += withdrawal.amount;
         collatoral.totalLocked += withdrawal.amount;
-        UnstakeCancelled(_oracle, _withdrawalId);
+        emit UnstakeCancelled(_oracle, _withdrawalId);
     }
 
     /// @dev Withdraws confiscated tokens.
@@ -388,7 +392,7 @@ contract OracleManager is Ownable {
         oracle.stake[_collatoralId] -= _amount;
         collatoral.confiscatedFunds += _amount;
         collatoral.totalLocked -= _amount;
-        liquidated(_oracle, _collatoralId, _amount);
+        emit Liquidated(_oracle, _collatoralId, _amount);
     }
 
     /// @dev Withdraws confiscated tokens.
@@ -408,7 +412,7 @@ contract OracleManager is Ownable {
             "withdrawFunds: transfer failed"
         );
         collatoral.confiscatedFunds -= _amount;
-        emit withdrawedFunds(_recipient, _collatoralId, _amount);
+        emit WithdrawedFunds(_recipient, _collatoralId, _amount);
     }
 
     /**
