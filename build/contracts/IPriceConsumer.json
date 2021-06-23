@@ -1,26 +1,27 @@
 {
-  "contractName": "IDefiController",
+  "contractName": "IPriceConsumer",
   "abi": [
     {
       "inputs": [
         {
           "internalType": "address",
-          "name": "_tokenAddress",
+          "name": "token",
           "type": "address"
-        },
+        }
+      ],
+      "name": "getPriceOfToken",
+      "outputs": [
         {
           "internalType": "uint256",
-          "name": "_amount",
+          "name": "",
           "type": "uint256"
         }
       ],
-      "name": "claimReserve",
-      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"claimReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol\":\"IDefiController\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol\":{\"keccak256\":\"0xb99c5b968af9f01fc1f0724bf90eb4e6dc19d2af9e1f004b01595fe78701da07\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://c8618fd07d8ea15107952e6bb5a3577e3e7443e1f64e884df6e4a065b7bc876b\",\"dweb:/ipfs/Qma6Xw65i6W65vng6DNb8C6rurQx4HhtjonDzkXdggPu4q\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"}],\"name\":\"getPriceOfToken\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IPriceConsumer.sol\":\"IPriceConsumer\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IPriceConsumer.sol\":{\"keccak256\":\"0x5c431aadcc0518902478548e520dda49fa0571542827ded95a1f57c78ca966e8\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://35db2f54b0b22a9f19d5bf6120c1fb14c792bc99c185b35f3da89d5deb0e0f89\",\"dweb:/ipfs/QmTBYmPrBQCvXgP8cjn3Tbjzby6MrsBnt6J2SKxHTcuwbV\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -28,21 +29,21 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.2;\r\n\r\ninterface IDefiController {\r\n    function claimReserve(address _tokenAddress, uint256 _amount) external;\r\n}\r\n",
-  "sourcePath": "D:/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.2;\r\n\r\ninterface IPriceConsumer {\r\n    function getPriceOfToken(address token) external returns(uint256);\r\n}",
+  "sourcePath": "D:\\Ethereum\\Debridge\\debridge-contracts-v1\\contracts\\interfaces\\IPriceConsumer.sol",
   "ast": {
-    "absolutePath": "/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IPriceConsumer.sol",
     "exportedSymbols": {
-      "IDefiController": [
-        36
+      "IPriceConsumer": [
+        9
       ]
     },
-    "id": 37,
+    "id": 10,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 28,
+        "id": 1,
         "literals": [
           "solidity",
           "^",
@@ -50,7 +51,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:23:1"
+        "src": "33:23:0"
       },
       {
         "abstract": false,
@@ -58,36 +59,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 36,
+        "id": 9,
         "linearizedBaseContracts": [
-          36
+          9
         ],
-        "name": "IDefiController",
-        "nameLocation": "70:15:1",
+        "name": "IPriceConsumer",
+        "nameLocation": "70:14:0",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "functionSelector": "09e62b91",
-            "id": 35,
+            "functionSelector": "8da84478",
+            "id": 8,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "claimReserve",
-            "nameLocation": "102:12:1",
+            "name": "getPriceOfToken",
+            "nameLocation": "101:15:0",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 33,
+              "id": 4,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30,
+                  "id": 3,
                   "mutability": "mutable",
-                  "name": "_tokenAddress",
-                  "nameLocation": "123:13:1",
+                  "name": "token",
+                  "nameLocation": "125:5:0",
                   "nodeType": "VariableDeclaration",
-                  "scope": 35,
-                  "src": "115:21:1",
+                  "scope": 8,
+                  "src": "117:13:0",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -95,10 +96,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 29,
+                    "id": 2,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "115:7:1",
+                    "src": "117:7:0",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -106,16 +107,23 @@
                     }
                   },
                   "visibility": "internal"
-                },
+                }
+              ],
+              "src": "116:15:0"
+            },
+            "returnParameters": {
+              "id": 7,
+              "nodeType": "ParameterList",
+              "parameters": [
                 {
                   "constant": false,
-                  "id": 32,
+                  "id": 6,
                   "mutability": "mutable",
-                  "name": "_amount",
-                  "nameLocation": "146:7:1",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 35,
-                  "src": "138:15:1",
+                  "scope": 8,
+                  "src": "149:7:0",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -123,10 +131,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 31,
+                    "id": 5,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "138:7:1",
+                    "src": "149:7:0",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -135,40 +143,34 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "114:40:1"
+              "src": "148:9:0"
             },
-            "returnParameters": {
-              "id": 34,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "163:0:1"
-            },
-            "scope": 36,
-            "src": "93:71:1",
+            "scope": 9,
+            "src": "92:66:0",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 37,
-        "src": "60:107:1"
+        "scope": 10,
+        "src": "60:101:0"
       }
     ],
-    "src": "33:136:1"
+    "src": "33:128:0"
   },
   "legacyAST": {
-    "absolutePath": "/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/IPriceConsumer.sol",
     "exportedSymbols": {
-      "IDefiController": [
-        36
+      "IPriceConsumer": [
+        9
       ]
     },
-    "id": 37,
+    "id": 10,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 28,
+        "id": 1,
         "literals": [
           "solidity",
           "^",
@@ -176,7 +178,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:23:1"
+        "src": "33:23:0"
       },
       {
         "abstract": false,
@@ -184,36 +186,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 36,
+        "id": 9,
         "linearizedBaseContracts": [
-          36
+          9
         ],
-        "name": "IDefiController",
-        "nameLocation": "70:15:1",
+        "name": "IPriceConsumer",
+        "nameLocation": "70:14:0",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "functionSelector": "09e62b91",
-            "id": 35,
+            "functionSelector": "8da84478",
+            "id": 8,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "claimReserve",
-            "nameLocation": "102:12:1",
+            "name": "getPriceOfToken",
+            "nameLocation": "101:15:0",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 33,
+              "id": 4,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 30,
+                  "id": 3,
                   "mutability": "mutable",
-                  "name": "_tokenAddress",
-                  "nameLocation": "123:13:1",
+                  "name": "token",
+                  "nameLocation": "125:5:0",
                   "nodeType": "VariableDeclaration",
-                  "scope": 35,
-                  "src": "115:21:1",
+                  "scope": 8,
+                  "src": "117:13:0",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -221,10 +223,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 29,
+                    "id": 2,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "115:7:1",
+                    "src": "117:7:0",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -232,16 +234,23 @@
                     }
                   },
                   "visibility": "internal"
-                },
+                }
+              ],
+              "src": "116:15:0"
+            },
+            "returnParameters": {
+              "id": 7,
+              "nodeType": "ParameterList",
+              "parameters": [
                 {
                   "constant": false,
-                  "id": 32,
+                  "id": 6,
                   "mutability": "mutable",
-                  "name": "_amount",
-                  "nameLocation": "146:7:1",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 35,
-                  "src": "138:15:1",
+                  "scope": 8,
+                  "src": "149:7:0",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -249,10 +258,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 31,
+                    "id": 5,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "138:7:1",
+                    "src": "149:7:0",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -261,26 +270,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "114:40:1"
+              "src": "148:9:0"
             },
-            "returnParameters": {
-              "id": 34,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "163:0:1"
-            },
-            "scope": 36,
-            "src": "93:71:1",
+            "scope": 9,
+            "src": "92:66:0",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 37,
-        "src": "60:107:1"
+        "scope": 10,
+        "src": "60:101:0"
       }
     ],
-    "src": "33:136:1"
+    "src": "33:128:0"
   },
   "compiler": {
     "name": "solc",
@@ -288,7 +291,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-15T15:01:30.282Z",
+  "updatedAt": "2021-06-22T22:42:13.020Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
