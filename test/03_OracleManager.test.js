@@ -37,7 +37,7 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
         from: alice,
       }
     );
-    await this.oracleManager.addCollatoral(this.linkToken.address);
+    await this.oracleManager.addCollateral(this.linkToken.address);
     await this.oracleManager.addOracle(bob, alice);
     await this.oracleManager.setProfitSharing(bob, 0);
     await this.oracleManager.setUsdAmountOfDelegation(bob, toBN(0));
@@ -54,61 +54,61 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test staking different amounts by oracle", () => {
     it("should stake 0 tokens", async function() {
       const amount = 0;
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
       await this.linkToken.approve(this.oracleManager.address, MAX_UINT256);
-      await this.oracleManager.stake(bob, collatoralId, amount, {
+      await this.oracleManager.stake(bob, collateralId, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
       );
-      assert.equal(prevCollatoral.totalLocked.toString(), currentCollatoral.totalLocked.toString());
+      assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
     });
 
     it("should stake 100 tokens", async function() {
       const amount = toWei("100");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.stake(bob, collatoralId, amount, {
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.stake(bob, collateralId, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.add(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.add(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.add(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
     });
 
     it("fail in case of staking too many tokens", async function() {
       const amount = toWei("3200000");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.stake(bob, collatoralId, amount, {
+        this.oracleManager.stake(bob, collateralId, amount, {
           from: alice,
         }),
         "ERC20: transfer amount exceeds balance"
       );
     });
 
-    it("fail in case of staking undefined collatoral", async function() {
+    it("fail in case of staking undefined collateral", async function() {
       const amount = toWei("10");
-      const collatoralId = 1;
+      const collateralId = 1;
       await expectRevert(
-        this.oracleManager.stake(bob, collatoralId, amount, {
+        this.oracleManager.stake(bob, collateralId, amount, {
           from: alice,
         }),
-        "stake: undefined collatoral"
+        "stake: undefined collateral"
       );
     });
   });
@@ -116,44 +116,44 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test staking different amounts by delegator", () => {
     it("should stake 0 tokens", async function() {
       const amount = 0;
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
       await this.linkToken.approve(this.oracleManager.address, MAX_UINT256, { from: eve });
-      await this.oracleManager.stake(david, collatoralId, amount, {
+      await this.oracleManager.stake(david, collateralId, amount, {
         from: eve,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
+      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
       assert.equal(
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
       );
-      assert.equal(prevCollatoral.totalLocked.toString(), currentCollatoral.totalLocked.toString());
+      assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
       assert.equal(prevDelegatorStaking.toString(), currentDelegatorStaking.toString());
     });
 
     it("should stake 50 tokens", async function() {
       const amount = toWei("50");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);;
-      await this.oracleManager.stake(david, collatoralId, amount, {
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);;
+      await this.oracleManager.stake(david, collateralId, amount, {
         from: eve,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
+      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
       assert.equal(
         prevOracleStaking.add(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.add(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.add(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
       assert.equal(
         prevDelegatorStaking.add(toBN(amount)).toString(),
@@ -163,9 +163,9 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
 
     it("fail in case of staking to oracle which does not accept delegation", async function() {
       const amount = toWei("100");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.stake(bob, collatoralId, amount, {
+        this.oracleManager.stake(bob, collateralId, amount, {
           from: eve,
         }),
         "stake: amount of delegation is limited"
@@ -174,9 +174,9 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
 
     it("fail in case of staking exceed for delegators", async function() {
       const amount = toWei("20");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.stake(david, collatoralId, amount, {
+        this.oracleManager.stake(david, collateralId, amount, {
           from: eve,
         }),
         "stake: amount of delegation is limited"
@@ -187,61 +187,61 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test request unstaking of different amounts by oracle", () => {
     it("should unstake 0 tokens", async function() {
       const amount = 0;
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
       await this.linkToken.approve(this.oracleManager.address, MAX_UINT256);
-      await this.oracleManager.requestUnstake(bob, collatoralId, alice, amount, {
+      await this.oracleManager.requestUnstake(bob, collateralId, alice, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
       );
-      assert.equal(prevCollatoral.totalLocked.toString(), currentCollatoral.totalLocked.toString());
+      assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
     });
 
     it("should unstake 5 tokens", async function() {
       const amount = toWei("5");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.requestUnstake(bob, collatoralId, alice, amount, {
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.requestUnstake(bob, collateralId, alice, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.sub(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
     });
 
     it("fail in case of unstaking too many tokens", async function() {
       const amount = toWei("3200000");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.requestUnstake(bob, collatoralId, alice, amount, {
+        this.oracleManager.requestUnstake(bob, collateralId, alice, amount, {
           from: alice,
         }),
         "requestUnstake: insufficient withdrawable funds"
       );
     });
 
-    it("fail in case of unstaking undefined collatoral", async function() {
+    it("fail in case of unstaking undefined collateral", async function() {
       const amount = toWei("10");
-      const collatoralId = 1;
+      const collateralId = 1;
       await expectRevert(
-        this.oracleManager.requestUnstake(bob, collatoralId, alice, amount, {
+        this.oracleManager.requestUnstake(bob, collateralId, alice, amount, {
           from: alice,
         }),
-        "requestUnstake: undefined collatoral"
+        "requestUnstake: undefined collateral"
       );
     });
   });
@@ -249,31 +249,31 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test request unstaking of different amounts by delegator", () => {
     before(async function() {
       const amount = toWei("100");
-      const collatoralId = 0;
+      const collateralId = 0;
       await this.linkToken.approve(this.oracleManager.address, MAX_UINT256, { from: david });
-      await this.oracleManager.stake(david, collatoralId, amount, {
+      await this.oracleManager.stake(david, collateralId, amount, {
         from: david,
       });
     });
 
     it("should unstake 0 tokens", async function() {
       const amount = 0;
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
       await this.linkToken.approve(this.oracleManager.address, MAX_UINT256, { from: david });
-      await this.oracleManager.requestUnstake(david, collatoralId, alice, amount, {
+      await this.oracleManager.requestUnstake(david, collateralId, alice, amount, {
         from: eve,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
+      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
       assert.equal(
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
       );
-      assert.equal(prevCollatoral.totalLocked.toString(), currentCollatoral.totalLocked.toString());
+      assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
       assert.equal(
         prevDelegatorStaking.toString(),
         currentDelegatorStaking.toString()
@@ -282,23 +282,23 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
 
     it("should unstake 5 tokens", async function() {
       const amount = toWei("5");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
-      await this.oracleManager.requestUnstake(david, collatoralId, alice, amount, {
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
+      await this.oracleManager.requestUnstake(david, collateralId, alice, amount, {
         from: eve,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
-      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(david, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
+      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
       assert.equal(
         prevOracleStaking.sub(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
       assert.equal(
         prevDelegatorStaking.toString(),
@@ -308,9 +308,9 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
     
     it("should fail in case of request unstaking insufficient amount by delegator", async function() {
       const amount = toWei("55");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.requestUnstake(david, collatoralId, alice, amount, {
+        this.oracleManager.requestUnstake(david, collateralId, alice, amount, {
           from: eve,
         }),
         "requestUnstake: insufficient amount"
@@ -321,30 +321,30 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test request unstaking permissions", () => {
     it("should unstake by admin", async function() {
       const amount = toWei("10");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
       await this.linkToken.approve(this.oracleManager.address, MAX_UINT256);
-      await this.oracleManager.requestUnstake(bob, collatoralId, alice, amount, {
+      await this.oracleManager.requestUnstake(bob, collateralId, alice, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.sub(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
     });
 
     it("fail in case of unstaking by non admin", async function() {
       const amount = toWei("3");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.requestUnstake(bob, collatoralId, alice, amount, {
+        this.oracleManager.requestUnstake(bob, collateralId, alice, amount, {
           from: bob,
         }),
         "requestUnstake: only callable by admin"
@@ -360,14 +360,14 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
         bob,
         withdrawalId
       );
-      const collatoralId = prevWithdrawalInfo.collatoralId;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const collateralId = prevWithdrawalInfo.collateralId;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
       await this.oracleManager.executeUnstake(bob, withdrawalId, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       const currentWithdrawalInfo = await this.oracleManager.getWithdrawalRequest(
         bob,
         withdrawalId
@@ -378,13 +378,13 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
       );
-      assert.equal(prevCollatoral.totalLocked.toString(), currentCollatoral.totalLocked.toString());
+      assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
     });
 
     it("fail in case of execute unstaking before timelock", async function() {
       const amount = toWei("1");
-      const collatoralId = 0;
-      await this.oracleManager.requestUnstake(bob, collatoralId, alice, amount, {
+      const collateralId = 0;
+      await this.oracleManager.requestUnstake(bob, collateralId, alice, amount, {
         from: alice,
       });
       await expectRevert(
@@ -417,57 +417,57 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test liquidate different amounts", () => {
     it("should execute liquidate 0 tokens", async function() {
       const amount = toWei("0");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.liquidate(bob, collatoralId, amount, {
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.liquidate(bob, collateralId, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.sub(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
       assert.equal(
-        prevCollatoral.confiscatedFunds.add(toBN(amount)).toString(),
-        currentCollatoral.confiscatedFunds.toString()
+        prevCollateral.confiscatedFunds.add(toBN(amount)).toString(),
+        currentCollateral.confiscatedFunds.toString()
       );
     });
 
     it("should execute liquidate of normal amount of tokens", async function() {
       const amount = toWei("10");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.liquidate(bob, collatoralId, amount, {
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.liquidate(bob, collateralId, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.sub(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
       assert.equal(
-        prevCollatoral.confiscatedFunds.add(toBN(amount)).toString(),
-        currentCollatoral.confiscatedFunds.toString()
+        prevCollateral.confiscatedFunds.add(toBN(amount)).toString(),
+        currentCollateral.confiscatedFunds.toString()
       );
     });
 
     it("fail in case of liquidate of too many tokens", async function() {
       const amount = toWei("1000");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.liquidate(bob, collatoralId, amount, {
+        this.oracleManager.liquidate(bob, collateralId, amount, {
           from: alice,
         }),
         "liquidate: insufficient balance"
@@ -478,33 +478,33 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test liquidate by different users", () => {
     it("should execute liquidate by admin", async function() {
       const amount = toWei("2");
-      const collatoralId = 0;
-      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.liquidate(bob, collatoralId, amount, {
+      const collateralId = 0;
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.liquidate(bob, collateralId, amount, {
         from: alice,
       });
-      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevOracleStaking.sub(toBN(amount)).toString(),
         currentOracleStaking.toString()
       );
       assert.equal(
-        prevCollatoral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollatoral.totalLocked.toString()
+        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
       );
       assert.equal(
-        prevCollatoral.confiscatedFunds.add(toBN(amount)).toString(),
-        currentCollatoral.confiscatedFunds.toString()
+        prevCollateral.confiscatedFunds.add(toBN(amount)).toString(),
+        currentCollateral.confiscatedFunds.toString()
       );
     });
 
     it("fail in case of liquidate by non-admin", async function() {
       const amount = toWei("1");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.liquidate(bob, collatoralId, amount, {
+        this.oracleManager.liquidate(bob, collateralId, amount, {
           from: carol,
         }),
         "Ownable: caller is not the owner"
@@ -515,59 +515,59 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test withdraw different liquidated amounts", () => {
     it("should execute withdrawal of 0 liquidated tokens", async function() {
       const amount = toWei("0");
-      const collatoralId = 0;
+      const collateralId = 0;
       const recepient = alice;
       const prevAliceGovBalance = toBN(
         await this.linkToken.balanceOf(recepient)
       );
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.withdrawFunds(recepient, collatoralId, amount, {
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.withdrawFunds(recepient, collateralId, amount, {
         from: alice,
       });
       const currentAliceGovBalance = toBN(
         await this.linkToken.balanceOf(recepient)
       );
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevAliceGovBalance.add(toBN(amount)).toString(),
         currentAliceGovBalance.toString()
       );
       assert.equal(
-        prevCollatoral.confiscatedFunds.sub(toBN(amount)).toString(),
-        currentCollatoral.confiscatedFunds.toString()
+        prevCollateral.confiscatedFunds.sub(toBN(amount)).toString(),
+        currentCollateral.confiscatedFunds.toString()
       );
     });
 
     it("should execute liquidate of normal amount of tokens", async function() {
       const amount = toWei("10");
-      const collatoralId = 0;
+      const collateralId = 0;
       const recepient = alice;
       const prevAliceGovBalance = toBN(
         await this.linkToken.balanceOf(recepient)
       );
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.withdrawFunds(recepient, collatoralId, amount, {
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.withdrawFunds(recepient, collateralId, amount, {
         from: alice,
       });
       const currentAliceGovBalance = toBN(
         await this.linkToken.balanceOf(recepient)
       );
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevAliceGovBalance.add(toBN(amount)).toString(),
         currentAliceGovBalance.toString()
       );
       assert.equal(
-        prevCollatoral.confiscatedFunds.sub(toBN(amount)).toString(),
-        currentCollatoral.confiscatedFunds.toString()
+        prevCollateral.confiscatedFunds.sub(toBN(amount)).toString(),
+        currentCollateral.confiscatedFunds.toString()
       );
     });
 
     it("fail in case of withdrawal of too many tokens", async function() {
       const amount = toWei("1000");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.withdrawFunds(alice, collatoralId, amount, {
+        this.oracleManager.withdrawFunds(alice, collateralId, amount, {
           from: alice,
         }),
         "withdrawFunds: insufficient reserve funds"
@@ -578,34 +578,34 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test withdraw liquidated funds by different users", () => {
     it("should execute withdrawal by the admin", async function() {
       const amount = toWei("1");
-      const collatoralId = 0;
+      const collateralId = 0;
       const recepient = alice;
       const prevAliceGovBalance = toBN(
         await this.linkToken.balanceOf(recepient)
       );
-      const prevCollatoral = await this.oracleManager.collatorals(collatoralId);
-      await this.oracleManager.withdrawFunds(recepient, collatoralId, amount, {
+      const prevCollateral = await this.oracleManager.collaterals(collateralId);
+      await this.oracleManager.withdrawFunds(recepient, collateralId, amount, {
         from: alice,
       });
       const currentAliceGovBalance = toBN(
         await this.linkToken.balanceOf(recepient)
       );
-      const currentCollatoral = await this.oracleManager.collatorals(collatoralId);
+      const currentCollateral = await this.oracleManager.collaterals(collateralId);
       assert.equal(
         prevAliceGovBalance.add(toBN(amount)).toString(),
         currentAliceGovBalance.toString()
       );
       assert.equal(
-        prevCollatoral.confiscatedFunds.sub(toBN(amount)).toString(),
-        currentCollatoral.confiscatedFunds.toString()
+        prevCollateral.confiscatedFunds.sub(toBN(amount)).toString(),
+        currentCollateral.confiscatedFunds.toString()
       );
     });
 
     it("fail in case of withdrawal by non-admin", async function() {
       const amount = toWei("1");
-      const collatoralId = 0;
+      const collateralId = 0;
       await expectRevert(
-        this.oracleManager.withdrawFunds(alice, collatoralId, amount, {
+        this.oracleManager.withdrawFunds(alice, collateralId, amount, {
           from: bob,
         }),
         "Ownable: caller is not the owner"
@@ -616,12 +616,12 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test request transfering assets", () => {
     it("should request transfer non asset", async function() {
       const amount = toWei("0");
-      const collatoralId = 0;
-      const prevOracleFromStake = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const prevOracleToStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      await this.oracleManager.requestTransfer(david, bob, collatoralId, amount, { from: eve });
-      const currentOracleFromStake = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const currentOracleToStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
+      const collateralId = 0;
+      const prevOracleFromStake = await this.oracleManager.getOracleStaking(david, collateralId);
+      const prevOracleToStake = await this.oracleManager.getOracleStaking(bob, collateralId);
+      await this.oracleManager.requestTransfer(david, bob, collateralId, amount, { from: eve });
+      const currentOracleFromStake = await this.oracleManager.getOracleStaking(david, collateralId);
+      const currentOracleToStake = await this.oracleManager.getOracleStaking(bob, collateralId);
       assert.equal(
         prevOracleFromStake.toString(),
         currentOracleFromStake.add(toBN(amount)).toString()
@@ -633,16 +633,16 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
     });
     it("should transfer normal amount of assets", async function() {
       const amount = toWei("10");
-      const collatoralId = 0;
-      const prevOracleFromStake = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const prevOracleToStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const prevDelegatorStakingFrom = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
-      const prevDelegatorStakingTo = await this.oracleManager.getDelegatorStakes(bob, eve, collatoralId);
-      await this.oracleManager.requestTransfer(david, bob, collatoralId, amount, { from: eve });
-      const currentOracleFromStake = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const currentOracleToStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      const currentDelegatorStakingFrom = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
-      const currentDelegatorStakingTo = await this.oracleManager.getDelegatorStakes(bob, eve, collatoralId);
+      const collateralId = 0;
+      const prevOracleFromStake = await this.oracleManager.getOracleStaking(david, collateralId);
+      const prevOracleToStake = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const prevDelegatorStakingFrom = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
+      const prevDelegatorStakingTo = await this.oracleManager.getDelegatorStakes(bob, eve, collateralId);
+      await this.oracleManager.requestTransfer(david, bob, collateralId, amount, { from: eve });
+      const currentOracleFromStake = await this.oracleManager.getOracleStaking(david, collateralId);
+      const currentOracleToStake = await this.oracleManager.getOracleStaking(bob, collateralId);
+      const currentDelegatorStakingFrom = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
+      const currentDelegatorStakingTo = await this.oracleManager.getDelegatorStakes(bob, eve, collateralId);
 
       assert.equal(
         prevOracleFromStake.toString(),
@@ -663,13 +663,13 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
     });
     it("should reject while transferring too many assets", async function() {
       const amount = toWei("50");
-      const collatoralId = 0;
-      await expectRevert(this.oracleManager.requestTransfer(david, bob, collatoralId, amount, { from: eve }), "transferAssets: Insufficient amount for delegator");
+      const collateralId = 0;
+      await expectRevert(this.oracleManager.requestTransfer(david, bob, collateralId, amount, { from: eve }), "transferAssets: Insufficient amount for delegator");
     });
     it("should reject when transfer by oracle", async function() {
       const amount = toWei("10");
-      const collatoralId = 0;
-      await expectRevert(this.oracleManager.requestTransfer(david, bob, collatoralId, amount, { from: bob }), "requestTransfer: callable by delegator");
+      const collateralId = 0;
+      await expectRevert(this.oracleManager.requestTransfer(david, bob, collateralId, amount, { from: bob }), "requestTransfer: callable by delegator");
     });
   });
 
@@ -699,22 +699,22 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
 
   context("Test account asset", () => {
     it ("should pay for oracle who set profit sharing as zero", async function() {
-      const collatoralId = 0;
+      const collateralId = 0;
       const amount = toWei("100");
-      const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
-      await this.oracleManager.account_asset(bob, collatoralId, amount);
-      const currentOracleStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
+      const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collateralId);
+      await this.oracleManager.account_asset(bob, collateralId, amount);
+      const currentOracleStake = await this.oracleManager.getOracleStaking(bob, collateralId);
 
       assert.equal(prevOracleStake.add(toBN(amount)).toString(), currentOracleStake.toString());
     });
     it ("should pay for oracle who shares profit with delegators", async function() {
-      const collatoralId = 0;
+      const collateralId = 0;
       const amount = toWei("100"), amountForDelegator = toWei("25");
-      const prevOracleStake = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
-      await this.oracleManager.account_asset(david, collatoralId, amount);
-      const currentOracleStake = await this.oracleManager.getOracleStaking(david, collatoralId);
-      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collatoralId);
+      const prevOracleStake = await this.oracleManager.getOracleStaking(david, collateralId);
+      const prevDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
+      await this.oracleManager.account_asset(david, collateralId, amount);
+      const currentOracleStake = await this.oracleManager.getOracleStaking(david, collateralId);
+      const currentDelegatorStaking = await this.oracleManager.getDelegatorStakes(david, eve, collateralId);
 
       assert.equal(prevOracleStake.add(toBN(amount)).toString(), currentOracleStake.toString(), "oracle staking");
       assert.equal(prevDelegatorStaking.add(toBN(amountForDelegator)).toString(), currentDelegatorStaking.toString(), "delegator staking");
@@ -724,12 +724,12 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test deposit to strategy", () => {
     it("should decrease staking after deposit", async function() {
       const amount = toWei("10");
-      const collatoralId = 0;
+      const collateralId = 0;
       const strategy = 0;
 
-      const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
+      const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collateralId);
       await this.oracleManager.depositToStrategy(bob, amount, strategy);
-      const currentOracleStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
+      const currentOracleStake = await this.oracleManager.getOracleStaking(bob, collateralId);
       
       assert.equal(
         prevOracleStake.toString(),
@@ -746,12 +746,12 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
   context("Test withdraw from strategy", () => {
     it("should increase staking after withdraw", async function() {
       const amount = toWei("10");
-      const collatoralId = 0;
+      const collateralId = 0;
       const strategy = 0;
 
-      const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
+      const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collateralId);
       await this.oracleManager.withdrawFromStrategy(bob, amount, strategy);
-      const currentOracleStake = await this.oracleManager.getOracleStaking(bob, collatoralId);
+      const currentOracleStake = await this.oracleManager.getOracleStaking(bob, collateralId);
       
       assert.equal(
         prevOracleStake.add(toBN(amount)).toString(),
