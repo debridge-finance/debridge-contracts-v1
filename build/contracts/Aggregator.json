@@ -549,9 +549,9 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_corePayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_bonusPayment\",\"type\":\"uint256\"},{\"internalType\":\"contract IERC20\",\"name\":\"_coreToken\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"_bonusToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ORACLE_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_admin\",\"type\":\"address\"}],\"name\":\"addOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"bonusPayment\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"bonusToken\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"corePayment\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"coreToken\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getOracleInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getPaymentInfo\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"allocatedFunds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"availableFunds\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"getWithdrawable\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"onTokenTransfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"removeOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"}],\"name\":\"setMinConfirmations\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_corePayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_bonusPayment\",\"type\":\"uint256\"}],\"name\":\"setPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"}],\"name\":\"updateAvailableFunds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_newOracleAdmin\",\"type\":\"address\"}],\"name\":\"updateOracleAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdrawFunds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_recipient\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdrawPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"addOracle(address,address)\":{\"details\":\"Add new oracle.\",\"params\":{\"_admin\":\"Admin address.\",\"_oracle\":\"Oracle address.\"}},\"constructor\":{\"details\":\"Constructor that initializes the most important configurations.\",\"params\":{\"_bonusPayment\":\"Oracle reward.\",\"_bonusToken\":\"DBR token to pay to oracles.\",\"_corePayment\":\"Oracle reward.\",\"_coreToken\":\"Link token to pay to oracles.\",\"_minConfirmations\":\"Common confirmations count.\"}},\"getRoleAdmin(bytes32)\":{\"details\":\"Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.\"},\"getWithdrawable(address,address)\":{\"details\":\"Return's oracle reward.\",\"params\":{\"_oracle\":\"Oracle address.\"},\"returns\":{\"_0\":\"Oracle rewards.\"}},\"grantRole(bytes32,address)\":{\"details\":\"Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.\"},\"hasRole(bytes32,address)\":{\"details\":\"Returns `true` if `account` has been granted `role`.\"},\"onTokenTransfer(address,uint256,bytes)\":{\"details\":\"Updates link balance.\",\"params\":{\"_data\":\"Call data.\"}},\"removeOracle(address)\":{\"details\":\"Remove oracle.\",\"params\":{\"_oracle\":\"Oracle address.\"}},\"renounceRole(bytes32,address)\":{\"details\":\"Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.\"},\"revokeRole(bytes32,address)\":{\"details\":\"Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.\"},\"setMinConfirmations(uint256)\":{\"details\":\"Sets minimal required confirmations.\",\"params\":{\"_minConfirmations\":\"Confirmation info.\"}},\"setPayment(uint256,uint256)\":{\"details\":\"Sets new oracle reward.\",\"params\":{\"_bonusPayment\":\"Oracle reward.\",\"_corePayment\":\"Oracle reward.\"}},\"supportsInterface(bytes4)\":{\"details\":\"See {IERC165-supportsInterface}.\"},\"updateAvailableFunds(address)\":{\"details\":\"Updates available rewards to be distributed.\"},\"updateOracleAdmin(address,address)\":{\"details\":\"Updates oracle's admin address.\",\"params\":{\"_newOracleAdmin\":\"New oracle address.\",\"_oracle\":\"Oracle address.\"}},\"withdrawFunds(address,address,uint256)\":{\"details\":\"Withdraws earned LINK's.\",\"params\":{\"_amount\":\"Amount to withdraw.\",\"_recipient\":\"Reward's recepient.\"}},\"withdrawPayment(address,address,address,uint256)\":{\"details\":\"Withdraws oracle reward.\",\"params\":{\"_amount\":\"Amount to withdraw.\",\"_oracle\":\"Oracle address.\",\"_recipient\":\"Recepient reward.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/Aggregator.sol\":\"Aggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/Aggregator.sol\":{\"keccak256\":\"0x16a9a8553fa990d4fb7248486a2b8f1c5df62e09e708a7f2bc38dad47f6860c6\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e8f55d47777b1c1bf5c2adfc276ccbcc764dfa43fd0ca2e05248adc334702da8\",\"dweb:/ipfs/QmPdxUajecNcsXRAtmBgCQrgSaYzrjvAthGujk591D9uYA\"]},\"@openzeppelin/contracts/access/AccessControl.sol\":{\"keccak256\":\"0x897b526c3c1b6196d7c2202b3dbb04b77513a40633c6083a00e8c11402011710\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e9a87494f94cba588431ee0600b51a4122d93d7f5e081dbf0c49ad09b394c5bf\",\"dweb:/ipfs/QmSuMSXPnbEKi8yLNXAagtaX5YbJaiuuKRdCH9S5BxQdRH\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xf8e8d118a7a8b2e134181f7da655f6266aa3a0f9134b2605747139fcb0c5d835\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ec48567e7ad06acb670980d5cdf3fd7f3949bf12894f02d68c3bb43e75aa84f\",\"dweb:/ipfs/QmaG3R2J9cz92YT77vFjYrjMNU2wHp4ypwYD62HqDUqS5U\"]},\"@openzeppelin/contracts/utils/Context.sol\":{\"keccak256\":\"0xf930d2df426bfcfc1f7415be724f04081c96f4fb9ec8d0e3a521c07692dface0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://fc2bfdea0d2562c76fb3c4cf70a86c6ba25c5a30e8f8515c95aafdf8383f8395\",\"dweb:/ipfs/QmTbFya18786ckJfLYUoWau9jBTKfmWnWm5XSViWvB7PXN\"]},\"@openzeppelin/contracts/utils/introspection/ERC165.sol\":{\"keccak256\":\"0x5718c5df9bd67ac68a796961df938821bb5dc0cd4c6118d77e9145afb187409b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d10e1d9b26042424789246603906ad06143bf9a928f4e99de8b5e3bdc662f549\",\"dweb:/ipfs/Qmejonoaj5MLekPus229rJQHcC6E9dz2xorjHJR84fMfmn\"]},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"keccak256\":\"0xa28007762d9da9db878dd421960c8cb9a10471f47ab5c1b3309bfe48e9e79ff4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://796ab6e88af7bf0e78def0f059310c903af6a312b565344e0ff524a0f26e81c6\",\"dweb:/ipfs/QmcsVgLgzWdor3UnAztUkXKNGcysm1MPneWksF72AvnwBx\"]}},\"version\":1}",
-  "bytecode": "0x60806040523480156200001157600080fd5b50604051620011d0380380620011d0833981016040819052620000349162000184565b6003859055600480546001600160a01b038085166001600160a01b03199283161790925560058054928416929091169190911790556001849055600283905562000080600033620000b7565b620000ac7f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef133620000b7565b5050505050620001d8565b620000c38282620000c7565b5050565b6000828152602081815260408083206001600160a01b038516845290915290205460ff16620000c3576000828152602081815260408083206001600160a01b03851684529091529020805460ff19166001179055620001233390565b6001600160a01b0316816001600160a01b0316837f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a45050565b80516001600160a01b03811681146200017f57600080fd5b919050565b600080600080600060a086880312156200019c578081fd5b855194506020860151935060408601519250620001bc6060870162000167565b9150620001cc6080870162000167565b90509295509295909350565b610fe880620001e86000396000f3fe608060405234801561001057600080fd5b50600436106101735760003560e01c80637885f23b116100de578063cd28311811610097578063e75a592611610071578063e75a5926146103b3578063e7c4393e146103c6578063f0ca4adb146103cf578063fdc85fc4146103e257610173565b8063cd28311814610384578063d28216551461038d578063d547741f146103a057610173565b80637885f23b146102dc57806391d14854146102ef578063a217fddf14610302578063a490c5ac1461030a578063a4c0ed3614610348578063bfdb6b041461035b57610173565b8063248a9ca311610130578063248a9ca31461025a5780632f2ff15d1461027d57806333e207561461029057806336568abe146102a357806341d4a1ab146102b65780634c083773146102c957610173565b806301ffc9a71461017857806307e2cea5146101a057806308b8304b146101d55780630c2b72e9146101de57806312c65b8c146102095780631c20fadd14610245575b600080fd5b61018b610186366004610e9a565b6103f5565b60405190151581526020015b60405180910390f35b6101c77f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef181565b604051908152602001610197565b6101c760015481565b6004546101f1906001600160a01b031681565b6040516001600160a01b039091168152602001610197565b610230610217366004610d0f565b6007602052600090815260409020805460019091015482565b60408051928352602083019190915201610197565b610258610253366004610ed4565b61042c565b005b6101c7610268366004610e5e565b60009081526020819052604090206001015490565b61025861028b366004610e76565b6105b5565b61025861029e366004610f2c565b610644565b6102586102b1366004610e76565b610676565b6005546101f1906001600160a01b031681565b6102586102d7366004610d6a565b6106f0565b6102586102ea366004610d0f565b6108f4565b61018b6102fd366004610e76565b6109a6565b6101c7600081565b6101c7610318366004610ec2565b6001600160a01b038082166000908152600660209081526040808320938616835260019093019052205492915050565b610258610356366004610dba565b6109cf565b6101f1610369366004610d0f565b6006602052600090815260409020546001600160a01b031681565b6101c760025481565b61025861039b366004610e5e565b610a2c565b6102586103ae366004610e76565b610a58565b6102586103c1366004610d32565b610ad8565b6101c760035481565b6102586103dd366004610d32565b610b81565b6102586103f0366004610d0f565b610bd2565b60006001600160e01b03198216637965db0b60e01b148061042657506301ffc9a760e01b6001600160e01b03198316145b92915050565b6104376000336109a6565b61045c5760405162461bcd60e51b815260040161045390610f4d565b60405180910390fd5b6001600160a01b0383166000908152600760205260409020600101548111156104d95760405162461bcd60e51b815260206004820152602960248201527f776974686472617746756e64733a20696e73756666696369656e7420726573656044820152687276652066756e647360b81b6064820152608401610453565b60405163a9059cbb60e01b81526001600160a01b0383811660048301526024820183905284169063a9059cbb90604401602060405180830381600087803b15801561052357600080fd5b505af1158015610537573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061055b9190610e3e565b6105a75760405162461bcd60e51b815260206004820152601e60248201527f776974686472617746756e64733a207472616e73666572206661696c656400006044820152606401610453565b6105b0836108f4565b505050565b6000828152602081905260409020600101546105d2905b336102fd565b6106365760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526e0818591b5a5b881d1bc819dc985b9d608a1b6064820152608401610453565b6106408282610c26565b5050565b61064f6000336109a6565b61066b5760405162461bcd60e51b815260040161045390610f4d565b600191909155600255565b6001600160a01b03811633146106e65760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2063616e206f6e6c792072656e6f756e636560448201526e103937b632b9903337b91039b2b63360891b6064820152608401610453565b6106408282610caa565b6001600160a01b038481166000908152600660205260409020541633146107695760405162461bcd60e51b815260206004820152602760248201527f77697468647261775061796d656e743a206f6e6c792063616c6c61626c6520626044820152663c9030b236b4b760c91b6064820152608401610453565b6001600160a01b0380851660009081526006602090815260408083209386168352600190930190522054818110156107fc5760405162461bcd60e51b815260206004820152603060248201527f77697468647261775061796d656e743a20696e73756666696369656e7420776960448201526f74686472617761626c652066756e647360801b6064820152608401610453565b6108068282610f7a565b6001600160a01b0380871660009081526006602090815260408083209388168352600190930181528282209390935560079092528120805484929061084c908490610f7a565b909155505060405163a9059cbb60e01b81526001600160a01b0385811660048301526024820184905284169063a9059cbb90604401602060405180830381600087803b15801561089b57600080fd5b505af11580156108af573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108d39190610e3e565b6108ed57634e487b7160e01b600052600160045260246000fd5b5050505050565b6001600160a01b038116600081815260076020526040908190205490516370a0823160e01b81523060048201529091906370a082319060240160206040518083038186803b15801561094557600080fd5b505afa158015610959573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061097d9190610f14565b6109879190610f7a565b6001600160a01b03909116600090815260076020526040902060010155565b6000918252602082815260408084206001600160a01b0393909316845291905290205460ff1690565b8015610a1d5760405162461bcd60e51b815260206004820181905260248201527f7472616e7366657220646f65736e2774206163636570742063616c6c646174616044820152606401610453565b610a26336108f4565b50505050565b610a376000336109a6565b610a535760405162461bcd60e51b815260040161045390610f4d565b600355565b600082815260208190526040902060010154610a73906105cc565b6106e65760405162461bcd60e51b815260206004820152603060248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526f2061646d696e20746f207265766f6b6560801b6064820152608401610453565b6001600160a01b03828116600090815260066020526040902054163314610b535760405162461bcd60e51b815260206004820152602960248201527f7570646174654f7261636c6541646d696e3a206f6e6c792063616c6c61626c6560448201526810313c9030b236b4b760b91b6064820152608401610453565b6001600160a01b03918216600090815260066020526040902080546001600160a01b03191691909216179055565b610b8c6000336109a6565b610ba85760405162461bcd60e51b815260040161045390610f4d565b610b537f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef1836105b5565b610bdd6000336109a6565b610bf95760405162461bcd60e51b815260040161045390610f4d565b610c237f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef182610a58565b50565b610c3082826109a6565b610640576000828152602081815260408083206001600160a01b03851684529091529020805460ff19166001179055610c663390565b6001600160a01b0316816001600160a01b0316837f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a45050565b610cb482826109a6565b15610640576000828152602081815260408083206001600160a01b0385168085529252808320805460ff1916905551339285917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a45050565b600060208284031215610d20578081fd5b8135610d2b81610f9d565b9392505050565b60008060408385031215610d44578081fd5b8235610d4f81610f9d565b91506020830135610d5f81610f9d565b809150509250929050565b60008060008060808587031215610d7f578182fd5b8435610d8a81610f9d565b93506020850135610d9a81610f9d565b92506040850135610daa81610f9d565b9396929550929360600135925050565b60008060008060608587031215610dcf578384fd5b8435610dda81610f9d565b935060208501359250604085013567ffffffffffffffff80821115610dfd578384fd5b818701915087601f830112610e10578384fd5b813581811115610e1e578485fd5b886020828501011115610e2f578485fd5b95989497505060200194505050565b600060208284031215610e4f578081fd5b81518015158114610d2b578182fd5b600060208284031215610e6f578081fd5b5035919050565b60008060408385031215610e88578182fd5b823591506020830135610d5f81610f9d565b600060208284031215610eab578081fd5b81356001600160e01b031981168114610d2b578182fd5b60008060408385031215610d44578182fd5b600080600060608486031215610ee8578283fd5b8335610ef381610f9d565b92506020840135610f0381610f9d565b929592945050506040919091013590565b600060208284031215610f25578081fd5b5051919050565b60008060408385031215610f3e578182fd5b50508035926020909101359150565b6020808252601390820152726f6e6c7941646d696e3a2062616420726f6c6560681b604082015260600190565b600082821015610f9857634e487b7160e01b81526011600452602481fd5b500390565b6001600160a01b0381168114610c2357600080fdfea2646970667358221220f52f5c46d628a52f4026ec7037f345c6bc4d4e86b02f21427a19df71f44150e964736f6c63430008020033",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106101735760003560e01c80637885f23b116100de578063cd28311811610097578063e75a592611610071578063e75a5926146103b3578063e7c4393e146103c6578063f0ca4adb146103cf578063fdc85fc4146103e257610173565b8063cd28311814610384578063d28216551461038d578063d547741f146103a057610173565b80637885f23b146102dc57806391d14854146102ef578063a217fddf14610302578063a490c5ac1461030a578063a4c0ed3614610348578063bfdb6b041461035b57610173565b8063248a9ca311610130578063248a9ca31461025a5780632f2ff15d1461027d57806333e207561461029057806336568abe146102a357806341d4a1ab146102b65780634c083773146102c957610173565b806301ffc9a71461017857806307e2cea5146101a057806308b8304b146101d55780630c2b72e9146101de57806312c65b8c146102095780631c20fadd14610245575b600080fd5b61018b610186366004610e9a565b6103f5565b60405190151581526020015b60405180910390f35b6101c77f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef181565b604051908152602001610197565b6101c760015481565b6004546101f1906001600160a01b031681565b6040516001600160a01b039091168152602001610197565b610230610217366004610d0f565b6007602052600090815260409020805460019091015482565b60408051928352602083019190915201610197565b610258610253366004610ed4565b61042c565b005b6101c7610268366004610e5e565b60009081526020819052604090206001015490565b61025861028b366004610e76565b6105b5565b61025861029e366004610f2c565b610644565b6102586102b1366004610e76565b610676565b6005546101f1906001600160a01b031681565b6102586102d7366004610d6a565b6106f0565b6102586102ea366004610d0f565b6108f4565b61018b6102fd366004610e76565b6109a6565b6101c7600081565b6101c7610318366004610ec2565b6001600160a01b038082166000908152600660209081526040808320938616835260019093019052205492915050565b610258610356366004610dba565b6109cf565b6101f1610369366004610d0f565b6006602052600090815260409020546001600160a01b031681565b6101c760025481565b61025861039b366004610e5e565b610a2c565b6102586103ae366004610e76565b610a58565b6102586103c1366004610d32565b610ad8565b6101c760035481565b6102586103dd366004610d32565b610b81565b6102586103f0366004610d0f565b610bd2565b60006001600160e01b03198216637965db0b60e01b148061042657506301ffc9a760e01b6001600160e01b03198316145b92915050565b6104376000336109a6565b61045c5760405162461bcd60e51b815260040161045390610f4d565b60405180910390fd5b6001600160a01b0383166000908152600760205260409020600101548111156104d95760405162461bcd60e51b815260206004820152602960248201527f776974686472617746756e64733a20696e73756666696369656e7420726573656044820152687276652066756e647360b81b6064820152608401610453565b60405163a9059cbb60e01b81526001600160a01b0383811660048301526024820183905284169063a9059cbb90604401602060405180830381600087803b15801561052357600080fd5b505af1158015610537573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061055b9190610e3e565b6105a75760405162461bcd60e51b815260206004820152601e60248201527f776974686472617746756e64733a207472616e73666572206661696c656400006044820152606401610453565b6105b0836108f4565b505050565b6000828152602081905260409020600101546105d2905b336102fd565b6106365760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526e0818591b5a5b881d1bc819dc985b9d608a1b6064820152608401610453565b6106408282610c26565b5050565b61064f6000336109a6565b61066b5760405162461bcd60e51b815260040161045390610f4d565b600191909155600255565b6001600160a01b03811633146106e65760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2063616e206f6e6c792072656e6f756e636560448201526e103937b632b9903337b91039b2b63360891b6064820152608401610453565b6106408282610caa565b6001600160a01b038481166000908152600660205260409020541633146107695760405162461bcd60e51b815260206004820152602760248201527f77697468647261775061796d656e743a206f6e6c792063616c6c61626c6520626044820152663c9030b236b4b760c91b6064820152608401610453565b6001600160a01b0380851660009081526006602090815260408083209386168352600190930190522054818110156107fc5760405162461bcd60e51b815260206004820152603060248201527f77697468647261775061796d656e743a20696e73756666696369656e7420776960448201526f74686472617761626c652066756e647360801b6064820152608401610453565b6108068282610f7a565b6001600160a01b0380871660009081526006602090815260408083209388168352600190930181528282209390935560079092528120805484929061084c908490610f7a565b909155505060405163a9059cbb60e01b81526001600160a01b0385811660048301526024820184905284169063a9059cbb90604401602060405180830381600087803b15801561089b57600080fd5b505af11580156108af573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108d39190610e3e565b6108ed57634e487b7160e01b600052600160045260246000fd5b5050505050565b6001600160a01b038116600081815260076020526040908190205490516370a0823160e01b81523060048201529091906370a082319060240160206040518083038186803b15801561094557600080fd5b505afa158015610959573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061097d9190610f14565b6109879190610f7a565b6001600160a01b03909116600090815260076020526040902060010155565b6000918252602082815260408084206001600160a01b0393909316845291905290205460ff1690565b8015610a1d5760405162461bcd60e51b815260206004820181905260248201527f7472616e7366657220646f65736e2774206163636570742063616c6c646174616044820152606401610453565b610a26336108f4565b50505050565b610a376000336109a6565b610a535760405162461bcd60e51b815260040161045390610f4d565b600355565b600082815260208190526040902060010154610a73906105cc565b6106e65760405162461bcd60e51b815260206004820152603060248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526f2061646d696e20746f207265766f6b6560801b6064820152608401610453565b6001600160a01b03828116600090815260066020526040902054163314610b535760405162461bcd60e51b815260206004820152602960248201527f7570646174654f7261636c6541646d696e3a206f6e6c792063616c6c61626c6560448201526810313c9030b236b4b760b91b6064820152608401610453565b6001600160a01b03918216600090815260066020526040902080546001600160a01b03191691909216179055565b610b8c6000336109a6565b610ba85760405162461bcd60e51b815260040161045390610f4d565b610b537f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef1836105b5565b610bdd6000336109a6565b610bf95760405162461bcd60e51b815260040161045390610f4d565b610c237f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef182610a58565b50565b610c3082826109a6565b610640576000828152602081815260408083206001600160a01b03851684529091529020805460ff19166001179055610c663390565b6001600160a01b0316816001600160a01b0316837f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a45050565b610cb482826109a6565b15610640576000828152602081815260408083206001600160a01b0385168085529252808320805460ff1916905551339285917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a45050565b600060208284031215610d20578081fd5b8135610d2b81610f9d565b9392505050565b60008060408385031215610d44578081fd5b8235610d4f81610f9d565b91506020830135610d5f81610f9d565b809150509250929050565b60008060008060808587031215610d7f578182fd5b8435610d8a81610f9d565b93506020850135610d9a81610f9d565b92506040850135610daa81610f9d565b9396929550929360600135925050565b60008060008060608587031215610dcf578384fd5b8435610dda81610f9d565b935060208501359250604085013567ffffffffffffffff80821115610dfd578384fd5b818701915087601f830112610e10578384fd5b813581811115610e1e578485fd5b886020828501011115610e2f578485fd5b95989497505060200194505050565b600060208284031215610e4f578081fd5b81518015158114610d2b578182fd5b600060208284031215610e6f578081fd5b5035919050565b60008060408385031215610e88578182fd5b823591506020830135610d5f81610f9d565b600060208284031215610eab578081fd5b81356001600160e01b031981168114610d2b578182fd5b60008060408385031215610d44578182fd5b600080600060608486031215610ee8578283fd5b8335610ef381610f9d565b92506020840135610f0381610f9d565b929592945050506040919091013590565b600060208284031215610f25578081fd5b5051919050565b60008060408385031215610f3e578182fd5b50508035926020909101359150565b6020808252601390820152726f6e6c7941646d696e3a2062616420726f6c6560681b604082015260600190565b600082821015610f9857634e487b7160e01b81526011600452602481fd5b500390565b6001600160a01b0381168114610c2357600080fdfea2646970667358221220f52f5c46d628a52f4026ec7037f345c6bc4d4e86b02f21427a19df71f44150e964736f6c63430008020033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_corePayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_bonusPayment\",\"type\":\"uint256\"},{\"internalType\":\"contract IERC20\",\"name\":\"_coreToken\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"_bonusToken\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"ORACLE_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_admin\",\"type\":\"address\"}],\"name\":\"addOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"bonusPayment\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"bonusToken\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"corePayment\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"coreToken\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getOracleInfo\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"admin\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"getPaymentInfo\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"allocatedFunds\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"availableFunds\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"getWithdrawable\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"onTokenTransfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"}],\"name\":\"removeOracle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minConfirmations\",\"type\":\"uint256\"}],\"name\":\"setMinConfirmations\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_corePayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_bonusPayment\",\"type\":\"uint256\"}],\"name\":\"setPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"}],\"name\":\"updateAvailableFunds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_newOracleAdmin\",\"type\":\"address\"}],\"name\":\"updateOracleAdmin\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_recipient\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdrawFunds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_oracle\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_recipient\",\"type\":\"address\"},{\"internalType\":\"contract IERC20\",\"name\":\"_asset\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"withdrawPayment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"addOracle(address,address)\":{\"details\":\"Add new oracle.\",\"params\":{\"_admin\":\"Admin address.\",\"_oracle\":\"Oracle address.\"}},\"constructor\":{\"details\":\"Constructor that initializes the most important configurations.\",\"params\":{\"_bonusPayment\":\"Oracle reward.\",\"_bonusToken\":\"DBR token to pay to oracles.\",\"_corePayment\":\"Oracle reward.\",\"_coreToken\":\"Link token to pay to oracles.\",\"_minConfirmations\":\"Common confirmations count.\"}},\"getRoleAdmin(bytes32)\":{\"details\":\"Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.\"},\"getWithdrawable(address,address)\":{\"details\":\"Return's oracle reward.\",\"params\":{\"_oracle\":\"Oracle address.\"},\"returns\":{\"_0\":\"Oracle rewards.\"}},\"grantRole(bytes32,address)\":{\"details\":\"Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.\"},\"hasRole(bytes32,address)\":{\"details\":\"Returns `true` if `account` has been granted `role`.\"},\"onTokenTransfer(address,uint256,bytes)\":{\"details\":\"Updates link balance.\",\"params\":{\"_data\":\"Call data.\"}},\"removeOracle(address)\":{\"details\":\"Remove oracle.\",\"params\":{\"_oracle\":\"Oracle address.\"}},\"renounceRole(bytes32,address)\":{\"details\":\"Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.\"},\"revokeRole(bytes32,address)\":{\"details\":\"Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.\"},\"setMinConfirmations(uint256)\":{\"details\":\"Sets minimal required confirmations.\",\"params\":{\"_minConfirmations\":\"Confirmation info.\"}},\"setPayment(uint256,uint256)\":{\"details\":\"Sets new oracle reward.\",\"params\":{\"_bonusPayment\":\"Oracle reward.\",\"_corePayment\":\"Oracle reward.\"}},\"supportsInterface(bytes4)\":{\"details\":\"See {IERC165-supportsInterface}.\"},\"updateAvailableFunds(address)\":{\"details\":\"Updates available rewards to be distributed.\"},\"updateOracleAdmin(address,address)\":{\"details\":\"Updates oracle's admin address.\",\"params\":{\"_newOracleAdmin\":\"New oracle address.\",\"_oracle\":\"Oracle address.\"}},\"withdrawFunds(address,address,uint256)\":{\"details\":\"Withdraws earned LINK's.\",\"params\":{\"_amount\":\"Amount to withdraw.\",\"_recipient\":\"Reward's recepient.\"}},\"withdrawPayment(address,address,address,uint256)\":{\"details\":\"Withdraws oracle reward.\",\"params\":{\"_amount\":\"Amount to withdraw.\",\"_oracle\":\"Oracle address.\",\"_recipient\":\"Recepient reward.\"}}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/chainlink/Aggregator.sol\":\"Aggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/chainlink/Aggregator.sol\":{\"keccak256\":\"0x16a9a8553fa990d4fb7248486a2b8f1c5df62e09e708a7f2bc38dad47f6860c6\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e8f55d47777b1c1bf5c2adfc276ccbcc764dfa43fd0ca2e05248adc334702da8\",\"dweb:/ipfs/QmPdxUajecNcsXRAtmBgCQrgSaYzrjvAthGujk591D9uYA\"]},\"@openzeppelin/contracts/access/AccessControl.sol\":{\"keccak256\":\"0x897b526c3c1b6196d7c2202b3dbb04b77513a40633c6083a00e8c11402011710\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e9a87494f94cba588431ee0600b51a4122d93d7f5e081dbf0c49ad09b394c5bf\",\"dweb:/ipfs/QmSuMSXPnbEKi8yLNXAagtaX5YbJaiuuKRdCH9S5BxQdRH\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xf8e8d118a7a8b2e134181f7da655f6266aa3a0f9134b2605747139fcb0c5d835\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ec48567e7ad06acb670980d5cdf3fd7f3949bf12894f02d68c3bb43e75aa84f\",\"dweb:/ipfs/QmaG3R2J9cz92YT77vFjYrjMNU2wHp4ypwYD62HqDUqS5U\"]},\"@openzeppelin/contracts/utils/Context.sol\":{\"keccak256\":\"0xf930d2df426bfcfc1f7415be724f04081c96f4fb9ec8d0e3a521c07692dface0\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://fc2bfdea0d2562c76fb3c4cf70a86c6ba25c5a30e8f8515c95aafdf8383f8395\",\"dweb:/ipfs/QmTbFya18786ckJfLYUoWau9jBTKfmWnWm5XSViWvB7PXN\"]},\"@openzeppelin/contracts/utils/introspection/ERC165.sol\":{\"keccak256\":\"0x5718c5df9bd67ac68a796961df938821bb5dc0cd4c6118d77e9145afb187409b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d10e1d9b26042424789246603906ad06143bf9a928f4e99de8b5e3bdc662f549\",\"dweb:/ipfs/Qmejonoaj5MLekPus229rJQHcC6E9dz2xorjHJR84fMfmn\"]},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"keccak256\":\"0xa28007762d9da9db878dd421960c8cb9a10471f47ab5c1b3309bfe48e9e79ff4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://796ab6e88af7bf0e78def0f059310c903af6a312b565344e0ff524a0f26e81c6\",\"dweb:/ipfs/QmcsVgLgzWdor3UnAztUkXKNGcysm1MPneWksF72AvnwBx\"]}},\"version\":1}",
+  "bytecode": "0x60806040523480156200001157600080fd5b50604051620011d0380380620011d0833981016040819052620000349162000184565b6003859055600480546001600160a01b038085166001600160a01b03199283161790925560058054928416929091169190911790556001849055600283905562000080600033620000b7565b620000ac7f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef133620000b7565b5050505050620001d8565b620000c38282620000c7565b5050565b6000828152602081815260408083206001600160a01b038516845290915290205460ff16620000c3576000828152602081815260408083206001600160a01b03851684529091529020805460ff19166001179055620001233390565b6001600160a01b0316816001600160a01b0316837f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a45050565b80516001600160a01b03811681146200017f57600080fd5b919050565b600080600080600060a086880312156200019c578081fd5b855194506020860151935060408601519250620001bc6060870162000167565b9150620001cc6080870162000167565b90509295509295909350565b610fe880620001e86000396000f3fe608060405234801561001057600080fd5b50600436106101735760003560e01c80637885f23b116100de578063cd28311811610097578063e75a592611610071578063e75a5926146103b3578063e7c4393e146103c6578063f0ca4adb146103cf578063fdc85fc4146103e257610173565b8063cd28311814610384578063d28216551461038d578063d547741f146103a057610173565b80637885f23b146102dc57806391d14854146102ef578063a217fddf14610302578063a490c5ac1461030a578063a4c0ed3614610348578063bfdb6b041461035b57610173565b8063248a9ca311610130578063248a9ca31461025a5780632f2ff15d1461027d57806333e207561461029057806336568abe146102a357806341d4a1ab146102b65780634c083773146102c957610173565b806301ffc9a71461017857806307e2cea5146101a057806308b8304b146101d55780630c2b72e9146101de57806312c65b8c146102095780631c20fadd14610245575b600080fd5b61018b610186366004610e9a565b6103f5565b60405190151581526020015b60405180910390f35b6101c77f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef181565b604051908152602001610197565b6101c760015481565b6004546101f1906001600160a01b031681565b6040516001600160a01b039091168152602001610197565b610230610217366004610d0f565b6007602052600090815260409020805460019091015482565b60408051928352602083019190915201610197565b610258610253366004610ed4565b61042c565b005b6101c7610268366004610e5e565b60009081526020819052604090206001015490565b61025861028b366004610e76565b6105b5565b61025861029e366004610f2c565b610644565b6102586102b1366004610e76565b610676565b6005546101f1906001600160a01b031681565b6102586102d7366004610d6a565b6106f0565b6102586102ea366004610d0f565b6108f4565b61018b6102fd366004610e76565b6109a6565b6101c7600081565b6101c7610318366004610ec2565b6001600160a01b038082166000908152600660209081526040808320938616835260019093019052205492915050565b610258610356366004610dba565b6109cf565b6101f1610369366004610d0f565b6006602052600090815260409020546001600160a01b031681565b6101c760025481565b61025861039b366004610e5e565b610a2c565b6102586103ae366004610e76565b610a58565b6102586103c1366004610d32565b610ad8565b6101c760035481565b6102586103dd366004610d32565b610b81565b6102586103f0366004610d0f565b610bd2565b60006001600160e01b03198216637965db0b60e01b148061042657506301ffc9a760e01b6001600160e01b03198316145b92915050565b6104376000336109a6565b61045c5760405162461bcd60e51b815260040161045390610f4d565b60405180910390fd5b6001600160a01b0383166000908152600760205260409020600101548111156104d95760405162461bcd60e51b815260206004820152602960248201527f776974686472617746756e64733a20696e73756666696369656e7420726573656044820152687276652066756e647360b81b6064820152608401610453565b60405163a9059cbb60e01b81526001600160a01b0383811660048301526024820183905284169063a9059cbb90604401602060405180830381600087803b15801561052357600080fd5b505af1158015610537573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061055b9190610e3e565b6105a75760405162461bcd60e51b815260206004820152601e60248201527f776974686472617746756e64733a207472616e73666572206661696c656400006044820152606401610453565b6105b0836108f4565b505050565b6000828152602081905260409020600101546105d2905b336102fd565b6106365760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526e0818591b5a5b881d1bc819dc985b9d608a1b6064820152608401610453565b6106408282610c26565b5050565b61064f6000336109a6565b61066b5760405162461bcd60e51b815260040161045390610f4d565b600191909155600255565b6001600160a01b03811633146106e65760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2063616e206f6e6c792072656e6f756e636560448201526e103937b632b9903337b91039b2b63360891b6064820152608401610453565b6106408282610caa565b6001600160a01b038481166000908152600660205260409020541633146107695760405162461bcd60e51b815260206004820152602760248201527f77697468647261775061796d656e743a206f6e6c792063616c6c61626c6520626044820152663c9030b236b4b760c91b6064820152608401610453565b6001600160a01b0380851660009081526006602090815260408083209386168352600190930190522054818110156107fc5760405162461bcd60e51b815260206004820152603060248201527f77697468647261775061796d656e743a20696e73756666696369656e7420776960448201526f74686472617761626c652066756e647360801b6064820152608401610453565b6108068282610f7a565b6001600160a01b0380871660009081526006602090815260408083209388168352600190930181528282209390935560079092528120805484929061084c908490610f7a565b909155505060405163a9059cbb60e01b81526001600160a01b0385811660048301526024820184905284169063a9059cbb90604401602060405180830381600087803b15801561089b57600080fd5b505af11580156108af573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108d39190610e3e565b6108ed57634e487b7160e01b600052600160045260246000fd5b5050505050565b6001600160a01b038116600081815260076020526040908190205490516370a0823160e01b81523060048201529091906370a082319060240160206040518083038186803b15801561094557600080fd5b505afa158015610959573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061097d9190610f14565b6109879190610f7a565b6001600160a01b03909116600090815260076020526040902060010155565b6000918252602082815260408084206001600160a01b0393909316845291905290205460ff1690565b8015610a1d5760405162461bcd60e51b815260206004820181905260248201527f7472616e7366657220646f65736e2774206163636570742063616c6c646174616044820152606401610453565b610a26336108f4565b50505050565b610a376000336109a6565b610a535760405162461bcd60e51b815260040161045390610f4d565b600355565b600082815260208190526040902060010154610a73906105cc565b6106e65760405162461bcd60e51b815260206004820152603060248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526f2061646d696e20746f207265766f6b6560801b6064820152608401610453565b6001600160a01b03828116600090815260066020526040902054163314610b535760405162461bcd60e51b815260206004820152602960248201527f7570646174654f7261636c6541646d696e3a206f6e6c792063616c6c61626c6560448201526810313c9030b236b4b760b91b6064820152608401610453565b6001600160a01b03918216600090815260066020526040902080546001600160a01b03191691909216179055565b610b8c6000336109a6565b610ba85760405162461bcd60e51b815260040161045390610f4d565b610b537f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef1836105b5565b610bdd6000336109a6565b610bf95760405162461bcd60e51b815260040161045390610f4d565b610c237f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef182610a58565b50565b610c3082826109a6565b610640576000828152602081815260408083206001600160a01b03851684529091529020805460ff19166001179055610c663390565b6001600160a01b0316816001600160a01b0316837f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a45050565b610cb482826109a6565b15610640576000828152602081815260408083206001600160a01b0385168085529252808320805460ff1916905551339285917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a45050565b600060208284031215610d20578081fd5b8135610d2b81610f9d565b9392505050565b60008060408385031215610d44578081fd5b8235610d4f81610f9d565b91506020830135610d5f81610f9d565b809150509250929050565b60008060008060808587031215610d7f578182fd5b8435610d8a81610f9d565b93506020850135610d9a81610f9d565b92506040850135610daa81610f9d565b9396929550929360600135925050565b60008060008060608587031215610dcf578384fd5b8435610dda81610f9d565b935060208501359250604085013567ffffffffffffffff80821115610dfd578384fd5b818701915087601f830112610e10578384fd5b813581811115610e1e578485fd5b886020828501011115610e2f578485fd5b95989497505060200194505050565b600060208284031215610e4f578081fd5b81518015158114610d2b578182fd5b600060208284031215610e6f578081fd5b5035919050565b60008060408385031215610e88578182fd5b823591506020830135610d5f81610f9d565b600060208284031215610eab578081fd5b81356001600160e01b031981168114610d2b578182fd5b60008060408385031215610d44578182fd5b600080600060608486031215610ee8578283fd5b8335610ef381610f9d565b92506020840135610f0381610f9d565b929592945050506040919091013590565b600060208284031215610f25578081fd5b5051919050565b60008060408385031215610f3e578182fd5b50508035926020909101359150565b6020808252601390820152726f6e6c7941646d696e3a2062616420726f6c6560681b604082015260600190565b600082821015610f9857634e487b7160e01b81526011600452602481fd5b500390565b6001600160a01b0381168114610c2357600080fdfea26469706673582212204f7e27dde7103dc433940e354f2f11991d85c6e6e387b19c04386190b588eb7a64736f6c63430008020033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106101735760003560e01c80637885f23b116100de578063cd28311811610097578063e75a592611610071578063e75a5926146103b3578063e7c4393e146103c6578063f0ca4adb146103cf578063fdc85fc4146103e257610173565b8063cd28311814610384578063d28216551461038d578063d547741f146103a057610173565b80637885f23b146102dc57806391d14854146102ef578063a217fddf14610302578063a490c5ac1461030a578063a4c0ed3614610348578063bfdb6b041461035b57610173565b8063248a9ca311610130578063248a9ca31461025a5780632f2ff15d1461027d57806333e207561461029057806336568abe146102a357806341d4a1ab146102b65780634c083773146102c957610173565b806301ffc9a71461017857806307e2cea5146101a057806308b8304b146101d55780630c2b72e9146101de57806312c65b8c146102095780631c20fadd14610245575b600080fd5b61018b610186366004610e9a565b6103f5565b60405190151581526020015b60405180910390f35b6101c77f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef181565b604051908152602001610197565b6101c760015481565b6004546101f1906001600160a01b031681565b6040516001600160a01b039091168152602001610197565b610230610217366004610d0f565b6007602052600090815260409020805460019091015482565b60408051928352602083019190915201610197565b610258610253366004610ed4565b61042c565b005b6101c7610268366004610e5e565b60009081526020819052604090206001015490565b61025861028b366004610e76565b6105b5565b61025861029e366004610f2c565b610644565b6102586102b1366004610e76565b610676565b6005546101f1906001600160a01b031681565b6102586102d7366004610d6a565b6106f0565b6102586102ea366004610d0f565b6108f4565b61018b6102fd366004610e76565b6109a6565b6101c7600081565b6101c7610318366004610ec2565b6001600160a01b038082166000908152600660209081526040808320938616835260019093019052205492915050565b610258610356366004610dba565b6109cf565b6101f1610369366004610d0f565b6006602052600090815260409020546001600160a01b031681565b6101c760025481565b61025861039b366004610e5e565b610a2c565b6102586103ae366004610e76565b610a58565b6102586103c1366004610d32565b610ad8565b6101c760035481565b6102586103dd366004610d32565b610b81565b6102586103f0366004610d0f565b610bd2565b60006001600160e01b03198216637965db0b60e01b148061042657506301ffc9a760e01b6001600160e01b03198316145b92915050565b6104376000336109a6565b61045c5760405162461bcd60e51b815260040161045390610f4d565b60405180910390fd5b6001600160a01b0383166000908152600760205260409020600101548111156104d95760405162461bcd60e51b815260206004820152602960248201527f776974686472617746756e64733a20696e73756666696369656e7420726573656044820152687276652066756e647360b81b6064820152608401610453565b60405163a9059cbb60e01b81526001600160a01b0383811660048301526024820183905284169063a9059cbb90604401602060405180830381600087803b15801561052357600080fd5b505af1158015610537573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061055b9190610e3e565b6105a75760405162461bcd60e51b815260206004820152601e60248201527f776974686472617746756e64733a207472616e73666572206661696c656400006044820152606401610453565b6105b0836108f4565b505050565b6000828152602081905260409020600101546105d2905b336102fd565b6106365760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526e0818591b5a5b881d1bc819dc985b9d608a1b6064820152608401610453565b6106408282610c26565b5050565b61064f6000336109a6565b61066b5760405162461bcd60e51b815260040161045390610f4d565b600191909155600255565b6001600160a01b03811633146106e65760405162461bcd60e51b815260206004820152602f60248201527f416363657373436f6e74726f6c3a2063616e206f6e6c792072656e6f756e636560448201526e103937b632b9903337b91039b2b63360891b6064820152608401610453565b6106408282610caa565b6001600160a01b038481166000908152600660205260409020541633146107695760405162461bcd60e51b815260206004820152602760248201527f77697468647261775061796d656e743a206f6e6c792063616c6c61626c6520626044820152663c9030b236b4b760c91b6064820152608401610453565b6001600160a01b0380851660009081526006602090815260408083209386168352600190930190522054818110156107fc5760405162461bcd60e51b815260206004820152603060248201527f77697468647261775061796d656e743a20696e73756666696369656e7420776960448201526f74686472617761626c652066756e647360801b6064820152608401610453565b6108068282610f7a565b6001600160a01b0380871660009081526006602090815260408083209388168352600190930181528282209390935560079092528120805484929061084c908490610f7a565b909155505060405163a9059cbb60e01b81526001600160a01b0385811660048301526024820184905284169063a9059cbb90604401602060405180830381600087803b15801561089b57600080fd5b505af11580156108af573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108d39190610e3e565b6108ed57634e487b7160e01b600052600160045260246000fd5b5050505050565b6001600160a01b038116600081815260076020526040908190205490516370a0823160e01b81523060048201529091906370a082319060240160206040518083038186803b15801561094557600080fd5b505afa158015610959573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061097d9190610f14565b6109879190610f7a565b6001600160a01b03909116600090815260076020526040902060010155565b6000918252602082815260408084206001600160a01b0393909316845291905290205460ff1690565b8015610a1d5760405162461bcd60e51b815260206004820181905260248201527f7472616e7366657220646f65736e2774206163636570742063616c6c646174616044820152606401610453565b610a26336108f4565b50505050565b610a376000336109a6565b610a535760405162461bcd60e51b815260040161045390610f4d565b600355565b600082815260208190526040902060010154610a73906105cc565b6106e65760405162461bcd60e51b815260206004820152603060248201527f416363657373436f6e74726f6c3a2073656e646572206d75737420626520616e60448201526f2061646d696e20746f207265766f6b6560801b6064820152608401610453565b6001600160a01b03828116600090815260066020526040902054163314610b535760405162461bcd60e51b815260206004820152602960248201527f7570646174654f7261636c6541646d696e3a206f6e6c792063616c6c61626c6560448201526810313c9030b236b4b760b91b6064820152608401610453565b6001600160a01b03918216600090815260066020526040902080546001600160a01b03191691909216179055565b610b8c6000336109a6565b610ba85760405162461bcd60e51b815260040161045390610f4d565b610b537f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef1836105b5565b610bdd6000336109a6565b610bf95760405162461bcd60e51b815260040161045390610f4d565b610c237f68e79a7bf1e0bc45d0a330c573bc367f9cf464fd326078812f301165fbda4ef182610a58565b50565b610c3082826109a6565b610640576000828152602081815260408083206001600160a01b03851684529091529020805460ff19166001179055610c663390565b6001600160a01b0316816001600160a01b0316837f2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d60405160405180910390a45050565b610cb482826109a6565b15610640576000828152602081815260408083206001600160a01b0385168085529252808320805460ff1916905551339285917ff6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b9190a45050565b600060208284031215610d20578081fd5b8135610d2b81610f9d565b9392505050565b60008060408385031215610d44578081fd5b8235610d4f81610f9d565b91506020830135610d5f81610f9d565b809150509250929050565b60008060008060808587031215610d7f578182fd5b8435610d8a81610f9d565b93506020850135610d9a81610f9d565b92506040850135610daa81610f9d565b9396929550929360600135925050565b60008060008060608587031215610dcf578384fd5b8435610dda81610f9d565b935060208501359250604085013567ffffffffffffffff80821115610dfd578384fd5b818701915087601f830112610e10578384fd5b813581811115610e1e578485fd5b886020828501011115610e2f578485fd5b95989497505060200194505050565b600060208284031215610e4f578081fd5b81518015158114610d2b578182fd5b600060208284031215610e6f578081fd5b5035919050565b60008060408385031215610e88578182fd5b823591506020830135610d5f81610f9d565b600060208284031215610eab578081fd5b81356001600160e01b031981168114610d2b578182fd5b60008060408385031215610d44578182fd5b600080600060608486031215610ee8578283fd5b8335610ef381610f9d565b92506020840135610f0381610f9d565b929592945050506040919091013590565b600060208284031215610f25578081fd5b5051919050565b60008060408385031215610f3e578182fd5b50508035926020909101359150565b6020808252601390820152726f6e6c7941646d696e3a2062616420726f6c6560681b604082015260600190565b600082821015610f9857634e487b7160e01b81526011600452602481fd5b500390565b6001600160a01b0381168114610c2357600080fdfea26469706673582212204f7e27dde7103dc433940e354f2f11991d85c6e6e387b19c04386190b588eb7a64736f6c63430008020033",
   "immutableReferences": {},
   "generatedSources": [
     {
@@ -1031,7 +1031,7 @@
                 }
               ]
             },
-            "name": "abi_decode_tuple_t_uint256t_uint256t_uint256t_contract$_IERC20_$8703t_contract$_IERC20_$8703_fromMemory",
+            "name": "abi_decode_tuple_t_uint256t_uint256t_uint256t_contract$_IERC20_$8706t_contract$_IERC20_$8706_fromMemory",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -1083,7 +1083,7 @@
           }
         ]
       },
-      "contents": "{\n    { }\n    function abi_decode_contract_IERC20_fromMemory(offset) -> value\n    {\n        value := mload(offset)\n        if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }\n    }\n    function abi_decode_tuple_t_uint256t_uint256t_uint256t_contract$_IERC20_$8703t_contract$_IERC20_$8703_fromMemory(headStart, dataEnd) -> value0, value1, value2, value3, value4\n    {\n        if slt(sub(dataEnd, headStart), 160) { revert(value4, value4) }\n        value0 := mload(headStart)\n        value1 := mload(add(headStart, 32))\n        value2 := mload(add(headStart, 64))\n        value3 := abi_decode_contract_IERC20_fromMemory(add(headStart, 96))\n        value4 := abi_decode_contract_IERC20_fromMemory(add(headStart, 128))\n    }\n}",
+      "contents": "{\n    { }\n    function abi_decode_contract_IERC20_fromMemory(offset) -> value\n    {\n        value := mload(offset)\n        if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }\n    }\n    function abi_decode_tuple_t_uint256t_uint256t_uint256t_contract$_IERC20_$8706t_contract$_IERC20_$8706_fromMemory(headStart, dataEnd) -> value0, value1, value2, value3, value4\n    {\n        if slt(sub(dataEnd, headStart), 160) { revert(value4, value4) }\n        value0 := mload(headStart)\n        value1 := mload(add(headStart, 32))\n        value2 := mload(add(headStart, 64))\n        value3 := abi_decode_contract_IERC20_fromMemory(add(headStart, 96))\n        value4 := abi_decode_contract_IERC20_fromMemory(add(headStart, 128))\n    }\n}",
       "id": 45,
       "language": "Yul",
       "name": "#utility.yul"
@@ -1884,7 +1884,7 @@
                 }
               ]
             },
-            "name": "abi_decode_tuple_t_addresst_addresst_contract$_IERC20_$8703t_uint256",
+            "name": "abi_decode_tuple_t_addresst_addresst_contract$_IERC20_$8706t_uint256",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -3620,7 +3620,7 @@
                 }
               ]
             },
-            "name": "abi_decode_tuple_t_contract$_IERC20_$8703",
+            "name": "abi_decode_tuple_t_contract$_IERC20_$8706",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -3873,7 +3873,7 @@
                 }
               ]
             },
-            "name": "abi_decode_tuple_t_contract$_IERC20_$8703t_address",
+            "name": "abi_decode_tuple_t_contract$_IERC20_$8706t_address",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -4177,7 +4177,7 @@
                 }
               ]
             },
-            "name": "abi_decode_tuple_t_contract$_IERC20_$8703t_addresst_uint256",
+            "name": "abi_decode_tuple_t_contract$_IERC20_$8706t_addresst_uint256",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -5335,7 +5335,7 @@
                 }
               ]
             },
-            "name": "abi_encode_tuple_t_contract$_IERC20_$8703__to_t_address__fromStack_reversed",
+            "name": "abi_encode_tuple_t_contract$_IERC20_$8706__to_t_address__fromStack_reversed",
             "nodeType": "YulFunctionDefinition",
             "parameters": [
               {
@@ -8032,7 +8032,7 @@
           }
         ]
       },
-      "contents": "{\n    { }\n    function abi_decode_tuple_t_address(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n    }\n    function abi_decode_tuple_t_addresst_address(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value1, value1) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n    }\n    function abi_decode_tuple_t_addresst_addresst_contract$_IERC20_$8703t_uint256(headStart, dataEnd) -> value0, value1, value2, value3\n    {\n        if slt(sub(dataEnd, headStart), 128) { revert(value2, value2) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n        let value_2 := calldataload(add(headStart, 64))\n        validator_revert_address(value_2)\n        value2 := value_2\n        value3 := calldataload(add(headStart, 96))\n    }\n    function abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptr(headStart, dataEnd) -> value0, value1, value2, value3\n    {\n        if slt(sub(dataEnd, headStart), 96) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        value1 := calldataload(add(headStart, 32))\n        let offset := calldataload(add(headStart, 64))\n        let _1 := 0xffffffffffffffff\n        if gt(offset, _1) { revert(value2, value2) }\n        let _2 := add(headStart, offset)\n        if iszero(slt(add(_2, 0x1f), dataEnd)) { revert(value2, value2) }\n        let length := calldataload(_2)\n        if gt(length, _1) { revert(value2, value2) }\n        if gt(add(add(_2, length), 32), dataEnd) { revert(value2, value2) }\n        value2 := add(_2, 32)\n        value3 := length\n    }\n    function abi_decode_tuple_t_bool_fromMemory(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := mload(headStart)\n        if iszero(eq(value, iszero(iszero(value)))) { revert(value0, value0) }\n        value0 := value\n    }\n    function abi_decode_tuple_t_bytes32(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n    }\n    function abi_decode_tuple_t_bytes32t_address(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n        let value := calldataload(add(headStart, 32))\n        validator_revert_address(value)\n        value1 := value\n    }\n    function abi_decode_tuple_t_bytes4(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        if iszero(eq(value, and(value, shl(224, 0xffffffff)))) { revert(value0, value0) }\n        value0 := value\n    }\n    function abi_decode_tuple_t_contract$_IERC20_$8703(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n    }\n    function abi_decode_tuple_t_contract$_IERC20_$8703t_address(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n    }\n    function abi_decode_tuple_t_contract$_IERC20_$8703t_addresst_uint256(headStart, dataEnd) -> value0, value1, value2\n    {\n        if slt(sub(dataEnd, headStart), 96) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n        value2 := calldataload(add(headStart, 64))\n    }\n    function abi_decode_tuple_t_uint256(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n    }\n    function abi_decode_tuple_t_uint256_fromMemory(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        value0 := mload(headStart)\n    }\n    function abi_decode_tuple_t_uint256t_uint256(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n        value1 := calldataload(add(headStart, 32))\n    }\n    function abi_encode_tuple_t_address__to_t_address__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n    }\n    function abi_encode_tuple_t_address_t_uint256__to_t_address_t_uint256__fromStack_reversed(headStart, value1, value0) -> tail\n    {\n        tail := add(headStart, 64)\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 32), value1)\n    }\n    function abi_encode_tuple_t_bool__to_t_bool__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, iszero(iszero(value0)))\n    }\n    function abi_encode_tuple_t_bytes32__to_t_bytes32__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, value0)\n    }\n    function abi_encode_tuple_t_contract$_IERC20_$8703__to_t_address__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n    }\n    function abi_encode_tuple_t_stringliteral_0ba7116025f1ef6b158a2bd2238e617f30e17c9e456917d901086ca4f8ad2811__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 47)\n        mstore(add(headStart, 64), \"AccessControl: sender must be an\")\n        mstore(add(headStart, 96), \" admin to grant\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_35ce24506701472e8e320e640e8d3586694f1a617f797058c8b082962cf89ccd__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 30)\n        mstore(add(headStart, 64), \"withdrawFunds: transfer failed\")\n        tail := add(headStart, 96)\n    }\n    function abi_encode_tuple_t_stringliteral_596684b4337a52c93ade0b2c259d39d006a0e559ec087cf0bdb790469756bb53__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 32)\n        mstore(add(headStart, 64), \"transfer doesn't accept calldata\")\n        tail := add(headStart, 96)\n    }\n    function abi_encode_tuple_t_stringliteral_64344570eab7406ca49d34d38bf2b2496dfda914405390c5057c8b0aabf798a3__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 48)\n        mstore(add(headStart, 64), \"AccessControl: sender must be an\")\n        mstore(add(headStart, 96), \" admin to revoke\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_b99e8be6064385eaa0c6dc9e749154ba3d243e50c59a38429cf5cb0e423018a1__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 19)\n        mstore(add(headStart, 64), \"onlyAdmin: bad role\")\n        tail := add(headStart, 96)\n    }\n    function abi_encode_tuple_t_stringliteral_c63d3898c0fb346e9acadcbc2ed41370cee415a408e3bca97d2d59bb870a2e4e__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 48)\n        mstore(add(headStart, 64), \"withdrawPayment: insufficient wi\")\n        mstore(add(headStart, 96), \"thdrawable funds\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_e6ab32788b176d62ef2f29923206037886ff9b79473980f952883ee1a6a7f638__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 39)\n        mstore(add(headStart, 64), \"withdrawPayment: only callable b\")\n        mstore(add(headStart, 96), \"y admin\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_e785bf7004f34962d4d02bef29674c37c057eb73146ebc5be3fe661469920fbd__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 41)\n        mstore(add(headStart, 64), \"withdrawFunds: insufficient rese\")\n        mstore(add(headStart, 96), \"rve funds\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_eae5d03529efd772b3498b768bfc7114a7437bc7242fe78939423709eb30fd18__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 41)\n        mstore(add(headStart, 64), \"updateOracleAdmin: only callable\")\n        mstore(add(headStart, 96), \" by admin\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_fb06fa8ff2141e8ed74502f6792273793f25f0e9d3cf15344f3f5a0d4948fd4b__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 47)\n        mstore(add(headStart, 64), \"AccessControl: can only renounce\")\n        mstore(add(headStart, 96), \" roles for self\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_uint256__to_t_uint256__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, value0)\n    }\n    function abi_encode_tuple_t_uint256_t_uint256__to_t_uint256_t_uint256__fromStack_reversed(headStart, value1, value0) -> tail\n    {\n        tail := add(headStart, 64)\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), value1)\n    }\n    function checked_sub_t_uint256(x, y) -> diff\n    {\n        if lt(x, y)\n        {\n            mstore(diff, shl(224, 0x4e487b71))\n            mstore(4, 0x11)\n            revert(diff, 0x24)\n        }\n        diff := sub(x, y)\n    }\n    function validator_revert_address(value)\n    {\n        if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }\n    }\n}",
+      "contents": "{\n    { }\n    function abi_decode_tuple_t_address(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n    }\n    function abi_decode_tuple_t_addresst_address(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value1, value1) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n    }\n    function abi_decode_tuple_t_addresst_addresst_contract$_IERC20_$8706t_uint256(headStart, dataEnd) -> value0, value1, value2, value3\n    {\n        if slt(sub(dataEnd, headStart), 128) { revert(value2, value2) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n        let value_2 := calldataload(add(headStart, 64))\n        validator_revert_address(value_2)\n        value2 := value_2\n        value3 := calldataload(add(headStart, 96))\n    }\n    function abi_decode_tuple_t_addresst_uint256t_bytes_calldata_ptr(headStart, dataEnd) -> value0, value1, value2, value3\n    {\n        if slt(sub(dataEnd, headStart), 96) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        value1 := calldataload(add(headStart, 32))\n        let offset := calldataload(add(headStart, 64))\n        let _1 := 0xffffffffffffffff\n        if gt(offset, _1) { revert(value2, value2) }\n        let _2 := add(headStart, offset)\n        if iszero(slt(add(_2, 0x1f), dataEnd)) { revert(value2, value2) }\n        let length := calldataload(_2)\n        if gt(length, _1) { revert(value2, value2) }\n        if gt(add(add(_2, length), 32), dataEnd) { revert(value2, value2) }\n        value2 := add(_2, 32)\n        value3 := length\n    }\n    function abi_decode_tuple_t_bool_fromMemory(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := mload(headStart)\n        if iszero(eq(value, iszero(iszero(value)))) { revert(value0, value0) }\n        value0 := value\n    }\n    function abi_decode_tuple_t_bytes32(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n    }\n    function abi_decode_tuple_t_bytes32t_address(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n        let value := calldataload(add(headStart, 32))\n        validator_revert_address(value)\n        value1 := value\n    }\n    function abi_decode_tuple_t_bytes4(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        if iszero(eq(value, and(value, shl(224, 0xffffffff)))) { revert(value0, value0) }\n        value0 := value\n    }\n    function abi_decode_tuple_t_contract$_IERC20_$8706(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n    }\n    function abi_decode_tuple_t_contract$_IERC20_$8706t_address(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n    }\n    function abi_decode_tuple_t_contract$_IERC20_$8706t_addresst_uint256(headStart, dataEnd) -> value0, value1, value2\n    {\n        if slt(sub(dataEnd, headStart), 96) { revert(value0, value0) }\n        let value := calldataload(headStart)\n        validator_revert_address(value)\n        value0 := value\n        let value_1 := calldataload(add(headStart, 32))\n        validator_revert_address(value_1)\n        value1 := value_1\n        value2 := calldataload(add(headStart, 64))\n    }\n    function abi_decode_tuple_t_uint256(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n    }\n    function abi_decode_tuple_t_uint256_fromMemory(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        value0 := mload(headStart)\n    }\n    function abi_decode_tuple_t_uint256t_uint256(headStart, dataEnd) -> value0, value1\n    {\n        if slt(sub(dataEnd, headStart), 64) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n        value1 := calldataload(add(headStart, 32))\n    }\n    function abi_encode_tuple_t_address__to_t_address__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n    }\n    function abi_encode_tuple_t_address_t_uint256__to_t_address_t_uint256__fromStack_reversed(headStart, value1, value0) -> tail\n    {\n        tail := add(headStart, 64)\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n        mstore(add(headStart, 32), value1)\n    }\n    function abi_encode_tuple_t_bool__to_t_bool__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, iszero(iszero(value0)))\n    }\n    function abi_encode_tuple_t_bytes32__to_t_bytes32__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, value0)\n    }\n    function abi_encode_tuple_t_contract$_IERC20_$8706__to_t_address__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, and(value0, sub(shl(160, 1), 1)))\n    }\n    function abi_encode_tuple_t_stringliteral_0ba7116025f1ef6b158a2bd2238e617f30e17c9e456917d901086ca4f8ad2811__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 47)\n        mstore(add(headStart, 64), \"AccessControl: sender must be an\")\n        mstore(add(headStart, 96), \" admin to grant\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_35ce24506701472e8e320e640e8d3586694f1a617f797058c8b082962cf89ccd__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 30)\n        mstore(add(headStart, 64), \"withdrawFunds: transfer failed\")\n        tail := add(headStart, 96)\n    }\n    function abi_encode_tuple_t_stringliteral_596684b4337a52c93ade0b2c259d39d006a0e559ec087cf0bdb790469756bb53__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 32)\n        mstore(add(headStart, 64), \"transfer doesn't accept calldata\")\n        tail := add(headStart, 96)\n    }\n    function abi_encode_tuple_t_stringliteral_64344570eab7406ca49d34d38bf2b2496dfda914405390c5057c8b0aabf798a3__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 48)\n        mstore(add(headStart, 64), \"AccessControl: sender must be an\")\n        mstore(add(headStart, 96), \" admin to revoke\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_b99e8be6064385eaa0c6dc9e749154ba3d243e50c59a38429cf5cb0e423018a1__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 19)\n        mstore(add(headStart, 64), \"onlyAdmin: bad role\")\n        tail := add(headStart, 96)\n    }\n    function abi_encode_tuple_t_stringliteral_c63d3898c0fb346e9acadcbc2ed41370cee415a408e3bca97d2d59bb870a2e4e__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 48)\n        mstore(add(headStart, 64), \"withdrawPayment: insufficient wi\")\n        mstore(add(headStart, 96), \"thdrawable funds\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_e6ab32788b176d62ef2f29923206037886ff9b79473980f952883ee1a6a7f638__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 39)\n        mstore(add(headStart, 64), \"withdrawPayment: only callable b\")\n        mstore(add(headStart, 96), \"y admin\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_e785bf7004f34962d4d02bef29674c37c057eb73146ebc5be3fe661469920fbd__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 41)\n        mstore(add(headStart, 64), \"withdrawFunds: insufficient rese\")\n        mstore(add(headStart, 96), \"rve funds\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_eae5d03529efd772b3498b768bfc7114a7437bc7242fe78939423709eb30fd18__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 41)\n        mstore(add(headStart, 64), \"updateOracleAdmin: only callable\")\n        mstore(add(headStart, 96), \" by admin\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_stringliteral_fb06fa8ff2141e8ed74502f6792273793f25f0e9d3cf15344f3f5a0d4948fd4b__to_t_string_memory_ptr__fromStack_reversed(headStart) -> tail\n    {\n        mstore(headStart, 32)\n        mstore(add(headStart, 32), 47)\n        mstore(add(headStart, 64), \"AccessControl: can only renounce\")\n        mstore(add(headStart, 96), \" roles for self\")\n        tail := add(headStart, 128)\n    }\n    function abi_encode_tuple_t_uint256__to_t_uint256__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, value0)\n    }\n    function abi_encode_tuple_t_uint256_t_uint256__to_t_uint256_t_uint256__fromStack_reversed(headStart, value1, value0) -> tail\n    {\n        tail := add(headStart, 64)\n        mstore(headStart, value0)\n        mstore(add(headStart, 32), value1)\n    }\n    function checked_sub_t_uint256(x, y) -> diff\n    {\n        if lt(x, y)\n        {\n            mstore(diff, shl(224, 0x4e487b71))\n            mstore(4, 0x11)\n            revert(diff, 0x24)\n        }\n        diff := sub(x, y)\n    }\n    function validator_revert_address(value)\n    {\n        if iszero(eq(value, and(value, sub(shl(160, 1), 1)))) { revert(0, 0) }\n    }\n}",
       "id": 45,
       "language": "Yul",
       "name": "#utility.yul"
@@ -8041,30 +8041,30 @@
   "sourceMap": "174:6549:0:-:0;;;1948:459;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;2127:16;:36;;;2173:9;:22;;-1:-1:-1;;;;;2173:22:0;;;-1:-1:-1;;;;;;2173:22:0;;;;;;;2205:10;:24;;;;;;;;;;;;;;;2173:22;2239:26;;;-1:-1:-1;2275:28:0;;;2313:42;2173:9;2344:10;2313;:42::i;:::-;2365:35;793:24;2389:10;2365;:35::i;:::-;1948:459;;;;;174:6549;;6519:110:35;6597:25;6608:4;6614:7;6597:10;:25::i;:::-;6519:110;;:::o;6952:224::-;3945:4;3968:12;;;;;;;;;;;-1:-1:-1;;;;;3968:29:35;;;;;;;;;;;;7021:149;;7064:6;:12;;;;;;;;;;;-1:-1:-1;;;;;7064:29:35;;;;;;;;;:36;;-1:-1:-1;;7064:36:35;7096:4;7064:36;;;7146:12;665:10:42;586:96;;7146:12:35;-1:-1:-1;;;;;7119:40:35;7137:7;-1:-1:-1;;;;;7119:40:35;7131:4;7119:40;;;;;;;;;;6952:224;;:::o;14:185:45:-;101:13;;-1:-1:-1;;;;;143:31:45;;133:42;;123:2;;189:1;186;179:12;123:2;82:117;;;:::o;204:534::-;;;;;;425:3;413:9;404:7;400:23;396:33;393:2;;;447:6;439;432:22;393:2;481:9;475:16;465:26;;531:2;520:9;516:18;510:25;500:35;;575:2;564:9;560:18;554:25;544:35;;598:57;651:2;640:9;636:18;598:57;:::i;:::-;588:67;;674:58;727:3;716:9;712:19;674:58;:::i;:::-;664:68;;383:355;;;;;;;;:::o;:::-;174:6549:0;;;;;;",
   "deployedSourceMap": "174:6549:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;3566:214:35;;;;;;:::i;:::-;;:::i;:::-;;;5784:14:45;;5777:22;5759:41;;5747:2;5732:18;3566:214:35;;;;;;;;755:62:0;;793:24;755:62;;;;;5957:25:45;;;5945:2;5930:18;755:62:0;5912:76:45;858:26:0;;;;;;1059:23;;;;;-1:-1:-1;;;;;1059:23:0;;;;;;-1:-1:-1;;;;;5296:32:45;;;5278:51;;5266:2;5251:18;1059:23:0;5233:102:45;1258:52:0;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;10534:25:45;;;10590:2;10575:18;;10568:34;;;;10507:18;1258:52:0;10489:119:45;4398:449:0;;;;;;:::i;:::-;;:::i;:::-;;4185:121:35;;;;;;:::i;:::-;4251:7;4277:12;;;;;;;;;;:22;;;;4185:121;4556:228;;;;;;:::i;:::-;;:::i;5211:185:0:-;;;;;;:::i;:::-;;:::i;5740:214:35:-;;;;;;:::i;:::-;;:::i;1112:24:0:-;;;;;-1:-1:-1;;;;;1112:24:0;;;2577:663;;;;;;:::i;:::-;;:::i;3738:204::-;;;;;;:::i;:::-;;:::i;3867:137:35:-;;;;;;:::i;:::-;;:::i;2363:49::-;;2408:4;2363:49;;6541:180:0;;;;;;:::i;:::-;-1:-1:-1;;;;;6675:22:0;;;6645:7;6675:22;;;:13;:22;;;;;;;;:39;;;;;:31;;;;:39;;;;6541:180;;;;;4015:233;;;;;;:::i;:::-;;:::i;1165:51::-;;;;;;:::i;:::-;;;;;;;;;;;;-1:-1:-1;;;;;1165:51:0;;;920:27;;;;;;4955:126;;;;;;:::i;:::-;;:::i;5018:231:35:-;;;;;;:::i;:::-;;:::i;3381:293:0:-;;;;;;:::i;:::-;;:::i;988:31::-;;;;;;5507:166;;;;;;:::i;:::-;;:::i;5746:107::-;;;;;;:::i;:::-;;:::i;3566:214:35:-;3651:4;-1:-1:-1;;;;;;3674:47:35;;-1:-1:-1;;;3674:47:35;;:99;;-1:-1:-1;;;;;;;;;;871:40:43;;;3737:36:35;3667:106;3566:214;-1:-1:-1;;3566:214:35:o;4398:449:0:-;1388:39;2408:4:35;1416:10:0;1388:7;:39::i;:::-;1380:71;;;;-1:-1:-1;;;1380:71:0;;;;;;;:::i;:::-;;;;;;;;;-1:-1:-1;;;;;4563:22:0;::::1;;::::0;;;:14:::1;:22;::::0;;;;:37:::1;;::::0;4555:57;-1:-1:-1;4555:57:0::1;4534:145;;;::::0;-1:-1:-1;;;4534:145:0;;9144:2:45;4534:145:0::1;::::0;::::1;9126:21:45::0;9183:2;9163:18;;;9156:30;9222:34;9202:18;;;9195:62;-1:-1:-1;;;9273:18:45;;;9266:39;9322:19;;4534:145:0::1;9116:231:45::0;4534:145:0::1;4710:36;::::0;-1:-1:-1;;;4710:36:0;;-1:-1:-1;;;;;5532:32:45;;;4710:36:0::1;::::0;::::1;5514:51:45::0;5581:18;;;5574:34;;;4710:15:0;::::1;::::0;::::1;::::0;5487:18:45;;4710:36:0::1;;;;;;;;;;;;;;;;;::::0;::::1;;;;;;;;;;;;::::0;::::1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;4689:113;;;::::0;-1:-1:-1;;;4689:113:0;;6834:2:45;4689:113:0::1;::::0;::::1;6816:21:45::0;6873:2;6853:18;;;6846:30;6912:32;6892:18;;;6885:60;6962:18;;4689:113:0::1;6806:180:45::0;4689:113:0::1;4812:28;4833:6;4812:20;:28::i;:::-;4398:449:::0;;;:::o;4556:228:35:-;4251:7;4277:12;;;;;;;;;;:22;;;4648:41;;4656:18;665:10:42;4676:12:35;586:96:42;4648:41:35;4640:101;;;;-1:-1:-1;;;4640:101:35;;6418:2:45;4640:101:35;;;6400:21:45;6457:2;6437:18;;;6430:30;6496:34;6476:18;;;6469:62;-1:-1:-1;;;6547:18:45;;;6540:45;6602:19;;4640:101:35;6390:237:45;4640:101:35;4752:25;4763:4;4769:7;4752:10;:25::i;:::-;4556:228;;:::o;5211:185:0:-;1388:39;2408:4:35;1416:10:0;1388:7;:39::i;:::-;1380:71;;;;-1:-1:-1;;;1380:71:0;;;;;;;:::i;:::-;5325:11:::1;:26:::0;;;;5361:12:::1;:28:::0;5211:185::o;5740:214:35:-;-1:-1:-1;;;;;5835:23:35;;665:10:42;5835:23:35;5827:83;;;;-1:-1:-1;;;5827:83:35;;9964:2:45;5827:83:35;;;9946:21:45;10003:2;9983:18;;;9976:30;10042:34;10022:18;;;10015:62;-1:-1:-1;;;10093:18:45;;;10086:45;10148:19;;5827:83:35;9936:237:45;5827:83:35;5921:26;5933:4;5939:7;5921:11;:26::i;2577:663:0:-;-1:-1:-1;;;;;2749:22:0;;;;;;;:13;:22;;;;;:28;;2781:10;2749:42;2728:128;;;;-1:-1:-1;;;2728:128:0;;8736:2:45;2728:128:0;;;8718:21:45;8775:2;8755:18;;;8748:30;8814:34;8794:18;;;8787:62;-1:-1:-1;;;8865:18:45;;;8858:37;8912:19;;2728:128:0;8708:229:45;2728:128:0;-1:-1:-1;;;;;2886:22:0;;;2866:17;2886:22;;;:13;:22;;;;;;;;:39;;;;;:31;;;;:39;;;;2956:20;;;;2935:115;;;;-1:-1:-1;;;2935:115:0;;8319:2:45;2935:115:0;;;8301:21:45;8358:2;8338:18;;;8331:30;8397:34;8377:18;;;8370:62;-1:-1:-1;;;8448:18:45;;;8441:46;8504:19;;2935:115:0;8291:238:45;2935:115:0;3102:19;3114:7;3102:9;:19;:::i;:::-;-1:-1:-1;;;;;3060:22:0;;;;;;;:13;:22;;;;;;;;:39;;;;;:31;;;;:39;;;;;:61;;;;3131:14;:22;;;;;:48;;3172:7;;3060:22;3131:48;;3172:7;;3131:48;:::i;:::-;;;;-1:-1:-1;;3196:36:0;;-1:-1:-1;;;3196:36:0;;-1:-1:-1;;;;;5532:32:45;;;3196:36:0;;;5514:51:45;5581:18;;;5574:34;;;3196:15:0;;;;;5487:18:45;;3196:36:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;3189:44;;-1:-1:-1;;;3189:44:0;;;;;;;;;2577:663;;;;;:::o;3738:204::-;-1:-1:-1;;;;;3898:22:0;;;;;;:14;:22;;;;;;;:37;3852:31;;-1:-1:-1;;;3852:31:0;;3877:4;3852:31;;;5278:51:45;3898:37:0;;:22;3852:16;;5251:18:45;;3852:31:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;:83;;;;:::i;:::-;-1:-1:-1;;;;;3800:22:0;;;;;;;:14;:22;;;;;:37;;:135;3738:204::o;3867:137:35:-;3945:4;3968:12;;;;;;;;;;;-1:-1:-1;;;;;3968:29:35;;;;;;;;;;;;;;;3867:137::o;4015:233:0:-;4137:17;;4129:62;;;;-1:-1:-1;;;4129:62:0;;7193:2:45;4129:62:0;;;7175:21:45;;;7212:18;;;7205:30;7271:34;7251:18;;;7244:62;7323:18;;4129:62:0;7165:182:45;4129:62:0;4201:40;4229:10;4201:20;:40::i;:::-;4015:233;;;;:::o;4955:126::-;1388:39;2408:4:35;1416:10:0;1388:7;:39::i;:::-;1380:71;;;;-1:-1:-1;;;1380:71:0;;;;;;;:::i;:::-;5038:16:::1;:36:::0;4955:126::o;5018:231:35:-;4251:7;4277:12;;;;;;;;;;:22;;;5111:41;;5119:18;4185:121;5111:41;5103:102;;;;-1:-1:-1;;;5103:102:35;;7554:2:45;5103:102:35;;;7536:21:45;7593:2;7573:18;;;7566:30;7632:34;7612:18;;;7605:62;-1:-1:-1;;;7683:18:45;;;7676:46;7739:19;;5103:102:35;7526:238:45;3381:293:0;-1:-1:-1;;;;;3502:22:0;;;;;;;:13;:22;;;;;:28;;3534:10;3502:42;3481:130;;;;-1:-1:-1;;;3481:130:0;;9554:2:45;3481:130:0;;;9536:21:45;9593:2;9573:18;;;9566:30;9632:34;9612:18;;;9605:62;-1:-1:-1;;;9683:18:45;;;9676:39;9732:19;;3481:130:0;9526:231:45;3481:130:0;-1:-1:-1;;;;;3621:22:0;;;;;;;:13;:22;;;;;:46;;-1:-1:-1;;;;;;3621:46:0;;;;;;;;3381:293::o;5507:166::-;1388:39;2408:4:35;1416:10:0;1388:7;:39::i;:::-;1380:71;;;;-1:-1:-1;;;1380:71:0;;;;;;;:::i;:::-;5588:31:::1;793:24;5611:7;5588:9;:31::i;5746:107::-:0;1388:39;2408:4:35;1416:10:0;1388:7;:39::i;:::-;1380:71;;;;-1:-1:-1;;;1380:71:0;;;;;;;:::i;:::-;5814:32:::1;793:24;5838:7;5814:10;:32::i;:::-;5746:107:::0;:::o;6952:224:35:-;7026:22;7034:4;7040:7;7026;:22::i;:::-;7021:149;;7064:6;:12;;;;;;;;;;;-1:-1:-1;;;;;7064:29:35;;;;;;;;;:36;;-1:-1:-1;;7064:36:35;7096:4;7064:36;;;7146:12;665:10:42;586:96;;7146:12:35;-1:-1:-1;;;;;7119:40:35;7137:7;-1:-1:-1;;;;;7119:40:35;7131:4;7119:40;;;;;;;;;;6952:224;;:::o;7182:225::-;7256:22;7264:4;7270:7;7256;:22::i;:::-;7252:149;;;7326:5;7294:12;;;;;;;;;;;-1:-1:-1;;;;;7294:29:35;;;;;;;;;;:37;;-1:-1:-1;;7294:37:35;;;7350:40;665:10:42;;7294:12:35;;7350:40;;7326:5;7350:40;7182:225;;:::o;14:257:45:-;;126:2;114:9;105:7;101:23;97:32;94:2;;;147:6;139;132:22;94:2;191:9;178:23;210:31;235:5;210:31;:::i;:::-;260:5;84:187;-1:-1:-1;;;84:187:45:o;276:398::-;;;405:2;393:9;384:7;380:23;376:32;373:2;;;426:6;418;411:22;373:2;470:9;457:23;489:31;514:5;489:31;:::i;:::-;539:5;-1:-1:-1;596:2:45;581:18;;568:32;609:33;568:32;609:33;:::i;:::-;661:7;651:17;;;363:311;;;;;:::o;679:623::-;;;;;857:3;845:9;836:7;832:23;828:33;825:2;;;879:6;871;864:22;825:2;923:9;910:23;942:31;967:5;942:31;:::i;:::-;992:5;-1:-1:-1;1049:2:45;1034:18;;1021:32;1062:33;1021:32;1062:33;:::i;:::-;1114:7;-1:-1:-1;1173:2:45;1158:18;;1145:32;1186:33;1145:32;1186:33;:::i;:::-;815:487;;;;-1:-1:-1;1238:7:45;;1292:2;1277:18;1264:32;;-1:-1:-1;;815:487:45:o;1307:844::-;;;;;1472:2;1460:9;1451:7;1447:23;1443:32;1440:2;;;1493:6;1485;1478:22;1440:2;1537:9;1524:23;1556:31;1581:5;1556:31;:::i;:::-;1606:5;-1:-1:-1;1658:2:45;1643:18;;1630:32;;-1:-1:-1;1713:2:45;1698:18;;1685:32;1736:18;1766:14;;;1763:2;;;1798:6;1790;1783:22;1763:2;1841:6;1830:9;1826:22;1816:32;;1886:7;1879:4;1875:2;1871:13;1867:27;1857:2;;1913:6;1905;1898:22;1857:2;1958;1945:16;1984:2;1976:6;1973:14;1970:2;;;2005:6;1997;1990:22;1970:2;2055:7;2050:2;2041:6;2037:2;2033:15;2029:24;2026:37;2023:2;;;2081:6;2073;2066:22;2023:2;1430:721;;;;-1:-1:-1;;2117:2:45;2109:11;;-1:-1:-1;;;1430:721:45:o;2156:297::-;;2276:2;2264:9;2255:7;2251:23;2247:32;2244:2;;;2297:6;2289;2282:22;2244:2;2334:9;2328:16;2387:5;2380:13;2373:21;2366:5;2363:32;2353:2;;2414:6;2406;2399:22;2458:190;;2570:2;2558:9;2549:7;2545:23;2541:32;2538:2;;;2591:6;2583;2576:22;2538:2;-1:-1:-1;2619:23:45;;2528:120;-1:-1:-1;2528:120:45:o;2653:325::-;;;2782:2;2770:9;2761:7;2757:23;2753:32;2750:2;;;2803:6;2795;2788:22;2750:2;2844:9;2831:23;2821:33;;2904:2;2893:9;2889:18;2876:32;2917:31;2942:5;2917:31;:::i;2983:306::-;;3094:2;3082:9;3073:7;3069:23;3065:32;3062:2;;;3115:6;3107;3100:22;3062:2;3146:23;;-1:-1:-1;;;;;;3198:32:45;;3188:43;;3178:2;;3250:6;3242;3235:22;3571:413;;;3715:2;3703:9;3694:7;3690:23;3686:32;3683:2;;;3736:6;3728;3721:22;3989:481;;;;4150:2;4138:9;4129:7;4125:23;4121:32;4118:2;;;4171:6;4163;4156:22;4118:2;4215:9;4202:23;4234:31;4259:5;4234:31;:::i;:::-;4284:5;-1:-1:-1;4341:2:45;4326:18;;4313:32;4354:33;4313:32;4354:33;:::i;:::-;4108:362;;4406:7;;-1:-1:-1;;;4460:2:45;4445:18;;;;4432:32;;4108:362::o;4670:194::-;;4793:2;4781:9;4772:7;4768:23;4764:32;4761:2;;;4814:6;4806;4799:22;4761:2;-1:-1:-1;4842:16:45;;4751:113;-1:-1:-1;4751:113:45:o;4869:258::-;;;4998:2;4986:9;4977:7;4973:23;4969:32;4966:2;;;5019:6;5011;5004:22;4966:2;-1:-1:-1;;5047:23:45;;;5117:2;5102:18;;;5089:32;;-1:-1:-1;4956:171:45:o;7769:343::-;7971:2;7953:21;;;8010:2;7990:18;;;7983:30;-1:-1:-1;;;8044:2:45;8029:18;;8022:49;8103:2;8088:18;;7943:169::o;10613:228::-;;10681:1;10678;10675:8;10672:2;;;-1:-1:-1;;;10706:34:45;;10763:4;10760:1;10753:15;10794:4;10713;10781:18;10672:2;-1:-1:-1;10826:9:45;;10662:179::o;10846:131::-;-1:-1:-1;;;;;10921:31:45;;10911:42;;10901:2;;10967:1;10964;10957:12",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\nimport \"@openzeppelin/contracts/access/AccessControl.sol\";\nimport \"@openzeppelin/contracts/token/ERC20/IERC20.sol\";\n\ncontract Aggregator is AccessControl {\n    struct OracleInfo {\n        address admin; // current oracle admin\n        mapping(IERC20 => uint256) balances; // balances\n    }\n    struct BlockConfirmationsInfo {\n        uint256 count; // current oracle admin\n        bool requireExtraCheck; // current oracle admin\n        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed\n    }\n    struct PaymentInfo {\n        uint256 allocatedFunds; // asset's amount payed to oracles\n        uint256 availableFunds; // asset's amount available to be payed to oracles\n    }\n\n    bytes32 public constant ORACLE_ROLE = keccak256(\"ORACLE_ROLE\"); // role allowed to submit the data\n    uint256 public corePayment; // payment for one submission\n    uint256 public bonusPayment; // bonus reward for one submission\n    uint256 public minConfirmations; // minimal required confirmations\n    IERC20 public coreToken; // LINK's token address\n    IERC20 public bonusToken; // DBR's token address\n    mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details\n    mapping(IERC20 => PaymentInfo) public getPaymentInfo; // asset address => funds details\n\n    modifier onlyAdmin {\n        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), \"onlyAdmin: bad role\");\n        _;\n    }\n    modifier onlyOracle {\n        require(hasRole(ORACLE_ROLE, msg.sender), \"onlyOracle: bad role\");\n        _;\n    }\n\n    /* PUBLIC */\n\n    /// @dev Constructor that initializes the most important configurations.\n    /// @param _minConfirmations Common confirmations count.\n    /// @param _corePayment Oracle reward.\n    /// @param _bonusPayment Oracle reward.\n    /// @param _coreToken Link token to pay to oracles.\n    /// @param _bonusToken DBR token to pay to oracles.\n    constructor(\n        uint256 _minConfirmations,\n        uint256 _corePayment,\n        uint256 _bonusPayment,\n        IERC20 _coreToken,\n        IERC20 _bonusToken\n    ) {\n        minConfirmations = _minConfirmations;\n        coreToken = _coreToken;\n        bonusToken = _bonusToken;\n        corePayment = _corePayment;\n        bonusPayment = _bonusPayment;\n        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);\n        _setupRole(ORACLE_ROLE, msg.sender);\n    }\n\n    /// @dev Withdraws oracle reward.\n    /// @param _oracle Oracle address.\n    /// @param _recipient Recepient reward.\n    /// @param _amount Amount to withdraw.\n    function withdrawPayment(\n        address _oracle,\n        address _recipient,\n        IERC20 _asset,\n        uint256 _amount\n    ) external {\n        require(\n            getOracleInfo[_oracle].admin == msg.sender,\n            \"withdrawPayment: only callable by admin\"\n        );\n        uint256 available = getOracleInfo[_oracle].balances[_asset];\n        require(\n            available >= _amount,\n            \"withdrawPayment: insufficient withdrawable funds\"\n        );\n        getOracleInfo[_oracle].balances[_asset] = available - _amount;\n        getPaymentInfo[_asset].allocatedFunds -= _amount;\n        assert(_asset.transfer(_recipient, _amount));\n    }\n\n    /// @dev Updates oracle's admin address.\n    /// @param _oracle Oracle address.\n    /// @param _newOracleAdmin New oracle address.\n    function updateOracleAdmin(address _oracle, address _newOracleAdmin)\n        external\n    {\n        require(\n            getOracleInfo[_oracle].admin == msg.sender,\n            \"updateOracleAdmin: only callable by admin\"\n        );\n        getOracleInfo[_oracle].admin = _newOracleAdmin;\n    }\n\n    /// @dev Updates available rewards to be distributed.\n    function updateAvailableFunds(IERC20 _asset) public {\n        getPaymentInfo[_asset].availableFunds =\n            _asset.balanceOf(address(this)) -\n            getPaymentInfo[_asset].allocatedFunds;\n    }\n\n    /// @dev Updates link balance.\n    /// @param _data Call data.\n    function onTokenTransfer(\n        address,\n        uint256,\n        bytes calldata _data\n    ) external {\n        require(_data.length == 0, \"transfer doesn't accept calldata\");\n        updateAvailableFunds(IERC20(msg.sender));\n    }\n\n    /* ADMIN */\n\n    /// @dev Withdraws earned LINK's.\n    /// @param _recipient Reward's recepient.\n    /// @param _amount Amount to withdraw.\n    function withdrawFunds(\n        IERC20 _asset,\n        address _recipient,\n        uint256 _amount\n    ) external onlyAdmin() {\n        require(\n            uint256(getPaymentInfo[_asset].availableFunds) >= _amount,\n            \"withdrawFunds: insufficient reserve funds\"\n        );\n        require(\n            _asset.transfer(_recipient, _amount),\n            \"withdrawFunds: transfer failed\"\n        );\n        updateAvailableFunds(_asset);\n    }\n\n    /// @dev Sets minimal required confirmations.\n    /// @param _minConfirmations Confirmation info.\n    function setMinConfirmations(uint256 _minConfirmations) public onlyAdmin {\n        minConfirmations = _minConfirmations;\n    }\n\n    /// @dev Sets new oracle reward.\n    /// @param _corePayment Oracle reward.\n    /// @param _bonusPayment Oracle reward.\n    function setPayment(uint256 _corePayment, uint256 _bonusPayment)\n        external\n        onlyAdmin\n    {\n        corePayment = _corePayment;\n        bonusPayment = _bonusPayment;\n    }\n\n    /// @dev Add new oracle.\n    /// @param _oracle Oracle address.\n    /// @param _admin Admin address.\n    function addOracle(address _oracle, address _admin) external onlyAdmin {\n        grantRole(ORACLE_ROLE, _oracle);\n        getOracleInfo[_oracle].admin = _admin;\n    }\n\n    /// @dev Remove oracle.\n    /// @param _oracle Oracle address.\n    function removeOracle(address _oracle) external onlyAdmin {\n        revokeRole(ORACLE_ROLE, _oracle);\n    }\n\n    /* INTERNAL */\n\n    /// @dev Assess teh oracle rewards.\n    /// @param _oracle Oracle address.\n    function _payOracle(address _oracle) internal {\n        getPaymentInfo[coreToken].availableFunds -= corePayment;\n        getPaymentInfo[coreToken].allocatedFunds += corePayment;\n        getOracleInfo[_oracle].balances[coreToken] += corePayment;\n        getPaymentInfo[bonusToken].availableFunds -= bonusPayment;\n        getPaymentInfo[bonusToken].allocatedFunds += bonusPayment;\n        getOracleInfo[_oracle].balances[bonusToken] += bonusPayment;\n    }\n\n    /* VIEW */\n\n    /// @dev Return's oracle reward.\n    /// @param _oracle Oracle address.\n    /// @return Oracle rewards.\n    function getWithdrawable(IERC20 _asset, address _oracle)\n        external\n        view\n        returns (uint256)\n    {\n        return getOracleInfo[_oracle].balances[_asset];\n    }\n}\n",
-  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/Aggregator.sol",
+  "sourcePath": "/root/debridge-contracts/contracts/chainlink/Aggregator.sol",
   "ast": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/Aggregator.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/chainlink/Aggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        7967
+        7970
       ],
       "Aggregator": [
         458
       ],
       "Context": [
-        9246
+        9249
       ],
       "ERC165": [
-        9270
+        9273
       ],
       "IAccessControl": [
-        7687
+        7690
       ],
       "IERC165": [
-        9282
+        9285
       ],
       "IERC20": [
-        8703
+        8706
       ]
     },
     "id": 459,
@@ -8089,7 +8089,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 459,
-        "sourceUnit": 7968,
+        "sourceUnit": 7971,
         "src": "57:58:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -8101,7 +8101,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 459,
-        "sourceUnit": 8704,
+        "sourceUnit": 8707,
         "src": "116:56:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -8114,7 +8114,7 @@
               "id": 4,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 7967,
+              "referencedDeclaration": 7970,
               "src": "197:13:0"
             },
             "id": 5,
@@ -8123,22 +8123,22 @@
           }
         ],
         "contractDependencies": [
-          7687,
-          7967,
-          9246,
-          9270,
-          9282
+          7690,
+          7970,
+          9249,
+          9273,
+          9285
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 458,
         "linearizedBaseContracts": [
           458,
-          7967,
-          9270,
-          9282,
-          7687,
-          9246
+          7970,
+          9273,
+          9285,
+          7690,
+          9249
         ],
         "name": "Aggregator",
         "nameLocation": "183:10:0",
@@ -8188,7 +8188,7 @@
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                  "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                   "typeString": "mapping(contract IERC20 => uint256)"
                 },
                 "typeName": {
@@ -8200,20 +8200,20 @@
                       "id": 8,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "300:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "300:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
                   "nodeType": "Mapping",
                   "src": "292:26:0",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                     "typeString": "mapping(contract IERC20 => uint256)"
                   },
                   "valueType": {
@@ -8592,7 +8592,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_IERC20_$8703",
+              "typeIdentifier": "t_contract$_IERC20_$8706",
               "typeString": "contract IERC20"
             },
             "typeName": {
@@ -8602,13 +8602,13 @@
                 "id": 39,
                 "name": "IERC20",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8703,
+                "referencedDeclaration": 8706,
                 "src": "1059:6:0"
               },
-              "referencedDeclaration": 8703,
+              "referencedDeclaration": 8706,
               "src": "1059:6:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IERC20_$8703",
+                "typeIdentifier": "t_contract$_IERC20_$8706",
                 "typeString": "contract IERC20"
               }
             },
@@ -8627,7 +8627,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_IERC20_$8703",
+              "typeIdentifier": "t_contract$_IERC20_$8706",
               "typeString": "contract IERC20"
             },
             "typeName": {
@@ -8637,13 +8637,13 @@
                 "id": 42,
                 "name": "IERC20",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8703,
+                "referencedDeclaration": 8706,
                 "src": "1112:6:0"
               },
-              "referencedDeclaration": 8703,
+              "referencedDeclaration": 8706,
               "src": "1112:6:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IERC20_$8703",
+                "typeIdentifier": "t_contract$_IERC20_$8706",
                 "typeString": "contract IERC20"
               }
             },
@@ -8716,7 +8716,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
               "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo)"
             },
             "typeName": {
@@ -8728,20 +8728,20 @@
                   "id": 50,
                   "name": "IERC20",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 8703,
+                  "referencedDeclaration": 8706,
                   "src": "1266:6:0"
                 },
-                "referencedDeclaration": 8703,
+                "referencedDeclaration": 8706,
                 "src": "1266:6:0",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_contract$_IERC20_$8703",
+                  "typeIdentifier": "t_contract$_IERC20_$8706",
                   "typeString": "contract IERC20"
                 }
               },
               "nodeType": "Mapping",
               "src": "1258:30:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                 "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo)"
               },
               "valueType": {
@@ -8780,7 +8780,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 7709,
+                            "referencedDeclaration": 7712,
                             "src": "1396:18:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -8829,7 +8829,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7777,
+                          "referencedDeclaration": 7780,
                           "src": "1388:7:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -8998,7 +8998,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7777,
+                          "referencedDeclaration": 7780,
                           "src": "1512:7:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -9166,7 +9166,7 @@
                       "referencedDeclaration": 41,
                       "src": "2173:9:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -9180,13 +9180,13 @@
                       "referencedDeclaration": 91,
                       "src": "2185:10:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
                     "src": "2173:22:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -9209,7 +9209,7 @@
                       "referencedDeclaration": 44,
                       "src": "2205:10:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -9223,13 +9223,13 @@
                       "referencedDeclaration": 94,
                       "src": "2218:11:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
                     "src": "2205:24:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -9331,7 +9331,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7709,
+                        "referencedDeclaration": 7712,
                         "src": "2324:18:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -9380,7 +9380,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7881,
+                      "referencedDeclaration": 7884,
                       "src": "2313:10:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -9463,7 +9463,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7881,
+                      "referencedDeclaration": 7884,
                       "src": "2365:10:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -9601,7 +9601,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -9611,13 +9611,13 @@
                       "id": 89,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "2065:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "2065:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -9635,7 +9635,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -9645,13 +9645,13 @@
                       "id": 92,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "2092:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "2092:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -9921,7 +9921,7 @@
                       "referencedDeclaration": 12,
                       "src": "2886:31:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                         "typeString": "mapping(contract IERC20 => uint256)"
                       }
                     },
@@ -9934,7 +9934,7 @@
                       "referencedDeclaration": 138,
                       "src": "2918:6:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -10114,7 +10114,7 @@
                         "referencedDeclaration": 12,
                         "src": "3060:31:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                           "typeString": "mapping(contract IERC20 => uint256)"
                         }
                       },
@@ -10127,7 +10127,7 @@
                         "referencedDeclaration": 138,
                         "src": "3092:6:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       },
@@ -10213,7 +10213,7 @@
                           "referencedDeclaration": 55,
                           "src": "3131:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -10226,7 +10226,7 @@
                           "referencedDeclaration": 138,
                           "src": "3146:6:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -10328,7 +10328,7 @@
                             "referencedDeclaration": 138,
                             "src": "3196:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -10339,7 +10339,7 @@
                           "lValueRequested": false,
                           "memberName": "transfer",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8652,
+                          "referencedDeclaration": 8655,
                           "src": "3196:15:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -10487,7 +10487,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -10497,13 +10497,13 @@
                       "id": 136,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "2664:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "2664:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -10914,7 +10914,7 @@
                           "referencedDeclaration": 55,
                           "src": "3800:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -10927,7 +10927,7 @@
                           "referencedDeclaration": 228,
                           "src": "3815:6:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -11042,7 +11042,7 @@
                             "referencedDeclaration": 228,
                             "src": "3852:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -11053,7 +11053,7 @@
                           "lValueRequested": false,
                           "memberName": "balanceOf",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8642,
+                          "referencedDeclaration": 8645,
                           "src": "3852:16:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_uint256_$",
@@ -11087,7 +11087,7 @@
                             "referencedDeclaration": 55,
                             "src": "3898:14:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                               "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                             }
                           },
@@ -11100,7 +11100,7 @@
                             "referencedDeclaration": 228,
                             "src": "3913:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -11177,7 +11177,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -11187,13 +11187,13 @@
                       "id": 226,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "3768:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "3768:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -11387,10 +11387,10 @@
                           "name": "IERC20",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 8703,
+                          "referencedDeclaration": 8706,
                           "src": "4222:6:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_IERC20_$8703_$",
+                            "typeIdentifier": "t_type$_t_contract$_IERC20_$8706_$",
                             "typeString": "type(contract IERC20)"
                           }
                         },
@@ -11405,7 +11405,7 @@
                         "src": "4222:18:0",
                         "tryCall": false,
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       }
@@ -11413,7 +11413,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       ],
@@ -11424,7 +11424,7 @@
                       "referencedDeclaration": 250,
                       "src": "4201:20:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8703_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8706_$returns$__$",
                         "typeString": "function (contract IERC20)"
                       }
                     },
@@ -11595,7 +11595,7 @@
                                   "referencedDeclaration": 55,
                                   "src": "4563:14:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                                     "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                                   }
                                 },
@@ -11608,7 +11608,7 @@
                                   "referencedDeclaration": 280,
                                   "src": "4578:6:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                                    "typeIdentifier": "t_contract$_IERC20_$8706",
                                     "typeString": "contract IERC20"
                                   }
                                 },
@@ -11809,7 +11809,7 @@
                             "referencedDeclaration": 280,
                             "src": "4710:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -11820,7 +11820,7 @@
                           "lValueRequested": false,
                           "memberName": "transfer",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8652,
+                          "referencedDeclaration": 8655,
                           "src": "4710:15:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -11914,7 +11914,7 @@
                         "referencedDeclaration": 280,
                         "src": "4833:6:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       }
@@ -11922,7 +11922,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       ],
@@ -11933,7 +11933,7 @@
                       "referencedDeclaration": 250,
                       "src": "4812:20:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8703_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8706_$returns$__$",
                         "typeString": "function (contract IERC20)"
                       }
                     },
@@ -12002,7 +12002,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -12012,13 +12012,13 @@
                       "id": 278,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "4430:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "4430:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -12461,7 +12461,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7818,
+                      "referencedDeclaration": 7821,
                       "src": "5588:9:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -12723,7 +12723,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7844,
+                      "referencedDeclaration": 7847,
                       "src": "5814:10:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -12848,7 +12848,7 @@
                           "referencedDeclaration": 55,
                           "src": "6014:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -12861,7 +12861,7 @@
                           "referencedDeclaration": 41,
                           "src": "6029:9:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -12931,7 +12931,7 @@
                           "referencedDeclaration": 55,
                           "src": "6079:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -12944,7 +12944,7 @@
                           "referencedDeclaration": 41,
                           "src": "6094:9:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -13053,7 +13053,7 @@
                         "referencedDeclaration": 12,
                         "src": "6144:31:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                           "typeString": "mapping(contract IERC20 => uint256)"
                         }
                       },
@@ -13066,7 +13066,7 @@
                         "referencedDeclaration": 41,
                         "src": "6176:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       },
@@ -13122,7 +13122,7 @@
                           "referencedDeclaration": 55,
                           "src": "6211:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -13135,7 +13135,7 @@
                           "referencedDeclaration": 44,
                           "src": "6226:10:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -13205,7 +13205,7 @@
                           "referencedDeclaration": 55,
                           "src": "6278:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -13218,7 +13218,7 @@
                           "referencedDeclaration": 44,
                           "src": "6293:10:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -13327,7 +13327,7 @@
                         "referencedDeclaration": 12,
                         "src": "6345:31:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                           "typeString": "mapping(contract IERC20 => uint256)"
                         }
                       },
@@ -13340,7 +13340,7 @@
                         "referencedDeclaration": 44,
                         "src": "6377:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       },
@@ -13497,7 +13497,7 @@
                       "referencedDeclaration": 12,
                       "src": "6675:31:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                         "typeString": "mapping(contract IERC20 => uint256)"
                       }
                     },
@@ -13510,7 +13510,7 @@
                       "referencedDeclaration": 442,
                       "src": "6707:6:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -13562,7 +13562,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -13572,13 +13572,13 @@
                       "id": 440,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "6566:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "6566:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -13663,28 +13663,28 @@
     "src": "32:6692:0"
   },
   "legacyAST": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/chainlink/Aggregator.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/chainlink/Aggregator.sol",
     "exportedSymbols": {
       "AccessControl": [
-        7967
+        7970
       ],
       "Aggregator": [
         458
       ],
       "Context": [
-        9246
+        9249
       ],
       "ERC165": [
-        9270
+        9273
       ],
       "IAccessControl": [
-        7687
+        7690
       ],
       "IERC165": [
-        9282
+        9285
       ],
       "IERC20": [
-        8703
+        8706
       ]
     },
     "id": 459,
@@ -13709,7 +13709,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 459,
-        "sourceUnit": 7968,
+        "sourceUnit": 7971,
         "src": "57:58:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -13721,7 +13721,7 @@
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
         "scope": 459,
-        "sourceUnit": 8704,
+        "sourceUnit": 8707,
         "src": "116:56:0",
         "symbolAliases": [],
         "unitAlias": ""
@@ -13734,7 +13734,7 @@
               "id": 4,
               "name": "AccessControl",
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 7967,
+              "referencedDeclaration": 7970,
               "src": "197:13:0"
             },
             "id": 5,
@@ -13743,22 +13743,22 @@
           }
         ],
         "contractDependencies": [
-          7687,
-          7967,
-          9246,
-          9270,
-          9282
+          7690,
+          7970,
+          9249,
+          9273,
+          9285
         ],
         "contractKind": "contract",
         "fullyImplemented": true,
         "id": 458,
         "linearizedBaseContracts": [
           458,
-          7967,
-          9270,
-          9282,
-          7687,
-          9246
+          7970,
+          9273,
+          9285,
+          7690,
+          9249
         ],
         "name": "Aggregator",
         "nameLocation": "183:10:0",
@@ -13808,7 +13808,7 @@
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                  "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                   "typeString": "mapping(contract IERC20 => uint256)"
                 },
                 "typeName": {
@@ -13820,20 +13820,20 @@
                       "id": 8,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "300:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "300:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
                   "nodeType": "Mapping",
                   "src": "292:26:0",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                     "typeString": "mapping(contract IERC20 => uint256)"
                   },
                   "valueType": {
@@ -14212,7 +14212,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_IERC20_$8703",
+              "typeIdentifier": "t_contract$_IERC20_$8706",
               "typeString": "contract IERC20"
             },
             "typeName": {
@@ -14222,13 +14222,13 @@
                 "id": 39,
                 "name": "IERC20",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8703,
+                "referencedDeclaration": 8706,
                 "src": "1059:6:0"
               },
-              "referencedDeclaration": 8703,
+              "referencedDeclaration": 8706,
               "src": "1059:6:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IERC20_$8703",
+                "typeIdentifier": "t_contract$_IERC20_$8706",
                 "typeString": "contract IERC20"
               }
             },
@@ -14247,7 +14247,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_IERC20_$8703",
+              "typeIdentifier": "t_contract$_IERC20_$8706",
               "typeString": "contract IERC20"
             },
             "typeName": {
@@ -14257,13 +14257,13 @@
                 "id": 42,
                 "name": "IERC20",
                 "nodeType": "IdentifierPath",
-                "referencedDeclaration": 8703,
+                "referencedDeclaration": 8706,
                 "src": "1112:6:0"
               },
-              "referencedDeclaration": 8703,
+              "referencedDeclaration": 8706,
               "src": "1112:6:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IERC20_$8703",
+                "typeIdentifier": "t_contract$_IERC20_$8706",
                 "typeString": "contract IERC20"
               }
             },
@@ -14336,7 +14336,7 @@
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
               "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo)"
             },
             "typeName": {
@@ -14348,20 +14348,20 @@
                   "id": 50,
                   "name": "IERC20",
                   "nodeType": "IdentifierPath",
-                  "referencedDeclaration": 8703,
+                  "referencedDeclaration": 8706,
                   "src": "1266:6:0"
                 },
-                "referencedDeclaration": 8703,
+                "referencedDeclaration": 8706,
                 "src": "1266:6:0",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_contract$_IERC20_$8703",
+                  "typeIdentifier": "t_contract$_IERC20_$8706",
                   "typeString": "contract IERC20"
                 }
               },
               "nodeType": "Mapping",
               "src": "1258:30:0",
               "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                 "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo)"
               },
               "valueType": {
@@ -14400,7 +14400,7 @@
                             "name": "DEFAULT_ADMIN_ROLE",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 7709,
+                            "referencedDeclaration": 7712,
                             "src": "1396:18:0",
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes32",
@@ -14449,7 +14449,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7777,
+                          "referencedDeclaration": 7780,
                           "src": "1388:7:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -14618,7 +14618,7 @@
                           "name": "hasRole",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 7777,
+                          "referencedDeclaration": 7780,
                           "src": "1512:7:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_internal_view$_t_bytes32_$_t_address_$returns$_t_bool_$",
@@ -14786,7 +14786,7 @@
                       "referencedDeclaration": 41,
                       "src": "2173:9:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -14800,13 +14800,13 @@
                       "referencedDeclaration": 91,
                       "src": "2185:10:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
                     "src": "2173:22:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -14829,7 +14829,7 @@
                       "referencedDeclaration": 44,
                       "src": "2205:10:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -14843,13 +14843,13 @@
                       "referencedDeclaration": 94,
                       "src": "2218:11:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
                     "src": "2205:24:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -14951,7 +14951,7 @@
                         "name": "DEFAULT_ADMIN_ROLE",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 7709,
+                        "referencedDeclaration": 7712,
                         "src": "2324:18:0",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
@@ -15000,7 +15000,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7881,
+                      "referencedDeclaration": 7884,
                       "src": "2313:10:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -15083,7 +15083,7 @@
                       "name": "_setupRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7881,
+                      "referencedDeclaration": 7884,
                       "src": "2365:10:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -15221,7 +15221,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -15231,13 +15231,13 @@
                       "id": 89,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "2065:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "2065:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -15255,7 +15255,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -15265,13 +15265,13 @@
                       "id": 92,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "2092:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "2092:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -15541,7 +15541,7 @@
                       "referencedDeclaration": 12,
                       "src": "2886:31:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                         "typeString": "mapping(contract IERC20 => uint256)"
                       }
                     },
@@ -15554,7 +15554,7 @@
                       "referencedDeclaration": 138,
                       "src": "2918:6:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -15734,7 +15734,7 @@
                         "referencedDeclaration": 12,
                         "src": "3060:31:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                           "typeString": "mapping(contract IERC20 => uint256)"
                         }
                       },
@@ -15747,7 +15747,7 @@
                         "referencedDeclaration": 138,
                         "src": "3092:6:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       },
@@ -15833,7 +15833,7 @@
                           "referencedDeclaration": 55,
                           "src": "3131:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -15846,7 +15846,7 @@
                           "referencedDeclaration": 138,
                           "src": "3146:6:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -15948,7 +15948,7 @@
                             "referencedDeclaration": 138,
                             "src": "3196:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -15959,7 +15959,7 @@
                           "lValueRequested": false,
                           "memberName": "transfer",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8652,
+                          "referencedDeclaration": 8655,
                           "src": "3196:15:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -16107,7 +16107,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -16117,13 +16117,13 @@
                       "id": 136,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "2664:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "2664:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -16534,7 +16534,7 @@
                           "referencedDeclaration": 55,
                           "src": "3800:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -16547,7 +16547,7 @@
                           "referencedDeclaration": 228,
                           "src": "3815:6:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -16662,7 +16662,7 @@
                             "referencedDeclaration": 228,
                             "src": "3852:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -16673,7 +16673,7 @@
                           "lValueRequested": false,
                           "memberName": "balanceOf",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8642,
+                          "referencedDeclaration": 8645,
                           "src": "3852:16:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_view$_t_address_$returns$_t_uint256_$",
@@ -16707,7 +16707,7 @@
                             "referencedDeclaration": 55,
                             "src": "3898:14:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                              "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                               "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                             }
                           },
@@ -16720,7 +16720,7 @@
                             "referencedDeclaration": 228,
                             "src": "3913:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -16797,7 +16797,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -16807,13 +16807,13 @@
                       "id": 226,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "3768:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "3768:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -17007,10 +17007,10 @@
                           "name": "IERC20",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 8703,
+                          "referencedDeclaration": 8706,
                           "src": "4222:6:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_contract$_IERC20_$8703_$",
+                            "typeIdentifier": "t_type$_t_contract$_IERC20_$8706_$",
                             "typeString": "type(contract IERC20)"
                           }
                         },
@@ -17025,7 +17025,7 @@
                         "src": "4222:18:0",
                         "tryCall": false,
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       }
@@ -17033,7 +17033,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       ],
@@ -17044,7 +17044,7 @@
                       "referencedDeclaration": 250,
                       "src": "4201:20:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8703_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8706_$returns$__$",
                         "typeString": "function (contract IERC20)"
                       }
                     },
@@ -17215,7 +17215,7 @@
                                   "referencedDeclaration": 55,
                                   "src": "4563:14:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                                    "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                                     "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                                   }
                                 },
@@ -17228,7 +17228,7 @@
                                   "referencedDeclaration": 280,
                                   "src": "4578:6:0",
                                   "typeDescriptions": {
-                                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                                    "typeIdentifier": "t_contract$_IERC20_$8706",
                                     "typeString": "contract IERC20"
                                   }
                                 },
@@ -17429,7 +17429,7 @@
                             "referencedDeclaration": 280,
                             "src": "4710:6:0",
                             "typeDescriptions": {
-                              "typeIdentifier": "t_contract$_IERC20_$8703",
+                              "typeIdentifier": "t_contract$_IERC20_$8706",
                               "typeString": "contract IERC20"
                             }
                           },
@@ -17440,7 +17440,7 @@
                           "lValueRequested": false,
                           "memberName": "transfer",
                           "nodeType": "MemberAccess",
-                          "referencedDeclaration": 8652,
+                          "referencedDeclaration": 8655,
                           "src": "4710:15:0",
                           "typeDescriptions": {
                             "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_uint256_$returns$_t_bool_$",
@@ -17534,7 +17534,7 @@
                         "referencedDeclaration": 280,
                         "src": "4833:6:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       }
@@ -17542,7 +17542,7 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       ],
@@ -17553,7 +17553,7 @@
                       "referencedDeclaration": 250,
                       "src": "4812:20:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8703_$returns$__$",
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_contract$_IERC20_$8706_$returns$__$",
                         "typeString": "function (contract IERC20)"
                       }
                     },
@@ -17622,7 +17622,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -17632,13 +17632,13 @@
                       "id": 278,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "4430:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "4430:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -18081,7 +18081,7 @@
                       "name": "grantRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7818,
+                      "referencedDeclaration": 7821,
                       "src": "5588:9:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -18343,7 +18343,7 @@
                       "name": "revokeRole",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 7844,
+                      "referencedDeclaration": 7847,
                       "src": "5814:10:0",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_internal_nonpayable$_t_bytes32_$_t_address_$returns$__$",
@@ -18468,7 +18468,7 @@
                           "referencedDeclaration": 55,
                           "src": "6014:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -18481,7 +18481,7 @@
                           "referencedDeclaration": 41,
                           "src": "6029:9:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -18551,7 +18551,7 @@
                           "referencedDeclaration": 55,
                           "src": "6079:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -18564,7 +18564,7 @@
                           "referencedDeclaration": 41,
                           "src": "6094:9:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -18673,7 +18673,7 @@
                         "referencedDeclaration": 12,
                         "src": "6144:31:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                           "typeString": "mapping(contract IERC20 => uint256)"
                         }
                       },
@@ -18686,7 +18686,7 @@
                         "referencedDeclaration": 41,
                         "src": "6176:9:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       },
@@ -18742,7 +18742,7 @@
                           "referencedDeclaration": 55,
                           "src": "6211:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -18755,7 +18755,7 @@
                           "referencedDeclaration": 44,
                           "src": "6226:10:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -18825,7 +18825,7 @@
                           "referencedDeclaration": 55,
                           "src": "6278:14:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_struct$_PaymentInfo_$27_storage_$",
+                            "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_struct$_PaymentInfo_$27_storage_$",
                             "typeString": "mapping(contract IERC20 => struct Aggregator.PaymentInfo storage ref)"
                           }
                         },
@@ -18838,7 +18838,7 @@
                           "referencedDeclaration": 44,
                           "src": "6293:10:0",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_contract$_IERC20_$8703",
+                            "typeIdentifier": "t_contract$_IERC20_$8706",
                             "typeString": "contract IERC20"
                           }
                         },
@@ -18947,7 +18947,7 @@
                         "referencedDeclaration": 12,
                         "src": "6345:31:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                          "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                           "typeString": "mapping(contract IERC20 => uint256)"
                         }
                       },
@@ -18960,7 +18960,7 @@
                         "referencedDeclaration": 44,
                         "src": "6377:10:0",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_contract$_IERC20_$8703",
+                          "typeIdentifier": "t_contract$_IERC20_$8706",
                           "typeString": "contract IERC20"
                         }
                       },
@@ -19117,7 +19117,7 @@
                       "referencedDeclaration": 12,
                       "src": "6675:31:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8703_$_t_uint256_$",
+                        "typeIdentifier": "t_mapping$_t_contract$_IERC20_$8706_$_t_uint256_$",
                         "typeString": "mapping(contract IERC20 => uint256)"
                       }
                     },
@@ -19130,7 +19130,7 @@
                       "referencedDeclaration": 442,
                       "src": "6707:6:0",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_contract$_IERC20_$8703",
+                        "typeIdentifier": "t_contract$_IERC20_$8706",
                         "typeString": "contract IERC20"
                       }
                     },
@@ -19182,7 +19182,7 @@
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IERC20_$8703",
+                    "typeIdentifier": "t_contract$_IERC20_$8706",
                     "typeString": "contract IERC20"
                   },
                   "typeName": {
@@ -19192,13 +19192,13 @@
                       "id": 440,
                       "name": "IERC20",
                       "nodeType": "IdentifierPath",
-                      "referencedDeclaration": 8703,
+                      "referencedDeclaration": 8706,
                       "src": "6566:6:0"
                     },
-                    "referencedDeclaration": 8703,
+                    "referencedDeclaration": 8706,
                     "src": "6566:6:0",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IERC20_$8703",
+                      "typeIdentifier": "t_contract$_IERC20_$8706",
                       "typeString": "contract IERC20"
                     }
                   },
@@ -19288,7 +19288,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-14T05:19:43.081Z",
+  "updatedAt": "2021-06-20T15:43:29.251Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

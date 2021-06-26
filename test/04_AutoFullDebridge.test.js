@@ -27,12 +27,24 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
     this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
+    this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
+      from: alice,
+    });
+    this.amountThreshols = toWei("1000");
     this.oraclePayment = toWei("0.001");
+    this.bonusPayment = toWei("0.001");
     this.minConfirmations = 1;
+    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+
     this.aggregator = await Aggregator.new(
       this.minConfirmations,
       this.oraclePayment,
+      this.bonusPayment,
       this.linkToken.address,
+      this.dbrToken.address,
+      this.confirmationThreshold,
+      this.excessConfirmations,
       {
         from: alice,
       }
@@ -83,9 +95,11 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       from: alice,
     });
     this.debridge = await deployProxy(Debridge, [
+      this.excessConfirmations,
       minAmount,
       maxAmount,
       minReserves,
+      this.amountThreshols,
       this.aggregator.address,
       this.callProxy.address.toString(),
       supportedChainIds,
@@ -120,6 +134,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
+      const amountThreshold = toWei("10000000000000");
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
@@ -135,6 +150,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -185,6 +201,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
       const supportedChainIds = [42, 3, 56];
+      const amountThreshold = toWei("10000000000000");
       const name = "MUSD";
       const symbol = "Magic Dollar";
       const wrappedAsset = await WrappedAsset.new(
@@ -202,6 +219,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -248,6 +266,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       const chainId = await this.debridge.chainId();
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -257,6 +276,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -582,9 +602,20 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
     before(async function() {
       currentChainId = await this.debridge.chainId();
       const newSupply = toWei("100");
+      await this.dbrToken.mint(alice, newSupply, {
+        from: alice,
+      });
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
       });
+      await this.dbrToken.transferAndCall(
+        this.aggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
       await this.linkToken.transferAndCall(
         this.aggregator.address.toString(),
         newSupply,
@@ -679,7 +710,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
             from: alice,
           }
         ),
-        "mint: not confirmed"
+        "autoMint: not confirmed"
       );
     });
 
@@ -703,7 +734,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
             from: alice,
           }
         ),
-        "mint: not confirmed"
+        "autoMint: not confirmed"
       );
     });
 
@@ -1080,7 +1111,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
             from: alice,
           }
         ),
-        "claim: not confirmed"
+        "autoClaim: not confirmed"
       );
     });
 
@@ -1099,7 +1130,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
             from: alice,
           }
         ),
-        "claim: not confirmed"
+        "autoClaim: not confirmed"
       );
     });
 

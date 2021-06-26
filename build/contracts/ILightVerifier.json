@@ -55,7 +55,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"getSubmissionConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_confirmations\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"_blockConfirmationPassed\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes[]\",\"name\":\"_signatures\",\"type\":\"bytes[]\"}],\"name\":\"submit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_confirmations\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"_blockConfirmationPassed\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightVerifier.sol\":\"ILightVerifier\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightVerifier.sol\":{\"keccak256\":\"0xfea359e706e7d5bd16a7d67a1d6175f3bb91323af127605458916934bcacea2b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a156c49e1ff52fe04a18c1c0dd84f3667127b3a2f1449a993ee3fd051c754be8\",\"dweb:/ipfs/QmaR3aPCfjhxfEwLoAa4FDnJULGdcfbnvpcck3QDQgsbbi\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"getSubmissionConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_confirmations\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"_blockConfirmationPassed\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes[]\",\"name\":\"_signatures\",\"type\":\"bytes[]\"}],\"name\":\"submit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_confirmations\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"_blockConfirmationPassed\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/interfaces/ILightVerifier.sol\":\"ILightVerifier\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/interfaces/ILightVerifier.sol\":{\"keccak256\":\"0xfea359e706e7d5bd16a7d67a1d6175f3bb91323af127605458916934bcacea2b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://a156c49e1ff52fe04a18c1c0dd84f3667127b3a2f1449a993ee3fd051c754be8\",\"dweb:/ipfs/QmaR3aPCfjhxfEwLoAa4FDnJULGdcfbnvpcck3QDQgsbbi\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -64,9 +64,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface ILightVerifier {\n    function submit(bytes32 _submissionId, bytes[] memory _signatures)\n        external\n        returns (uint256 _confirmations, bool _blockConfirmationPassed);\n\n    function getSubmissionConfirmations(bytes32 _submissionId)\n        external\n        view\n        returns (uint256 _confirmations, bool _blockConfirmationPassed);\n}\n",
-  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightVerifier.sol",
+  "sourcePath": "/root/debridge-contracts/contracts/interfaces/ILightVerifier.sol",
   "ast": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightVerifier.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/ILightVerifier.sol",
     "exportedSymbols": {
       "ILightVerifier": [
         1831
@@ -365,7 +365,7 @@
     "src": "32:382:14"
   },
   "legacyAST": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightVerifier.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/ILightVerifier.sol",
     "exportedSymbols": {
       "ILightVerifier": [
         1831
@@ -669,7 +669,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-14T05:19:43.239Z",
+  "updatedAt": "2021-06-20T15:43:29.284Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

@@ -65,7 +65,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"call\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"callERC20\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ICallProxy.sol\":\"ICallProxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ICallProxy.sol\":{\"keccak256\":\"0x362ed1f77c49c6f208d73103ca471f0a6c1d80cec40e9215a19d4adb97f595da\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e2c8965251f908f20c3d5dea7a152b9a84678c1dfec425861a5a14608dcaf86e\",\"dweb:/ipfs/QmS52QsioTEByKnhdk4KqR8gaoTuvi2YmB2YjXksZ6wFJk\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"call\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"callERC20\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/interfaces/ICallProxy.sol\":\"ICallProxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/interfaces/ICallProxy.sol\":{\"keccak256\":\"0x362ed1f77c49c6f208d73103ca471f0a6c1d80cec40e9215a19d4adb97f595da\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://e2c8965251f908f20c3d5dea7a152b9a84678c1dfec425861a5a14608dcaf86e\",\"dweb:/ipfs/QmS52QsioTEByKnhdk4KqR8gaoTuvi2YmB2YjXksZ6wFJk\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -74,9 +74,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface ICallProxy {\n    function call(\n        address _fallbackAddress,\n        address _receiver,\n        bytes memory _data\n    ) external payable returns (bool);\n\n    function callERC20(\n        address _token,\n        address _fallbackAddress,\n        address _receiver,\n        bytes memory _data\n    ) external returns (bool);\n}\n",
-  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ICallProxy.sol",
+  "sourcePath": "/root/debridge-contracts/contracts/interfaces/ICallProxy.sol",
   "ast": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ICallProxy.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/ICallProxy.sol",
     "exportedSymbols": {
       "ICallProxy": [
         1500
@@ -425,7 +425,7 @@
     "src": "32:364:5"
   },
   "legacyAST": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ICallProxy.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/ICallProxy.sol",
     "exportedSymbols": {
       "ICallProxy": [
         1500
@@ -779,7 +779,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-14T05:19:43.195Z",
+  "updatedAt": "2021-06-20T15:43:29.280Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

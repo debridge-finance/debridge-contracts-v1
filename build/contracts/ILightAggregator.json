@@ -62,7 +62,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"getSubmissionConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_confirmations\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"_blockConfirmationPassed\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"submit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"_submissionIds\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes[]\",\"name\":\"_signatures\",\"type\":\"bytes[]\"}],\"name\":\"submitMany\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightAggregator.sol\":\"ILightAggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightAggregator.sol\":{\"keccak256\":\"0x12010038f13d4a7a9de51baf39a9ce5a119029d956ba0cf77c32b069eb587f47\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://45e61a114c25195f77c6d2804229093b288b31191b3f4efa0e22919e9b4ca74a\",\"dweb:/ipfs/QmQ9DoDRx6M5XE3wJCofgAzKX1UFNVvAqL1dsGshEqswb1\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"}],\"name\":\"getSubmissionConfirmations\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"_confirmations\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"_blockConfirmationPassed\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_submissionId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"_signature\",\"type\":\"bytes\"}],\"name\":\"submit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"_submissionIds\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes[]\",\"name\":\"_signatures\",\"type\":\"bytes[]\"}],\"name\":\"submitMany\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/interfaces/ILightAggregator.sol\":\"ILightAggregator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/interfaces/ILightAggregator.sol\":{\"keccak256\":\"0x12010038f13d4a7a9de51baf39a9ce5a119029d956ba0cf77c32b069eb587f47\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://45e61a114c25195f77c6d2804229093b288b31191b3f4efa0e22919e9b4ca74a\",\"dweb:/ipfs/QmQ9DoDRx6M5XE3wJCofgAzKX1UFNVvAqL1dsGshEqswb1\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -71,9 +71,9 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface ILightAggregator {\n    function submitMany(\n        bytes32[] memory _submissionIds,\n        bytes[] memory _signatures\n    ) external;\n\n    function submit(bytes32 _submissionId, bytes memory _signature) external;\n\n    function getSubmissionConfirmations(bytes32 _submissionId)\n        external\n        view\n        returns (uint256 _confirmations, bool _blockConfirmationPassed);\n}\n",
-  "sourcePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightAggregator.sol",
+  "sourcePath": "/root/debridge-contracts/contracts/interfaces/ILightAggregator.sol",
   "ast": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightAggregator.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/ILightAggregator.sol",
     "exportedSymbols": {
       "ILightAggregator": [
         1736
@@ -408,7 +408,7 @@
     "src": "32:419:12"
   },
   "legacyAST": {
-    "absolutePath": "/Users/kstasi/Documents/side/debridge-contracts/contracts/interfaces/ILightAggregator.sol",
+    "absolutePath": "/root/debridge-contracts/contracts/interfaces/ILightAggregator.sol",
     "exportedSymbols": {
       "ILightAggregator": [
         1736
@@ -748,7 +748,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-14T05:19:43.225Z",
+  "updatedAt": "2021-06-20T15:43:29.283Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

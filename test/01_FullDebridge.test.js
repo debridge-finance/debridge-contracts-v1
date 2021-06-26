@@ -26,12 +26,24 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
+    this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
+      from: alice,
+    });
+    this.amountThreshols = toWei("1000");
     this.oraclePayment = toWei("0.001");
+    this.bonusPayment = toWei("0.001");
     this.minConfirmations = 1;
+    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+
     this.aggregator = await Aggregator.new(
       this.minConfirmations,
       this.oraclePayment,
+      this.bonusPayment,
       this.linkToken.address,
+      this.dbrToken.address,
+      this.confirmationThreshold,
+      this.excessConfirmations,
       {
         from: alice,
       }
@@ -82,9 +94,11 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       from: alice,
     });
     this.debridge = await deployProxy(Debridge, [
+      this.excessConfirmations,
       minAmount,
       maxAmount,
       minReserves,
+      this.amountThreshols,
       ZERO_ADDRESS,
       this.callProxy.address.toString(),
       supportedChainIds,
@@ -187,6 +201,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       const chainId = 56;
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -208,6 +223,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -254,6 +270,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       const chainId = await this.debridge.chainId();
       const minAmount = toWei("100");
       const maxAmount = toWei("100000000000");
+      const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -263,6 +280,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         minAmount,
         maxAmount,
         minReserves,
+        amountThreshold,
         supportedChainIds,
         [
           {
@@ -309,6 +327,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
           0,
           0,
           0,
+          0,
           [0],
           [
             {
@@ -329,6 +348,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       await expectRevert(
         this.debridge.addNativeAsset(
           ZERO_ADDRESS,
+          0,
           0,
           0,
           0,
@@ -511,6 +531,17 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
       });
+      await this.dbrToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.dbrToken.transferAndCall(
+        this.aggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
       await this.linkToken.transferAndCall(
         this.aggregator.address.toString(),
         newSupply,
