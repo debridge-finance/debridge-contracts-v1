@@ -68,7 +68,7 @@ contract OracleManager is Ownable {
     IPriceConsumer public priceConsumer;
 
     /* Events */
-    event Staked(address oracle, address collateral, uint256 amount);
+    event Staked(address oracle, address staker, address collateral, uint256 amount);
     event UnstakeRequested(address oracle, address collateral, address receipient, uint256 amount);
     event UnstakeExecuted(address oracle, uint256 withdrawalId);
     event UnstakeCancelled(address oracle, uint256 withdrawalId);
@@ -127,7 +127,7 @@ contract OracleManager is Ownable {
             uint256 price = priceConsumer.getPriceOfToken(_collateral);
             oracle.delegatorUSDAmounts[msg.sender] += _amount * price;
         }
-        emit Staked(_oracle, _collateral, _amount);
+        emit Staked(_oracle, msg.sender, _collateral, _amount);
     }
 
     /// @dev Withdraws oracle reward.
@@ -354,11 +354,17 @@ contract OracleManager is Ownable {
      * @param _token Address of token
      */
     function addCollateral(address _token) external onlyOwner() {
-        for (uint256 i = 0; i < collateralCount; i ++) {
-            if (collateralAddresses[i] == _token)
-                return;
-        }
-        collaterals[_token].isSupported = true;
+        if (!collaterals[_token].isSupported)
+            collaterals[_token].isSupported = true;
+    }
+
+    /**
+     * @dev Set disable a collateral
+     * @param _collateral address of collateral
+     */
+    function disableCollateral(address _collateral) external onlyOwner() {
+        if (collaterals[_collateral].isSupported)
+            collaterals[_collateral].isSupported = false;
     }
 
     /**
