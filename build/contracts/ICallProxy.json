@@ -74,7 +74,7 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.2;\r\n\r\ninterface ICallProxy {\r\n    function call(\r\n        address _fallbackAddress,\r\n        address _receiver,\r\n        bytes memory _data\r\n    ) external payable returns (bool);\r\n\r\n    function callERC20(\r\n        address _token,\r\n        address _fallbackAddress,\r\n        address _receiver,\r\n        bytes memory _data\r\n    ) external returns (bool);\r\n}\r\n",
-  "sourcePath": "D:\\Ethereum\\Debridge\\debridge-contracts-v1\\contracts\\interfaces\\ICallProxy.sol",
+  "sourcePath": "D:/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/ICallProxy.sol",
   "ast": {
     "absolutePath": "/D/Ethereum/Debridge/debridge-contracts-v1/contracts/interfaces/ICallProxy.sol",
     "exportedSymbols": {
@@ -779,7 +779,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-25T22:38:01.517Z",
+  "updatedAt": "2021-06-26T00:57:07.597Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

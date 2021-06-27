@@ -15,7 +15,7 @@ contract OracleManager is Ownable {
         bool executed; // whether is executed
         bool paused;    // whether is paused
         uint256 pausedTime; // paused timestamp
-        uint256 collateralId; // collateral identifier
+        address collateral; // collateral identifier
     }
 
     struct TransferInfo {
@@ -24,11 +24,11 @@ contract OracleManager is Ownable {
         address oracleFrom; // oracle that token is transferred from
         address oracleTo; // oracle that token is transferred to
         bool executed; // whether is executed
-        uint256 collateralId; // collateral identifier
+        address collateral; // collateral identifier
     }
 
     struct OracleInfo { // info of validator or delegator
-        mapping(uint256 => uint256) stake; // amount of stake per collateral
+        mapping(address => uint256) stake; // amount of stake per collateral
         address admin; // current oracle admin
         uint256 withdrawalCount; // withdrawals count
         uint256 transferCount;
@@ -38,43 +38,46 @@ contract OracleManager is Ownable {
         uint256 usdAmountOfDelegation;
         bool isOracle; // whether is oracles
         bool isAbleToDelegate;
-        mapping(address => mapping(uint256 => uint256)) delegatorStakes; // delegator stakes per collateral
+        mapping(address => mapping(address => uint256)) delegatorStakes; // delegator stakes per collateral
         mapping(address => uint256) delegatorUSDAmounts;
         mapping(uint256 => address) delegators; //delegator list
         uint256 delegatorCount; //delegator count
     }
 
     struct Collateral {
-        IERC20 token;
         uint256 confiscatedFunds; // total confiscated tokens
         uint256 totalLocked; // total staked tokens
+        bool isSupported;
     }
 
     struct Strategy {
         address strategy;
-        uint256 stakeToken;
-        uint256 rewardToken;
+        address stakeToken;
+        address rewardToken;
     }
 
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
     uint256 public timelock; // duration of withdrawal timelock
     uint256 public timelockForDelegate = 2 weeks;
-    Collateral[] public collaterals;
-    Strategy[] public strategies;
+    mapping(address => Collateral) public collaterals;
+    uint256 collateralCount;
+    mapping(uint256 => address) collateralAddresses;
+    mapping(uint256 => Strategy) public strategies;
+    uint256 public strategyCount;
     IStrategyController public strategyController;
     IPriceConsumer public priceConsumer;
 
     /* Events */
-    event Staked(address oracle, uint256 collateralId, uint256 amount);
-    event UnstakeRequested(address oracle, uint256 collateralId, address receipient, uint256 amount);
+    event Staked(address oracle, address collateral, uint256 amount);
+    event UnstakeRequested(address oracle, address collateral, address receipient, uint256 amount);
     event UnstakeExecuted(address oracle, uint256 withdrawalId);
     event UnstakeCancelled(address oracle, uint256 withdrawalId);
     event UnstakePaused(address oracle, uint256 withdrawalId, uint256 timestamp);
     event UnstakeResumed(address oracle, uint256 withdrawalId, uint256 timestamp);
-    event Liquidated(address oracle, uint256 collateralId, uint256 amount);
-    event DepositedToStrategy(address oracle, uint256 amount, uint256 strategy, uint256 collateralId);
-    event WithdrawedFromStrategy(address oracle, uint256 amount, uint256 strategy, uint256 collateralId);
-    event WithdrawedFunds(address recipient, uint256 collateralId, uint256 amount);
+    event Liquidated(address oracle, address collateral, uint256 amount);
+    event DepositedToStrategy(address oracle, uint256 amount, uint256 strategy, address collateral);
+    event WithdrawedFromStrategy(address oracle, uint256 amount, uint256 strategy, address collateral);
+    event WithdrawedFunds(address recipient, address collateral, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
 
@@ -90,15 +93,15 @@ contract OracleManager is Ownable {
 
     /// @dev Withdraws oracle reward.
     /// @param _oracle Oracle address.
-    /// @param _collateralId Index of collateral
+    /// @param _collateral address of collateral
     /// @param _amount Amount to withdraw.
-    function stake(address _oracle, uint256 _collateralId, uint256 _amount) external {
+    function stake(address _oracle, address _collateral, uint256 _amount) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
+        Collateral storage collateral = collaterals[_collateral];
         require(
-            _collateralId < collaterals.length,
+            collateral.isSupported,
             "stake: undefined collateral"
         );
-        Collateral storage collateral = collaterals[_collateralId];
 
         uint256 totalUSDAmount = 0;
         for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
@@ -107,34 +110,34 @@ contract OracleManager is Ownable {
         }
         OracleInfo storage sender = getOracleInfo[msg.sender];
         if (sender.isOracle == false && msg.sender != oracle.admin) {
-            uint256 collateralPrice = priceConsumer.getPriceOfToken(address(collateral.token));
+            uint256 collateralPrice = priceConsumer.getPriceOfToken(_collateral);
             require(totalUSDAmount + collateralPrice * _amount <= oracle.usdAmountOfDelegation, "stake: amount of delegation is limited");
         }
 
         require(
-            collateral.token.transferFrom(msg.sender, address(this), _amount),
+            IERC20(_collateral).transferFrom(msg.sender, address(this), _amount),
             "stake: transfer failed"
         );
-        oracle.stake[_collateralId] += _amount;
+        oracle.stake[_collateral] += _amount;
         collateral.totalLocked += _amount;
         if (sender.isOracle == false && msg.sender != oracle.admin) {
             oracle.delegators[oracle.delegatorCount] = msg.sender;
             oracle.delegatorCount ++;
-            oracle.delegatorStakes[msg.sender][_collateralId] += _amount;
-            uint256 price = priceConsumer.getPriceOfToken(address(collateral.token));
+            oracle.delegatorStakes[msg.sender][_collateral] += _amount;
+            uint256 price = priceConsumer.getPriceOfToken(_collateral);
             oracle.delegatorUSDAmounts[msg.sender] += _amount * price;
         }
-        emit Staked(_oracle, _collateralId, _amount);
+        emit Staked(_oracle, _collateral, _amount);
     }
 
     /// @dev Withdraws oracle reward.
     /// @param _oracle Oracle address.
-    /// @param _collateralId Index of collateral
+    /// @param _collateral Index of collateral
     /// @param _recipient Recepient reward.
     /// @param _amount Amount to withdraw.
     function requestUnstake(
         address _oracle,
-        uint256 _collateralId,
+        address _collateral,
         address _recipient,
         uint256 _amount
     ) external {
@@ -142,26 +145,26 @@ contract OracleManager is Ownable {
         if (_amount == 0) {
             return;
         }
+        Collateral storage collateral = collaterals[_collateral];
         require(
-            _collateralId < collaterals.length,
+            collateral.isSupported,
             "requestUnstake: undefined collateral"
         );
-        uint256 available = oracle.stake[_collateralId];
+        uint256 available = oracle.stake[_collateral];
         require(
             available >= _amount,
             "requestUnstake: insufficient withdrawable funds"
         );
-        Collateral storage collateral = collaterals[_collateralId];
         OracleInfo storage sender = getOracleInfo[msg.sender];
         if (sender.isOracle == false && msg.sender != oracle.admin) {
-            require(oracle.delegatorStakes[msg.sender][_collateralId] >= _amount, "requestUnstake: insufficient amount");
-            oracle.delegatorStakes[msg.sender][_collateralId] -= _amount;
-            uint256 price = priceConsumer.getPriceOfToken(address(collateral.token));
+            require(oracle.delegatorStakes[msg.sender][_collateral] >= _amount, "requestUnstake: insufficient amount");
+            oracle.delegatorStakes[msg.sender][_collateral] -= _amount;
+            uint256 price = priceConsumer.getPriceOfToken(_collateral);
             oracle.delegatorUSDAmounts[msg.sender] = price * _amount;
         }
         else require(msg.sender == oracle.admin, "requestUnstake: only callable by admin");
 
-        oracle.stake[_collateralId] = available - _amount;
+        oracle.stake[_collateral] = available - _amount;
         collateral.totalLocked -= _amount;
 
         oracle.withdrawals[oracle.withdrawalCount] = WithdrawalInfo(
@@ -171,10 +174,10 @@ contract OracleManager is Ownable {
             false,
             false,
             0,
-            _collateralId
+            _collateral
         );
         oracle.withdrawalCount++;
-        emit UnstakeRequested(_oracle, _collateralId, _recipient, _amount);
+        emit UnstakeRequested(_oracle, _collateral, _recipient, _amount);
     }
 
     /// @dev Withdraw stake.
@@ -197,9 +200,8 @@ contract OracleManager is Ownable {
             "executeUnstake: too early"
         );
         withdrawal.executed = true;
-        Collateral memory collateral = collaterals[withdrawal.collateralId];
         require(
-            collateral.token.transfer(withdrawal.receiver, withdrawal.amount),
+            IERC20(withdrawal.collateral).transfer(withdrawal.receiver, withdrawal.amount),
             "executeUnstake: transfer failed"
         );
 
@@ -209,32 +211,33 @@ contract OracleManager is Ownable {
      * @dev request to move assets between oracles
      * @param _oracleFrom Address of oracle sender
      * @param _oracleTo Address of oracle receiver
-     * @param _collateralId Id of collateral
+     * @param _collateral address of collateral
      * @param _amount Amount of collateral
      */
-    function requestTransfer(address _oracleFrom, address _oracleTo, uint256 _collateralId, uint256 _amount) external {
+    function requestTransfer(address _oracleFrom, address _oracleTo, address _collateral, uint256 _amount) external {
         OracleInfo storage oracleFrom = getOracleInfo[_oracleFrom];
         OracleInfo storage oracleTo = getOracleInfo[_oracleTo];
 
+        Collateral memory collateral = collaterals[_collateral];
         require(
-            _collateralId < collaterals.length,
+            collateral.isSupported,
             "requestUnstake: undefined collateral"
         );
         OracleInfo storage sender = getOracleInfo[msg.sender];
         require(sender.isOracle == false, "requestTransfer: callable by delegator");
-        require(oracleFrom.stake[_collateralId] >= _amount, "transferAssets: Insufficient amount");
-        require(oracleFrom.delegatorStakes[msg.sender][_collateralId] >= _amount, "transferAssets: Insufficient amount for delegator");
-        oracleFrom.stake[_collateralId] -= _amount;
-        oracleTo.stake[_collateralId] += _amount;
-        oracleFrom.delegatorStakes[msg.sender][_collateralId] -= _amount;
-        oracleTo.delegatorStakes[msg.sender][_collateralId] += _amount;
+        require(oracleFrom.stake[_collateral] >= _amount, "transferAssets: Insufficient amount");
+        require(oracleFrom.delegatorStakes[msg.sender][_collateral] >= _amount, "transferAssets: Insufficient amount for delegator");
+        oracleFrom.stake[_collateral] -= _amount;
+        oracleTo.stake[_collateral] += _amount;
+        oracleFrom.delegatorStakes[msg.sender][_collateral] -= _amount;
+        oracleTo.delegatorStakes[msg.sender][_collateral] += _amount;
         sender.transfers[sender.transferCount] = TransferInfo(
             _amount,
             block.timestamp + timelockForDelegate,
             _oracleFrom,
             _oracleTo,
             false,
-            _collateralId
+            _collateral
         );
         sender.transferCount ++;
         emit TransferRequested(msg.sender, sender.transferCount - 1);
@@ -271,8 +274,9 @@ contract OracleManager is Ownable {
     function depositToStrategy(address _oracle, uint256 _amount, uint256 _strategy) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
+        require(_strategy <= strategyCount, "depositToStrategy: strategy not exist");
         Strategy memory strategy = strategies[_strategy];
-        Collateral storage collateral = collaterals[strategy.stakeToken];
+        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         require(oracle.stake[strategy.stakeToken] >= _amount, "depositToStrategy: Insufficient fund");
         // strategyController.deposit(_strategy, address(collateral.token), _amount);
         oracle.stake[strategy.stakeToken] -= _amount;
@@ -285,6 +289,7 @@ contract OracleManager is Ownable {
     function withdrawFromStrategy(address _oracle, uint256 _amount, uint256 _strategy) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
+        require(_strategy <= strategyCount, "depositToStrategy: strategy not exist");
         Strategy memory strategy = strategies[_strategy];
         Collateral storage collateral = collaterals[strategy.rewardToken];
         // strategyController.withdraw(_strategy, address(collateral.token), _amount);
@@ -348,12 +353,12 @@ contract OracleManager is Ownable {
      * @dev Add a new collateral
      * @param _token Address of token
      */
-    function addCollateral(IERC20 _token) external onlyOwner() {
-        for (uint256 i = 0; i < collaterals.length; i ++) {
-            if (address(collaterals[i].token) == address(_token))
+    function addCollateral(address _token) external onlyOwner() {
+        for (uint256 i = 0; i < collateralCount; i ++) {
+            if (collateralAddresses[i] == _token)
                 return;
         }
-        collaterals.push(Collateral(_token, 0, 0));
+        collaterals[_token].isSupported = true;
     }
 
     /**
@@ -362,8 +367,11 @@ contract OracleManager is Ownable {
      * @param _stakeToken collateralId of stakeToken
      * @param _rewardToken collateralId of rewardToken 
      */
-    function addStrategy(address _strategy, uint256 _stakeToken, uint256 _rewardToken) external onlyOwner() {
-        strategies.push(Strategy(_strategy, _stakeToken, _rewardToken));
+    function addStrategy(address _strategy, address _stakeToken, address _rewardToken) external onlyOwner() {
+        strategies[strategyCount].strategy = _strategy;
+        strategies[strategyCount].stakeToken = _stakeToken;
+        strategies[strategyCount].rewardToken = _rewardToken;
+        strategyCount ++;
     }
 
     /// @dev Cancel unstake.
@@ -376,45 +384,45 @@ contract OracleManager is Ownable {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
         require(!withdrawal.executed, "cancelUnstake: already executed");
-        Collateral storage collateral = collaterals[withdrawal.collateralId];
+        Collateral storage collateral = collaterals[withdrawal.collateral];
         withdrawal.executed = true;
-        oracle.stake[withdrawal.collateralId] += withdrawal.amount;
+        oracle.stake[withdrawal.collateral] += withdrawal.amount;
         collateral.totalLocked += withdrawal.amount;
         emit UnstakeCancelled(_oracle, _withdrawalId);
     }
 
     /// @dev Withdraws confiscated tokens.
     /// @param _oracle Oracle address.
-    /// @param _collateralId Index of collateral
+    /// @param _collateral Index of collateral
     /// @param _amount Amount to withdraw.
-    function liquidate(address _oracle, uint256 _collateralId, uint256 _amount) external onlyOwner() {
+    function liquidate(address _oracle, address _collateral, uint256 _amount) external onlyOwner() {
         OracleInfo storage oracle = getOracleInfo[_oracle];
-        require(oracle.stake[_collateralId] >= _amount, "liquidate: insufficient balance");
-        Collateral storage collateral = collaterals[_collateralId];
-        oracle.stake[_collateralId] -= _amount;
+        require(oracle.stake[_collateral] >= _amount, "liquidate: insufficient balance");
+        Collateral storage collateral = collaterals[_collateral];
+        oracle.stake[_collateral] -= _amount;
         collateral.confiscatedFunds += _amount;
         collateral.totalLocked -= _amount;
-        emit Liquidated(_oracle, _collateralId, _amount);
+        emit Liquidated(_oracle, _collateral, _amount);
     }
 
     /// @dev Withdraws confiscated tokens.
     /// @param _recipient Recepient reward.
     /// @param _amount Amount to withdraw.
-    function withdrawFunds(address _recipient, uint256 _collateralId, uint256 _amount)
+    function withdrawFunds(address _recipient, address _collateral, uint256 _amount)
         external
         onlyOwner()
     {
-        Collateral storage collateral = collaterals[_collateralId];
+        Collateral storage collateral = collaterals[_collateral];
         require(
             uint256(collateral.confiscatedFunds) >= _amount,
             "withdrawFunds: insufficient reserve funds"
         );
         require(
-            collateral.token.transfer(_recipient, _amount),
+            IERC20(_collateral).transfer(_recipient, _amount),
             "withdrawFunds: transfer failed"
         );
         collateral.confiscatedFunds -= _amount;
-        emit WithdrawedFunds(_recipient, _collateralId, _amount);
+        emit WithdrawedFunds(_recipient, _collateral, _amount);
     }
 
     /**
@@ -472,10 +480,10 @@ contract OracleManager is Ownable {
     /**
      * @dev accounts add assets to oracle
      * @param _oracle address of oracle
-     * @param _collateralId collateralId oracle
+     * @param _collateral collateralId oracle
      * @param _amount amount of token
      */
-    function account_asset(address _oracle, uint256 _collateralId, uint256 _amount) public {
+    function account_asset(address _oracle, address _collateral, uint256 _amount) public {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         uint256 share = _amount * oracle.profitSharing / 100;
 
@@ -484,13 +492,13 @@ contract OracleManager is Ownable {
             address delegator = oracle.delegators[i];
             totalUSDAmount += oracle.delegatorUSDAmounts[delegator];
         }
-        Collateral storage collateral = collaterals[_collateralId];
+        Collateral storage collateral = collaterals[_collateral];
         collateral.totalLocked += _amount;
-        oracle.stake[_collateralId] += _amount;
+        oracle.stake[_collateral] += _amount;
         if (totalUSDAmount != 0) {
             for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
                 address delegator = oracle.delegators[i];
-                oracle.delegatorStakes[delegator][_collateralId] += share * oracle.delegatorUSDAmounts[delegator] / totalUSDAmount;
+                oracle.delegatorStakes[delegator][_collateral] += share * oracle.delegatorUSDAmounts[delegator] / totalUSDAmount;
             }
         }
     }
@@ -522,20 +530,20 @@ contract OracleManager is Ownable {
     /** 
      * @dev get stake property of oracle
      * @param _oracle address of oracle
-     * @param _collateralId Index of collateral
+     * @param _collateral Address of collateral
      */
-    function getOracleStaking(address _oracle, uint256 _collateralId) public view returns (uint256) {
-        return getOracleInfo[_oracle].stake[_collateralId];
+    function getOracleStaking(address _oracle, address _collateral) public view returns (uint256) {
+        return getOracleInfo[_oracle].stake[_collateral];
     }
 
     /**
      * @dev get delegator stakes
      * @param _oracle address of oracle
      * @param _delegator address of delegator
-     * @param _collateralId Index of collateral
+     * @param _collateral Address of collateral
      */
-    function getDelegatorStakes(address _oracle, address _delegator, uint256 _collateralId) public view returns(uint256) {
-        return getOracleInfo[_oracle].delegatorStakes[_delegator][_collateralId];
+    function getDelegatorStakes(address _oracle, address _delegator, address _collateral) public view returns(uint256) {
+        return getOracleInfo[_oracle].delegatorStakes[_delegator][_collateral];
     }
 
     function min(uint256 a, uint256 b) internal pure returns(uint256) {
