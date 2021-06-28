@@ -48,10 +48,13 @@ contract OracleManager is Ownable {
         uint256 confiscatedFunds; // total confiscated tokens
         uint256 totalLocked; // total staked tokens
         bool isSupported;
+        bool isUSDStable;
+        bool isEnabled;
     }
 
     struct Strategy {
-        address strategy;
+        bool isSupported;
+        bool isEnabled;
         address stakeToken;
         address rewardToken;
     }
@@ -60,10 +63,9 @@ contract OracleManager is Ownable {
     uint256 public timelock; // duration of withdrawal timelock
     uint256 public timelockForDelegate = 2 weeks;
     mapping(address => Collateral) public collaterals;
-    uint256 collateralCount;
-    mapping(uint256 => address) collateralAddresses;
-    mapping(uint256 => Strategy) public strategies;
-    uint256 public strategyCount;
+    address[] public collateralAddresses;
+    mapping(address => Strategy) public strategies;
+    address[] public strategyAddresses;
     IStrategyController public strategyController;
     IPriceConsumer public priceConsumer;
 
@@ -75,8 +77,8 @@ contract OracleManager is Ownable {
     event UnstakePaused(address oracle, uint256 withdrawalId, uint256 timestamp);
     event UnstakeResumed(address oracle, uint256 withdrawalId, uint256 timestamp);
     event Liquidated(address oracle, address collateral, uint256 amount);
-    event DepositedToStrategy(address oracle, uint256 amount, uint256 strategy, address collateral);
-    event WithdrawedFromStrategy(address oracle, uint256 amount, uint256 strategy, address collateral);
+    event DepositedToStrategy(address oracle, uint256 amount, address strategy, address collateral);
+    event WithdrawedFromStrategy(address oracle, uint256 amount, address strategy, address collateral);
     event WithdrawedFunds(address recipient, address collateral, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
@@ -110,7 +112,10 @@ contract OracleManager is Ownable {
         }
         OracleInfo storage sender = getOracleInfo[msg.sender];
         if (sender.isOracle == false && msg.sender != oracle.admin) {
-            uint256 collateralPrice = priceConsumer.getPriceOfToken(_collateral);
+            uint256 collateralPrice;
+            if (collaterals[_collateral].isUSDStable)
+                collateralPrice = 1;
+            else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
             require(totalUSDAmount + collateralPrice * _amount <= oracle.usdAmountOfDelegation, "stake: amount of delegation is limited");
         }
 
@@ -124,7 +129,10 @@ contract OracleManager is Ownable {
             oracle.delegators[oracle.delegatorCount] = msg.sender;
             oracle.delegatorCount ++;
             oracle.delegatorStakes[msg.sender][_collateral] += _amount;
-            uint256 price = priceConsumer.getPriceOfToken(_collateral);
+            uint256 price;
+            if (collateral.isUSDStable)
+                price = 1;
+            else price = priceConsumer.getPriceOfToken(_collateral);
             oracle.delegatorUSDAmounts[msg.sender] += _amount * price;
         }
         emit Staked(_oracle, msg.sender, _collateral, _amount);
@@ -159,7 +167,10 @@ contract OracleManager is Ownable {
         if (sender.isOracle == false && msg.sender != oracle.admin) {
             require(oracle.delegatorStakes[msg.sender][_collateral] >= _amount, "requestUnstake: insufficient amount");
             oracle.delegatorStakes[msg.sender][_collateral] -= _amount;
-            uint256 price = priceConsumer.getPriceOfToken(_collateral);
+            uint256 price;
+            if (collateral.isUSDStable)
+                price = 1;
+            else price = priceConsumer.getPriceOfToken(_collateral);
             oracle.delegatorUSDAmounts[msg.sender] = price * _amount;
         }
         else require(msg.sender == oracle.admin, "requestUnstake: only callable by admin");
@@ -271,11 +282,11 @@ contract OracleManager is Ownable {
      * @param _amount Amount to be staked
      * @param _strategy strategy to stake into.
      */
-    function depositToStrategy(address _oracle, uint256 _amount, uint256 _strategy) external {
+    function depositToStrategy(address _oracle, uint256 _amount, address _strategy) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
-        require(_strategy <= strategyCount, "depositToStrategy: strategy not exist");
         Strategy memory strategy = strategies[_strategy];
+        require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         require(oracle.stake[strategy.stakeToken] >= _amount, "depositToStrategy: Insufficient fund");
         // strategyController.deposit(_strategy, address(collateral.token), _amount);
@@ -286,11 +297,11 @@ contract OracleManager is Ownable {
     /**
      * @dev Earn from the strategy
      */
-    function withdrawFromStrategy(address _oracle, uint256 _amount, uint256 _strategy) external {
+    function withdrawFromStrategy(address _oracle, uint256 _amount, address _strategy) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
-        require(_strategy <= strategyCount, "depositToStrategy: strategy not exist");
         Strategy memory strategy = strategies[_strategy];
+        require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         Collateral storage collateral = collaterals[strategy.rewardToken];
         // strategyController.withdraw(_strategy, address(collateral.token), _amount);
         oracle.stake[strategy.rewardToken] += _amount;
@@ -353,18 +364,29 @@ contract OracleManager is Ownable {
      * @dev Add a new collateral
      * @param _token Address of token
      */
-    function addCollateral(address _token) external onlyOwner() {
-        if (!collaterals[_token].isSupported)
+    function addCollateral(address _token, bool _isUSDStable) external onlyOwner() {
+        if (!collaterals[_token].isSupported){
             collaterals[_token].isSupported = true;
+            collaterals[_token].isEnabled = true;
+            collaterals[_token].isUSDStable = _isUSDStable;
+            collateralAddresses.push(_token);
+        }
     }
 
     /**
      * @dev Set disable a collateral
      * @param _collateral address of collateral
      */
-    function disableCollateral(address _collateral) external onlyOwner() {
-        if (collaterals[_collateral].isSupported)
+    function removeCollateral(address _collateral) external onlyOwner() {
+        if (collaterals[_collateral].isSupported) {
             collaterals[_collateral].isSupported = false;
+            collaterals[_collateral].isEnabled = false;
+            uint256 i;
+            for (i = 0; i < collateralAddresses.length; i ++)
+                if (collateralAddresses[i] == _collateral)
+                    break;
+            delete collateralAddresses[i];   
+        }
     }
 
     /**
@@ -374,10 +396,45 @@ contract OracleManager is Ownable {
      * @param _rewardToken collateralId of rewardToken 
      */
     function addStrategy(address _strategy, address _stakeToken, address _rewardToken) external onlyOwner() {
-        strategies[strategyCount].strategy = _strategy;
-        strategies[strategyCount].stakeToken = _stakeToken;
-        strategies[strategyCount].rewardToken = _rewardToken;
-        strategyCount ++;
+        Strategy storage strategy = strategies[_strategy];
+        require(!strategy.isSupported, "addStrategy: already exist");
+        strategy.stakeToken = _stakeToken;
+        strategy.rewardToken = _rewardToken;
+        strategy.isSupported = true;
+        strategy.isEnabled = true;
+        strategyAddresses.push(_strategy);
+    }
+
+    /**
+     * @dev enable collateral
+     * @param _collateral address of collateral
+     */
+    function enableCollateral(address _collateral) external onlyOwner() {
+        collaterals[_collateral].isEnabled = true;
+    }
+
+    /**
+     * @dev disable collateral
+     * @param _collateral address of collateral
+     */
+    function disableCollateral(address _collateral) external onlyOwner() {
+        collaterals[_collateral].isEnabled = false;
+    }
+
+    /**
+     * @dev enable strategy
+     * @param _strategy address of strategy
+     */
+    function enableStrategy(address _strategy) external onlyOwner() {
+        strategies[_strategy].isEnabled = true;
+    }
+
+    /**
+     * @dev enable collateral
+     * @param _strategy address of strategy
+     */
+    function disableStrategy(address _strategy) external onlyOwner() {
+        collaterals[_strategy].isEnabled = false;
     }
 
     /// @dev Cancel unstake.

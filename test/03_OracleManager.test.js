@@ -37,7 +37,7 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
         from: alice,
       }
     );
-    await this.oracleManager.addCollateral(this.linkToken.address);
+    await this.oracleManager.addCollateral(this.linkToken.address, false);
     await this.oracleManager.addOracle(bob, alice);
     await this.oracleManager.setProfitSharing(bob, 0);
     await this.oracleManager.setUsdAmountOfDelegation(bob, toBN(0));
@@ -725,7 +725,7 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
     it("should decrease staking after deposit", async function() {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
-      const strategy = 0;
+      const strategy = this.mockStrategy.address;
 
       const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collateral);
       await this.oracleManager.depositToStrategy(bob, amount, strategy);
@@ -738,7 +738,7 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
     });
     it("should fail when deposit insufficient fund", async function() {
       const amount = toWei("320000");
-      const strategy = 0;
+      const strategy = this.mockStrategy.address;
       await expectRevert(this.oracleManager.depositToStrategy(bob, amount, strategy, { from: alice }), "depositToStrategy: Insufficient fund");
     });
   });
@@ -747,7 +747,7 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
     it("should increase staking after withdraw", async function() {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
-      const strategy = 0;
+      const strategy = this.mockStrategy.address;
 
       const prevOracleStake = await this.oracleManager.getOracleStaking(bob, collateral);
       await this.oracleManager.withdrawFromStrategy(bob, amount, strategy);
