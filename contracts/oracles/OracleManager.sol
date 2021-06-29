@@ -374,22 +374,6 @@ contract OracleManager is Ownable {
     }
 
     /**
-     * @dev Set disable a collateral
-     * @param _collateral address of collateral
-     */
-    function removeCollateral(address _collateral) external onlyOwner() {
-        if (collaterals[_collateral].isSupported) {
-            collaterals[_collateral].isSupported = false;
-            collaterals[_collateral].isEnabled = false;
-            uint256 i;
-            for (i = 0; i < collateralAddresses.length; i ++)
-                if (collateralAddresses[i] == _collateral)
-                    break;
-            delete collateralAddresses[i];   
-        }
-    }
-
-    /**
      * @dev Add a new strategy
      * @param _strategy address to strategy
      * @param _stakeToken collateralId of stakeToken
