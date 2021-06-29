@@ -164,7 +164,7 @@ contract OracleManager is Ownable {
         );
         require(
             collateral.isEnabled,
-            "stake: collateral is not enabled"
+            "requestUnstake: collateral is not enabled"
         );
         uint256 available = oracle.stake[_collateral];
         require(
@@ -244,7 +244,7 @@ contract OracleManager is Ownable {
         );
         require(
             collateral.isEnabled,
-            "stake: collateral is not enabled"
+            "requestTransfer: collateral is not enabled"
         );
         OracleInfo storage sender = getOracleInfo[msg.sender];
         require(sender.isOracle == false, "requestTransfer: callable by delegator");
@@ -417,7 +417,7 @@ contract OracleManager is Ownable {
      * @param _strategy address of strategy
      * @param _isEnabled bool of enable
      */
-    function enableStrategy(address _strategy, bool _isEnabled) external onlyOwner() {
+    function updateStrategy(address _strategy, bool _isEnabled) external onlyOwner() {
         strategies[_strategy].isEnabled = _isEnabled;
     }
 
@@ -499,11 +499,11 @@ contract OracleManager is Ownable {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         uint256 i;
         for (i = 0; i < oracle.withdrawalCount; i ++) {
-            WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
+            WithdrawalInfo storage withdrawal = oracle.withdrawals[i];
             if (withdrawal.paused == true && withdrawal.executed == false) {
                 withdrawal.paused = false;
                 withdrawal.timelock += block.timestamp - withdrawal.pausedTime;
-                emit UnstakeResumed(_oracle, _withdrawalId, block.timestamp);
+                emit UnstakeResumed(_oracle, i, block.timestamp);
             }
         }
     }
