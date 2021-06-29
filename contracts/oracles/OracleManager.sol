@@ -104,6 +104,10 @@ contract OracleManager is Ownable {
             collateral.isSupported,
             "stake: undefined collateral"
         );
+        require(
+            collateral.isEnabled,
+            "stake: collateral is not enabled"
+        );
 
         uint256 totalUSDAmount = 0;
         for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
@@ -157,6 +161,10 @@ contract OracleManager is Ownable {
         require(
             collateral.isSupported,
             "requestUnstake: undefined collateral"
+        );
+        require(
+            collateral.isEnabled,
+            "stake: collateral is not enabled"
         );
         uint256 available = oracle.stake[_collateral];
         require(
@@ -234,6 +242,10 @@ contract OracleManager is Ownable {
             collateral.isSupported,
             "requestUnstake: undefined collateral"
         );
+        require(
+            collateral.isEnabled,
+            "stake: collateral is not enabled"
+        );
         OracleInfo storage sender = getOracleInfo[msg.sender];
         require(sender.isOracle == false, "requestTransfer: callable by delegator");
         require(oracleFrom.stake[_collateral] >= _amount, "transferAssets: Insufficient amount");
@@ -287,6 +299,7 @@ contract OracleManager is Ownable {
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
         Strategy memory strategy = strategies[_strategy];
         require(strategy.isSupported, "depositToStrategy: strategy is not supported");
+        require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         require(oracle.stake[strategy.stakeToken] >= _amount, "depositToStrategy: Insufficient fund");
         // strategyController.deposit(_strategy, address(collateral.token), _amount);
@@ -302,6 +315,7 @@ contract OracleManager is Ownable {
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
         Strategy memory strategy = strategies[_strategy];
         require(strategy.isSupported, "depositToStrategy: strategy is not supported");
+        require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage collateral = collaterals[strategy.rewardToken];
         // strategyController.withdraw(_strategy, address(collateral.token), _amount);
         oracle.stake[strategy.rewardToken] += _amount;
@@ -392,33 +406,19 @@ contract OracleManager is Ownable {
     /**
      * @dev enable collateral
      * @param _collateral address of collateral
+     * @param _isEnabled bool of enable
      */
-    function enableCollateral(address _collateral) external onlyOwner() {
-        collaterals[_collateral].isEnabled = true;
-    }
-
-    /**
-     * @dev disable collateral
-     * @param _collateral address of collateral
-     */
-    function disableCollateral(address _collateral) external onlyOwner() {
-        collaterals[_collateral].isEnabled = false;
+    function updatedCollateral(address _collateral, bool _isEnabled) external onlyOwner() {
+        collaterals[_collateral].isEnabled = _isEnabled;
     }
 
     /**
      * @dev enable strategy
      * @param _strategy address of strategy
+     * @param _isEnabled bool of enable
      */
-    function enableStrategy(address _strategy) external onlyOwner() {
-        strategies[_strategy].isEnabled = true;
-    }
-
-    /**
-     * @dev enable collateral
-     * @param _strategy address of strategy
-     */
-    function disableStrategy(address _strategy) external onlyOwner() {
-        collaterals[_strategy].isEnabled = false;
+    function enableStrategy(address _strategy, bool _isEnabled) external onlyOwner() {
+        strategies[_strategy].isEnabled = _isEnabled;
     }
 
     /// @dev Cancel unstake.
