@@ -6,4 +6,5 @@ interface IStrategyController {
     function revokeStrategy(address _strategy) external;
     function deposit(address _strategy, address _token, uint256 _amount) external;
     function withdraw(address _strategy, address _token, uint256 _amount) external;
+    function withdrawAll(address _strategy, address _token) external;
 }

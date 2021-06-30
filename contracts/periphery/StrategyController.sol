@@ -62,6 +62,15 @@ IStrategyController {
         IStrategy(_strategy).withdraw(_token, _amount);
     }
 
+    /**
+     * @dev Withdraw token from strategy
+     * @param _strategy Address of strategy
+     * @param _token Address of token
+     */
+    function withdrawAll(address _strategy, address _token) external override{
+        
+    }
+
     /* modifiers */
 
     modifier onlyGovernance() {
