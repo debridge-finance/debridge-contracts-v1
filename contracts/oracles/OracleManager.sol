@@ -98,7 +98,7 @@ contract OracleManager is Ownable {
         priceConsumer = _priceConsumer;
     }
 
-    /// @dev Withdraws oracle reward.
+    /// @dev stack collateral to oracle.
     /// @param _oracle Oracle address.
     /// @param _collateral address of collateral
     /// @param _amount Amount to withdraw.
