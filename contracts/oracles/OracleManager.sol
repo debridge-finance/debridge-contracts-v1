@@ -434,9 +434,12 @@ contract OracleManager is Ownable {
     /// @param _withdrawalId Withdrawal identifier.
     function cancelUnstake(address _oracle, uint256 _withdrawalId)
         external
-        onlyOwner()
     {
         OracleInfo storage oracle = getOracleInfo[_oracle];
+        require(
+            oracle.admin == msg.sender,
+            "executeUnstake: only callable by admin"
+        );
         WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
         require(!withdrawal.executed, "cancelUnstake: already executed");
         Collateral storage collateral = collaterals[withdrawal.collateral];
