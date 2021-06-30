@@ -52,6 +52,7 @@ contract OracleManager is Ownable {
     struct Collateral {
         uint256 confiscatedFunds; // total confiscated tokens
         uint256 totalLocked; // total staked tokens
+        uint8 decimals;
         bool isSupported;
         bool isUSDStable;
         bool isEnabled;
@@ -125,6 +126,7 @@ contract OracleManager is Ownable {
             if (collaterals[_collateral].isUSDStable)
                 collateralPrice = 1;
             else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
+            collateralPrice *= 10 ** (18 - collaterals[_collateral].decimals);
             require(totalUSDAmount + collateralPrice * _amount <= oracle.usdAmountOfDelegation, "stake: amount of delegation is limited");
         }
 
@@ -144,6 +146,7 @@ contract OracleManager is Ownable {
             if (collateral.isUSDStable)
                 price = 1;
             else price = priceConsumer.getPriceOfToken(_collateral);
+            price *= 10 ** (18 - collateral.decimals);
             oracle.delegators[msg.sender].usdAmount += _amount * price;
         }
         emit Staked(_oracle, msg.sender, _collateral, _amount);
@@ -187,7 +190,8 @@ contract OracleManager is Ownable {
             if (collateral.isUSDStable)
                 price = 1;
             else price = priceConsumer.getPriceOfToken(_collateral);
-            delegator.usdAmount = price * _amount;
+            price *= 10 ** (18 - collaterals[_collateral].decimals);
+            delegator.usdAmount -= price * _amount;
         }
         else require(msg.sender == oracle.admin, "requestUnstake: only callable by admin");
 
@@ -386,11 +390,13 @@ contract OracleManager is Ownable {
      * @dev Add a new collateral
      * @param _token Address of token
      */
-    function addCollateral(address _token, bool _isUSDStable) external onlyOwner() {
-        if (!collaterals[_token].isSupported){
-            collaterals[_token].isSupported = true;
-            collaterals[_token].isEnabled = true;
-            collaterals[_token].isUSDStable = _isUSDStable;
+    function addCollateral(address _token, uint8 _decimals, bool _isUSDStable) external onlyOwner() {
+        Collateral storage collateral = collaterals[_token];
+        if (!collateral.isSupported){
+            collateral.isSupported = true;
+            collateral.isEnabled = true;
+            collateral.isUSDStable = _isUSDStable;
+            collateral.decimals = _decimals;
             collateralAddresses.push(_token);
         }
     }

@@ -37,7 +37,7 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
         from: alice,
       }
     );
-    await this.oracleManager.addCollateral(this.linkToken.address, false);
+    await this.oracleManager.addCollateral(this.linkToken.address, 18, false);
     await this.oracleManager.addOracle(bob, alice);
     await this.oracleManager.setProfitSharing(bob, 0);
     await this.oracleManager.setUsdAmountOfDelegation(bob, toBN(0));
