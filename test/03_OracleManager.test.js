@@ -44,7 +44,6 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
     await this.oracleManager.addOracle(david, alice);
     await this.oracleManager.setProfitSharing(david, 25);
     await this.oracleManager.setUsdAmountOfDelegation(david, toBN(toWei("500")));
-    await this.oracleManager.addDelegator(eve);
     await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, 5);
     await this.strategyController.approveStrategy(this.mockStrategy.address);
     await this.oracleManager.addStrategy(this.mockStrategy.address, this.linkToken.address, this.linkToken.address);

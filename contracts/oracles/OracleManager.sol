@@ -121,6 +121,8 @@ contract OracleManager is Ownable {
             totalUSDAmount += oracle.delegators[delegator].usdAmount;
         }
         OracleInfo storage sender = getOracleInfo[msg.sender];
+        if (!sender.isOracle && sender.admin == address(0)) 
+            sender.admin = msg.sender;
         if (sender.isOracle == false && msg.sender != oracle.admin) {
             uint256 collateralPrice;
             if (collaterals[_collateral].isUSDStable)
@@ -377,13 +379,6 @@ contract OracleManager is Ownable {
     function addOracle(address _oracle, address _admin) external onlyOwner() {
         getOracleInfo[_oracle].admin = _admin;
         getOracleInfo[_oracle].isOracle = true;
-    }
-
-    /// @dev Add new delegator.
-    /// @param _delegator Oracle address.
-    function addDelegator(address _delegator) external onlyOwner() {
-        getOracleInfo[_delegator].admin = _delegator;
-        getOracleInfo[_delegator].isOracle = false;
     }
 
     /**
