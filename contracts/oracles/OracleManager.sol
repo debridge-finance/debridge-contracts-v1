@@ -95,6 +95,7 @@ contract OracleManager is Ownable {
     event Liquidated(address oracle, address collateral, uint256 amount);
     event DepositedToStrategy(address oracle, uint256 amount, address strategy, address collateral);
     event WithdrawedFromStrategy(address oracle, uint256 amount, address strategy, address collateral);
+    event EmergencyWithdrawedFromStrategy(uint256, address strategy, address collateral)
     event WithdrawedFunds(address recipient, address collateral, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
@@ -400,7 +401,28 @@ contract OracleManager is Ownable {
         stakeCollateral.totalLocked += receivedAmount;
         emit WithdrawedFromStrategy(_oracle, receivedAmount, _strategy, strategy.stakeToken);
     }
-    }
+
+    /// @dev Withdraws all funds from the strategy.
+    /// @param _strategy Strategy to withdraw from.
+    /// @param collateralAddresses Tokens to withdraw.
+    function emergencyWithdrawFromStrategy(address _strategy, address[] calldata collateralAddresses) 
+        external 
+        onlyOwner()
+    {
+        Strategy memory strategy = strategies[_strategy];
+        require(strategy.isSupported, "emergencyWithdrawFromStrategy: strategy is not supported");
+        require(strategy.isEnabled, "emergencyWithdrawFromStrategy: strategy is not enabled");
+        for (uint i=0; i<collateralAddresses.length; i++) {
+            address strategyToken = collateralAddresses[i];
+            Collateral storage stakeCollateral = collaterals[strategyToken];
+            uint256 beforeBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
+            strategyController.emergencyWithdraw(_strategy, strategyToken);
+            uint256 afterBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
+            uint256 receivedAmount = afterBalance - beforeBalance;
+            stakeCollateral.totalLocked += receivedAmount;
+            // TODO update (reduced) oracle stake amounts
+            emit EmergencyWithdrawedFromStrategy(amount, _strategy, strategyToken);
+        }
     }
 
     /**
