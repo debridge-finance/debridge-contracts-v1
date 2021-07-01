@@ -7,4 +7,8 @@ interface IStrategyController {
     function deposit(address _strategy, address _token, uint256 _amount) external;
     function withdraw(address _strategy, address _token, uint256 _amount) external;
     function withdrawAll(address _strategy, address _token) external;
+    function updateReserves(address _strategy, address _token) 
+        external 
+        view 
+        returns(uint256);
 }

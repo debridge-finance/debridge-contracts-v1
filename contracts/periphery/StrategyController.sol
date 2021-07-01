@@ -39,14 +39,33 @@ IStrategyController {
     }
 
     /**
+     * @dev Update reserve balance
+     * @param _strategy Address of strategy
+     * @param _token Address of token
+     */
+    function updateReserves(address _strategy, address _token) 
+        external 
+        view 
+        returns(uint256) 
+    {
+        uint256 reserves = IStrategy(_strategy).getAssetBalance(address(this), _token);
+        return reserves;
+    }
+
+    /**
      * @dev Deposit token to specific strategy
      * @param _strategy Address of strategy
      * @param _token Address of token
      * @param _amount Amount of token
      */
-    function deposit(address _strategy, address _token, uint256 _amount) external override{
+    function deposit(
+        address _strategy, 
+        address _token, 
+        uint256 _amount
+    ) external override {
         require(approvedStrategies[_strategy] == true, "deposit: strategy not approved");
-
+        IERC20(_token).safeApprove(_strategy, 0);
+        IERC20(_token).safeApprove(_strategy, _amount);
         IStrategy(_strategy).deposit(_token, _amount);
     }
 
@@ -56,19 +75,29 @@ IStrategyController {
      * @param _token Address of token
      * @param _amount Amount of token to withdraw
      */
-    function withdraw(address _strategy, address _token, uint256 _amount) external override{
-        require(approvedStrategies[_strategy] == true, "deposit: strategy not approved");
-
+    function withdraw(
+        address _strategy, 
+        address _token, 
+        uint256 _amount
+    ) external override {
+        require(approvedStrategies[_strategy] == true, "withdraw: strategy not approved");
+        IERC20(_token).safeApprove(_strategy, 0);
+        IERC20(_token).safeApprove(_strategy, _amount);
         IStrategy(_strategy).withdraw(_token, _amount);
+        // TODO safeTransfer underlying back to OracleManager
     }
 
     /**
-     * @dev Withdraw token from strategy
+     * @dev Withdraw all tokens from strategy in case of emergency
      * @param _strategy Address of strategy
      * @param _token Address of token
      */
-    function withdrawAll(address _strategy, address _token) external override{
-        
+    function withdrawAll(address _strategy, address _token) external override onlyGovernance() {
+        require(approvedStrategies[_strategy] == true, "withdrawAll: strategy not approved");
+        IERC20(_token).safeApprove(_strategy, 0);
+        IERC20(_token).safeApprove(_strategy, type(uint256).max);
+        IStrategy(_strategy).withdrawAll(_token);
+        // TODO safeTransfer underlying to Governance
     }
 
     /* modifiers */

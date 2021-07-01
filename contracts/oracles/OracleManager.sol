@@ -35,6 +35,7 @@ contract OracleManager is Ownable {
 
     struct OracleInfo { // info of validator or delegator
         mapping(address => uint256) stake; // amount of stake per collateral
+        mapping(address => mapping(address => StrategyDepositInfo)) strategyStake;
         address admin; // current oracle admin
         uint256 withdrawalCount; // withdrawals count
         uint256 transferCount;
@@ -62,7 +63,16 @@ contract OracleManager is Ownable {
         bool isSupported;
         bool isEnabled;
         address stakeToken;
+        address strategyToken;
         address rewardToken;
+        uint256 totalShares;
+        uint256 totalReserves;
+    }
+
+    struct StrategyDepositInfo {
+        uint256 stakedAmount; // total tokens deposited by user
+        uint256 strategyTokenAmount; // total strategy tokens (e.g. aToken) received by user
+        uint256 shares;
     }
 
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
@@ -303,6 +313,33 @@ contract OracleManager is Ownable {
     }
 
     /**
+     * @dev Get strategy reward balance
+     * @param 
+     */
+    function getRewardBalance(address _strategy, address _token) external view {
+        uint256 rewards = strategyController.getRewardBalance(_strategy, _token);
+        return rewards;
+    }
+
+    /**
+     * @dev Get price per share
+     * @param _strategy Address of strategy
+     * @param _token Address of token
+     */
+    function getPricePerFullShare(address _strategy, address _token) 
+    external 
+    view 
+    returns (uint256) 
+    {
+        require(strategy.isSupported, "getPricePerFullShare: strategy is not supported");
+        require(strategy.isEnabled, "depositgetPricePerFullShareToStrategy: strategy is not enabled");
+        Strategy memory strategy = strategies[_strategy];
+        require(strategy.totalShares > 0, "getPricePerFullShare: strategy has no shares");
+        uint256 totalStrategyTokenReserves = strategyController.updateReserves(_strategy, _token);
+        return totalStrategyTokenReserves/totalShares;
+    }
+
+    /**
      * @dev Stake token to strategies to earn rewards
      * @param _oracle address of oracle
      * @param _amount Amount to be staked
@@ -311,13 +348,28 @@ contract OracleManager is Ownable {
     function depositToStrategy(address _oracle, uint256 _amount, address _strategy) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
-        Strategy memory strategy = strategies[_strategy];
+        Strategy storage strategy = strategies[_strategy];
         require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
-        require(oracle.stake[strategy.stakeToken] >= _amount, "depositToStrategy: Insufficient fund");
-        // strategyController.deposit(_strategy, address(collateral.token), _amount);
+        require(oracle.stake[strategy.stakeToken] >= _amount, 
+            "depositToStrategy: Insufficient fund");
+        IERC20(strategy.stakeToken).safeApprove(strategyController, 0);
+        IERC20(strategy.stakeToken).safeApprove(strategyController, _amount);
         oracle.stake[strategy.stakeToken] -= _amount;
+        uint256 beforeBalance = strategyController.getAssetBalance(_strategy, strategy.strategyToken);
+        strategy.totalReserves = strategyController.updateReserves(_strategy, strategy.strategyToken);
+        strategyController.deposit(_oracle, _strategy, strategy.stakeToken, _amount);
+        uint256 afterBalance = strategyController.getAssetBalance(_strategy, strategy.strategyToken);
+        uint256 receivedAmount = afterBalance - beforeBalance;
+        uint256 shares = (receivedAmount*strategy.totalShares)/strategy.totalReserves;
+        strategy.totalShares += shares;
+        strategy.totalReserves = strategyController.updateReserves(_strategy, strategy.strategyToken);
+        StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
+        depositInfo.stakedAmount += _amount;
+        depositInfo.strategyTokenAmount += receivedAmount;
+        depositInfo.shares += shares;
+        stakeCollateral.totalLocked -= _amount;
         emit DepositedToStrategy(_oracle, _amount, _strategy, strategy.stakeToken);
     }
 
@@ -327,13 +379,28 @@ contract OracleManager is Ownable {
     function withdrawFromStrategy(address _oracle, uint256 _amount, address _strategy) external {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
-        Strategy memory strategy = strategies[_strategy];
+        Strategy storage strategy = strategies[_strategy];
         require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
-        Collateral storage collateral = collaterals[strategy.rewardToken];
-        // strategyController.withdraw(_strategy, address(collateral.token), _amount);
-        oracle.stake[strategy.rewardToken] += _amount;
-        emit WithdrawedFromStrategy(_oracle, _amount, _strategy, strategy.rewardToken);
+        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
+        StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
+        require(depositInfo.strategyTokenAmount >= _amount, 
+            "withdrawFromStrategy: Insufficient fund");
+        depositInfo.strategyTokenAmount -= _amount;
+        uint256 beforeBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
+        strategy.totalReserves = strategyController.updateReserves(_strategy, strategy.strategyToken);
+        uint256 shares = (_amount*strategy.totalShares)/strategy.totalReserves;
+        strategy.totalShares -= shares;
+        depositInfo.shares -= shares
+        strategyController.withdraw(_oracle, _strategy, strategy.strategyToken, _amount);
+        uint256 afterBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
+        uint256 receivedAmount = afterBalance - beforeBalance;
+        depositInfo.stakedAmount -= receivedAmount;
+        oracle.stake[strategy.stakeToken] += receivedAmount;
+        stakeCollateral.totalLocked += receivedAmount;
+        emit WithdrawedFromStrategy(_oracle, receivedAmount, _strategy, strategy.stakeToken);
+    }
+    }
     }
 
     /**
