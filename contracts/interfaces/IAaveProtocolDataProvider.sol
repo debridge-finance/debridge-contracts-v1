@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.2;
 
-contract IAaveProtocolDataProvider {
+interface IAaveProtocolDataProvider {
 
   function getReserveTokensAddresses(address asset)
     external

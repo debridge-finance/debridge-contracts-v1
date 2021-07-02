@@ -2,11 +2,14 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../interfaces/IStrategyController.sol";
+import "../interfaces/IStrategy.sol";
 import "../interfaces/IPriceConsumer.sol";
 
 contract OracleManager is Ownable {
+
+    using SafeERC20 for IERC20;
 
     struct WithdrawalInfo {
         uint256 amount; // amount of staked token
@@ -71,18 +74,17 @@ contract OracleManager is Ownable {
 
     struct StrategyDepositInfo {
         uint256 stakedAmount; // total tokens deposited by user
-        uint256 strategyTokenAmount; // total strategy tokens (e.g. aToken) received by user
-        uint256 shares;
+        uint256 shares; // total share of strategy tokens (e.g. aToken)
     }
 
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
     uint256 public timelock; // duration of withdrawal timelock
     uint256 public timelockForDelegate = 2 weeks;
+    address public governance;
     mapping(address => Collateral) public collaterals;
     address[] public collateralAddresses;
     mapping(address => Strategy) public strategies;
     address[] public strategyAddresses;
-    IStrategyController public strategyController;
     IPriceConsumer public priceConsumer;
 
     /* Events */
@@ -95,7 +97,7 @@ contract OracleManager is Ownable {
     event Liquidated(address oracle, address collateral, uint256 amount);
     event DepositedToStrategy(address oracle, uint256 amount, address strategy, address collateral);
     event WithdrawedFromStrategy(address oracle, uint256 amount, address strategy, address collateral);
-    event EmergencyWithdrawedFromStrategy(uint256, address strategy, address collateral)
+    event EmergencyWithdrawedFromStrategy(uint256, address strategy, address collateral);
     event WithdrawedFunds(address recipient, address collateral, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
@@ -104,10 +106,18 @@ contract OracleManager is Ownable {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _timelock Duration of withdrawal timelock.
-    constructor(uint256 _timelock, IStrategyController _strategyController, IPriceConsumer _priceConsumer) Ownable() {
+    constructor(uint256 _timelock, address _governance, IPriceConsumer _priceConsumer) Ownable() {
         timelock = _timelock;
-        strategyController = _strategyController;
+        governance = _governance;
         priceConsumer = _priceConsumer;
+    }
+
+    /**
+     * @dev Set governance
+     * @param _governance Address of new governance
+     */
+    function setGovernance(address _governance) public onlyGovernance() {
+        governance = _governance;
     }
 
     /// @dev stack collateral to oracle.
@@ -314,15 +324,6 @@ contract OracleManager is Ownable {
     }
 
     /**
-     * @dev Get strategy reward balance
-     * @param 
-     */
-    function getRewardBalance(address _strategy, address _token) external view {
-        uint256 rewards = strategyController.getRewardBalance(_strategy, _token);
-        return rewards;
-    }
-
-    /**
      * @dev Get price per share
      * @param _strategy Address of strategy
      * @param _token Address of token
@@ -332,11 +333,13 @@ contract OracleManager is Ownable {
     view 
     returns (uint256) 
     {
+        Strategy memory strategy = strategies[_strategy];
+        IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isSupported, "getPricePerFullShare: strategy is not supported");
         require(strategy.isEnabled, "depositgetPricePerFullShareToStrategy: strategy is not enabled");
-        Strategy memory strategy = strategies[_strategy];
         require(strategy.totalShares > 0, "getPricePerFullShare: strategy has no shares");
-        uint256 totalStrategyTokenReserves = strategyController.updateReserves(_strategy, _token);
+        uint256 totalStrategyTokenReserves = strategyController.updateReserves(address(this), _token);
+        uint256 totalShares = strategy.totalShares;
         return totalStrategyTokenReserves/totalShares;
     }
 
@@ -350,25 +353,25 @@ contract OracleManager is Ownable {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
         Strategy storage strategy = strategies[_strategy];
+        IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         require(oracle.stake[strategy.stakeToken] >= _amount, 
             "depositToStrategy: Insufficient fund");
-        IERC20(strategy.stakeToken).safeApprove(strategyController, 0);
-        IERC20(strategy.stakeToken).safeApprove(strategyController, _amount);
+        IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
+        IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
         oracle.stake[strategy.stakeToken] -= _amount;
-        uint256 beforeBalance = strategyController.getAssetBalance(_strategy, strategy.strategyToken);
-        strategy.totalReserves = strategyController.updateReserves(_strategy, strategy.strategyToken);
-        strategyController.deposit(_oracle, _strategy, strategy.stakeToken, _amount);
-        uint256 afterBalance = strategyController.getAssetBalance(_strategy, strategy.strategyToken);
+        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 beforeBalance = strategy.totalReserves;
+        strategyController.deposit(strategy.stakeToken, _amount);
+        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 afterBalance = strategy.totalReserves;
         uint256 receivedAmount = afterBalance - beforeBalance;
         uint256 shares = (receivedAmount*strategy.totalShares)/strategy.totalReserves;
         strategy.totalShares += shares;
-        strategy.totalReserves = strategyController.updateReserves(_strategy, strategy.strategyToken);
         StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
         depositInfo.stakedAmount += _amount;
-        depositInfo.strategyTokenAmount += receivedAmount;
         depositInfo.shares += shares;
         stakeCollateral.totalLocked -= _amount;
         emit DepositedToStrategy(_oracle, _amount, _strategy, strategy.stakeToken);
@@ -381,20 +384,20 @@ contract OracleManager is Ownable {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
         Strategy storage strategy = strategies[_strategy];
+        IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
-        require(depositInfo.strategyTokenAmount >= _amount, 
-            "withdrawFromStrategy: Insufficient fund");
-        depositInfo.strategyTokenAmount -= _amount;
-        uint256 beforeBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
-        strategy.totalReserves = strategyController.updateReserves(_strategy, strategy.strategyToken);
-        uint256 shares = (_amount*strategy.totalShares)/strategy.totalReserves;
-        strategy.totalShares -= shares;
-        depositInfo.shares -= shares
-        strategyController.withdraw(_oracle, _strategy, strategy.strategyToken, _amount);
-        uint256 afterBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
+        require(depositInfo.shares >= _amount, 
+            "withdrawFromStrategy: Insufficient share");
+        depositInfo.shares -= _amount;
+        strategy.totalShares -= _amount;
+        uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 strategyTokenAmount = (_amount*strategy.totalReserves)/strategy.totalShares;
+        strategyController.withdraw(strategy.strategyToken, strategyTokenAmount);
+        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
         uint256 receivedAmount = afterBalance - beforeBalance;
         depositInfo.stakedAmount -= receivedAmount;
         oracle.stake[strategy.stakeToken] += receivedAmount;
@@ -402,26 +405,29 @@ contract OracleManager is Ownable {
         emit WithdrawedFromStrategy(_oracle, receivedAmount, _strategy, strategy.stakeToken);
     }
 
-    /// @dev Withdraws all funds from the strategy.
-    /// @param _strategy Strategy to withdraw from.
-    /// @param collateralAddresses Tokens to withdraw.
-    function emergencyWithdrawFromStrategy(address _strategy, address[] calldata collateralAddresses) 
+    /**
+     * @dev Withdraws all funds from the strategy.
+     * @param _strategy Strategy to withdraw from.
+     * @param _collateralAddresses Tokens to withdraw.
+     */
+    function emergencyWithdrawFromStrategy(address _strategy, address[] calldata _collateralAddresses) 
         external 
         onlyOwner()
     {
         Strategy memory strategy = strategies[_strategy];
+        IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isSupported, "emergencyWithdrawFromStrategy: strategy is not supported");
         require(strategy.isEnabled, "emergencyWithdrawFromStrategy: strategy is not enabled");
-        for (uint i=0; i<collateralAddresses.length; i++) {
-            address strategyToken = collateralAddresses[i];
+        for (uint i=0; i<_collateralAddresses.length; i++) {
+            address strategyToken = _collateralAddresses[i];
             Collateral storage stakeCollateral = collaterals[strategyToken];
-            uint256 beforeBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
-            strategyController.emergencyWithdraw(_strategy, strategyToken);
-            uint256 afterBalance = strategyController.getAssetBalance(_strategy, strategy.stakeToken);
+            uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+            strategyController.withdrawAll(strategyToken);
+            uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
             uint256 receivedAmount = afterBalance - beforeBalance;
             stakeCollateral.totalLocked += receivedAmount;
             // TODO update (reduced) oracle stake amounts
-            emit EmergencyWithdrawedFromStrategy(amount, _strategy, strategyToken);
+            emit EmergencyWithdrawedFromStrategy(receivedAmount, _strategy, strategyToken);
         }
     }
 
@@ -506,7 +512,7 @@ contract OracleManager is Ownable {
      * @param _collateral address of collateral
      * @param _isEnabled bool of enable
      */
-    function updatedCollateral(address _collateral, bool _isEnabled) external onlyOwner() {
+    function updatedCollateral(address _collateral, bool _isEnabled) external onlyGovernance() {
         collaterals[_collateral].isEnabled = _isEnabled;
     }
 
@@ -515,7 +521,7 @@ contract OracleManager is Ownable {
      * @param _strategy address of strategy
      * @param _isEnabled bool of enable
      */
-    function updateStrategy(address _strategy, bool _isEnabled) external onlyOwner() {
+    function updateStrategy(address _strategy, bool _isEnabled) external onlyGovernance() {
         strategies[_strategy].isEnabled = _isEnabled;
     }
 
@@ -608,14 +614,6 @@ contract OracleManager is Ownable {
     }
 
     /**
-     * @dev Set strategy controller
-     * @param _strategyController address of strategy controller
-     */
-    function setStrategyController(IStrategyController _strategyController) external onlyOwner() {
-        strategyController = _strategyController;
-    }
-
-    /**
      * @dev Set Price Consumer
      * @param _priceConsumer address of price consumer
      */
@@ -694,5 +692,12 @@ contract OracleManager is Ownable {
 
     function min(uint256 a, uint256 b) internal pure returns(uint256) {
         return a < b ? a : b;
+    }
+
+    /* modifiers */
+
+    modifier onlyGovernance() {
+        require(governance == msg.sender, "Only governance");
+        _;
     }
 }
