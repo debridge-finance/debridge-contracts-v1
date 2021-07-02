@@ -65,6 +65,7 @@ contract OracleManager is Ownable {
     struct Strategy {
         bool isSupported;
         bool isEnabled;
+        bool isRecoverable;
         address stakeToken;
         address strategyToken;
         address rewardToken;
@@ -97,7 +98,8 @@ contract OracleManager is Ownable {
     event Liquidated(address oracle, address collateral, uint256 amount);
     event DepositedToStrategy(address oracle, uint256 amount, address strategy, address collateral);
     event WithdrawedFromStrategy(address oracle, uint256 amount, address strategy, address collateral);
-    event EmergencyWithdrawedFromStrategy(uint256, address strategy, address collateral);
+    event EmergencyWithdrawedFromStrategy(uint256 amount, address strategy, address collateral);
+    event RecoveredFromEmergency(address oracle, uint256 amount, address strategy, address collateral);
     event WithdrawedFunds(address recipient, address collateral, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
@@ -408,27 +410,42 @@ contract OracleManager is Ownable {
     /**
      * @dev Withdraws all funds from the strategy.
      * @param _strategy Strategy to withdraw from.
-     * @param _collateralAddresses Tokens to withdraw.
      */
-    function emergencyWithdrawFromStrategy(address _strategy, address[] calldata _collateralAddresses) 
+    function emergencyWithdrawFromStrategy(address _strategy) 
         external 
         onlyOwner()
     {
-        Strategy memory strategy = strategies[_strategy];
+        Strategy storage strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isSupported, "emergencyWithdrawFromStrategy: strategy is not supported");
         require(strategy.isEnabled, "emergencyWithdrawFromStrategy: strategy is not enabled");
-        for (uint i=0; i<_collateralAddresses.length; i++) {
-            address strategyToken = _collateralAddresses[i];
-            Collateral storage stakeCollateral = collaterals[strategyToken];
-            uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
-            strategyController.withdrawAll(strategyToken);
-            uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
-            uint256 receivedAmount = afterBalance - beforeBalance;
-            stakeCollateral.totalLocked += receivedAmount;
-            // TODO update (reduced) oracle stake amounts
-            emit EmergencyWithdrawedFromStrategy(receivedAmount, _strategy, strategyToken);
-        }
+        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
+        uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+        strategyController.withdrawAll(strategy.strategyToken);
+        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+        uint256 receivedAmount = afterBalance - beforeBalance;
+        stakeCollateral.totalLocked += receivedAmount;
+        strategy.totalReserves = receivedAmount;
+        strategy.isEnabled = false;
+        strategy.isRecoverable = true;
+        emit EmergencyWithdrawedFromStrategy(receivedAmount, _strategy, strategy.stakeToken);
+    }
+
+    function recoverFromEmergency(address _strategy, address _oracle) external {
+        Strategy storage strategy = strategies[_strategy];
+        require(!strategy.isEnabled, "recoverFromEmergency: strategy is still enabled");
+        require(strategy.isRecoverable, "recoverFromEmergency: strategy funds are not recoverable");
+        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
+        OracleInfo storage oracle = getOracleInfo[_oracle];
+        StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
+        uint256 amount = strategy.totalReserves*(depositInfo.shares/strategy.totalShares);
+        strategy.totalShares -= depositInfo.shares;
+        depositInfo.shares = 0;
+        depositInfo.stakedAmount = 0;
+        strategy.totalReserves -= amount;
+        oracle.stake[strategy.stakeToken] += amount;
+        stakeCollateral.totalLocked += amount;
+        emit RecoveredFromEmergency(_oracle, amount, _strategy, strategy.stakeToken);
     }
 
     /**
