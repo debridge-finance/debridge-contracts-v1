@@ -20,7 +20,7 @@ const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-contract.only("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
+contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -230,6 +230,7 @@ contract.only("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
+        alice,
         [this.debridge.address],
         {
           from: alice,
