@@ -211,6 +211,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
+        alice,
         [this.debridge.address],
         {
           from: alice,

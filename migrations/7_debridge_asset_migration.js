@@ -5,7 +5,7 @@ const LightAggregator = artifacts.require("LightAggregator");
 const CallProxy = artifacts.require("CallProxy");
 const ApproveProxy = artifacts.require("ApproveProxy");
 
-module.exports = async function(_deployer, network) {
+module.exports = async function(_deployer, network, accounts) {
   if (network == "test") return;
   console.log("Network:  " + network);
   console.log("DefiController: " + DefiController.address);
@@ -33,6 +33,7 @@ module.exports = async function(_deployer, network) {
     const wrappedAsset = await WrappedAsset.new(
       otherAssetInfo.name,
       otherAssetInfo.symbol,
+      accounts[0],
       [debridgeInstance.address]
     );
     await debridgeInstance.addExternalAsset(

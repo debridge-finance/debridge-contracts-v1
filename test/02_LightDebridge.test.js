@@ -165,6 +165,7 @@ contract.only("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const wrappedAsset = await WrappedAsset.new(
         name,
         symbol,
+        alice,
         [this.debridge.address],
         {
           from: alice,

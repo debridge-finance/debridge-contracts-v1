@@ -26,9 +26,10 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
     constructor(
         string memory _name,
         string memory _symbol,
+        address _admin,
         address[] memory _minters
     ) ERC20(_name, _symbol) {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
         for (uint256 i = 0; i < _minters.length; i++) {
             _setupRole(MINTER_ROLE, _minters[i]);
         }
@@ -84,23 +85,22 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
         bytes32 _s
     ) external override {
         require(_deadline >= block.timestamp, "permit: EXPIRED");
-        bytes32 digest =
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    DOMAIN_SEPARATOR,
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            _owner,
-                            _spender,
-                            _value,
-                            nonces[_owner]++,
-                            _deadline
-                        )
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        PERMIT_TYPEHASH,
+                        _owner,
+                        _spender,
+                        _value,
+                        nonces[_owner]++,
+                        _deadline
                     )
                 )
-            );
+            )
+        );
         address recoveredAddress = ecrecover(digest, _v, _r, _s);
         require(
             recoveredAddress != address(0) && recoveredAddress == _owner,
