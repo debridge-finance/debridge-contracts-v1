@@ -14,10 +14,6 @@ contract WrappedAssetFactory is IWrappedAssetFactory, AccessControl {
         require(hasRole(DEPLOYER_ROLE, msg.sender), "onlyMinter: bad role");
         _;
     }
-    modifier onlyAdmin {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
-        _;
-    }
 
     /// @dev Constructor that initializes the most important configurations.
     constructor(address _admin, address[] memory _deployers) {

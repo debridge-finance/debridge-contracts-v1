@@ -240,6 +240,14 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
     /* ADMIN */
 
     /// @dev Update asset's fees.
+    function setWrappedAssetFactory(IWrappedAssetFactory _wrappedAssetFactory)
+        external
+        onlyAdmin()
+    {
+        wrappedAssetFactory = _wrappedAssetFactory;
+    }
+
+    /// @dev Update asset's fees.
     /// @param _supportedChainIds Chain identifiers.
     /// @param _chainSupportInfo Cahin support info.
     function updateSupportedChains(
