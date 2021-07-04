@@ -3,7 +3,6 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "../interfaces/IAnyDebridge.sol";
@@ -12,13 +11,12 @@ import "../interfaces/IWETH.sol";
 import "../interfaces/IDefiController.sol";
 import "../interfaces/IFullAggregator.sol";
 import "../interfaces/ICallProxy.sol";
+import "../interfaces/IWrappedAssetFactory.sol";
 import "../periphery/WrappedAsset.sol";
 import "../periphery/Pausable.sol";
 import "./CoreDebridge.sol";
 
 abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
-    using SafeERC20 for IERC20;
-
     struct DebridgeInfo {
         address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
@@ -33,6 +31,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(uint256 => ChainSupportInfo) chainSupported; // whether the chain for the asset is supported
     address wrappedAssetAdmin;
+    IWrappedAssetFactory wrappedAssetFactory;
 
     event PairAdded(
         bytes32 indexed debridgeId,
@@ -49,7 +48,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
     /// @param _minReserves Minimal reserve ratio.
     /// @param _aggregator Submission aggregator address.
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    function _initialize(
+    function initialize(
         uint256 _maxAmount,
         uint256 _minReserves,
         address _wrappedAssetAdmin,
@@ -57,8 +56,9 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         address _callProxy,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo,
-        IDefiController _defiController
-    ) internal {
+        IDefiController _defiController,
+        IWrappedAssetFactory _wrappedAssetFactory
+    ) public payable initializer {
         uint256 cid;
         assembly {
             cid := chainid()
@@ -70,6 +70,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         wrappedAssetAdmin = _wrappedAssetAdmin;
         _updateSupportedChains(_supportedChainIds, _chainSupportInfo);
         defiController = _defiController;
+        wrappedAssetFactory = _wrappedAssetFactory;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -293,7 +294,11 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
             ) {
                 payable(_receiver).transfer(_amount);
             } else {
-                IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+                _safeTransfer(
+                    IERC20(debridge.tokenAddress),
+                    _receiver,
+                    _amount
+                );
             }
         }
     }
@@ -317,7 +322,8 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         if (debridge.tokenAddress == address(0)) {
             payable(address(defiController)).transfer(_amount);
         } else {
-            IERC20(debridge.tokenAddress).safeTransfer(
+            _safeTransfer(
+                IERC20(debridge.tokenAddress),
                 address(defiController),
                 _amount
             );
@@ -335,7 +341,8 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (debridge.tokenAddress != address(0)) {
-            IERC20(debridge.tokenAddress).safeTransferFrom(
+            _safeTransferFrom(
+                IERC20(debridge.tokenAddress),
                 address(defiController),
                 address(this),
                 _amount
@@ -363,13 +370,12 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         } else {
             address[] memory minters = new address[](1);
             minters[0] = address(this);
-            WrappedAsset wrappedAsset = new WrappedAsset(
+            debridge.tokenAddress = wrappedAssetFactory.deploy(
                 "Debridge Wrapped Asset",
                 "DBRWA",
                 wrappedAssetAdmin,
                 minters
             );
-            debridge.tokenAddress = address(wrappedAsset);
         }
         debridge.chainId = _chainId;
         debridge.maxAmount = _maxAmount;
@@ -445,7 +451,8 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         if (debridge.tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");
         } else {
-            IERC20(debridge.tokenAddress).safeTransferFrom(
+            _safeTransferFrom(
+                IERC20(debridge.tokenAddress),
                 msg.sender,
                 address(this),
                 _amount
@@ -612,11 +619,16 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
             }
         } else {
             if (_executionFee > 0) {
-                IERC20(debridge.tokenAddress).safeTransfer(
+                _safeTransfer(
+                    IERC20(debridge.tokenAddress),
                     msg.sender,
                     _executionFee
                 );
-                IERC20(debridge.tokenAddress).safeTransfer(callProxy, _amount);
+                _safeTransfer(
+                    IERC20(debridge.tokenAddress),
+                    callProxy,
+                    _amount
+                );
                 bool status = ICallProxy(callProxy).callERC20(
                     debridge.tokenAddress,
                     _fallbackAddress,
@@ -625,7 +637,11 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
                 );
                 emit AutoRequestExecuted(_submissionId, status);
             } else {
-                IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+                _safeTransfer(
+                    IERC20(debridge.tokenAddress),
+                    _receiver,
+                    _amount
+                );
             }
         }
         emit Claimed(_submissionId, _amount, _receiver, _debridgeId);
@@ -637,4 +653,5 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
     function getSupportedChainIds() public view returns (uint256[] memory) {
         return chainIds;
     }
+    // TODO: set deployer
 }

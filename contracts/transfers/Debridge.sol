@@ -3,7 +3,6 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "../interfaces/IDebridge.sol";
@@ -17,8 +16,6 @@ import "../periphery/Pausable.sol";
 import "./CoreDebridge.sol";
 
 abstract contract Debridge is CoreDebridge, IDebridge {
-    using SafeERC20 for IERC20;
-
     struct DebridgeInfo {
         address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
@@ -379,7 +376,7 @@ abstract contract Debridge is CoreDebridge, IDebridge {
         ) {
             payable(_receiver).transfer(_amount);
         } else {
-            IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+            _safeTransfer(IERC20(debridge.tokenAddress), _receiver, _amount);
         }
     }
 
@@ -402,7 +399,8 @@ abstract contract Debridge is CoreDebridge, IDebridge {
         if (debridge.tokenAddress == address(0)) {
             payable(address(defiController)).transfer(_amount);
         } else {
-            IERC20(debridge.tokenAddress).safeTransfer(
+            _safeTransfer(
+                IERC20(debridge.tokenAddress),
                 address(defiController),
                 _amount
             );
@@ -420,7 +418,8 @@ abstract contract Debridge is CoreDebridge, IDebridge {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (debridge.tokenAddress != address(0)) {
-            IERC20(debridge.tokenAddress).safeTransferFrom(
+            _safeTransferFrom(
+                IERC20(debridge.tokenAddress),
                 address(defiController),
                 address(this),
                 _amount
@@ -518,7 +517,8 @@ abstract contract Debridge is CoreDebridge, IDebridge {
         if (debridge.tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");
         } else {
-            IERC20(debridge.tokenAddress).safeTransferFrom(
+            _safeTransferFrom(
+                IERC20(debridge.tokenAddress),
                 msg.sender,
                 address(this),
                 _amount
@@ -657,11 +657,16 @@ abstract contract Debridge is CoreDebridge, IDebridge {
             }
         } else {
             if (_executionFee > 0) {
-                IERC20(debridge.tokenAddress).safeTransfer(
+                _safeTransfer(
+                    IERC20(debridge.tokenAddress),
                     msg.sender,
                     _executionFee
                 );
-                IERC20(debridge.tokenAddress).safeTransfer(callProxy, _amount);
+                _safeTransfer(
+                    IERC20(debridge.tokenAddress),
+                    callProxy,
+                    _amount
+                );
                 bool status = ICallProxy(callProxy).callERC20(
                     debridge.tokenAddress,
                     _fallbackAddress,
@@ -670,7 +675,11 @@ abstract contract Debridge is CoreDebridge, IDebridge {
                 );
                 emit AutoRequestExecuted(_submissionId, status);
             } else {
-                IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+                _safeTransfer(
+                    IERC20(debridge.tokenAddress),
+                    _receiver,
+                    _amount
+                );
             }
         }
         emit Claimed(_submissionId, _amount, _receiver, _debridgeId);

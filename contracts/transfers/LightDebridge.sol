@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/ILightVerifier.sol";
 import "../interfaces/ILightDebridge.sol";
 import "./Debridge.sol";
 
 contract LightDebridge is Debridge, ILightDebridge {
-    using SafeERC20 for IERC20;
-
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minAmount Minimal amount of current chain token to be wrapped.
     /// @param _maxAmount Maximum amount of current chain token to be wrapped.
@@ -62,21 +58,20 @@ contract LightDebridge is Debridge, ILightDebridge {
         uint256 _executionFee,
         bytes memory _data
     ) external {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
+        );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            (uint256 confirmations, bool confirmed) = ILightVerifier(aggregator)
+            .submit(submissionId, _signatures);
             require(confirmed, "autoMint: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
@@ -117,26 +112,25 @@ contract LightDebridge is Debridge, ILightDebridge {
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
+        );
         require(
             getOldAggregator[_aggregatorVersion].isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(getOldAggregator[_aggregatorVersion].aggregator)
-                    .submit(submissionId, _signatures);
+            (uint256 confirmations, bool confirmed) = ILightVerifier(
+                getOldAggregator[_aggregatorVersion].aggregator
+            ).submit(submissionId, _signatures);
             require(confirmed, "autoMintWithOldAggregator: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
@@ -170,18 +164,17 @@ contract LightDebridge is Debridge, ILightDebridge {
         uint256 _nonce,
         bytes[] calldata _signatures
     ) external override {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
+        );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            (uint256 confirmations, bool confirmed) = ILightVerifier(aggregator)
+            .submit(submissionId, _signatures);
             require(confirmed, "mint: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
@@ -217,27 +210,25 @@ contract LightDebridge is Debridge, ILightDebridge {
         bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
+        );
+        AggregatorInfo memory aggregatorInfo = getOldAggregator[
+            _aggregatorVersion
+        ];
         require(
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(aggregatorInfo.aggregator).submit(
-                    submissionId,
-                    _signatures
-                );
+            (uint256 confirmations, bool confirmed) = ILightVerifier(
+                aggregatorInfo.aggregator
+            ).submit(submissionId, _signatures);
             require(confirmed, "mintWithOldAggregator: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
@@ -271,18 +262,17 @@ contract LightDebridge is Debridge, ILightDebridge {
         uint256 _nonce,
         bytes[] calldata _signatures
     ) external override {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
+        );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            (uint256 confirmations, bool confirmed) = ILightVerifier(aggregator)
+            .submit(submissionId, _signatures);
             require(confirmed, "claim: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
@@ -322,21 +312,20 @@ contract LightDebridge is Debridge, ILightDebridge {
         uint256 _executionFee,
         bytes memory _data
     ) external {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
+        );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(aggregator).submit(submissionId, _signatures);
+            (uint256 confirmations, bool confirmed) = ILightVerifier(aggregator)
+            .submit(submissionId, _signatures);
             require(confirmed, "autoClaim: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
@@ -377,26 +366,25 @@ contract LightDebridge is Debridge, ILightDebridge {
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
+        );
         require(
             getOldAggregator[_aggregatorVersion].isValid,
             "mintWithOldAggregator: invalid aggregator"
         );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(getOldAggregator[_aggregatorVersion].aggregator)
-                    .submit(submissionId, _signatures);
+            (uint256 confirmations, bool confirmed) = ILightVerifier(
+                getOldAggregator[_aggregatorVersion].aggregator
+            ).submit(submissionId, _signatures);
             require(confirmed, "mintWithOldAggregator: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
@@ -432,23 +420,22 @@ contract LightDebridge is Debridge, ILightDebridge {
         bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
+        );
         require(
             getOldAggregator[_aggregatorVersion].isValid,
             "claimWithOldAggregator: invalid aggregator"
         );
         {
-            (uint256 confirmations, bool confirmed) =
-                ILightVerifier(getOldAggregator[_aggregatorVersion].aggregator)
-                    .submit(submissionId, _signatures);
+            (uint256 confirmations, bool confirmed) = ILightVerifier(
+                getOldAggregator[_aggregatorVersion].aggregator
+            ).submit(submissionId, _signatures);
             require(confirmed, "claimWithOldAggregator: not confirmed");
             if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
