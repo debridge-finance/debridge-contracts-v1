@@ -10,7 +10,9 @@ const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 module.exports = async function(deployer, network, accounts) {
   if (network == "test") return;
 
-  const debridgeInitParams = require("../assets/debridgeInitParams")[network];
+  const debridgeInitParams = require("../assets/anyDebridgeInitParams")[
+    network
+  ];
   let verifierAddress;
   let Debridge;
   if (debridgeInitParams.type == "full") {
