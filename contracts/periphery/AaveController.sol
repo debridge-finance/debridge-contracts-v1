@@ -3,10 +3,10 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../../interfaces/ILendingPool.sol";
-import "../../interfaces/ILendingPoolAddressesProvider.sol";
-import "../../interfaces/IAaveProtocolDataProvider.sol";
-import "../../interfaces/IStrategy.sol";
+import "../interfaces/ILendingPool.sol";
+import "../interfaces/ILendingPoolAddressesProvider.sol";
+import "../interfaces/IAaveProtocolDataProvider.sol";
+import "../interfaces/IStrategy.sol";
 
 contract AaveInteractor is IStrategy {
     

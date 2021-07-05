@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IStrategy.sol";
 import "../interfaces/IPriceConsumer.sol";
 
-contract OracleManager is Ownable {
+contract OracleManager is AccessControl, Initializable {
 
     using SafeERC20 for IERC20;
 
@@ -81,7 +82,6 @@ contract OracleManager is Ownable {
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
     uint256 public timelock; // duration of withdrawal timelock
     uint256 public timelockForDelegate = 2 weeks;
-    address public governance;
     mapping(address => Collateral) public collaterals;
     address[] public collateralAddresses;
     mapping(address => Strategy) public strategies;
@@ -106,20 +106,14 @@ contract OracleManager is Ownable {
 
     /* PUBLIC */
 
-    /// @dev Constructor that initializes the most important configurations.
+    /// @dev Initializer that initializes the most important configurations.
     /// @param _timelock Duration of withdrawal timelock.
-    constructor(uint256 _timelock, address _governance, IPriceConsumer _priceConsumer) Ownable() {
+    function initialize(uint256 _timelock, IPriceConsumer _priceConsumer) public initializer {
+        // Grant the contract deployer the default admin role: it will be able
+        // to grant and revoke any roles
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         timelock = _timelock;
-        governance = _governance;
         priceConsumer = _priceConsumer;
-    }
-
-    /**
-     * @dev Set governance
-     * @param _governance Address of new governance
-     */
-    function setGovernance(address _governance) public onlyGovernance() {
-        governance = _governance;
     }
 
     /// @dev stack collateral to oracle.
@@ -409,7 +403,7 @@ contract OracleManager is Ownable {
      */
     function emergencyWithdrawFromStrategy(address _strategy) 
         external 
-        onlyOwner()
+        onlyAdmin()
     {
         Strategy storage strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
@@ -441,7 +435,7 @@ contract OracleManager is Ownable {
             strategy.totalReserves -= amount;
             oracle.stake[strategy.stakeToken] += amount;
             stakeCollateral.totalLocked += amount;
-            emit RecoveredFromEmergency(_oracle, amount, _strategy, strategy.stakeToken);
+            emit RecoveredFromEmergency(_oracles[i], amount, _strategy, strategy.stakeToken);
         }
     }
 
@@ -470,7 +464,7 @@ contract OracleManager is Ownable {
 
     /// @dev Change withdrawal timelock.
     /// @param _newTimelock New timelock.
-    function setTimelock(uint256 _newTimelock) external onlyOwner() {
+    function setTimelock(uint256 _newTimelock) external onlyAdmin() {
         timelock = _newTimelock;
     }
 
@@ -478,14 +472,14 @@ contract OracleManager is Ownable {
      * @dev Change timelock for delegate
      * @param _newTimelock new timelock for delegate
      */
-    function setTimelockForTransfer(uint256 _newTimelock) external onlyOwner() {
+    function setTimelockForTransfer(uint256 _newTimelock) external onlyAdmin() {
         timelockForDelegate = _newTimelock;
     }
 
     /// @dev Add new oracle.
     /// @param _oracle Oracle address.
     /// @param _admin Admin address.
-    function addOracle(address _oracle, address _admin) external onlyOwner() {
+    function addOracle(address _oracle, address _admin) external onlyAdmin() {
         getOracleInfo[_oracle].admin = _admin;
         getOracleInfo[_oracle].isOracle = true;
     }
@@ -494,7 +488,7 @@ contract OracleManager is Ownable {
      * @dev Add a new collateral
      * @param _token Address of token
      */
-    function addCollateral(address _token, uint8 _decimals, bool _isUSDStable) external onlyOwner() {
+    function addCollateral(address _token, uint8 _decimals, bool _isUSDStable) external onlyAdmin() {
         Collateral storage collateral = collaterals[_token];
         if (!collateral.isSupported){
             collateral.isSupported = true;
@@ -511,7 +505,7 @@ contract OracleManager is Ownable {
      * @param _stakeToken collateralId of stakeToken
      * @param _rewardToken collateralId of rewardToken 
      */
-    function addStrategy(address _strategy, address _stakeToken, address _rewardToken) external onlyOwner() {
+    function addStrategy(address _strategy, address _stakeToken, address _rewardToken) external onlyAdmin() {
         Strategy storage strategy = strategies[_strategy];
         require(!strategy.isSupported, "addStrategy: already exist");
         strategy.stakeToken = _stakeToken;
@@ -526,7 +520,7 @@ contract OracleManager is Ownable {
      * @param _collateral address of collateral
      * @param _isEnabled bool of enable
      */
-    function updatedCollateral(address _collateral, bool _isEnabled) external onlyGovernance() {
+    function updatedCollateral(address _collateral, bool _isEnabled) external onlyAdmin() {
         collaterals[_collateral].isEnabled = _isEnabled;
     }
 
@@ -535,7 +529,7 @@ contract OracleManager is Ownable {
      * @param _strategy address of strategy
      * @param _isEnabled bool of enable
      */
-    function updateStrategy(address _strategy, bool _isEnabled) external onlyGovernance() {
+    function updateStrategy(address _strategy, bool _isEnabled) external onlyAdmin() {
         strategies[_strategy].isEnabled = _isEnabled;
     }
 
@@ -563,7 +557,7 @@ contract OracleManager is Ownable {
     /// @param _oracle Oracle address.
     /// @param _collateral Index of collateral
     /// @param _amount Amount to withdraw.
-    function liquidate(address _oracle, address _collateral, uint256 _amount) external onlyOwner() {
+    function liquidate(address _oracle, address _collateral, uint256 _amount) external onlyAdmin() {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         require(oracle.stake[_collateral] >= _amount, "liquidate: insufficient balance");
         Collateral storage collateral = collaterals[_collateral];
@@ -578,7 +572,7 @@ contract OracleManager is Ownable {
     /// @param _amount Amount to withdraw.
     function withdrawFunds(address _recipient, address _collateral, uint256 _amount)
         external
-        onlyOwner()
+        onlyAdmin()
     {
         Collateral storage collateral = collaterals[_collateral];
         require(
@@ -597,7 +591,7 @@ contract OracleManager is Ownable {
      * @dev Pause unstaking request.
      * @param _oracle address of oracle
      */
-    function pauseUnstake(address _oracle) external onlyOwner() {
+    function pauseUnstake(address _oracle) external onlyAdmin() {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         uint256 i;
         for (i = 0; i < oracle.withdrawalCount; i ++) {
@@ -614,7 +608,7 @@ contract OracleManager is Ownable {
      * @dev Resume unstaking request.
      * @param _oracle address of oracle
      */
-    function resumeUnstake(address _oracle) external onlyOwner() {
+    function resumeUnstake(address _oracle) external onlyAdmin() {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         uint256 i;
         for (i = 0; i < oracle.withdrawalCount; i ++) {
@@ -631,7 +625,7 @@ contract OracleManager is Ownable {
      * @dev Set Price Consumer
      * @param _priceConsumer address of price consumer
      */
-    function setPriceConsumer(IPriceConsumer _priceConsumer) external onlyOwner() {
+    function setPriceConsumer(IPriceConsumer _priceConsumer) external onlyAdmin() {
         priceConsumer = _priceConsumer;
     }
 
@@ -710,8 +704,8 @@ contract OracleManager is Ownable {
 
     /* modifiers */
 
-    modifier onlyGovernance() {
-        require(governance == msg.sender, "Only governance");
+    modifier onlyAdmin() {
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Caller is not admin");
         _;
     }
 }
