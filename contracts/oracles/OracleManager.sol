@@ -705,7 +705,7 @@ contract OracleManager is AccessControl, Initializable {
     /* modifiers */
 
     modifier onlyAdmin() {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "Caller is not admin");
+        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "onlyAdmin: bad role");
         _;
     }
 }
