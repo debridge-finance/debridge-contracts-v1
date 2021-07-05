@@ -111,7 +111,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         uint256 _chainIdTo,
         uint256 _deadline,
         bytes memory _signature
-    ) external override whenNotPaused() {
+    ) external payable override whenNotPaused() {
         _amount = _burn(
             _debridgeId,
             _amount,
@@ -197,7 +197,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         bytes memory _data,
         uint256 _deadline,
         bytes memory _signature
-    ) external whenNotPaused() {
+    ) external payable whenNotPaused() {
         require(_executionFee != 0, "autoBurn: fee too low");
         _amount = _burn(
             _debridgeId,

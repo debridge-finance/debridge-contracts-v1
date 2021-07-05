@@ -22,5 +22,5 @@ interface IAnyDebridge {
         uint256 _chainIdTo,
         uint256 _deadline,
         bytes memory _signature
-    ) external;
+    ) external payable;
 }

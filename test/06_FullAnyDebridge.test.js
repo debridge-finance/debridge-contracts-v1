@@ -447,7 +447,7 @@ contract("FullAnyDebridge", function([alice, bob, carol, eve, devid]) {
         deadline,
         signature,
         {
-          value: supportedChainInfo.fixedFee,
+          value: supportedChainInfo.fixedFee.toString(),
           from: bob,
         }
       );
