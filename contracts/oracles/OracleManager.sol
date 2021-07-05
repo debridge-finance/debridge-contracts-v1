@@ -426,21 +426,23 @@ contract OracleManager is Ownable {
         emit EmergencyWithdrawedFromStrategy(receivedAmount, _strategy, strategy.stakeToken);
     }
 
-    function recoverFromEmergency(address _strategy, address _oracle) external {
+    function recoverFromEmergency(address _strategy, address[] calldata _oracles) external {
         Strategy storage strategy = strategies[_strategy];
         require(!strategy.isEnabled, "recoverFromEmergency: strategy is still enabled");
         require(strategy.isRecoverable, "recoverFromEmergency: strategy funds are not recoverable");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
-        OracleInfo storage oracle = getOracleInfo[_oracle];
-        StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
-        uint256 amount = strategy.totalReserves*(depositInfo.shares/strategy.totalShares);
-        strategy.totalShares -= depositInfo.shares;
-        depositInfo.shares = 0;
-        depositInfo.stakedAmount = 0;
-        strategy.totalReserves -= amount;
-        oracle.stake[strategy.stakeToken] += amount;
-        stakeCollateral.totalLocked += amount;
-        emit RecoveredFromEmergency(_oracle, amount, _strategy, strategy.stakeToken);
+        for (uint256 i=0; i<_oracles.length; i++) {
+            OracleInfo storage oracle = getOracleInfo[_oracles[i]];
+            StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
+            uint256 amount = strategy.totalReserves*(depositInfo.shares/strategy.totalShares);
+            strategy.totalShares -= depositInfo.shares;
+            depositInfo.shares = 0;
+            depositInfo.stakedAmount = 0;
+            strategy.totalReserves -= amount;
+            oracle.stake[strategy.stakeToken] += amount;
+            stakeCollateral.totalLocked += amount;
+            emit RecoveredFromEmergency(_oracle, amount, _strategy, strategy.stakeToken);
+        }
     }
 
     /**
