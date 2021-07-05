@@ -14,17 +14,14 @@ contract AaveInteractor is IStrategy {
 
   address public lendingPoolProvider;
   address public protocolDataProvider;
-  address public oracleManager;
   mapping(address => address) aTokenToUnderlying;
 
   constructor(
     address _lendingPoolProvider,
-    address _protocolDataProvider,
-    address _oracleManager
+    address _protocolDataProvider
   ) {
     lendingPoolProvider = _lendingPoolProvider;
     protocolDataProvider = _protocolDataProvider;
-    oracleManager = _oracleManager;
   }
 
   function lendingPool() public view returns (address) {
@@ -49,16 +46,17 @@ contract AaveInteractor is IStrategy {
     return reserves;
   }
 
-  function deposit(address _token, uint256 amount) external override {
+  function deposit(address _token, uint256 _amount) external override {
     aTokenToUnderlying[aToken(_token)] = _token;
     address lendPool = lendingPool();
+    IERC20(_token).transferFrom(msg.sender, address(this), _amount);
     IERC20(_token).safeApprove(lendPool, 0);
-    IERC20(_token).safeApprove(lendPool, amount);
+    IERC20(_token).safeApprove(lendPool, _amount);
 
     ILendingPool(lendPool).deposit(
       _token,
-      amount,
-      oracleManager,
+      _amount,
+      msg.sender,
       0 // referral code
     );
   }
@@ -77,7 +75,7 @@ contract AaveInteractor is IStrategy {
     uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
       underlying,
       _amount,
-      oracleManager
+      msg.sender
     );
 
     require(

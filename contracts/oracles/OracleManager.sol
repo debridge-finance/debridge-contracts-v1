@@ -337,12 +337,10 @@ contract OracleManager is Ownable {
     {
         Strategy memory strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
-        require(strategy.isSupported, "getPricePerFullShare: strategy is not supported");
         require(strategy.isEnabled, "depositgetPricePerFullShareToStrategy: strategy is not enabled");
         require(strategy.totalShares > 0, "getPricePerFullShare: strategy has no shares");
         uint256 totalStrategyTokenReserves = strategyController.updateReserves(address(this), _token);
-        uint256 totalShares = strategy.totalShares;
-        return totalStrategyTokenReserves/totalShares;
+        return totalStrategyTokenReserves/strategy.totalShares;
     }
 
     /**
@@ -356,7 +354,6 @@ contract OracleManager is Ownable {
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
         Strategy storage strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
-        require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         require(oracle.stake[strategy.stakeToken] >= _amount, 
@@ -387,7 +384,6 @@ contract OracleManager is Ownable {
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
         Strategy storage strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
-        require(strategy.isSupported, "depositToStrategy: strategy is not supported");
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
@@ -417,7 +413,6 @@ contract OracleManager is Ownable {
     {
         Strategy storage strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
-        require(strategy.isSupported, "emergencyWithdrawFromStrategy: strategy is not supported");
         require(strategy.isEnabled, "emergencyWithdrawFromStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
