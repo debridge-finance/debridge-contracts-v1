@@ -29,9 +29,9 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
     }
 
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
-    mapping(uint256 => ChainSupportInfo) chainSupported; // whether the chain for the asset is supported
-    address wrappedAssetAdmin;
-    IWrappedAssetFactory wrappedAssetFactory;
+    mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
+    address public wrappedAssetAdmin;
+    IWrappedAssetFactory public wrappedAssetFactory;
 
     event PairAdded(
         bytes32 indexed debridgeId,
@@ -80,12 +80,11 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
     /// @param _chainIdTo Chain id of the target chain.
     function send(
         address _tokenAddress,
-        uint256 _chainId,
         address _receiver,
         uint256 _amount,
         uint256 _chainIdTo
     ) external payable override whenNotPaused() {
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         _amount = _send(_tokenAddress, debridgeId, _amount, _chainIdTo);
         uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId = getSubmisionId(
@@ -142,7 +141,6 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
     /// @param _data Chain id of the target chain.
     function autoSend(
         address _tokenAddress,
-        uint256 _chainId,
         address _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
@@ -150,7 +148,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         uint256 _executionFee,
         bytes memory _data
     ) external payable whenNotPaused() {
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         require(_executionFee != 0, "autoSend: fee too low");
         _amount = _send(_tokenAddress, debridgeId, _amount, _chainIdTo);
         require(_amount >= _executionFee, "autoSend: proposed fee too high");
@@ -409,7 +407,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
             "updateSupportedChains: wrong chain support length"
         );
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
-            chainSupported[_supportedChainIds[i]] = _chainSupportInfo[i];
+            getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
         chainIds = _supportedChainIds;
     }
@@ -446,10 +444,10 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         uint256 _chainIdTo
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        if (debridge.exist) {
+        if (!debridge.exist) {
             _addAsset(_tokenAddress, chainId, 0, DENOMINATOR);
         }
-        ChainSupportInfo memory chainSupportInfo = chainSupported[_chainIdTo];
+        ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
         require(chainSupportInfo.isSupported, "send: wrong targed chain");
         require(debridge.chainId == chainId, "send: not native chain");
         require(
@@ -488,6 +486,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
                     );
                     // TODO: send the change(msg.value - fixedFee)?
                 }
+                debridge.collectedNativeFees += fixedFee;
             }
         }
         debridge.balance += _amount;
@@ -506,7 +505,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         bytes memory _signature
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        ChainSupportInfo memory chainSupportInfo = chainSupported[_chainIdTo];
+        ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
         require(debridge.chainId != chainId, "burn: native asset");
         require(chainSupportInfo.isSupported, "burn: wrong targed chain");
         require(
@@ -531,7 +530,10 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
             uint256 assetFee = (_amount * chainSupportInfo.assetFee) /
                 DENOMINATOR;
             if (assetFee > 0) {
-                require(_amount >= assetFee, "send: amount not cover fees");
+                require(
+                    _amount >= assetFee,
+                    "burn: amount not cover asset fees"
+                );
                 debridge.collectedAssetFees += assetFee;
                 _amount -= assetFee;
             }
@@ -539,8 +541,12 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         {
             uint256 fixedFee = chainSupportInfo.fixedFee;
             if (fixedFee > 0) {
-                require(msg.value >= fixedFee, "send: amount not cover fees");
+                require(
+                    msg.value >= fixedFee,
+                    "burn: amount not cover native fees"
+                );
                 // TODO: send the change(msg.value - fixedFee)?
+                debridge.collectedNativeFees += fixedFee;
             }
         }
         wrappedAsset.burn(_amount);
@@ -568,7 +574,7 @@ abstract contract AnyDebridge is CoreDebridge, IAnyDebridge {
         require(_chainId != chainId, "mint: is native chain");
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
-        if (debridge.exist) {
+        if (!debridge.exist) {
             _addAsset(_tokenAddress, _chainId, 0, DENOMINATOR);
         }
         isSubmissionUsed[_submissionId] = true;

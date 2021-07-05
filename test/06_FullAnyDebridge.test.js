@@ -4,6 +4,7 @@ const Aggregator = artifacts.require("FullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const Debridge = artifacts.require("FullAnyDebridge");
+const WrappedAssetFactory = artifacts.require("WrappedAssetFactory");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
 const CallProxy = artifacts.require("CallProxy");
@@ -18,7 +19,7 @@ const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
+contract("FullAnyDebridge", function([alice, bob, carol, eve, devid]) {
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -27,6 +28,9 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
       from: alice,
     });
     this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
+      from: alice,
+    });
+    this.wrappedAssetFactory = await WrappedAssetFactory.new(alice, [], {
       from: alice,
     });
     this.amountThreshols = toWei("1000");
@@ -83,10 +87,9 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
     this.defiController = await DefiController.new({
       from: alice,
     });
-    const minAmount = toWei("1");
     const maxAmount = toWei("1000000");
-    const assetFee = toWei("0.00001");
-    const transferFee = toWei("0.001");
+    const fixedFee = toWei("0.00001");
+    const assetFee = toWei("0.001");
     const minReserves = toWei("0.2");
     const isSupported = true;
     const supportedChainIds = [42, 56];
@@ -102,19 +105,27 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
       supportedChainIds,
       [
         {
-          transferFee,
           assetFee,
+          fixedFee,
           isSupported,
         },
         {
-          transferFee,
           assetFee,
+          fixedFee,
           isSupported,
         },
       ],
       ZERO_ADDRESS,
-      ZERO_ADDRESS,
+      this.wrappedAssetFactory.address.toString(),
     ]);
+    const minterRole = await this.wrappedAssetFactory.DEPLOYER_ROLE();
+    await this.wrappedAssetFactory.grantRole(
+      minterRole,
+      this.debridge.address.toString(),
+      {
+        from: alice,
+      }
+    );
   });
 
   context("Test setting configurations by different users", () => {
@@ -125,15 +136,6 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
       });
       const newAggregator = await this.debridge.aggregator();
       assert.equal(aggregator, newAggregator);
-    });
-
-    it("should set fee proxy if called by the admin", async function() {
-      const feeProxy = this.feeProxy.address;
-      await this.debridge.setFeeProxy(feeProxy, {
-        from: alice,
-      });
-      const newFeeProxy = await this.debridge.feeProxy();
-      assert.equal(feeProxy, newFeeProxy);
     });
 
     it("should set defi controller if called by the admin", async function() {
@@ -179,31 +181,26 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       const balance = toBN(await web3.eth.getBalance(this.debridge.address));
       const debridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        chainIdTo
-      );
-      const fees = toBN(supportedChainInfo.transferFee)
+      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
+      const fees = toBN(supportedChainInfo.assetFee)
         .mul(amount)
-        .div(toBN(toWei("1")))
-        .add(toBN(supportedChainInfo.assetFee));
-      await this.debridge.send(
-        tokenAddress,
-        chainId,
-        receiver,
-        amount,
-        chainIdTo,
-        {
-          value: amount,
-          from: alice,
-        }
-      );
+        .div(toBN(toWei("1")));
+      await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, {
+        value: amount,
+        from: alice,
+      });
       const newBalance = toBN(await web3.eth.getBalance(this.debridge.address));
       const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridge.collectedFees.add(fees).toString(),
-        newDebridge.collectedFees.toString()
+        debridge.collectedAssetFees.add(fees).toString(),
+        newDebridge.collectedAssetFees.toString()
+      );
+      assert.equal(
+        debridge.collectedNativeFees
+          .add(toBN(supportedChainInfo.fixedFee))
+          .toString(),
+        newDebridge.collectedNativeFees.toString()
       );
     });
 
@@ -227,32 +224,28 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
         await this.mockToken.balanceOf(this.debridge.address)
       );
       const debridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        chainIdTo
-      );
-      const fees = toBN(supportedChainInfo.transferFee)
+      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
+      const fees = toBN(supportedChainInfo.assetFee)
         .mul(amount)
-        .div(toBN(toWei("1")))
-        .add(toBN(supportedChainInfo.assetFee));
-      await this.debridge.send(
-        tokenAddress,
-        chainId,
-        receiver,
-        amount,
-        chainIdTo,
-        {
-          from: alice,
-        }
-      );
+        .div(toBN(toWei("1")));
+      await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, {
+        value: supportedChainInfo.fixedFee,
+        from: alice,
+      });
       const newBalance = toBN(
         await this.mockToken.balanceOf(this.debridge.address)
       );
       const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridge.collectedFees.add(fees).toString(),
-        newDebridge.collectedFees.toString()
+        debridge.collectedAssetFees.add(fees).toString(),
+        newDebridge.collectedAssetFees.toString()
+      );
+      assert.equal(
+        debridge.collectedNativeFees
+          .add(toBN(supportedChainInfo.fixedFee))
+          .toString(),
+        newDebridge.collectedNativeFees.toString()
       );
     });
 
@@ -267,30 +260,11 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.send(tokenAddress, chainId, receiver, amount, chainIdTo, {
+        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, {
           value: toWei("0.1"),
           from: alice,
         }),
         "send: amount mismatch"
-      );
-    });
-
-    it("should reject sending too few tokens", async function() {
-      const tokenAddress = ZERO_ADDRESS;
-      const receiver = bob;
-      const chainId = await this.debridge.chainId();
-      const amount = toBN(toWei("0.1"));
-      const chainIdTo = 42;
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      await expectRevert(
-        this.debridge.send(tokenAddress, chainId, receiver, amount, chainIdTo, {
-          value: amount,
-          from: alice,
-        }),
-        "send: amount too low"
       );
     });
 
@@ -305,26 +279,11 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.send(tokenAddress, chainId, receiver, amount, chainIdTo, {
+        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, {
           value: amount,
           from: alice,
         }),
         "send: wrong targed chain"
-      );
-    });
-
-    it("should reject sending tokens originated on the other chain", async function() {
-      const tokenAddress = ZERO_ADDRESS;
-      const receiver = bob;
-      const amount = toBN(toWei("1"));
-      const chainIdTo = 42;
-      const debridgeId = await this.debridge.getDebridgeId(42, tokenAddress);
-      await expectRevert(
-        this.debridge.send(tokenAddress, chainId, receiver, amount, chainIdTo, {
-          value: amount,
-          from: alice,
-        }),
-        "send: not native chain"
       );
     });
   });
@@ -383,9 +342,7 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
         chainId,
         tokenAddress
       );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-      const balance = toBN(await wrappedAsset.balanceOf(receiver));
+      const balance = toBN("0");
       await this.debridge.mint(
         tokenAddress,
         chainId,
@@ -397,6 +354,8 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
           from: alice,
         }
       );
+      const debridge = await this.debridge.getDebridge(debridgeId);
+      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
       const submissionId = await this.debridge.getSubmisionId(
         debridgeId,
@@ -471,6 +430,7 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
       const deadline = MAX_UINT256;
+      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const signature = await permit(
         wrappedAsset,
         bob,
@@ -487,23 +447,25 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
         deadline,
         signature,
         {
+          value: supportedChainInfo.fixedFee,
           from: bob,
         }
       );
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        chainIdTo
-      );
-      const fees = toBN(supportedChainInfo.transferFee)
+      const fees = toBN(supportedChainInfo.assetFee)
         .mul(amount)
-        .div(toBN(toWei("1")))
-        .add(toBN(supportedChainInfo.assetFee));
+        .div(toBN(toWei("1")));
       assert.equal(
-        debridge.collectedFees.add(fees).toString(),
-        newDebridge.collectedFees.toString()
+        debridge.collectedAssetFees.add(fees).toString(),
+        newDebridge.collectedAssetFees.toString()
+      );
+      assert.equal(
+        debridge.collectedNativeFees
+          .add(toBN(supportedChainInfo.fixedFee))
+          .toString(),
+        newDebridge.collectedNativeFees.toString()
       );
     });
 
@@ -531,33 +493,6 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
           }
         ),
         "burn: native asset"
-      );
-    });
-
-    it("should reject burning too few tokens", async function() {
-      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const chainId = 56;
-      const receiver = bob;
-      const amount = toBN(toWei("0.1"));
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      const deadline = 0;
-      const signature = "0x";
-      await expectRevert(
-        this.debridge.burn(
-          debridgeId,
-          receiver,
-          amount,
-          chainId,
-          deadline,
-          signature,
-          {
-            from: alice,
-          }
-        ),
-        "burn: amount too low"
       );
     });
   });
@@ -646,8 +581,12 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
       const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridge.collectedFees.toString(),
-        newDebridge.collectedFees.toString()
+        debridge.collectedAssetFees.toString(),
+        newDebridge.collectedAssetFees.toString()
+      );
+      assert.equal(
+        debridge.collectedNativeFees.toString(),
+        newDebridge.collectedNativeFees.toString()
       );
       assert.ok(isSubmissionUsed);
     });
@@ -680,8 +619,12 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
       const newDebridge = await this.debridge.getDebridge(erc20DebridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridge.collectedFees.toString(),
-        newDebridge.collectedFees.toString()
+        debridge.collectedAssetFees.toString(),
+        newDebridge.collectedAssetFees.toString()
+      );
+      assert.equal(
+        debridge.collectedNativeFees.toString(),
+        newDebridge.collectedNativeFees.toString()
       );
       assert.ok(isSubmissionUsed);
     });
@@ -744,14 +687,14 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
     it("should withdraw fee of native token if it is called by the admin", async function() {
       const debridge = await this.debridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
-      await this.debridge.withdrawFee(debridgeId, receiver, amount, {
+      await this.debridge.withdrawFee(debridgeId, receiver, amount, false, {
         from: alice,
       });
       const newBalance = toBN(await web3.eth.getBalance(receiver));
       const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(
-        debridge.collectedFees.sub(amount).toString(),
-        newDebridge.collectedFees.toString()
+        debridge.collectedAssetFees.sub(amount).toString(),
+        newDebridge.collectedAssetFees.toString()
       );
       assert.equal(balance.add(amount).toString(), newBalance.toString());
     });
@@ -759,21 +702,27 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
     it("should withdraw fee of ERC20 token if it is called by the admin", async function() {
       const debridge = await this.debridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
-      await this.debridge.withdrawFee(erc20DebridgeId, receiver, amount, {
-        from: alice,
-      });
+      await this.debridge.withdrawFee(
+        erc20DebridgeId,
+        receiver,
+        amount,
+        false,
+        {
+          from: alice,
+        }
+      );
       const newBalance = toBN(await this.mockToken.balanceOf(receiver));
       const newDebridge = await this.debridge.getDebridge(erc20DebridgeId);
       assert.equal(
-        debridge.collectedFees.sub(amount).toString(),
-        newDebridge.collectedFees.toString()
+        debridge.collectedAssetFees.sub(amount).toString(),
+        newDebridge.collectedAssetFees.toString()
       );
       assert.equal(balance.add(amount).toString(), newBalance.toString());
     });
 
     it("should reject withdrawing fee by non-admin", async function() {
       await expectRevert(
-        this.debridge.withdrawFee(debridgeId, receiver, amount, {
+        this.debridge.withdrawFee(debridgeId, receiver, amount, false, {
           from: bob,
         }),
         "onlyAdmin: bad role"
@@ -783,7 +732,7 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
     it("should reject withdrawing too many fees", async function() {
       const amount = toBN(toWei("100"));
       await expectRevert(
-        this.debridge.withdrawFee(debridgeId, receiver, amount, {
+        this.debridge.withdrawFee(debridgeId, receiver, amount, false, {
           from: alice,
         }),
         "withdrawFee: not enough fee"
@@ -793,145 +742,10 @@ contract.only("FullDebridge", function([alice, bob, carol, eve, devid]) {
     it("should reject withdrawing fees if the token not from current chain", async function() {
       const amount = toBN(toWei("100"));
       await expectRevert(
-        this.debridge.withdrawFee(outsideDebridgeId, receiver, amount, {
+        this.debridge.withdrawFee(outsideDebridgeId, receiver, amount, false, {
           from: alice,
         }),
         "withdrawFee: not enough fee"
-      );
-    });
-  });
-
-  context("Test fund aggregator", async function() {
-    const tokenAddress = ZERO_ADDRESS;
-    const amount = toBN(toWei("0.0001"));
-    let receiver;
-    let chainId;
-    let debridgeId;
-    let outsideDebridgeId;
-    let erc20DebridgeId;
-    let wethUniPool;
-    let mockErc20UniPool;
-
-    before(async function() {
-      receiver = this.aggregator.address.toString();
-      await this.uniswapFactory.createPair(
-        this.linkToken.address,
-        this.weth.address,
-        {
-          from: alice,
-        }
-      );
-      await this.uniswapFactory.createPair(
-        this.linkToken.address,
-        this.mockToken.address,
-        {
-          from: alice,
-        }
-      );
-      const wethUniPoolAddres = await this.uniswapFactory.getPair(
-        this.linkToken.address,
-        this.weth.address
-      );
-      const mockErc20UniPoolAddress = await this.uniswapFactory.getPair(
-        this.linkToken.address,
-        this.mockToken.address
-      );
-      const wethUniPool = await IUniswapV2Pair.at(wethUniPoolAddres);
-      const mockErc20UniPool = await IUniswapV2Pair.at(mockErc20UniPoolAddress);
-      await this.linkToken.approve(wethUniPool.address, MAX, { from: alice });
-      await this.weth.approve(wethUniPool.address, MAX, { from: alice });
-      await this.linkToken.approve(mockErc20UniPool.address, MAX, {
-        from: alice,
-      });
-      await this.mockToken.approve(mockErc20UniPool.address, MAX, {
-        from: alice,
-      });
-
-      await this.linkToken.mint(wethUniPool.address, toWei("100"), {
-        from: alice,
-      });
-      await this.weth.deposit({
-        from: carol,
-        value: toWei("20"),
-      });
-      await this.weth.transfer(wethUniPool.address, toWei("10"), {
-        from: carol,
-      });
-      await this.linkToken.mint(mockErc20UniPool.address, toWei("100"), {
-        from: alice,
-      });
-      await this.mockToken.mint(mockErc20UniPool.address, toWei("100"), {
-        from: alice,
-      });
-
-      await wethUniPool.mint(alice, { from: alice });
-      await mockErc20UniPool.mint(alice, { from: alice });
-
-      chainId = await this.debridge.chainId();
-      debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      outsideDebridgeId = await this.debridge.getDebridgeId(42, tokenAddress);
-      erc20DebridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        this.mockToken.address
-      );
-    });
-
-    it("should fund aggregator of native token if it is called by the admin", async function() {
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const balance = toBN(await this.linkToken.balanceOf(receiver));
-      await this.debridge.fundAggregator(debridgeId, amount, {
-        from: alice,
-      });
-      const newBalance = toBN(await this.linkToken.balanceOf(receiver));
-      const newDebridge = await this.debridge.getDebridge(debridgeId);
-      assert.equal(
-        debridge.collectedFees.sub(amount).toString(),
-        newDebridge.collectedFees.toString()
-      );
-      assert.ok(newBalance.gt(balance));
-    });
-
-    it("should fund aggregator of ERC20 token if it is called by the admin", async function() {
-      const debridge = await this.debridge.getDebridge(erc20DebridgeId);
-      const balance = toBN(await this.linkToken.balanceOf(receiver));
-      await this.debridge.fundAggregator(erc20DebridgeId, amount, {
-        from: alice,
-      });
-      const newBalance = toBN(await this.linkToken.balanceOf(receiver));
-      const newDebridge = await this.debridge.getDebridge(erc20DebridgeId);
-      assert.equal(
-        debridge.collectedFees.sub(amount).toString(),
-        newDebridge.collectedFees.toString()
-      );
-      assert.ok(newBalance.gt(balance));
-    });
-
-    it("should reject funding aggregator by non-admin", async function() {
-      await expectRevert(
-        this.debridge.fundAggregator(debridgeId, amount, {
-          from: bob,
-        }),
-        "onlyAdmin: bad role"
-      );
-    });
-
-    it("should reject funding aggregator with too many fees", async function() {
-      const amount = toBN(toWei("100"));
-      await expectRevert(
-        this.debridge.fundAggregator(debridgeId, amount, {
-          from: alice,
-        }),
-        "fundAggregator: not enough fee"
-      );
-    });
-
-    it("should reject funding aggregator if the token not from current chain", async function() {
-      const amount = toBN(toWei("0.1"));
-      await expectRevert(
-        this.debridge.fundAggregator(outsideDebridgeId, amount, {
-          from: alice,
-        }),
-        "fundAggregator: not enough fee"
       );
     });
   });

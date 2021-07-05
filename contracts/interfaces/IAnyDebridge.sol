@@ -10,7 +10,6 @@ interface IAnyDebridge {
 
     function send(
         address _tokenAddress,
-        uint256 _chainId,
         address _receiver,
         uint256 _amount,
         uint256 _chainIdTo
