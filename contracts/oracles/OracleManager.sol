@@ -34,7 +34,7 @@ contract OracleManager is AccessControl, Initializable {
     struct DelegatorInfo {
         mapping(address => uint256) stakes;
         // uint256 usdAmount;
-        bool staked;
+        bool exist; //Delegator exists in oracle mapping
     }
 
     struct OracleInfo { // info of validator or delegator
@@ -156,9 +156,10 @@ contract OracleManager is AccessControl, Initializable {
         oracle.stake[_collateral] += _amount;
         collateral.totalLocked += _amount;
         if (sender.isOracle == false && msg.sender != oracle.admin) {
-            if (!oracle.delegators[msg.sender].staked) {
+            if (!oracle.delegators[msg.sender].exist) {
                 oracle.delegatorAddresses[oracle.delegatorCount] = msg.sender;
                 oracle.delegatorCount ++;
+                oracle.delegators[msg.sender].exist = true;
             }
             oracle.delegators[msg.sender].stakes[_collateral] += _amount;
             // uint256 price;
