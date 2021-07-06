@@ -57,10 +57,12 @@ contract OracleManager is AccessControl, Initializable {
     struct Collateral {
         uint256 confiscatedFunds; // total confiscated tokens
         uint256 totalLocked; // total staked tokens
+        uint256 maxStakeAmount // maximum stake for each collateral
         uint8 decimals;
         bool isSupported;
         bool isUSDStable;
         bool isEnabled;
+        bool isEnabledMaxAmount
     }
 
     struct Strategy {
@@ -155,6 +157,11 @@ contract OracleManager is AccessControl, Initializable {
         );
         oracle.stake[_collateral] += _amount;
         collateral.totalLocked += _amount;
+        require(
+            !collateral.isEnabledMaxAmount || 
+            collateral.isEnabledMaxAmount && collateral.totalLocked <= collateral.maxStakeAmount, 
+            "stake: amount od delegation is limited"
+        );
         if (sender.isOracle == false && msg.sender != oracle.admin) {
             if (!oracle.delegators[msg.sender].exist) {
                 oracle.delegatorAddresses[oracle.delegatorCount] = msg.sender;
@@ -523,6 +530,17 @@ contract OracleManager is AccessControl, Initializable {
      */
     function updatedCollateral(address _collateral, bool _isEnabled) external onlyAdmin() {
         collaterals[_collateral].isEnabled = _isEnabled;
+    }
+
+    /**
+     * @dev enable collateral max amount
+     * @param _collateral address of collateral
+     * @param _isEnabledMaxAmount bool of enable
+     * @param _amount max amount
+     */
+    function updatedCollateral(address _collateral, bool _isEnabledMaxAmount, uint256 _amount) external onlyAdmin() {
+        collaterals[_collateral].isEnabledMaxAmount = _isEnabledMaxAmount;
+        collaterals[_collateral].maxStakeAmount = _amount;
     }
 
     /**
