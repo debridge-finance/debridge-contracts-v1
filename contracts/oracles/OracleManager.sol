@@ -33,7 +33,7 @@ contract OracleManager is AccessControl, Initializable {
 
     struct DelegatorInfo {
         mapping(address => uint256) stakes;
-        uint256 usdAmount;
+        // uint256 usdAmount;
         bool staked;
     }
 
@@ -46,9 +46,9 @@ contract OracleManager is AccessControl, Initializable {
         mapping(uint256 => WithdrawalInfo) withdrawals; // list of withdrawal requests
         mapping(uint256 => TransferInfo) transfers;
         uint256 profitSharing;  // percentage of profit sharing.
-        uint256 usdAmountOfDelegation;
+        // uint256 usdAmountOfDelegation;
         bool isOracle; // whether is oracles
-        bool isAbleToDelegate;
+        bool isAbleToDelegate;//TODO: not used
         mapping(address => DelegatorInfo) delegators;
         mapping(uint256 => address) delegatorAddresses; //delegator list
         uint256 delegatorCount; //delegator count
@@ -132,22 +132,22 @@ contract OracleManager is AccessControl, Initializable {
             "stake: collateral is not enabled"
         );
 
-        uint256 totalUSDAmount = 0;
-        for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
-            address delegator = oracle.delegatorAddresses[i];
-            totalUSDAmount += oracle.delegators[delegator].usdAmount;
-        }
+        // uint256 totalUSDAmount = 0;
+        // for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
+        //     address delegator = oracle.delegatorAddresses[i];
+        //     totalUSDAmount += oracle.delegators[delegator].usdAmount;
+        // }
         OracleInfo storage sender = getOracleInfo[msg.sender];
         if (!sender.isOracle && sender.admin == address(0)) 
             sender.admin = msg.sender;
-        if (sender.isOracle == false && msg.sender != oracle.admin) {
-            uint256 collateralPrice;
-            if (collaterals[_collateral].isUSDStable)
-                collateralPrice = 1;
-            else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
-            collateralPrice *= 10 ** (18 - collaterals[_collateral].decimals);
-            require(totalUSDAmount + collateralPrice * _amount <= oracle.usdAmountOfDelegation, "stake: amount of delegation is limited");
-        }
+        // if (sender.isOracle == false && msg.sender != oracle.admin) {
+        //     uint256 collateralPrice;
+        //     if (collaterals[_collateral].isUSDStable)
+        //         collateralPrice = 1;
+        //     else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
+        //     collateralPrice *= 10 ** (18 - collaterals[_collateral].decimals);
+        //     require(totalUSDAmount + collateralPrice * _amount <= oracle.usdAmountOfDelegation, "stake: amount of delegation is limited");
+        // }
 
         require(
             IERC20(_collateral).transferFrom(msg.sender, address(this), _amount),
@@ -161,12 +161,12 @@ contract OracleManager is AccessControl, Initializable {
                 oracle.delegatorCount ++;
             }
             oracle.delegators[msg.sender].stakes[_collateral] += _amount;
-            uint256 price;
-            if (collateral.isUSDStable)
-                price = 1;
-            else price = priceConsumer.getPriceOfToken(_collateral);
-            price *= 10 ** (18 - collateral.decimals);
-            oracle.delegators[msg.sender].usdAmount += _amount * price;
+            // uint256 price;
+            // if (collateral.isUSDStable)
+            //     price = 1;
+            // else price = priceConsumer.getPriceOfToken(_collateral);
+            // price *= 10 ** (18 - collateral.decimals);
+            // oracle.delegators[msg.sender].usdAmount += _amount * price;
         }
         emit Staked(_oracle, msg.sender, _collateral, _amount);
     }
@@ -205,12 +205,12 @@ contract OracleManager is AccessControl, Initializable {
             DelegatorInfo storage delegator = oracle.delegators[msg.sender];
             require(delegator.stakes[_collateral] >= _amount, "requestUnstake: insufficient amount");
             delegator.stakes[_collateral] -= _amount;
-            uint256 price;
-            if (collateral.isUSDStable)
-                price = 1;
-            else price = priceConsumer.getPriceOfToken(_collateral);
-            price *= 10 ** (18 - collaterals[_collateral].decimals);
-            delegator.usdAmount -= price * _amount;
+            // uint256 price;
+            // if (collateral.isUSDStable)
+            //     price = 1;
+            // else price = priceConsumer.getPriceOfToken(_collateral);
+            // price *= 10 ** (18 - collaterals[_collateral].decimals);
+            // delegator.usdAmount -= price * _amount;
         }
         else require(msg.sender == oracle.admin, "requestUnstake: only callable by admin");
 
@@ -449,16 +449,16 @@ contract OracleManager is AccessControl, Initializable {
         oracle.profitSharing = _profitSharing;
     }
 
-    /**
-     * @dev set usd amount of delegation
-     * @param _oracle address of oracle
-     * @param _usdAmountOfDelegation usd amount of delegation
-     */
-    function setUsdAmountOfDelegation(address _oracle, uint256 _usdAmountOfDelegation) external {
-        OracleInfo storage oracle = getOracleInfo[_oracle];
-        require(msg.sender == oracle.admin, "setProfitPercentage: only callable by admin");
-        oracle.usdAmountOfDelegation = _usdAmountOfDelegation;
-    }
+    // /**
+    //  * @dev set usd amount of delegation
+    //  * @param _oracle address of oracle
+    //  * @param _usdAmountOfDelegation usd amount of delegation
+    //  */
+    // function setUsdAmountOfDelegation(address _oracle, uint256 _usdAmountOfDelegation) external {
+    //     OracleInfo storage oracle = getOracleInfo[_oracle];
+    //     require(msg.sender == oracle.admin, "setProfitPercentage: only callable by admin");
+    //     oracle.usdAmountOfDelegation = _usdAmountOfDelegation;
+    // }
 
     /* ADMIN */
 
@@ -629,31 +629,31 @@ contract OracleManager is AccessControl, Initializable {
         priceConsumer = _priceConsumer;
     }
 
-    /**
-     * @dev accounts add assets to oracle
-     * @param _oracle address of oracle
-     * @param _collateral collateralId oracle
-     * @param _amount amount of token
-     */
-    function account_asset(address _oracle, address _collateral, uint256 _amount) public {
-        OracleInfo storage oracle = getOracleInfo[_oracle];
-        uint256 share = _amount * oracle.profitSharing / 100;
+    // /**
+    //  * @dev accounts add assets to oracle
+    //  * @param _oracle address of oracle
+    //  * @param _collateral collateralId oracle
+    //  * @param _amount amount of token
+    //  */
+    // function account_asset(address _oracle, address _collateral, uint256 _amount) public {
+    //     OracleInfo storage oracle = getOracleInfo[_oracle];
+    //     uint256 share = _amount * oracle.profitSharing / 100;
 
-        uint256 totalUSDAmount = 0;
-        for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
-            address delegator = oracle.delegatorAddresses[i];
-            totalUSDAmount += oracle.delegators[delegator].usdAmount;
-        }
-        Collateral storage collateral = collaterals[_collateral];
-        collateral.totalLocked += _amount;
-        oracle.stake[_collateral] += _amount;
-        if (totalUSDAmount != 0) {
-            for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
-                address delegator = oracle.delegatorAddresses[i];
-                oracle.delegators[delegator].stakes[_collateral] += share * oracle.delegators[delegator].usdAmount / totalUSDAmount;
-            }
-        }
-    }
+    //     uint256 totalUSDAmount = 0;
+    //     for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
+    //         address delegator = oracle.delegatorAddresses[i];
+    //         totalUSDAmount += oracle.delegators[delegator].usdAmount;
+    //     }
+    //     Collateral storage collateral = collaterals[_collateral];
+    //     collateral.totalLocked += _amount;
+    //     oracle.stake[_collateral] += _amount;
+    //     if (totalUSDAmount != 0) {
+    //         for (uint256 i = 0; i < oracle.delegatorCount; i ++) {
+    //             address delegator = oracle.delegatorAddresses[i];
+    //             oracle.delegators[delegator].stakes[_collateral] += share * oracle.delegators[delegator].usdAmount / totalUSDAmount;
+    //         }
+    //     }
+    // }
 
     /// @dev Get withdrawal request.
     /// @param _oracle Oracle address.
