@@ -208,6 +208,21 @@ contract OracleManager is AccessControl, Initializable {
             sender.stake[_collateral].stakedAmount -= _amount;
             uint256 shares = (_amount*oracle.stake[_collateral].shares)/
                 oracle.totalDelegation[_collateral];
+            uint256 rewardAmount;
+            uint256 rewardShares;
+            address rewardCollateral;
+            for (uint256 i = 0; i < collateralAddresses.length; i++) {
+                rewardCollateral = collateralAddresses[i];
+                rewardAmount = oracle.profitSharingBalances[_collateral][rewardCollateral] 
+                    * (shares / oracle.stake[_collateral].shares);
+                rewardShares = (rewardAmount*oracle.stake[rewardCollateral].shares)/
+                    oracle.totalDelegation[rewardCollateral];
+                sender.stake[rewardCollateral].stakedAmount += rewardAmount;
+                sender.stake[rewardCollateral].shares += rewardShares;
+                delegator.stakes[rewardCollateral].stakedAmount += rewardAmount;
+                delegator.stakes[rewardCollateral].shares += rewardShares;
+                oracle.totalDelegation[rewardCollateral] += rewardAmount;
+            }
             delegator.stakes[_collateral].shares -= shares;
             sender.stake[_collateral].shares -= shares;
             oracle.totalDelegation[_collateral] -= _amount;
@@ -296,16 +311,17 @@ contract OracleManager is AccessControl, Initializable {
         require(sender.isOracle == false, "requestTransfer: callable by delegator");
         require(oracleFrom.totalDelegation[_collateral] >= _amount, "transferAssets: Insufficient amount");
         require(oracleFrom.delegators[msg.sender].stakes[_collateral].stakedAmount >= _amount, "transferAssets: Insufficient amount for delegator");
+        // TODO: claim delegator share of oracleFrom rewards on transfer 
         uint256 sharesFrom = (_amount*oracleFrom.stake[_collateral].shares)/
-                oracleFrom.totalDelegation[_collateral];
-            delegator.stakes[_collateral].shares -= sharesFrom;
-            sender.stake[_collateral].shares -= sharesFrom;
+            oracleFrom.totalDelegation[_collateral];
+        delegator.stakes[_collateral].shares -= sharesFrom;
+        sender.stake[_collateral].shares -= sharesFrom;
         oracleFrom.totalDelegation[_collateral] -= _amount;
         oracleTo.totalDelegation[_collateral] += _amount;
         uint256 sharesTo = (_amount*oracleTo.stake[_collateral].shares)/
-                oracleTo.totalDelegation[_collateral];
-            delegator.stakes[_collateral].shares += sharesTo;
-            sender.stake[_collateral].shares += sharesTo;
+            oracleTo.totalDelegation[_collateral];
+        delegator.stakes[_collateral].shares += sharesTo;
+        sender.stake[_collateral].shares += sharesTo;
         oracleFrom.delegators[msg.sender].stakes[_collateral].stakedAmount -= _amount;
         oracleTo.delegators[msg.sender].stakes[_collateral].stakedAmount += _amount;
         sender.transfers[sender.transferCount] = TransferInfo(
@@ -441,17 +457,45 @@ contract OracleManager is AccessControl, Initializable {
      * @dev Earn from the strategy
      */
     function withdrawFromStrategy(address _oracle, uint256 _amount, address _strategy) external {
-        OracleInfo storage oracle = getOracleInfo[_oracle];
-        require(msg.sender == oracle.admin, "withdrawFromStrategy: only callable by admin");
         Strategy storage strategy = strategies[_strategy];
-        IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isEnabled, "withdrawFromStrategy: strategy is not enabled");
+        IStrategy strategyController = IStrategy(_strategy);
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
+        OracleInfo storage oracle = getOracleInfo[_oracle];
+        OracleInfo storage sender = getOracleInfo[msg.sender];
+        uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+        uint256 strategyTotalSharesCache = strategy.totalShares;
+        if (!sender.isOracle && msg.sender != oracle.admin) {
+            DelegatorInfo storage delegator = oracle.delegators[msg.sender];
+            require(delegator.exist, "withdrawFromStrategy: delegator does not exist");
+            StrategyDepositInfo storage delegatorDepositInfo = sender.strategyStake[_strategy][strategy.stakeToken];
+            require(delegatorDepositInfo.shares >= _amount, 
+                "withdrawFromStrategy: Insufficient share");
+            uint256 delegatorCollateral = _amount * beforeBalance / strategyTotalSharesCache;
+            delegatorDepositInfo.shares -= _amount;
+            uint256 strategyTokenAmount = (_amount*strategy.totalReserves)/strategy.totalShares;
+            strategy.totalShares -= _amount;
+            strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+            strategyController.withdraw(strategy.strategyToken, strategyTokenAmount);
+            uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+            uint256 receivedAmount = afterBalance - beforeBalance;
+            delegatorDepositInfo.stakedAmount -= receivedAmount;
+            stakeCollateral.totalLocked += receivedAmount;
+            sender.stake[strategy.stakeToken].stakedAmount += receivedAmount;
+            uint256 shares = ((receivedAmount - delegatorCollateral)*oracle.stake[strategy.stakeToken].shares)/
+                oracle.totalDelegation[strategy.stakeToken];
+            sender.stake[strategy.stakeToken].shares += shares;
+            delegator.stakes[strategy.stakeToken].stakedAmount += receivedAmount;
+            delegator.stakes[strategy.stakeToken].shares += shares;
+            oracle.totalDelegation[strategy.stakeToken] += receivedAmount - delegatorCollateral;
+            oracle.stake[strategy.stakeToken].shares += shares;
+            emit WithdrawedFromStrategy(msg.sender, receivedAmount, _strategy, strategy.stakeToken);
+        }
+        else require (msg.sender == oracle.admin, "withdrawFromStrategy: only callable by admin");
         StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
         require(depositInfo.shares >= _amount, 
             "withdrawFromStrategy: Insufficient share");
-        uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
-        uint256 oracleCollateral = _amount * beforeBalance / strategy.totalShares;
+        uint256 oracleCollateral = _amount * beforeBalance / strategyTotalSharesCache;
         depositInfo.shares -= _amount;
         uint256 strategyTokenAmount = (_amount*strategy.totalReserves)/strategy.totalShares;
         strategy.totalShares -= _amount;
@@ -461,11 +505,7 @@ contract OracleManager is AccessControl, Initializable {
         uint256 receivedAmount = afterBalance - beforeBalance;
         depositInfo.stakedAmount -= receivedAmount;
         stakeCollateral.totalLocked += receivedAmount;
-        if (oracle.isOracle)
-            distributeRewards(_oracle, strategy.stakeToken, receivedAmount - oracleCollateral);
-        else
-            oracle.stake[strategy.stakeToken].stakedAmount += receivedAmount;
-            // TODO: add to delegator StakeDepositInfo stakedAmount and update collateral shares
+        distributeRewards(_oracle, strategy.stakeToken, receivedAmount - oracleCollateral);
         emit WithdrawedFromStrategy(_oracle, receivedAmount, _strategy, strategy.stakeToken);
     }
 
@@ -720,8 +760,6 @@ contract OracleManager is AccessControl, Initializable {
         oracle.stake[_collateral].stakedAmount += _amount - delegatorsAmount;
         uint256 totalUSDAmount = getTotalUSDAmount(_oracle);
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            // TODO: update stakedAmount and collateral shares of all delegators for both control paths
-            // TODO: work out how to credit delegator share of collateral share of collateral (e.g. USDT share of LINK rewards)
             if (address(collateralAddresses[i]) == _collateral) {
                 oracle.totalDelegation[_collateral] += delegatorsAmount;
                 oracle.profitSharingBalances[_collateral][_collateral] += delegatorsAmount * 
