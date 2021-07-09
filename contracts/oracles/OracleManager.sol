@@ -140,7 +140,7 @@ contract OracleManager is AccessControl, Initializable {
         );
         require(
             !collateral.isEnabledMaxAmount || 
-            collateral.isEnabledMaxAmount && collateral.totalLocked <= collateral.maxStakeAmount, 
+            collateral.isEnabledMaxAmount && collateral.totalLocked+_amount <= collateral.maxStakeAmount, 
             "stake: amount of delegation is limited"
         );
 
