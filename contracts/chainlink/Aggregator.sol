@@ -25,8 +25,12 @@ contract Aggregator is AccessControl {
     uint256 public minConfirmations; // minimal required confirmations
     IERC20 public coreToken; // LINK's token address
     IERC20 public bonusToken; // DBR's token address
+
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
     mapping(IERC20 => PaymentInfo) public getPaymentInfo; // asset address => funds details
+
+    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
+    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
 
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
@@ -192,5 +196,14 @@ contract Aggregator is AccessControl {
         returns (uint256)
     {
         return getOracleInfo[_oracle].balances[_asset];
+    }
+
+    /// @dev Calculates asset identifier.
+    function getDeployId(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol));
     }
 }

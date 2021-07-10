@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Aggregator.sol";
 import "../interfaces/ILightAggregator.sol";
+import "../periphery/WrappedAsset.sol";
 
 contract LightAggregator is Aggregator, ILightAggregator {
     struct SubmissionInfo {
@@ -13,7 +14,17 @@ contract LightAggregator is Aggregator, ILightAggregator {
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
+    struct DebridgeInfo {
+        bytes32 debridgeInfo;
+        string name;
+        string symbol;
+        bool approved;
+        uint256 confirmations; // received confirmations count
+        bytes[] signatures;
+        mapping(address => bool) hasVerified; // verifier => has already voted
+    }
 
+    mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
@@ -40,6 +51,32 @@ contract LightAggregator is Aggregator, ILightAggregator {
             _bonusToken
         )
     {}
+
+    /// @dev Confirms the transfer request.
+    function deployAsset(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol
+    ) external onlyOracle {
+        bytes32 deployId = getDeployId(_debridgeId, _name, _symbol);
+        DebridgeInfo storage debridgeInfo = getDeployInfo[deployId];
+
+        require(!debridgeInfo.approved, "deployAsset: submitted already");
+        require(
+            !debridgeInfo.hasVerified[msg.sender],
+            "deployAsset: submitted already"
+        );
+        debridgeInfo.confirmations += 1;
+        debridgeInfo.name = _name;
+        debridgeInfo.symbol = _symbol;
+        debridgeInfo.hasVerified[msg.sender] = true;
+        if (debridgeInfo.confirmations >= minConfirmations) {
+            debridgeInfo.approved = true;
+            emit DeployApproved(deployId);
+        }
+        _payOracle(msg.sender);
+        emit DeployConfirmed(deployId, msg.sender);
+    }
 
     /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.
@@ -72,8 +109,9 @@ contract LightAggregator is Aggregator, ILightAggregator {
     /// @param _submissionId Submission identifier.
     /// @param _signature Oracle's signature.
     function _submit(bytes32 _submissionId, bytes memory _signature) internal {
-        SubmissionInfo storage submissionInfo =
-            getSubmissionInfo[_submissionId];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[
+            _submissionId
+        ];
         require(
             !submissionInfo.hasVerified[msg.sender],
             "submit: submitted already"
@@ -99,8 +137,9 @@ contract LightAggregator is Aggregator, ILightAggregator {
         override
         returns (uint256 _confirmations, bool _confirmed)
     {
-        SubmissionInfo storage submissionInfo =
-            getSubmissionInfo[_submissionId];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[
+            _submissionId
+        ];
         _confirmations = submissionInfo.confirmations;
         return (_confirmations, _confirmations >= minConfirmations);
     }

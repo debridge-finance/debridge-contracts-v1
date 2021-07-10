@@ -15,8 +15,8 @@ contract FullAggregator is Aggregator, IFullAggregator {
     }
     struct DebridgeInfo {
         bytes32 debridgeInfo;
-        string _name;
-        string _symbol;
+        string name;
+        string symbol;
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
@@ -25,15 +25,13 @@ contract FullAggregator is Aggregator, IFullAggregator {
     address public wrappedAssetAdmin;
     address public debridgeAddress;
 
-    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
     mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public getWrappedAssetAddress; // debridge id => wrapped asset address
+    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
     mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
-    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
-    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
@@ -96,6 +94,8 @@ contract FullAggregator is Aggregator, IFullAggregator {
             !debridgeInfo.hasVerified[msg.sender],
             "deployAsset: submitted already"
         );
+        debridgeInfo.name = _name;
+        debridgeInfo.symbol = _symbol;
         debridgeInfo.confirmations += 1;
         debridgeInfo.hasVerified[msg.sender] = true;
         if (debridgeInfo.confirmations >= minConfirmations) {
@@ -204,14 +204,5 @@ contract FullAggregator is Aggregator, IFullAggregator {
                         : minConfirmations
                 )
         );
-    }
-
-    /// @dev Calculates asset identifier.
-    function getDeployId(
-        bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol));
     }
 }
