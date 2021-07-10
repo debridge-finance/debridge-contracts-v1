@@ -4,6 +4,7 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/ILightVerifier.sol";
+import "../periphery/WrappedAsset.sol";
 
 contract LightVerifier is AccessControl, ILightVerifier {
     struct BlockConfirmationsInfo {
@@ -28,25 +29,89 @@ contract LightVerifier is AccessControl, ILightVerifier {
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
+    struct DebridgeInfo {
+        bytes32 debridgeInfo;
+        string name;
+        string symbol;
+        uint256 confirmations; // received confirmations count
+        mapping(address => bool) hasVerified; // verifier => has already voted
+    }
+    address public wrappedAssetAdmin;
+    address public debridgeAddress;
 
+    mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
+    mapping(bytes32 => address) public getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by the only oracle
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by all the required oracles
+    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
+    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _confirmationThreshold Confirmations per block before extra check enabled.    
+    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     constructor(
         uint256 _minConfirmations,
         uint256 _confirmationThreshold,
-        uint256 _excessConfirmations
+        uint256 _excessConfirmations,
+        address _wrappedAssetAdmin,
+        address _debridgeAddress
     ) {
         confirmationThreshold = _confirmationThreshold;
         minConfirmations = _minConfirmations;
         excessConfirmations = _excessConfirmations;
+        wrappedAssetAdmin = _wrappedAssetAdmin;
+        debridgeAddress = _debridgeAddress;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    /// @dev Confirms the transfer request.
+    function deployAsset(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol,
+        bytes[] memory _signatures
+    ) external {
+        bytes32 deployId = getDeployId(_debridgeId, _name, _symbol);
+        DebridgeInfo storage debridgeInfo = getDeployInfo[deployId];
+        require(
+            getWrappedAssetAddress[_debridgeId] == address(0),
+            "deployAsset: deployed already"
+        );
+        debridgeInfo.name = _name;
+        debridgeInfo.symbol = _symbol;
+        for (uint256 i = 0; i < _signatures.length; i++) {
+            {
+                (bytes32 r, bytes32 s, uint8 v) = splitSignature(
+                    _signatures[i]
+                );
+                bytes32 unsignedMsg = getUnsignedMsg(deployId);
+                address oracle = ecrecover(unsignedMsg, v, r, s);
+                require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
+                require(
+                    !debridgeInfo.hasVerified[msg.sender],
+                    "deployAsset: submitted already"
+                );
+            }
+            debridgeInfo.confirmations += 1;
+            debridgeInfo.hasVerified[msg.sender] = true;
+            if (debridgeInfo.confirmations >= minConfirmations) {
+                address[] memory minters = new address[](1);
+                minters[0] = debridgeAddress;
+                WrappedAsset wrappedAsset = new WrappedAsset(
+                    _name,
+                    _symbol,
+                    wrappedAssetAdmin,
+                    minters
+                );
+                getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
+                emit DeployApproved(deployId);
+                return;
+            }
+            emit DeployConfirmed(deployId, msg.sender);
+        }
     }
 
     /// @dev Confirms the mint request.
@@ -57,8 +122,9 @@ contract LightVerifier is AccessControl, ILightVerifier {
         override
         returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
-        SubmissionInfo storage submissionInfo =
-            getSubmissionInfo[_submissionId];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[
+            _submissionId
+        ];
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signatures[i]);
             bytes32 unsignedMsg = getUnsignedMsg(_submissionId);
@@ -72,8 +138,9 @@ contract LightVerifier is AccessControl, ILightVerifier {
             submissionInfo.hasVerified[oracle] = true;
             emit Confirmed(_submissionId, oracle);
             if (submissionInfo.confirmations >= minConfirmations) {
-                BlockConfirmationsInfo storage _blockConfirmationsInfo =
-                    getConfirmationsPerBlock[block.number];
+
+                    BlockConfirmationsInfo storage _blockConfirmationsInfo
+                 = getConfirmationsPerBlock[block.number];
                 if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
                     _blockConfirmationsInfo.count += 1;
                     _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
@@ -130,10 +197,13 @@ contract LightVerifier is AccessControl, ILightVerifier {
         override
         returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
-        SubmissionInfo storage submissionInfo =
-            getSubmissionInfo[_submissionId];
-        BlockConfirmationsInfo storage _blockConfirmationsInfo =
-            getConfirmationsPerBlock[submissionInfo.block];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[
+            _submissionId
+        ];
+
+
+            BlockConfirmationsInfo storage _blockConfirmationsInfo
+         = getConfirmationsPerBlock[submissionInfo.block];
         _confirmations = submissionInfo.confirmations;
         return (
             _confirmations,
@@ -182,5 +252,14 @@ contract LightVerifier is AccessControl, ILightVerifier {
             s := mload(add(_signature, 64))
             v := byte(0, mload(add(_signature, 96)))
         }
+    }
+
+    /// @dev Calculates asset identifier.
+    function getDeployId(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol));
     }
 }

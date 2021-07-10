@@ -56,19 +56,24 @@ contract LightAggregator is Aggregator, ILightAggregator {
     function deployAsset(
         bytes32 _debridgeId,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        bytes memory _signature
     ) external onlyOracle {
         bytes32 deployId = getDeployId(_debridgeId, _name, _symbol);
         DebridgeInfo storage debridgeInfo = getDeployInfo[deployId];
-
         require(!debridgeInfo.approved, "deployAsset: submitted already");
         require(
             !debridgeInfo.hasVerified[msg.sender],
             "deployAsset: submitted already"
         );
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+        bytes32 unsignedMsg = getUnsignedMsg(deployId);
+        address oracle = ecrecover(unsignedMsg, v, r, s);
+        require(msg.sender == oracle, "onlyOracle: bad role");
         debridgeInfo.confirmations += 1;
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
+        debridgeInfo.signatures.push(_signature);
         debridgeInfo.hasVerified[msg.sender] = true;
         if (debridgeInfo.confirmations >= minConfirmations) {
             debridgeInfo.approved = true;
