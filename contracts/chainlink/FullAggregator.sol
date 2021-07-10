@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Aggregator.sol";
 import "../interfaces/IFullAggregator.sol";
+import "../periphery/WrappedAsset.sol";
 
 contract FullAggregator is Aggregator, IFullAggregator {
     struct SubmissionInfo {
@@ -12,14 +13,27 @@ contract FullAggregator is Aggregator, IFullAggregator {
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
+    struct DebridgeInfo {
+        bytes32 debridgeInfo;
+        string _name;
+        string _symbol;
+        uint256 confirmations; // received confirmations count
+        mapping(address => bool) hasVerified; // verifier => has already voted
+    }
     uint256 public confirmationThreshold; // bonus reward for one submission
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
+    address public wrappedAssetAdmin;
+    address public debridgeAddress;
 
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
+    mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
+    mapping(bytes32 => address) public getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
+    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
+    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
@@ -36,7 +50,9 @@ contract FullAggregator is Aggregator, IFullAggregator {
         IERC20 _coreToken,
         IERC20 _bonusToken,
         uint256 _confirmationThreshold,
-        uint256 _excessConfirmations
+        uint256 _excessConfirmations,
+        address _wrappedAssetAdmin,
+        address _debridgeAddress
     )
         Aggregator(
             _minConfirmations,
@@ -48,6 +64,8 @@ contract FullAggregator is Aggregator, IFullAggregator {
     {
         confirmationThreshold = _confirmationThreshold;
         excessConfirmations = _excessConfirmations;
+        wrappedAssetAdmin = _wrappedAssetAdmin;
+        debridgeAddress = _debridgeAddress;
     }
 
     /// @dev Confirms few transfer requests.
@@ -63,6 +81,40 @@ contract FullAggregator is Aggregator, IFullAggregator {
     }
 
     /// @dev Confirms the transfer request.
+    function deployAsset(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol
+    ) external onlyOracle {
+        bytes32 deployId = getDeployId(_debridgeId, _name, _symbol);
+        DebridgeInfo storage debridgeInfo = getDeployInfo[deployId];
+        require(
+            getWrappedAssetAddress[_debridgeId] == address(0),
+            "deployAsset: deployed already"
+        );
+        require(
+            !debridgeInfo.hasVerified[msg.sender],
+            "deployAsset: submitted already"
+        );
+        debridgeInfo.confirmations += 1;
+        debridgeInfo.hasVerified[msg.sender] = true;
+        if (debridgeInfo.confirmations >= minConfirmations) {
+            address[] memory minters = new address[](1);
+            minters[0] = debridgeAddress;
+            WrappedAsset wrappedAsset = new WrappedAsset(
+                _name,
+                _symbol,
+                wrappedAssetAdmin,
+                minters
+            );
+            getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
+            emit DeployApproved(deployId);
+        }
+        _payOracle(msg.sender);
+        emit DeployConfirmed(deployId, msg.sender);
+    }
+
+    /// @dev Confirms the transfer request.
     /// @param _submissionId Submission identifier.
     function submit(bytes32 _submissionId) external override onlyOracle {
         _submit(_submissionId);
@@ -71,8 +123,9 @@ contract FullAggregator is Aggregator, IFullAggregator {
     /// @dev Confirms single transfer request.
     /// @param _submissionId Submission identifier.
     function _submit(bytes32 _submissionId) internal {
-        SubmissionInfo storage submissionInfo =
-            getSubmissionInfo[_submissionId];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[
+            _submissionId
+        ];
         require(
             !submissionInfo.hasVerified[msg.sender],
             "submit: submitted already"
@@ -80,8 +133,9 @@ contract FullAggregator is Aggregator, IFullAggregator {
         submissionInfo.confirmations += 1;
         submissionInfo.hasVerified[msg.sender] = true;
         if (submissionInfo.confirmations >= minConfirmations) {
-            BlockConfirmationsInfo storage _blockConfirmationsInfo =
-                getConfirmationsPerBlock[block.number];
+
+                BlockConfirmationsInfo storage _blockConfirmationsInfo
+             = getConfirmationsPerBlock[block.number];
             if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
                 _blockConfirmationsInfo.count += 1;
                 _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
@@ -111,6 +165,18 @@ contract FullAggregator is Aggregator, IFullAggregator {
         confirmationThreshold = _confirmationThreshold;
     }
 
+    /// @dev Set admin for any deployed wrapped asset.
+    /// @param _wrappedAssetAdmin Admin address.
+    function setWrappedAssetAdmin(address _wrappedAssetAdmin) public onlyAdmin {
+        wrappedAssetAdmin = _wrappedAssetAdmin;
+    }
+
+    /// @dev Sets core debridge conrtact address.
+    /// @param _debridgeAddress Debridge address.
+    function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
+        debridgeAddress = _debridgeAddress;
+    }
+
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
     /// @return _confirmations number of confirmation.
@@ -121,10 +187,13 @@ contract FullAggregator is Aggregator, IFullAggregator {
         override
         returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
-        SubmissionInfo storage submissionInfo =
-            getSubmissionInfo[_submissionId];
-        BlockConfirmationsInfo storage _blockConfirmationsInfo =
-            getConfirmationsPerBlock[submissionInfo.block];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[
+            _submissionId
+        ];
+
+
+            BlockConfirmationsInfo storage _blockConfirmationsInfo
+         = getConfirmationsPerBlock[submissionInfo.block];
         _confirmations = submissionInfo.confirmations;
         return (
             _confirmations,
@@ -135,5 +204,14 @@ contract FullAggregator is Aggregator, IFullAggregator {
                         : minConfirmations
                 )
         );
+    }
+
+    /// @dev Calculates asset identifier.
+    function getDeployId(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol));
     }
 }
