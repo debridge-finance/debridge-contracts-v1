@@ -10,4 +10,9 @@ interface ILightVerifier {
         external
         view
         returns (uint256 _confirmations, bool _blockConfirmationPassed);
+
+    function getWrappedAssetAddress(bytes32 _debridgeId)
+        external
+        view
+        returns (address _wrappedAssetAddress);
 }

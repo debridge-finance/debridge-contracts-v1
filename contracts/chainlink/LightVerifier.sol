@@ -40,7 +40,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     address public debridgeAddress;
 
     mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
-    mapping(bytes32 => address) public getWrappedAssetAddress; // debridge id => wrapped asset address
+    mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by the only oracle
