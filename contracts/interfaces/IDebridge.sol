@@ -24,7 +24,7 @@ interface IDebridge {
         uint256 _deadline,
         bytes memory _signature,
         bool _useAssetFee
-    ) external;
+    ) external payable;
 
     function setChainIdSupport(
         bytes32 _debridgeId,

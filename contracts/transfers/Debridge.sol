@@ -219,7 +219,7 @@ abstract contract Debridge is
         uint256 _deadline,
         bytes memory _signature,
         bool _useAssetFee
-    ) external override whenNotPaused() {
+    ) external payable override whenNotPaused() {
         _amount = _burn(
             _debridgeId,
             _amount,
@@ -315,7 +315,7 @@ abstract contract Debridge is
         uint256 _deadline,
         bytes memory _signature,
         bool _useAssetFee
-    ) external whenNotPaused() {
+    ) external payable whenNotPaused() {
         require(_executionFee != 0, "autoBurn: fee too low");
         _amount = _burn(
             _debridgeId,

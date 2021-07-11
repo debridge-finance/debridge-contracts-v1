@@ -552,6 +552,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         deadline,
         bobPrivKey
       );
+      const collectedNativeFees = await this.debridge.collectedFees();
       await this.debridge.burn(
         debridgeId,
         receiver,
@@ -559,22 +560,28 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         chainIdTo,
         deadline,
         signature,
+        false,
         {
           from: bob,
           value: supportedChainInfo.fixedNativeFee,
         }
       );
+      const newCollectedNativeFees = await this.debridge.collectedFees();
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.debridge.getDebridge(debridgeId);
-
       const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
-        .div(toBN(toWei("1")))
-        .add(toBN(supportedChainInfo.fixedNativeFee));
+        .div(toBN(toWei("1")));
       assert.equal(
         debridge.collectedFees.add(fees).toString(),
         newDebridge.collectedFees.toString()
+      );
+      assert.equal(
+        collectedNativeFees
+          .add(toBN(supportedChainInfo.fixedNativeFee))
+          .toString(),
+        newCollectedNativeFees.toString()
       );
     });
 
@@ -597,6 +604,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
           42,
           deadline,
           signature,
+          false,
           {
             from: alice,
           }
@@ -896,9 +904,9 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       });
       await this.weth.deposit({
         from: carol,
-        value: toWei("20"),
+        value: toWei("10"),
       });
-      await this.weth.transfer(wethUniPool.address, toWei("10"), {
+      await this.weth.transfer(wethUniPool.address, toWei("5"), {
         from: carol,
       });
       await this.linkToken.mint(mockErc20UniPool.address, toWei("100"), {
