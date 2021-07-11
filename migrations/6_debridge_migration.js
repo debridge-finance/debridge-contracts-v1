@@ -47,5 +47,7 @@ module.exports = async function(deployer, network) {
     aggregatorInstance = await LightVerifier.deployed();
     debridgeInstance = await LightDebridge.deployed();
   }
-  await aggregatorInstance.setDebridgeAddress(debridgeInstance.address);
+  await aggregatorInstance.setDebridgeAddress(
+    debridgeInstance.address.toString()
+  );
 };
