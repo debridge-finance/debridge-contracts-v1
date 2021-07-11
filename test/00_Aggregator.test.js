@@ -2,6 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const Aggregator = artifacts.require("FullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const { toWei, fromWei, toBN } = web3.utils;
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
   before(async function() {
@@ -24,6 +25,8 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
       this.dbrToken.address,
       this.confirmationThreshold,
       this.excessConfirmations,
+      alice,
+      ZERO_ADDRESS,
       {
         from: alice,
       }

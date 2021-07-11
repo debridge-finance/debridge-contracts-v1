@@ -494,6 +494,18 @@ abstract contract Debridge is
         }
     }
 
+    /// @dev Withdraw fees.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of tokens to withdraw.
+    function withdrawNativeFee(address _receiver, uint256 _amount)
+        external
+        onlyAdmin()
+    {
+        require(collectedFees >= _amount, "withdrawNativeFee: not enough fee");
+        collectedFees -= _amount;
+        payable(_receiver).transfer(_amount);
+    }
+
     /// @dev Request the assets to be used in defi protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to request.
@@ -741,7 +753,7 @@ abstract contract Debridge is
                 wrappedAssetAddress != address(0),
                 "mint: wrapped asset not exist"
             );
-            _addAsset(debridgeId, _tokenAddress, _chainId);
+            _addAsset(debridgeId, wrappedAssetAddress, _chainId);
         }
         isSubmissionUsed[_submissionId] = true;
         require(debridge.chainId != chainId, "mint: is native chain");
