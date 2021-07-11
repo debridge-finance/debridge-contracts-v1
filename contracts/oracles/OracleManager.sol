@@ -386,7 +386,7 @@ contract OracleManager is AccessControl, Initializable {
     view 
     returns (uint256) 
     {
-        OracleInfo storage oracle = getOracleInfo[_oracle];
+        OracleInfo memory oracle = getOracleInfo[_oracle];
         require(oracle.isOracle, "getPricePerFullOracleShare: address is not oracle");
         require(oracle.stake[_token].shares > 0, "getPricePerFullOracleShare: oracle has no shares");
         return oracle.totalDelegation[_token]/oracle.stake[_token].shares;
@@ -397,8 +397,8 @@ contract OracleManager is AccessControl, Initializable {
      * @param _oracle Address of oracle
      * @param _collateral Address of collateral
      */
-    function getPoolUSDAmount(address _oracle, address _collateral) internal returns(uint256) {
-        OracleInfo storage oracle = getOracleInfo[_oracle];
+    function getPoolUSDAmount(address _oracle, address _collateral) internal view returns(uint256) {
+        OracleInfo memory oracle = getOracleInfo[_oracle];
         uint256 collateralPrice;
         if (collaterals[_collateral].isUSDStable)
             collateralPrice = 10 ** (18 - collaterals[_collateral].decimals);
