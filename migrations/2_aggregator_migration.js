@@ -3,6 +3,7 @@ const LightAggregator = artifacts.require("LightAggregator");
 const LightVerifier = artifacts.require("LightVerifier");
 const { getLinkAddress } = require("./utils");
 const GovToken = artifacts.require("GovToken");
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network, accounts) {
   if (network == "test") return;
@@ -18,7 +19,9 @@ module.exports = async function(deployer, network, accounts) {
       link,
       GovToken.address,
       debridgeInitParams.confirmationThreshold,
-      debridgeInitParams.excessConfirmations
+      debridgeInitParams.excessConfirmations,
+      accounts[0],
+      ZERO_ADDRESS
     );
     await deployer.deploy(
       LightAggregator,
@@ -39,7 +42,9 @@ module.exports = async function(deployer, network, accounts) {
       LightVerifier,
       debridgeInitParams.oracleCount,
       debridgeInitParams.confirmationThreshold,
-      debridgeInitParams.excessConfirmations
+      debridgeInitParams.excessConfirmations,
+      accounts[0],
+      ZERO_ADDRESS
     );
     aggregatorInstance = await LightVerifier.deployed();
     for (let oracle of debridgeInitParams.oracles) {

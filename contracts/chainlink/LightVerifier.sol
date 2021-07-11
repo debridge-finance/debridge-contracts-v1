@@ -167,6 +167,18 @@ contract LightVerifier is AccessControl, ILightVerifier {
 
     /* ADMIN */
 
+    /// @dev Set admin for any deployed wrapped asset.
+    /// @param _wrappedAssetAdmin Admin address.
+    function setWrappedAssetAdmin(address _wrappedAssetAdmin) public onlyAdmin {
+        wrappedAssetAdmin = _wrappedAssetAdmin;
+    }
+
+    /// @dev Sets core debridge conrtact address.
+    /// @param _debridgeAddress Debridge address.
+    function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
+        debridgeAddress = _debridgeAddress;
+    }
+
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Minimal required confirmations.
     function setMinConfirmations(uint256 _minConfirmations) external onlyAdmin {
