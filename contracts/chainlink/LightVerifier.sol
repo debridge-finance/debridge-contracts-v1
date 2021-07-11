@@ -29,17 +29,19 @@ contract LightVerifier is AccessControl, ILightVerifier {
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
-    struct DebridgeInfo {
-        bytes32 debridgeInfo;
+    struct DebridgeDeployInfo {
+        address tokenAddress;
+        uint256 chainId;
         string name;
         string symbol;
+        uint8 decimals;
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
     address public wrappedAssetAdmin;
     address public debridgeAddress;
 
-    mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
+    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
 
@@ -68,50 +70,67 @@ contract LightVerifier is AccessControl, ILightVerifier {
     }
 
     /// @dev Confirms the transfer request.
-    function deployAsset(
-        bytes32 _debridgeId,
+    function confirmNewAsset(
+        address _tokenAddress,
+        uint256 _chainId,
         string memory _name,
         string memory _symbol,
+        uint8 _decimals,
         bytes[] memory _signatures
     ) external {
-        bytes32 deployId = getDeployId(_debridgeId, _name, _symbol);
-        DebridgeInfo storage debridgeInfo = getDeployInfo[deployId];
+        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
+        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         require(
-            getWrappedAssetAddress[_debridgeId] == address(0),
+            getWrappedAssetAddress[debridgeId] == address(0),
             "deployAsset: deployed already"
         );
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
+        debridgeInfo.tokenAddress = _tokenAddress;
+        debridgeInfo.chainId = _chainId;
+        debridgeInfo.decimals = _decimals;
         for (uint256 i = 0; i < _signatures.length; i++) {
-            {
-                (bytes32 r, bytes32 s, uint8 v) = splitSignature(
-                    _signatures[i]
-                );
-                bytes32 unsignedMsg = getUnsignedMsg(deployId);
-                address oracle = ecrecover(unsignedMsg, v, r, s);
-                require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
-                require(
-                    !debridgeInfo.hasVerified[msg.sender],
-                    "deployAsset: submitted already"
-                );
-            }
+            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signatures[i]);
+            bytes32 unsignedMsg = getUnsignedMsg(deployId);
+            address oracle = ecrecover(unsignedMsg, v, r, s);
+            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
+            require(
+                !debridgeInfo.hasVerified[oracle],
+                "deployAsset: submitted already"
+            );
+            debridgeInfo.hasVerified[oracle] = true;
+            emit DeployConfirmed(deployId, oracle);
             debridgeInfo.confirmations += 1;
-            debridgeInfo.hasVerified[msg.sender] = true;
-            if (debridgeInfo.confirmations >= minConfirmations) {
-                address[] memory minters = new address[](1);
-                minters[0] = debridgeAddress;
-                WrappedAsset wrappedAsset = new WrappedAsset(
-                    _name,
-                    _symbol,
-                    wrappedAssetAdmin,
-                    minters
-                );
-                getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
-                emit DeployApproved(deployId);
-                return;
-            }
-            emit DeployConfirmed(deployId, msg.sender);
         }
+    }
+
+    /// @dev Confirms the transfer request.
+    function deployAsset(bytes32 _deployId) external {
+        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[_deployId];
+        bytes32 debridgeId = getDebridgeId(
+            debridgeInfo.chainId,
+            debridgeInfo.tokenAddress
+        );
+        require(
+            getWrappedAssetAddress[debridgeId] == address(0),
+            "deployAsset: deployed already"
+        );
+        require(
+            debridgeInfo.confirmations >= minConfirmations,
+            "deployAsset: not confirmed"
+        );
+        address[] memory minters = new address[](1);
+        minters[0] = debridgeAddress;
+        WrappedAsset wrappedAsset = new WrappedAsset(
+            debridgeInfo.name,
+            debridgeInfo.symbol,
+            debridgeInfo.decimals,
+            wrappedAssetAdmin,
+            minters
+        );
+        getWrappedAssetAddress[debridgeId] = address(wrappedAsset);
+        emit DeployApproved(_deployId);
     }
 
     /// @dev Confirms the mint request.
@@ -273,5 +292,27 @@ contract LightVerifier is AccessControl, ILightVerifier {
         string memory _symbol
     ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_debridgeId, _name, _symbol));
+    }
+
+    /// @dev Calculates asset identifier.
+    /// @param _chainId Current chain id.
+    /// @param _tokenAddress Address of the asset on the other chain.
+    function getDebridgeId(uint256 _chainId, address _tokenAddress)
+        public
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(_chainId, _tokenAddress));
+    }
+
+    /// @dev Calculates asset identifier.
+    function getDeployId(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) public pure returns (bytes32) {
+        return
+            keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
     }
 }

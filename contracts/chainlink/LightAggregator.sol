@@ -14,17 +14,19 @@ contract LightAggregator is Aggregator, ILightAggregator {
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
-    struct DebridgeInfo {
-        bytes32 debridgeInfo;
+    struct DebridgeDeployInfo {
+        address tokenAddress;
+        uint256 chainId;
         string name;
         string symbol;
+        uint8 decimals;
         bool approved;
         uint256 confirmations; // received confirmations count
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
-    mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
+    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
@@ -53,14 +55,17 @@ contract LightAggregator is Aggregator, ILightAggregator {
     {}
 
     /// @dev Confirms the transfer request.
-    function deployAsset(
-        bytes32 _debridgeId,
+    function confirmNewAsset(
+        address _tokenAddress,
+        uint256 _chainId,
         string memory _name,
         string memory _symbol,
+        uint8 _decimals,
         bytes memory _signature
     ) external onlyOracle {
-        bytes32 deployId = getDeployId(_debridgeId, _name, _symbol);
-        DebridgeInfo storage debridgeInfo = getDeployInfo[deployId];
+        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
+        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         require(!debridgeInfo.approved, "deployAsset: submitted already");
         require(
             !debridgeInfo.hasVerified[msg.sender],
@@ -73,6 +78,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
         debridgeInfo.confirmations += 1;
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
+        debridgeInfo.decimals = _decimals;
         debridgeInfo.signatures.push(_signature);
         debridgeInfo.hasVerified[msg.sender] = true;
         if (debridgeInfo.confirmations >= minConfirmations) {

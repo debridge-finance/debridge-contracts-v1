@@ -202,8 +202,21 @@ contract Aggregator is AccessControl {
     function getDeployId(
         bytes32 _debridgeId,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        uint8 _decimals
     ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol));
+        return
+            keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
+    }
+
+    /// @dev Calculates asset identifier.
+    /// @param _chainId Current chain id.
+    /// @param _tokenAddress Address of the asset on the other chain.
+    function getDebridgeId(uint256 _chainId, address _tokenAddress)
+        public
+        pure
+        returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 }

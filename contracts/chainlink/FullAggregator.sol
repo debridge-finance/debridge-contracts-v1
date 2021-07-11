@@ -13,10 +13,12 @@ contract FullAggregator is Aggregator, IFullAggregator {
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
-    struct DebridgeInfo {
-        bytes32 debridgeInfo;
+    struct DebridgeDeployInfo {
+        address tokenAddress;
+        uint256 chainId;
         string name;
         string symbol;
+        uint8 decimals;
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
@@ -25,7 +27,7 @@ contract FullAggregator is Aggregator, IFullAggregator {
     address public wrappedAssetAdmin;
     address public debridgeAddress;
 
-    mapping(bytes32 => DebridgeInfo) public getDeployInfo; // mint id => debridge info
+    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
     mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
@@ -79,15 +81,18 @@ contract FullAggregator is Aggregator, IFullAggregator {
     }
 
     /// @dev Confirms the transfer request.
-    function deployAsset(
-        bytes32 _debridgeId,
+    function confirmNewAsset(
+        address _tokenAddress,
+        uint256 _chainId,
         string memory _name,
-        string memory _symbol
+        string memory _symbol,
+        uint8 _decimals
     ) external onlyOracle {
-        bytes32 deployId = getDeployId(_debridgeId, _name, _symbol);
-        DebridgeInfo storage debridgeInfo = getDeployInfo[deployId];
+        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
+        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         require(
-            getWrappedAssetAddress[_debridgeId] == address(0),
+            getWrappedAssetAddress[debridgeId] == address(0),
             "deployAsset: deployed already"
         );
         require(
@@ -96,22 +101,41 @@ contract FullAggregator is Aggregator, IFullAggregator {
         );
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
+        debridgeInfo.tokenAddress = _tokenAddress;
+        debridgeInfo.chainId = _chainId;
+        debridgeInfo.decimals = _decimals;
         debridgeInfo.confirmations += 1;
         debridgeInfo.hasVerified[msg.sender] = true;
-        if (debridgeInfo.confirmations >= minConfirmations) {
-            address[] memory minters = new address[](1);
-            minters[0] = debridgeAddress;
-            WrappedAsset wrappedAsset = new WrappedAsset(
-                _name,
-                _symbol,
-                wrappedAssetAdmin,
-                minters
-            );
-            getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
-            emit DeployApproved(deployId);
-        }
         _payOracle(msg.sender);
         emit DeployConfirmed(deployId, msg.sender);
+    }
+
+    /// @dev Confirms the transfer request.
+    function deployAsset(bytes32 _deployId) external {
+        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[_deployId];
+        bytes32 debridgeId = getDebridgeId(
+            debridgeInfo.chainId,
+            debridgeInfo.tokenAddress
+        );
+        require(
+            getWrappedAssetAddress[debridgeId] == address(0),
+            "deployAsset: deployed already"
+        );
+        require(
+            debridgeInfo.confirmations >= minConfirmations,
+            "deployAsset: not confirmed"
+        );
+        address[] memory minters = new address[](1);
+        minters[0] = debridgeAddress;
+        WrappedAsset wrappedAsset = new WrappedAsset(
+            debridgeInfo.name,
+            debridgeInfo.symbol,
+            debridgeInfo.decimals,
+            wrappedAssetAdmin,
+            minters
+        );
+        getWrappedAssetAddress[debridgeId] = address(wrappedAsset);
+        emit DeployApproved(_deployId);
     }
 
     /// @dev Confirms the transfer request.
