@@ -317,13 +317,7 @@ contract OracleManager is AccessControl, Initializable {
         delegator.stakes[_collateral].shares -= sharesFrom;
         sender.stake[_collateral].shares -= sharesFrom;
         oracleFrom.totalDelegation[_collateral] -= _amount;
-        oracleTo.totalDelegation[_collateral] += _amount;
-        uint256 sharesTo = (_amount*oracleTo.stake[_collateral].shares)/
-            oracleTo.totalDelegation[_collateral];
-        delegator.stakes[_collateral].shares += sharesTo;
-        sender.stake[_collateral].shares += sharesTo;
         oracleFrom.delegators[msg.sender].stakes[_collateral].stakedAmount -= _amount;
-        oracleTo.delegators[msg.sender].stakes[_collateral].stakedAmount += _amount;
         sender.transfers[sender.transferCount] = TransferInfo(
             _amount,
             block.timestamp + timelockForDelegate,
@@ -355,6 +349,14 @@ contract OracleManager is AccessControl, Initializable {
             "executeTransfer: too early"
         );
         transfer.executed = true;
+        OracleInfo storage oracleTo = getOracleInfo[transfer.oracleTo];
+        DelegatorInfo storage delegator = oracleTo.delegators[msg.sender];
+        oracleTo.totalDelegation[transfer.collateral] += transfer.amount;
+        uint256 sharesTo = (transfer.amount*oracleTo.stake[transfer.collateral].shares)/
+            oracleTo.totalDelegation[transfer.collateral];
+        delegator.stakes[transfer.collateral].shares += sharesTo;
+        sender.stake[transfer.collateral].shares += sharesTo;
+        oracleTo.delegators[msg.sender].stakes[transfer.collateral].stakedAmount += transfer.amount;
         emit TransferExecuted(msg.sender, _transferId);
     }
 
