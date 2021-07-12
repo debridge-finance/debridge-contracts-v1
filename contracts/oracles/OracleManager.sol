@@ -136,7 +136,7 @@ contract OracleManager is AccessControl, Initializable {
         require(
             !collateral.isEnabledMaxAmount || 
             collateral.isEnabledMaxAmount && collateral.totalLocked+_amount <= collateral.maxStakeAmount, 
-            "stake: amount of delegation is limited"
+            "stake: amount of collateral staking is limited"
         );
 
         OracleInfo storage sender = getOracleInfo[msg.sender];
@@ -149,6 +149,7 @@ contract OracleManager is AccessControl, Initializable {
         );
         collateral.totalLocked += _amount;
         if (!sender.isOracle && msg.sender != oracle.admin) {
+            require(oracle.isOracle, "stake: only delegation to oracle");
             if (!oracle.delegators[msg.sender].exist) {
                 oracle.delegatorAddresses[oracle.delegatorCount] = msg.sender;
                 oracle.delegatorCount++;
@@ -613,7 +614,7 @@ contract OracleManager is AccessControl, Initializable {
      * @param _collateral address of collateral
      * @param _isEnabled bool of enable
      */
-    function updatedCollateral(address _collateral, bool _isEnabled) external onlyAdmin() {
+    function updateCollateral(address _collateral, bool _isEnabled) external onlyAdmin() {
         collaterals[_collateral].isEnabled = _isEnabled;
     }
 
@@ -623,7 +624,7 @@ contract OracleManager is AccessControl, Initializable {
      * @param _isEnabledMaxAmount bool of enable
      * @param _amount max amount
      */
-    function updatedCollateral(address _collateral, bool _isEnabledMaxAmount, uint256 _amount) external onlyAdmin() {
+    function updateCollateral(address _collateral, bool _isEnabledMaxAmount, uint256 _amount) external onlyAdmin() {
         collaterals[_collateral].isEnabledMaxAmount = _isEnabledMaxAmount;
         collaterals[_collateral].maxStakeAmount = _amount;
     }
@@ -785,6 +786,10 @@ contract OracleManager is AccessControl, Initializable {
         returns (TransferInfo memory)
     {
         return getOracleInfo[_oracle].transfers[_transferId];
+    }
+
+    function getOracleAdmin(address _oracle) public view returns(address) {
+        return getOracleInfo[_oracle].admin;
     }
 
     /** 

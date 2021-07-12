@@ -1,8 +1,8 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
+const { current } = require("@openzeppelin/test-helpers/src/balance");
+const { MAX_UINT256, ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
 const OracleManager = artifacts.require("OracleManager");
 const MockLinkToken = artifacts.require("MockLinkToken");
-const StrategyController = artifacts.require('StrategyController');
 const MockStrategy = artifacts.require('MockStrategy');
 const MockPriceConsumer = artifacts.require('MockPriceConsumer');
 const { toWei, fromWei, toBN } = web3.utils;
@@ -26,26 +26,23 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
       from: alice,
     });
     this.timelock = 2;
-    this.strategyController = await StrategyController.new({ from: alice });
     this.mockStrategy = await MockStrategy.new({ from: alice });
     this.mockPriceConsumer = await MockPriceConsumer.new({ from: alice });
     this.oracleManager = await OracleManager.new(
       this.timelock,
-      this.strategyController.address,
       this.mockPriceConsumer.address,
       {
         from: alice,
       }
     );
     await this.oracleManager.addCollateral(this.linkToken.address, 18, false);
+    await this.oracleManager.updateCollateral(this.linkToken.address, false, 0);
     await this.oracleManager.addOracle(bob, alice);
     await this.oracleManager.setProfitSharing(bob, 0);
-    await this.oracleManager.setUsdAmountOfDelegation(bob, toBN(0));
     await this.oracleManager.addOracle(david, alice);
     await this.oracleManager.setProfitSharing(david, 25);
-    await this.oracleManager.setUsdAmountOfDelegation(david, toBN(toWei("500")));
     await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, 5);
-    await this.strategyController.approveStrategy(this.mockStrategy.address);
+    await this.oracleManager.updateStrategy(this.mockStrategy.address);
     await this.oracleManager.addStrategy(this.mockStrategy.address, this.linkToken.address, this.linkToken.address);
     await this.oracleManager.setTimelockForTransfer(this.timelock);
   });
@@ -107,7 +104,59 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
         this.oracleManager.stake(bob, collateral, amount, {
           from: alice,
         }),
-        "stake: undefined collateral"
+        "stake: collateral is not enabled"
+      );
+    });
+
+    it("fail in case of staking collateral not enabled", async function() {
+      const amount = toWei("10");
+      await this.oracleManager.updateCollateral(this.linkToken.address, false);
+      await expectRevert(
+        this.oracleManager.stake(bob, collateral, amount, {
+          from: alice,
+        }),
+        "stake: collateral is not enabled"
+      );
+
+    it("pass in case of collateral staking not exceeded", async function() {
+      const amount = toWei("10");
+      const collateral = this.linkToken.address;
+      await this.oracleManager.updateCollateral(collateral, true, 100);
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(bob, collateral);
+      const prevCollateral = await this.oracleManager.collaterals(collateral);
+      await this.oracleManager.stake(bob, collateral, amount, {
+        from: alice,
+      });
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(bob, collateral);
+      const currentCollateral = await this.oracleManager.collaterals(collateral);
+      assert.equal(
+        prevOracleStaking.add(toBN(amount)).toString(),
+        currentOracleStaking.toString()
+      );
+      assert.equal(
+        prevCollateral.totalLocked.add(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
+      );
+    });
+
+    it("fail in case of collateral staking exceeded", async function() {
+      const amount = toWei("1000");
+      await this.oracleManager.updateCollateral(this.linkToken.address, true, 100);
+      await expectRevert(
+        this.oracleManager.stake(bob, collateral, amount, {
+          from: alice,
+        }),
+        "stake: amount of collateral staking is limited"
+      );
+    });
+
+    it("fail in case of sender not oracle admin", async function() {
+      const amount = toWei("10");
+      await expectRevert(
+        this.oracleManager.stake(bob, collateral, amount, {
+          from: alice,
+        }),
+      "stake: only callable by admin"
       );
     });
   });
@@ -157,30 +206,76 @@ contract("OracleManager", function([alice, bob, carol, eve, david]) {
       assert.equal(
         prevDelegatorStaking.add(toBN(amount)).toString(),
         currentDelegatorStaking.toString()
-      )
-    });
-
-    it("fail in case of staking to oracle which does not accept delegation", async function() {
-      const amount = toWei("100");
-      const collateral = this.linkToken.address;
-      await expectRevert(
-        this.oracleManager.stake(bob, collateral, amount, {
-          from: eve,
-        }),
-        "stake: amount of delegation is limited"
       );
     });
 
-    it("fail in case of staking exceed for delegators", async function() {
-      const amount = toWei("20");
+    it("pass in case of collateral staking not exceeded", async function() {
+      const amount = toWei("10");
       const collateral = this.linkToken.address;
+      await this.oracleManager.updateCollateral(collateral, true, 100);
+      const prevOracleStaking = await this.oracleManager.getOracleStaking(eve, collateral);
+      const prevCollateral = await this.oracleManager.collaterals(collateral);
+      await this.oracleManager.stake(david, collateral, amount, {
+        from: eve,
+      });
+      const currentOracleStaking = await this.oracleManager.getOracleStaking(eve, collateral);
+      const currentCollateral = await this.oracleManager.collaterals(collateral);
+      assert.equal(
+        prevOracleStaking.add(toBN(amount)).toString(),
+        currentOracleStaking.toString()
+      );
+      assert.equal(
+        prevCollateral.totalLocked.add(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
+      );
+    });
+
+    it("fail in case of collateral staking exceed", async function() {
+      const amount = toWei("1000");
+      await this.oracleManager.updateCollateral(this.linkToken.address, true, 100);
       await expectRevert(
         this.oracleManager.stake(david, collateral, amount, {
           from: eve,
         }),
-        "stake: amount of delegation is limited"
+        "stake: amount of collateral staking is limited"
       );
     });
+
+    it("test delegator admin is set to sender if admin zero address", async function() {
+      const amount = toWei("50");;
+      const previousAdmin = await this.oracleManager.getOracleAdmin(carol);
+      assert.equal(
+        previousAdmin.toString(),
+        ZERO_ADDRESS
+      );
+      await this.oracleManager.stake(david, this.linkToken.address, amount, {
+        from: carol,
+      });
+      const currentAdmin = await this.oracleManager.getOracleAdmin(carol);
+      assert.equal(
+        currentAdmin.toString(),
+        eve
+      );
+    });
+    
+    it("should fail if delagation to address is not oracle", async function() {
+      const amount = toWei("50");
+      await expectRevert(
+        this.oracleManager.stake(eve, collateral, amount, {
+          from: carol,
+        }),
+        "stake: only delegation to oracle"
+      );
+    });
+
+    it("should increment oracle delegator count", async function() {
+      const amount = toWei("50");
+      // TODO
+    });
+
+    // should not increment delegator count
+    // setting delegator stakes (check all)
+    // setting delegator & oracle shares (various: first/subsequent depositor)
   });
 
   context("Test request unstaking of different amounts by oracle", () => {
