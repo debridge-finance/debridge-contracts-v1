@@ -52,7 +52,6 @@ contract OracleManager is AccessControl, Initializable {
         uint256 profitSharing;  // percentage of profit sharing.
         mapping(address => mapping(address => uint256)) profitSharingBalances; // balance of token rewards received by oracle
         bool isOracle; // whether is oracles
-        bool isAbleToDelegate;//TODO: not used
         mapping(address => DelegatorInfo) delegators;
         mapping(uint256 => address) delegatorAddresses; //delegator list
         mapping(address => uint256) totalDelegation; // total delegated to oracle per collateral
@@ -131,10 +130,6 @@ contract OracleManager is AccessControl, Initializable {
         OracleInfo storage oracle = getOracleInfo[_oracle];
         Collateral storage collateral = collaterals[_collateral];
         require(
-            collateral.isSupported,
-            "stake: undefined collateral"
-        );
-        require(
             collateral.isEnabled,
             "stake: collateral is not enabled"
         );
@@ -163,8 +158,9 @@ contract OracleManager is AccessControl, Initializable {
             delegator.stakes[_collateral].stakedAmount += _amount;
             sender.stake[_collateral].stakedAmount += _amount;
             oracle.totalDelegation[_collateral] += _amount;
-            uint256 shares = (_amount*oracle.stake[_collateral].shares)/
-                oracle.totalDelegation[_collateral];
+            uint256 shares = oracle.stake[_collateral].shares > 0
+                ? (_amount*oracle.stake[_collateral].shares)/oracle.totalDelegation[_collateral]
+                : _amount;
             delegator.stakes[_collateral].shares += shares;
             oracle.stake[_collateral].shares += shares;
             emit Staked(_oracle, msg.sender, _collateral, _amount);
@@ -190,10 +186,6 @@ contract OracleManager is AccessControl, Initializable {
             return;
         }
         Collateral storage collateral = collaterals[_collateral];
-        require(
-            collateral.isSupported,
-            "requestUnstake: undefined collateral"
-        );
         require(
             collateral.isEnabled,
             "requestUnstake: collateral is not enabled"
@@ -299,10 +291,6 @@ contract OracleManager is AccessControl, Initializable {
 
         Collateral memory collateral = collaterals[_collateral];
         require(
-            collateral.isSupported,
-            "requestTransfer: undefined collateral"
-        );
-        require(
             collateral.isEnabled,
             "requestTransfer: collateral is not enabled"
         );
@@ -352,8 +340,10 @@ contract OracleManager is AccessControl, Initializable {
         OracleInfo storage oracleTo = getOracleInfo[transfer.oracleTo];
         DelegatorInfo storage delegator = oracleTo.delegators[msg.sender];
         oracleTo.totalDelegation[transfer.collateral] += transfer.amount;
-        uint256 sharesTo = (transfer.amount*oracleTo.stake[transfer.collateral].shares)/
-            oracleTo.totalDelegation[transfer.collateral];
+        uint256 sharesTo = oracleTo.stake[transfer.collateral].shares > 0
+            ? (transfer.amount*oracleTo.stake[transfer.collateral].shares)/
+                oracleTo.totalDelegation[transfer.collateral]
+            : transfer.amount;
         delegator.stakes[transfer.collateral].shares += sharesTo;
         sender.stake[transfer.collateral].shares += sharesTo;
         oracleTo.delegators[msg.sender].stakes[transfer.collateral].stakedAmount += transfer.amount;
