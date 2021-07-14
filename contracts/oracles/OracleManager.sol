@@ -458,15 +458,12 @@ contract OracleManager is AccessControl, Initializable {
         Strategy storage strategy = strategies[_strategy];
         require(strategy.isEnabled, "withdrawFromStrategy: strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
-        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         OracleInfo storage oracle = getOracleInfo[_oracle];
         OracleInfo storage sender = getOracleInfo[msg.sender];
         DelegatorInfo storage delegator = oracle.delegators[msg.sender];
         uint256 delegatorCollateral;
         bool isDelegator;
         uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
-        uint256 strategyTotalSharesCache = strategy.totalShares;
-        uint256 strategyTokenAmount = (_amount*strategy.totalReserves)/strategy.totalShares;
         StrategyDepositInfo storage depositInfo;
         if (oracle.isOracle) {
             require (msg.sender == oracle.admin, "withdrawFromStrategy: only callable by admin");
@@ -476,18 +473,20 @@ contract OracleManager is AccessControl, Initializable {
             require(delegator.exist, "withdrawFromStrategy: delegator does not exist");
             isDelegator = true;
             depositInfo = sender.strategyStake[_strategy][strategy.stakeToken];
-            delegatorCollateral = _amount * beforeBalance / strategyTotalSharesCache;
+            delegatorCollateral = _amount * beforeBalance / strategy.totalShares;
         }
         require(depositInfo.shares >= _amount, 
                 "withdrawFromStrategy: Insufficient share");
+        { // scope to avoid stack too deep errors
+        uint256 strategyTokenAmount = (_amount*strategy.totalReserves)/strategy.totalShares; // block scope
         depositInfo.shares -= _amount;
         strategy.totalShares -= _amount;
         strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
         strategyController.withdraw(strategy.strategyToken, strategyTokenAmount);
-        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
-        uint256 receivedAmount = afterBalance - beforeBalance;
+        }
+        uint256 receivedAmount = strategyController.updateReserves(address(this), strategy.stakeToken) - beforeBalance;
         depositInfo.stakedAmount -= receivedAmount;
-        stakeCollateral.totalLocked += receivedAmount;
+        collaterals[strategy.stakeToken].totalLocked += receivedAmount;
         if (isDelegator) {
             sender.stake[strategy.stakeToken].stakedAmount += receivedAmount;
             uint256 shares = ((receivedAmount - delegatorCollateral)*oracle.stake[strategy.stakeToken].shares)/
