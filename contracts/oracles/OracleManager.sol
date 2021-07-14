@@ -196,6 +196,7 @@ contract OracleManager is AccessControl, Initializable {
         );
         collateral.totalLocked -= _amount;
         OracleInfo storage sender = getOracleInfo[msg.sender];
+        // TODO: this "if" oracle/delegator logic needs to be improved - difficult to test
         if (!sender.isOracle && msg.sender != oracle.admin) {
             DelegatorInfo storage delegator = oracle.delegators[msg.sender];
             require(delegator.exist, "requestUnstake: delegator does not exist");
@@ -293,6 +294,7 @@ contract OracleManager is AccessControl, Initializable {
      * @param _amount Amount of collateral
      */
     function requestTransfer(address _oracleFrom, address _oracleTo, address _collateral, uint256 _amount) external {
+        require(_amount > 0, "requestTransfer: cannot transfer 0 amount");
         OracleInfo storage oracleFrom = getOracleInfo[_oracleFrom];
 
         Collateral memory collateral = collaterals[_collateral];
@@ -304,14 +306,14 @@ contract OracleManager is AccessControl, Initializable {
         DelegatorInfo storage delegator = oracleFrom.delegators[msg.sender];
         require(sender.isOracle == false, "requestTransfer: callable by delegator");
         require(oracleFrom.totalDelegation[_collateral] >= _amount, "transferAssets: Insufficient amount");
-        require(oracleFrom.delegators[msg.sender].stakes[_collateral].stakedAmount >= _amount, "transferAssets: Insufficient amount for delegator");
+        require(delegator.stakes[_collateral].stakedAmount >= _amount, "transferAssets: Insufficient amount for delegator");
         // TODO: claim delegator share of oracleFrom rewards on transfer 
         uint256 sharesFrom = (_amount*oracleFrom.stake[_collateral].shares)/
             oracleFrom.totalDelegation[_collateral];
         delegator.stakes[_collateral].shares -= sharesFrom;
         sender.stake[_collateral].shares -= sharesFrom;
         oracleFrom.totalDelegation[_collateral] -= _amount;
-        oracleFrom.delegators[msg.sender].stakes[_collateral].stakedAmount -= _amount;
+        delegator.stakes[_collateral].stakedAmount -= _amount;
         sender.transfers[sender.transferCount] = TransferInfo(
             _amount,
             block.timestamp + timelockForDelegate,
@@ -740,13 +742,16 @@ contract OracleManager is AccessControl, Initializable {
      * @param _amount amount of token
      */
     function distributeRewards(address _oracle, address _collateral, uint256 _amount) external {
-        if (msg.sender != address(this)) {
-            require(
-                IERC20(_collateral).transferFrom(msg.sender, address(this), _amount),
-                "stake: transfer failed"
-            );
-            collaterals[_collateral].totalLocked += _amount;
-        }
+        Collateral storage collateral = collaterals[_collateral];
+        require(
+            collateral.isEnabled, 
+            "distributeRewards: collateral is not enabled"
+        );
+        require(
+            IERC20(_collateral).transferFrom(msg.sender, address(this), _amount),
+            "distributeRewards: transfer failed"
+        );
+        collateral.totalLocked += _amount;
         OracleInfo storage oracle = getOracleInfo[_oracle];
         uint256 delegatorsAmount = _amount * oracle.profitSharing / 100;
         oracle.stake[_collateral].stakedAmount += _amount - delegatorsAmount;
