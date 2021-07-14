@@ -234,13 +234,31 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
+      const decimals = 18;
       const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
-      // for (let oracle of this.initialOracles) {
-      // }
-      await this.aggregator.deployAsset(debridgeId, name, symbol, {
+        //   function confirmNewAsset(
+        //     address _tokenAddress,
+        //     uint256 _chainId,
+        //     string memory _name,
+        //     string memory _symbol,
+        //     uint8 _decimals
+        // )
+      await this.aggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
+        from: this.initialOracles[0].address,
+      });
+
+        //   function getDeployId(
+        //     bytes32 _debridgeId,
+        //     string memory _name,
+        //     string memory _symbol,
+        //     uint8 _decimals
+        // )
+      let deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals) 
+      //function deployAsset(bytes32 _deployId)
+      await this.aggregator.deployAsset(deployId, {
         from: this.initialOracles[0].address,
       });
       await this.debridge.updateAsset(
