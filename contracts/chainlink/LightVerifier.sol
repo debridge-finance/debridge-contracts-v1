@@ -286,15 +286,6 @@ contract LightVerifier is AccessControl, ILightVerifier {
     }
 
     /// @dev Calculates asset identifier.
-    function getDeployId(
-        bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol));
-    }
-
-    /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
     function getDebridgeId(uint256 _chainId, address _tokenAddress)
