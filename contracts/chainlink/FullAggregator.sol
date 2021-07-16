@@ -27,6 +27,7 @@ contract FullAggregator is Aggregator, IFullAggregator {
     address public wrappedAssetAdmin;
     address public debridgeAddress;
 
+    mapping(bytes32 => bytes32) public confirmedDeployInfo; // debridge Id => deploy Id
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
@@ -106,21 +107,33 @@ contract FullAggregator is Aggregator, IFullAggregator {
         debridgeInfo.decimals = _decimals;
         debridgeInfo.confirmations += 1;
         debridgeInfo.hasVerified[msg.sender] = true;
+        //TODO: will be a problem if we will reduce minConfirmations and old deployInfo will not be in confirmedDeployInfo
+        if( debridgeInfo.confirmations >= minConfirmations){
+            confirmedDeployInfo[debridgeId] = deployId;
+        }
         _payOracle(msg.sender);
         emit DeployConfirmed(deployId, msg.sender);
     }
 
     /// @dev Confirms the transfer request.
-    function deployAsset(bytes32 _deployId) external {
-        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[_deployId];
-        bytes32 debridgeId = getDebridgeId(
-            debridgeInfo.chainId,
-            debridgeInfo.tokenAddress
-        );
+    function deployAsset(bytes32 _debridgeId) 
+            external override
+            returns (address wrappedAssetAddress, uint256 nativeChainId){
+        require(debridgeAddress == msg.sender, "deployAsset: bad role");
+
+        bytes32 deployId = confirmedDeployInfo[_debridgeId];
+        //TODO: check 0x
         require(
-            getWrappedAssetAddress[debridgeId] == address(0),
+            deployId != "0x",
+            "deployAsset: not found deployId"
+        );
+
+        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
+        require(
+            getWrappedAssetAddress[_debridgeId] == address(0),
             "deployAsset: deployed already"
         );
+        //TODO: can be removed, we already checked in confirmedDeployInfo
         require(
             debridgeInfo.confirmations >= minConfirmations,
             "deployAsset: not confirmed"
@@ -134,8 +147,9 @@ contract FullAggregator is Aggregator, IFullAggregator {
             wrappedAssetAdmin,
             minters
         );
-        getWrappedAssetAddress[debridgeId] = address(wrappedAsset);
-        emit DeployApproved(_deployId);
+        getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
+        emit DeployApproved(deployId);
+        return (address(wrappedAsset), debridgeInfo.chainId);
     }
 
     /// @dev Confirms the transfer request.

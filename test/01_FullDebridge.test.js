@@ -256,27 +256,27 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         //     string memory _symbol,
         //     uint8 _decimals
         // )
-      let deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals) 
-      //function deployAsset(bytes32 _deployId)
-      await this.aggregator.deployAsset(deployId, {
-        from: this.initialOracles[0].address,
-      });
-      await this.debridge.updateAsset(
-        debridgeId,
-        minAmount,
-        maxAmount,
-        minReserves,
-        amountThreshold,
-        {
-          from: alice,
-        }
-      );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      assert.equal(debridge.minAmount.toString(), minAmount);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(debridge.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReserves.toString(), minReserves);
+      // let deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals) 
+      // //function deployAsset(bytes32 _deployId)
+      // await this.debridge.checkAndDeployAsset(debridgeId, {
+      //   from: this.initialOracles[0].address,
+      // });
+      // await this.debridge.updateAsset(
+      //   debridgeId,
+      //   minAmount,
+      //   maxAmount,
+      //   minReserves,
+      //   amountThreshold,
+      //   {
+      //     from: alice,
+      //   }
+      // );
+      // const debridge = await this.debridge.getDebridge(debridgeId);
+      // assert.equal(debridge.minAmount.toString(), minAmount);
+      // assert.equal(debridge.maxAmount.toString(), maxAmount);
+      // assert.equal(debridge.collectedFees.toString(), "0");
+      // assert.equal(debridge.balance.toString(), "0");
+      // assert.equal(debridge.minReserves.toString(), minReserves);
     });
   });
 
@@ -475,8 +475,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       const balance = toBN("0");
       await this.debridge.mint(
-        tokenAddress,
-        chainId,
+        debridgeId,
         chainId,
         receiver,
         amount,
@@ -511,8 +510,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       await expectRevert(
         this.debridge.mint(
-          tokenAddress,
-          chainId,
+          debridgeId,
           chainId,
           receiver,
           amount,
@@ -532,8 +530,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       await expectRevert(
         this.debridge.mint(
-          tokenAddress,
-          chainId,
+          debridgeId,
           chainId,
           receiver,
           amount,

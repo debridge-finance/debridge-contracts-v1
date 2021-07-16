@@ -40,8 +40,7 @@ contract LightDebridge is Debridge, ILightDebridge {
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
     function autoMint(
-        address _tokenAddress,
-        uint256 _chainId,
+        bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
@@ -51,9 +50,8 @@ contract LightDebridge is Debridge, ILightDebridge {
         uint256 _executionFee,
         bytes memory _data
     ) external {
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         bytes32 submissionId = getAutoSubmisionId(
-            debridgeId,
+            _debridgeId,
             _chainIdFrom,
             chainId,
             _amount,
@@ -63,11 +61,12 @@ contract LightDebridge is Debridge, ILightDebridge {
             _executionFee,
             _data
         );
+        _checkAndDeployAsset(_debridgeId, aggregator);
         {
             (uint256 confirmations, bool confirmed) = ILightVerifier(aggregator)
             .submit(submissionId, _signatures);
             require(confirmed, "autoMint: not confirmed");
-            if (_amount >= getAmountThreshold[debridgeId]) {
+            if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
                     confirmations >= excessConfirmations,
                     "autoMint: amount not confirmed"
@@ -76,8 +75,7 @@ contract LightDebridge is Debridge, ILightDebridge {
         }
         _mint(
             submissionId,
-            _tokenAddress,
-            _chainId,
+            _debridgeId,
             _receiver,
             _amount,
             _fallbackAddress,
@@ -95,8 +93,7 @@ contract LightDebridge is Debridge, ILightDebridge {
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
     function autoMintWithOldAggregator(
-        address _tokenAddress,
-        uint256 _chainId,
+        bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
@@ -107,9 +104,8 @@ contract LightDebridge is Debridge, ILightDebridge {
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external {
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         bytes32 submissionId = getAutoSubmisionId(
-            debridgeId,
+            _debridgeId,
             _chainIdFrom,
             chainId,
             _amount,
@@ -123,12 +119,13 @@ contract LightDebridge is Debridge, ILightDebridge {
             getOldAggregator[_aggregatorVersion].isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
+        _checkAndDeployAsset(_debridgeId, getOldAggregator[_aggregatorVersion].aggregator);
         {
             (uint256 confirmations, bool confirmed) = ILightVerifier(
                 getOldAggregator[_aggregatorVersion].aggregator
             ).submit(submissionId, _signatures);
             require(confirmed, "autoMintWithOldAggregator: not confirmed");
-            if (_amount >= getAmountThreshold[debridgeId]) {
+            if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
                     confirmations >= excessConfirmations,
                     "autoMintWithOldAggregator: amount not confirmed"
@@ -137,8 +134,7 @@ contract LightDebridge is Debridge, ILightDebridge {
         }
         _mint(
             submissionId,
-            _tokenAddress,
-            _chainId,
+            _debridgeId,
             _receiver,
             _amount,
             _fallbackAddress,
@@ -153,28 +149,28 @@ contract LightDebridge is Debridge, ILightDebridge {
     /// @param _nonce Submission id.
     /// @param _signatures Array of oracles signatures.
     function mint(
-        address _tokenAddress,
-        uint256 _chainId,
+        bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
         bytes[] calldata _signatures
     ) external override {
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         bytes32 submissionId = getSubmisionId(
-            debridgeId,
+            _debridgeId,
             _chainIdFrom,
             chainId,
             _amount,
             _receiver,
             _nonce
         );
+
+        _checkAndDeployAsset(_debridgeId, aggregator);
         {
             (uint256 confirmations, bool confirmed) = ILightVerifier(aggregator)
             .submit(submissionId, _signatures);
             require(confirmed, "mint: not confirmed");
-            if (_amount >= getAmountThreshold[debridgeId]) {
+            if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
                     confirmations >= excessConfirmations,
                     "mint: amount not confirmed"
@@ -183,8 +179,7 @@ contract LightDebridge is Debridge, ILightDebridge {
         }
         _mint(
             submissionId,
-            _tokenAddress,
-            _chainId,
+            _debridgeId,
             _receiver,
             _amount,
             address(0),
@@ -200,8 +195,7 @@ contract LightDebridge is Debridge, ILightDebridge {
     /// @param _signatures Array of oracles signatures.
     /// @param _aggregatorVersion Aggregator version.
     function mintWithOldAggregator(
-        address _tokenAddress,
-        uint256 _chainId,
+        bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
@@ -209,9 +203,8 @@ contract LightDebridge is Debridge, ILightDebridge {
         bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         bytes32 submissionId = getSubmisionId(
-            debridgeId,
+            _debridgeId,
             _chainIdFrom,
             chainId,
             _amount,
@@ -225,12 +218,13 @@ contract LightDebridge is Debridge, ILightDebridge {
             aggregatorInfo.isValid,
             "mintWithOldAggregator: invalidAggregator"
         );
+        _checkAndDeployAsset(_debridgeId, aggregatorInfo.aggregator);
         {
             (uint256 confirmations, bool confirmed) = ILightVerifier(
                 aggregatorInfo.aggregator
             ).submit(submissionId, _signatures);
             require(confirmed, "mintWithOldAggregator: not confirmed");
-            if (_amount >= getAmountThreshold[debridgeId]) {
+            if (_amount >= getAmountThreshold[_debridgeId]) {
                 require(
                     confirmations >= excessConfirmations,
                     "mintWithOldAggregator: amount not confirmed"
@@ -239,8 +233,7 @@ contract LightDebridge is Debridge, ILightDebridge {
         }
         _mint(
             submissionId,
-            _tokenAddress,
-            _chainId,
+            _debridgeId,
             _receiver,
             _amount,
             address(0),
@@ -454,5 +447,18 @@ contract LightDebridge is Debridge, ILightDebridge {
             0,
             "0x"
         );
+    }
+
+    function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal 
+    {
+        if(!getDebridge[debridgeId].exist)
+        {
+            (address wrappedAssetAddress, uint256 nativeChainId) = ILightVerifier(aggregatorAddress).deployAsset(debridgeId);
+            require(
+                wrappedAssetAddress != address(0),
+                "mint: wrapped asset not exist"
+            );
+            _addAsset(debridgeId, wrappedAssetAddress, nativeChainId);
+        }
     }
 }

@@ -563,6 +563,7 @@ abstract contract Debridge is
         uint256 _chainId
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
         debridge.chainId = _chainId;
         debridge.minAmount = 0;
@@ -735,8 +736,7 @@ abstract contract Debridge is
     /// @param _data Chain id of the target chain.
     function _mint(
         bytes32 _submissionId,
-        address _tokenAddress,
-        uint256 _chainId,
+        bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
         address _fallbackAddress,
@@ -744,17 +744,9 @@ abstract contract Debridge is
         bytes memory _data
     ) internal {
         require(!isSubmissionUsed[_submissionId], "mint: already used");
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
-        DebridgeInfo storage debridge = getDebridge[debridgeId];
-        if (!debridge.exist) {
-            address wrappedAssetAddress = IFullAggregator(aggregator)
-            .getWrappedAssetAddress(debridgeId);
-            require(
-                wrappedAssetAddress != address(0),
-                "mint: wrapped asset not exist"
-            );
-            _addAsset(debridgeId, wrappedAssetAddress, _chainId);
-        }
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(debridge.exist, "mint: debridge not exist");
+        
         isSubmissionUsed[_submissionId] = true;
         require(debridge.chainId != chainId, "mint: is native chain");
         if (_executionFee > 0) {
@@ -773,9 +765,9 @@ abstract contract Debridge is
         } else {
             IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
         }
-        emit Minted(_submissionId, _amount, _receiver, debridgeId);
+        emit Minted(_submissionId, _amount, _receiver, _debridgeId);
     }
-
+    
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.

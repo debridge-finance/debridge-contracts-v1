@@ -3,8 +3,7 @@ pragma solidity ^0.8.2;
 
 interface IFullDebridge {
     function mint(
-        address _tokenAddress,
-        uint256 _chainId,
+        bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
@@ -20,8 +19,7 @@ interface IFullDebridge {
     ) external;
 
     function mintWithOldAggregator(
-        address _tokenAddress,
-        uint256 _chainId,
+        bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,

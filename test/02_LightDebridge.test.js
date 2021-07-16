@@ -210,33 +210,33 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         from: this.initialOracles[0].address,
       });
       
-      //   function getDeployId(
-      //     bytes32 _debridgeId,
-      //     string memory _name,
-      //     string memory _symbol,
-      //     uint8 _decimals
-      // )
-      //function deployAsset(bytes32 _deployId)
-      await this.lightAggregator.deployAsset(deployId, {
-        from: this.initialOracles[0].address,
-      });
+      ////   function getDeployId(
+      ////     bytes32 _debridgeId,
+      ////     string memory _name,
+      ////     string memory _symbol,
+      ////     uint8 _decimals
+      //// )
+      ////function deployAsset(bytes32 _deployId)
+      //await this.lightAggregator.deployAsset(deployId, {
+      //  from: this.initialOracles[0].address,
+      //});
 
-      await this.debridge.updateAsset(
-        debridgeId,
-        minAmount,
-        maxAmount,
-        minReserves,
-        amountThreshold,
-        {
-          from: alice,
-        }
-      );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      assert.equal(debridge.minAmount.toString(), minAmount);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(debridge.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReserves.toString(), minReserves);
+      //await this.debridge.updateAsset(
+      //  debridgeId,
+      //  minAmount,
+      //  maxAmount,
+      //  minReserves,
+      //  amountThreshold,
+      //  {
+      //    from: alice,
+      //  }
+      //);
+      //const debridge = await this.debridge.getDebridge(debridgeId);
+      //assert.equal(debridge.minAmount.toString(), minAmount);
+      //assert.equal(debridge.maxAmount.toString(), maxAmount);
+      //assert.equal(debridge.collectedFees.toString(), "0");
+      //assert.equal(debridge.balance.toString(), "0");
+      //assert.equal(debridge.minReserves.toString(), minReserves);
     });
   });
 
@@ -422,8 +422,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     //     bytes[] calldata _signatures
     // )
       await this.debridge.mint(
-        tokenAddress,
-        chainId,
+        debridgeId,
         chainId,
         receiver,
         amount,
@@ -459,7 +458,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.mint(tokenAddress, chainId, chainId, receiver, amount, nonce, [], {
+        this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
           from: alice,
         }),
         "mint: not confirmed"
@@ -472,7 +471,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.mint(tokenAddress, chainId, chainId, receiver, amount, nonce, [], {
+        this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
           from: alice,
         }),
         "mint: already used"
