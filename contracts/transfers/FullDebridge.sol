@@ -212,7 +212,7 @@ contract FullDebridge is Debridge, IFullDebridge {
         uint256 _nonce,
         bytes[] calldata _signatures,
         uint8 _aggregatorVersion
-    ) external override {
+    ) external override whenNotPaused(){
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
             _chainIdFrom,
@@ -394,7 +394,7 @@ contract FullDebridge is Debridge, IFullDebridge {
         uint256 _nonce,
         bytes[] calldata _signatures,
         uint8 _aggregatorVersion
-    ) external override {
+    ) external override whenNotPaused(){
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
             _chainIdFrom,
