@@ -1,6 +1,6 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
-const Aggregator = artifacts.require("FullAggregator");
+const FullAggregator = artifacts.require("FullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const Debridge = artifacts.require("FullDebridge");
@@ -36,12 +36,15 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
 
-    this.aggregator = await Aggregator.new(
+    // constructor(
+    //     uint256 _minConfirmations,
+    //     uint256 _confirmationThreshold,
+    //     uint256 _excessConfirmations,
+    //     address _wrappedAssetAdmin,
+    //     address _debridgeAddress
+    // )
+    this.fullAggregator = await FullAggregator.new(
       this.minConfirmations,
-      this.oraclePayment,
-      this.bonusPayment,
-      this.linkToken.address,
-      this.dbrToken.address,
       this.confirmationThreshold,
       this.excessConfirmations,
       alice,
@@ -65,7 +68,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.aggregator.addOracle(oracle.address, oracle.admin, {
+      await this.fullAggregator.addOracle(oracle.address, oracle.admin, {
         from: alice,
       });
     }
@@ -127,12 +130,12 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
     ]);
-    await this.aggregator.setDebridgeAddress(this.debridge.address.toString());
+    await this.fullAggregator.setDebridgeAddress(this.debridge.address.toString());
   });
 
   context("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function() {
-      const aggregator = this.aggregator.address;
+      const aggregator = this.fullAggregator.address;
       await this.debridge.setAggregator(aggregator, false, {
         from: alice,
       });
@@ -214,22 +217,22 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       await this.dbrToken.mint(alice, newSupply, {
         from: alice,
       });
-      await this.dbrToken.transferAndCall(
-        this.aggregator.address.toString(),
-        newSupply,
-        "0x",
-        {
-          from: alice,
-        }
-      );
-      await this.linkToken.transferAndCall(
-        this.aggregator.address.toString(),
-        newSupply,
-        "0x",
-        {
-          from: alice,
-        }
-      );
+      //await this.dbrToken.transferAndCall(
+      //  this.fullAggregator.address.toString(),
+      //  newSupply,
+      //  "0x",
+      //  {
+      //    from: alice,
+      //  }
+      //);
+      //await this.linkToken.transferAndCall(
+      //  this.fullAggregator.address.toString(),
+      //  newSupply,
+      //  "0x",
+      //  {
+      //    from: alice,
+      //  }
+      //);
     });
 
     const isSupported = true;
@@ -257,7 +260,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         //     string memory _symbol,
         //     uint8 _decimals
         // )
-      await this.aggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
+      await this.fullAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
         from: this.initialOracles[0].address,
       });
 
@@ -267,7 +270,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         //     string memory _symbol,
         //     uint8 _decimals
         // )
-      // let deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals) 
+      // let deployId = await this.fullAggregator.getDeployId(debridgeId, name, symbol, decimals) 
       // //function deployAsset(bytes32 _deployId)
       // await this.debridge.checkAndDeployAsset(debridgeId, {
       //   from: this.initialOracles[0].address,
@@ -447,22 +450,22 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       await this.dbrToken.mint(alice, newSupply, {
         from: alice,
       });
-      await this.dbrToken.transferAndCall(
-        this.aggregator.address.toString(),
-        newSupply,
-        "0x",
-        {
-          from: alice,
-        }
-      );
-      await this.linkToken.transferAndCall(
-        this.aggregator.address.toString(),
-        newSupply,
-        "0x",
-        {
-          from: alice,
-        }
-      );
+      //await this.dbrToken.transferAndCall(
+      //  this.fullAggregator.address.toString(),
+      //  newSupply,
+      //  "0x",
+      //  {
+      //    from: alice,
+      //  }
+      //);
+      //await this.linkToken.transferAndCall(
+      //  this.fullAggregator.address.toString(),
+      //  newSupply,
+      //  "0x",
+      //  {
+      //    from: alice,
+      //  }
+      //);
       const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
@@ -484,12 +487,12 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         receiver,
         nonce
       );
-      await this.aggregator.submit(submission, {
+      await this.fullAggregator.submit(submission, {
         from: bob,
       });
 
-      let submissionInfo = await this.aggregator.getSubmissionInfo(submission);
-      let submissionConfirmations = await this.aggregator.getSubmissionConfirmations(submission);
+      let submissionInfo = await this.fullAggregator.getSubmissionInfo(submission);
+      let submissionConfirmations = await this.fullAggregator.getSubmissionConfirmations(submission);
      
       assert.equal(1, submissionInfo.confirmations);
       assert.equal(true, submissionConfirmations[0]);
@@ -699,7 +702,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         receiver,
         nonce
       );
-      await this.aggregator.submit(cuurentChainSubmission, {
+      await this.fullAggregator.submit(cuurentChainSubmission, {
         from: bob,
       });
       const outsideChainSubmission = await this.debridge.getSubmisionId(
@@ -710,7 +713,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         receiver,
         nonce
       );
-      await this.aggregator.submit(outsideChainSubmission, {
+      await this.fullAggregator.submit(outsideChainSubmission, {
         from: bob,
       });
       const erc20Submission = await this.debridge.getSubmisionId(
@@ -721,7 +724,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         receiver,
         nonce
       );
-      await this.aggregator.submit(erc20Submission, {
+      await this.fullAggregator.submit(erc20Submission, {
         from: bob,
       });
     });
@@ -924,7 +927,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     let mockErc20UniPool;
 
     before(async function() {
-      receiver = this.aggregator.address.toString();
+      receiver = this.fullAggregator.address.toString();
       await this.uniswapFactory.createPair(
         this.linkToken.address,
         this.weth.address,

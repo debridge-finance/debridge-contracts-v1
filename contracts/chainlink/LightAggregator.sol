@@ -34,24 +34,8 @@ contract LightAggregator is Aggregator, ILightAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _corePayment Oracle reward.
-    /// @param _bonusPayment Oracle reward.
-    /// @param _coreToken Link token to pay to oracles.
-    /// @param _bonusToken DBR token to pay to oracles.
-    constructor(
-        uint256 _minConfirmations,
-        uint256 _corePayment,
-        uint256 _bonusPayment,
-        IERC20 _coreToken,
-        IERC20 _bonusToken
-    )
-        Aggregator(
-            _minConfirmations,
-            _corePayment,
-            _bonusPayment,
-            _coreToken,
-            _bonusToken
-        )
+    constructor(uint256 _minConfirmations) 
+        Aggregator(_minConfirmations)
     {}
 
     /// @dev Confirms the transfer request.
@@ -85,7 +69,6 @@ contract LightAggregator is Aggregator, ILightAggregator {
             debridgeInfo.approved = true;
             emit DeployApproved(deployId);
         }
-        _payOracle(msg.sender);
         emit DeployConfirmed(deployId, msg.sender);
     }
 
@@ -134,7 +117,6 @@ contract LightAggregator is Aggregator, ILightAggregator {
         submissionInfo.confirmations += 1;
         submissionInfo.signatures.push(_signature);
         submissionInfo.hasVerified[msg.sender] = true;
-        _payOracle(msg.sender);
         emit Confirmed(_submissionId, msg.sender);
     }
 

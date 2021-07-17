@@ -45,10 +45,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
 
     this.fullAggregator = await FullAggregator.new(
       this.minConfirmations,
-      this.oraclePayment,
-      this.bonusPayment,
-      this.linkToken.address,
-      this.dbrToken.address,
       this.confirmationThreshold,
       this.excessConfirmations,
       alice,

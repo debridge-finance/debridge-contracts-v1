@@ -38,29 +38,17 @@ contract FullAggregator is Aggregator, IFullAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _corePayment Oracle reward.
-    /// @param _bonusPayment Oracle reward.
-    /// @param _coreToken Link token to pay to oracles.
-    /// @param _bonusToken DBR token to pay to oracles.
     /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     constructor(
         uint256 _minConfirmations,
-        uint256 _corePayment,
-        uint256 _bonusPayment,
-        IERC20 _coreToken,
-        IERC20 _bonusToken,
         uint256 _confirmationThreshold,
         uint256 _excessConfirmations,
         address _wrappedAssetAdmin,
         address _debridgeAddress
     )
         Aggregator(
-            _minConfirmations,
-            _corePayment,
-            _bonusPayment,
-            _coreToken,
-            _bonusToken
+            _minConfirmations
         )
     {
         confirmationThreshold = _confirmationThreshold;
@@ -111,7 +99,7 @@ contract FullAggregator is Aggregator, IFullAggregator {
         if( debridgeInfo.confirmations >= minConfirmations){
             confirmedDeployInfo[debridgeId] = deployId;
         }
-        _payOracle(msg.sender);
+
         emit DeployConfirmed(deployId, msg.sender);
     }
 
@@ -184,7 +172,6 @@ contract FullAggregator is Aggregator, IFullAggregator {
             submissionInfo.block = block.number;
             emit SubmissionApproved(_submissionId);
         }
-        _payOracle(msg.sender);
         emit Confirmed(_submissionId, msg.sender);
     }
 
