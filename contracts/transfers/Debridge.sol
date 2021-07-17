@@ -781,6 +781,8 @@ abstract contract Debridge is
                 msg.sender,
                 _executionFee
             );
+        } 
+        if(_data.length > 0){
             IWrappedAsset(debridge.tokenAddress).mint(callProxy, _amount);
             bool status = ICallProxy(callProxy).callERC20(
                 debridge.tokenAddress,
@@ -820,6 +822,9 @@ abstract contract Debridge is
         if (debridge.tokenAddress == address(0)) {
             if (_executionFee > 0) {
                 payable(msg.sender).transfer(_executionFee);
+            } 
+            if(_data.length > 0)
+            {
                 bool status = ICallProxy(callProxy).call{value: _amount}(
                     _fallbackAddress,
                     _receiver,
@@ -831,10 +836,9 @@ abstract contract Debridge is
             }
         } else {
             if (_executionFee > 0) {
-                IERC20(debridge.tokenAddress).safeTransfer(
-                    msg.sender,
-                    _executionFee
-                );
+                IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _executionFee);
+            }
+            if(_data.length > 0){
                 IERC20(debridge.tokenAddress).safeTransfer(callProxy, _amount);
                 bool status = ICallProxy(callProxy).callERC20(
                     debridge.tokenAddress,
