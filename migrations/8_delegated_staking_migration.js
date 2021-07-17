@@ -1,18 +1,18 @@
-const OracleManager = artifacts.require("OracleManager");
+const DelegatedStaking = artifacts.require("DelegatedStaking");
 const { getLinkAddress } = require("./utils");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 
 module.exports = async function(deployer, network) {
   if (network == "test") return;
   const link = await getLinkAddress(deployer, network);
-  const OracleManagerInitParams = require("../assets/oracleManagerInitParams")[network];
+  const DelegatedStakingInitParams = require("../assets/delegatedStakingInitParams")[network];
   await deployProxy(
-    OracleManager, 
+    DelegatedStaking, 
     [
-      OracleManagerInitParams.timelock, 
+      DelegatedStakingInitParams.timelock, 
       link
     ], 
     { deployer }
   );
-  console.log("OracleManager: " + (await OracleManager.deployed()).address);
+  console.log("DelegatedStaking: " + (await DelegatedStaking.deployed()).address);
 };
