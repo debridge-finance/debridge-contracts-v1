@@ -95,8 +95,19 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     this.weth = await WETH9.new({
       from: alice,
     });
+
+    //     uint256 _excessConfirmations,
+    //     address _ligthAggregator,
+    //     address _fullAggregator,
+    //     address _callProxy,
+    //     uint256[] memory _supportedChainIds,
+    //     ChainSupportInfo[] memory _chainSupportInfo,
+    //     IWETH _weth,
+    //     IFeeProxy _feeProxy,
+    //     IDefiController _defiController
     this.debridge = await deployProxy(Debridge, [
       this.excessConfirmations,
+      ZERO_ADDRESS,
       ZERO_ADDRESS,
       this.callProxy.address.toString(),
       supportedChainIds,
@@ -122,10 +133,10 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
   context("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function() {
       const aggregator = this.aggregator.address;
-      await this.debridge.setAggregator(aggregator, {
+      await this.debridge.setAggregator(aggregator, false, {
         from: alice,
       });
-      const newAggregator = await this.debridge.aggregator();
+      const newAggregator = await this.debridge.fullAggregator();
       assert.equal(aggregator, newAggregator);
     });
 
@@ -158,7 +169,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
 
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.setAggregator(ZERO_ADDRESS, {
+        this.debridge.setAggregator(ZERO_ADDRESS, false, {
           from: bob,
         }),
         "onlyAdmin: bad role"
@@ -261,22 +272,22 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       // await this.debridge.checkAndDeployAsset(debridgeId, {
       //   from: this.initialOracles[0].address,
       // });
-      // await this.debridge.updateAsset(
-      //   debridgeId,
-      //   minAmount,
-      //   maxAmount,
-      //   minReserves,
-      //   amountThreshold,
-      //   {
-      //     from: alice,
-      //   }
-      // );
-      // const debridge = await this.debridge.getDebridge(debridgeId);
-      // assert.equal(debridge.minAmount.toString(), minAmount);
-      // assert.equal(debridge.maxAmount.toString(), maxAmount);
-      // assert.equal(debridge.collectedFees.toString(), "0");
-      // assert.equal(debridge.balance.toString(), "0");
-      // assert.equal(debridge.minReserves.toString(), minReserves);
+      await this.debridge.updateAsset(
+        debridgeId,
+        minAmount,
+        maxAmount,
+        minReserves,
+        amountThreshold,
+        {
+          from: alice,
+        }
+      );
+      const debridge = await this.debridge.getDebridge(debridgeId);
+      assert.equal(debridge.minAmount.toString(), minAmount);
+      assert.equal(debridge.maxAmount.toString(), maxAmount);
+      assert.equal(debridge.collectedFees.toString(), "0");
+      assert.equal(debridge.balance.toString(), "0");
+      assert.equal(debridge.minReserves.toString(), minReserves);
     });
   });
 
@@ -315,6 +326,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
         debridge.collectedFees
+
           .add(toBN(supportedChainInfo.fixedNativeFee))
           .add(fees)
           .toString(),
@@ -455,6 +467,15 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         chainId,
         tokenAddress
       );
+
+      //   function getSubmisionId(
+      //     bytes32 _debridgeId,
+      //     uint256 _chainIdFrom,
+      //     uint256 _chainIdTo,
+      //     uint256 _amount,
+      //     address _receiver,
+      //     uint256 _nonce
+      // )
       const submission = await this.debridge.getSubmisionId(
         debridgeId,
         chainId,
@@ -466,6 +487,13 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       await this.aggregator.submit(submission, {
         from: bob,
       });
+
+      let submissionInfo = await this.aggregator.getSubmissionInfo(submission);
+      let submissionConfirmations = await this.aggregator.getSubmissionConfirmations(submission);
+     
+      assert.equal(1, submissionInfo.confirmations);
+      assert.equal(true, submissionConfirmations[0]);
+      assert.equal(1, submissionConfirmations[1]);
     });
 
     it("should mint when the submission is approved", async function() {
@@ -474,12 +502,23 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         tokenAddress
       );
       const balance = toBN("0");
+
+      //   function mint(
+      //     address _tokenAddress,
+      //     uint256 _chainId,
+      //     uint256 _chainIdFrom,
+      //     address _receiver,
+      //     uint256 _amount,
+      //     uint256 _nonce,
+      //     bytes[] calldata _signatures
+      // )
       await this.debridge.mint(
         debridgeId,
         chainId,
         receiver,
         amount,
         nonce,
+        [],
         {
           from: alice,
         }
@@ -515,11 +554,12 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
           receiver,
           amount,
           nonce,
+          [],
           {
             from: alice,
           }
         ),
-        "mint: not confirmed"
+        "not confirmed"
       );
     });
 
@@ -535,6 +575,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
           receiver,
           amount,
           nonce,
+          [],
           {
             from: alice,
           }
@@ -694,6 +735,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         receiver,
         amount,
         nonce,
+        [],
         {
           from: alice,
         }
@@ -728,6 +770,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
         receiver,
         amount,
         nonce,
+        [],
         {
           from: alice,
         }
@@ -756,10 +799,10 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     it("should reject claiming with unconfirmed submission", async function() {
       const nonce = 1;
       await expectRevert(
-        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, {
+        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, [], {
           from: alice,
         }),
-        "claim: not confirmed"
+        "not confirmed"
       );
     });
 
@@ -771,17 +814,18 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
           receiver,
           amount,
           nonce,
+          [],
           {
             from: alice,
           }
         ),
-        "claim: not confirmed"
+        "not confirmed"
       );
     });
 
     it("should reject claiming twice", async function() {
       await expectRevert(
-        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, {
+        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, [], {
           from: alice,
         }),
         "claim: already used"

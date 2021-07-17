@@ -44,15 +44,18 @@ abstract contract Debridge is
     uint256 public chainId; // current chain id
     uint256 public collectedFees; // current native fee
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    address public aggregator; // current chainlink aggregator address
+    address public ligthAggregator; // current aggregator address address to verify signatures
+    address public fullAggregator; // current aggregator address to verify by oracles confirmations
     address public callProxy; // proxy to execute user's calls
-    uint8 public aggregatorVersion; // aggregators count
+    uint8 public aggregatorLightVersion; // aggregators count
+    uint8 public aggregatorFullVersion; // aggregators count
     uint256[] public chainIds; // list of all supported chain ids
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
-    mapping(uint8 => AggregatorInfo) public getOldAggregator; // counter => agrgregator info
+    mapping(uint8 => AggregatorInfo) public getOldLightAggregator; // counter => agrgregator info
+    mapping(uint8 => AggregatorInfo) public getOldFullAggregator; // counter => agrgregator info
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
 
@@ -126,10 +129,13 @@ abstract contract Debridge is
     event CallProxyUpdated(address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(bytes32 submissionId, bool success); // emited when the new call proxy set
 
+    bytes32 public constant AGGREGATOR_ROLE = keccak256("AGGREGATOR_ROLE");
+
     modifier onlyAggregator {
-        require(aggregator == msg.sender, "onlyAggregator: bad role");
+        require(hasRole(AGGREGATOR_ROLE, msg.sender), "onlyAggregator: bad role");
         _;
     }
+
     modifier onlyDefiController {
         require(
             address(defiController) == msg.sender,
@@ -145,11 +151,13 @@ abstract contract Debridge is
     /* EXTERNAL */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _aggregator Submission aggregator address.
+    /// @param _ligthAggregator Aggregator address to verify signatures
+    /// @param _fullAggregator Aggregator address to verify by oracles confirmations
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function _initialize(
         uint256 _excessConfirmations,
-        address _aggregator,
+        address _ligthAggregator,
+        address _fullAggregator,
         address _callProxy,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo,
@@ -166,7 +174,10 @@ abstract contract Debridge is
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
-        aggregator = _aggregator;
+        
+        ligthAggregator = _ligthAggregator;
+        fullAggregator = _fullAggregator;
+
         callProxy = _callProxy;
         defiController = _defiController;
         excessConfirmations = _excessConfirmations;
@@ -260,7 +271,7 @@ abstract contract Debridge is
         bool _useAssetFee
     ) external payable whenNotPaused() {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
-        require(_executionFee != 0, "autoSend: fee too low");
+        //require(_executionFee != 0, "autoSend: fee too low");
         _amount = _send(
             _tokenAddress,
             debridgeId,
@@ -316,7 +327,7 @@ abstract contract Debridge is
         bytes memory _signature,
         bool _useAssetFee
     ) external payable whenNotPaused() {
-        require(_executionFee != 0, "autoBurn: fee too low");
+        //require(_executionFee != 0, "autoBurn: fee too low");
         _amount = _burn(
             _debridgeId,
             _amount,
@@ -429,24 +440,40 @@ abstract contract Debridge is
 
     /// @dev Set aggregator address.
     /// @param _aggregator Submission aggregator address.
-    function setAggregator(address _aggregator) external onlyAdmin() {
-        getOldAggregator[aggregatorVersion] = AggregatorInfo(aggregator, true);
-        aggregator = _aggregator;
-        aggregatorVersion++;
+    function setAggregator(address _aggregator, bool _isLight) external onlyAdmin() {
+        if(_isLight){
+            getOldLightAggregator[aggregatorLightVersion] = AggregatorInfo(_aggregator, true);
+            ligthAggregator = _aggregator;
+            aggregatorLightVersion++;
+        }
+        else{
+            getOldFullAggregator[aggregatorFullVersion] = AggregatorInfo(_aggregator, true);
+            fullAggregator = _aggregator;
+            aggregatorFullVersion++;
+        }
     }
 
     /// @dev Set aggregator address.
     /// @param _aggregatorVersion Submission aggregator address.
     /// @param _isValid Is valid.
-    function manageOldAggregator(uint8 _aggregatorVersion, bool _isValid)
+    function manageOldAggregator(uint8 _aggregatorVersion, bool _isLight, bool _isValid)
         external
         onlyAdmin()
     {
-        require(
-            _aggregatorVersion < aggregatorVersion,
-            "manageOldAggregator: version too high"
-        );
-        getOldAggregator[_aggregatorVersion].isValid = _isValid;
+        if(_isLight){
+            require(
+                _aggregatorVersion < aggregatorLightVersion,
+                "manageOldAggregator: version too high"
+            );
+            getOldLightAggregator[_aggregatorVersion].isValid = _isValid;
+        }
+        else{
+            require(
+                _aggregatorVersion < aggregatorFullVersion,
+                "manageOldAggregator: version too high"
+            );
+            getOldFullAggregator[_aggregatorVersion].isValid = _isValid;
+        }
     }
 
     /// @dev Set defi controoler.

@@ -7,7 +7,8 @@ interface IFullDebridge {
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes[] calldata _signatures
     ) external;
 
     function claim(
@@ -15,7 +16,8 @@ interface IFullDebridge {
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes[] calldata _signatures
     ) external;
 
     function mintWithOldAggregator(
@@ -24,6 +26,7 @@ interface IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external;
 
@@ -33,6 +36,7 @@ interface IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external;
 }

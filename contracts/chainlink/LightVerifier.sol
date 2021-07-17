@@ -107,6 +107,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
         if( debridgeInfo.confirmations >= minConfirmations){
             confirmedDeployInfo[debridgeId] = deployId;
         }
+        //TODO: add deployAsset
     }
 
     /// @dev Confirms the transfer request.

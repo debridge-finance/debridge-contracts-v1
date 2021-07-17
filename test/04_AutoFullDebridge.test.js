@@ -1,6 +1,6 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
-const Aggregator = artifacts.require("FullAggregator");
+const FullAggregator = artifacts.require("FullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const Debridge = artifacts.require("FullDebridge");
@@ -18,302 +18,279 @@ const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
-  const reserveAddress = devid;
-  before(async function() {
-    this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
-      from: alice,
-    });
-    this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
-      from: alice,
-    });
-    this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
-      from: alice,
-    });
-    this.amountThreshols = toWei("1000");
-    this.oraclePayment = toWei("0.001");
-    this.bonusPayment = toWei("0.001");
-    this.minConfirmations = 1;
-    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
-    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
-
-    this.aggregator = await Aggregator.new(
-      this.minConfirmations,
-      this.oraclePayment,
-      this.bonusPayment,
-      this.linkToken.address,
-      this.dbrToken.address,
-      this.confirmationThreshold,
-      this.excessConfirmations,
-      {
-        from: alice,
-      }
-    );
-    this.initialOracles = [
-      {
-        address: alice,
-        admin: alice,
-      },
-      {
-        address: bob,
-        admin: carol,
-      },
-      {
-        address: eve,
-        admin: carol,
-      },
-    ];
-    for (let oracle of this.initialOracles) {
-      await this.aggregator.addOracle(oracle.address, oracle.admin, {
+contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
+    const reserveAddress = devid;
+    before(async function() {
+      this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
         from: alice,
       });
-    }
-    this.uniswapFactory = await UniswapV2Factory.new(carol, {
-      from: alice,
-    });
-    this.feeProxy = await FeeProxy.new(
-      this.linkToken.address,
-      this.uniswapFactory.address,
-      {
+      this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
         from: alice,
+      });
+      this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
+        from: alice,
+      });
+      this.amountThreshols = toWei("1000");
+      this.oraclePayment = toWei("0.001");
+      this.bonusPayment = toWei("0.001");
+      this.minConfirmations = 1;
+      this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+      this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+  
+      this.aggregator = await FullAggregator.new(
+        this.minConfirmations,
+        this.oraclePayment,
+        this.bonusPayment,
+        this.linkToken.address,
+        this.dbrToken.address,
+        this.confirmationThreshold,
+        this.excessConfirmations,
+        alice,
+        ZERO_ADDRESS,
+        {
+          from: alice,
+        }
+      );
+      this.initialOracles = [
+        {
+          address: alice,
+          admin: alice,
+        },
+        {
+          address: bob,
+          admin: carol,
+        },
+        {
+          address: eve,
+          admin: carol,
+        },
+      ];
+      for (let oracle of this.initialOracles) {
+        await this.aggregator.addOracle(oracle.address, oracle.admin, {
+          from: alice,
+        });
       }
-    );
-    this.callProxy = await CallProxy.new({
-      from: alice,
-    });
-    this.defiController = await DefiController.new({
-      from: alice,
-    });
-    const minAmount = toWei("1");
-    const maxAmount = toWei("100000000000");
-    const fixedFee = toWei("0.00001");
-    const transferFee = toWei("0.001");
-    const minReserves = toWei("0.2");
-    const isSupported = true;
-    const supportedChainIds = [42, 56];
-    this.weth = await WETH9.new({
-      from: alice,
-    });
-    this.debridge = await deployProxy(Debridge, [
-      this.excessConfirmations,
-      minAmount,
-      maxAmount,
-      minReserves,
-      this.amountThreshols,
-      this.aggregator.address,
-      this.callProxy.address.toString(),
-      supportedChainIds,
-      [
-        {
-          transferFee,
-          fixedFee,
-          isSupported,
-        },
-        {
-          transferFee,
-          fixedFee,
-          isSupported,
-        },
-      ],
-      this.weth.address,
-      this.feeProxy.address,
-      this.defiController.address,
-    ]);
-  });
-
-  context("Test managing assets", () => {
-    const isSupported = true;
-    it("should add external asset if called by the admin", async function() {
-      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const chainId = 56;
-      const minAmount = toWei("100");
-      const maxAmount = toWei("100000000000");
-      const fixedFee = toWei("0.00001");
-      const transferFee = toWei("0.01");
-      const minReserves = toWei("0.2");
-      const supportedChainIds = [42, 3, 56];
-      const name = "MUSD";
-      const symbol = "Magic Dollar";
-      const amountThreshold = toWei("10000000000000");
-      const wrappedAsset = await WrappedAsset.new(
-        name,
-        symbol,
-        [this.debridge.address, alice],
+      this.uniswapFactory = await UniswapV2Factory.new(carol, {
+        from: alice,
+      });
+      this.feeProxy = await FeeProxy.new(
+        this.linkToken.address,
+        this.uniswapFactory.address,
         {
           from: alice,
         }
       );
-      await this.debridge.addExternalAsset(
-        tokenAddress,
-        wrappedAsset.address,
-        chainId,
-        minAmount,
-        maxAmount,
-        minReserves,
-        amountThreshold,
+      this.callProxy = await CallProxy.new({
+        from: alice,
+      });
+      this.defiController = await DefiController.new({
+        from: alice,
+      });
+      const minAmount = toWei("1");
+      const maxAmount = toWei("1000000");
+      const fixedNativeFee = toWei("0.00001");
+      const transferFee = toWei("0.001");
+      const minReserves = toWei("0.2");
+      const isSupported = true;
+      const supportedChainIds = [42, 56];
+      this.weth = await WETH9.new({
+        from: alice,
+      });
+  
+      //     uint256 _excessConfirmations,
+      //     address _ligthAggregator,
+      //     address _fullAggregator,
+      //     address _callProxy,
+      //     uint256[] memory _supportedChainIds,
+      //     ChainSupportInfo[] memory _chainSupportInfo,
+      //     IWETH _weth,
+      //     IFeeProxy _feeProxy,
+      //     IDefiController _defiController
+      this.debridge = await deployProxy(Debridge, [
+        this.excessConfirmations,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        this.callProxy.address.toString(),
         supportedChainIds,
         [
           {
             transferFee,
-            fixedFee,
+            fixedNativeFee,
             isSupported,
           },
           {
             transferFee,
-            fixedFee,
-            isSupported,
-          },
-          {
-            transferFee,
-            fixedFee,
+            fixedNativeFee,
             isSupported,
           },
         ],
-        {
-          from: alice,
-        }
-      );
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        3
-      );
-      assert.equal(debridge.chainId.toString(), chainId);
-      assert.equal(debridge.minAmount.toString(), minAmount);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
-      assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
-      assert.equal(debridge.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReserves.toString(), minReserves);
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+      ]);
+      await this.aggregator.setDebridgeAddress(this.debridge.address.toString());
     });
-
-    it("should add external native asset if called by the admin", async function() {
-      const tokenAddress = ZERO_ADDRESS;
-      const chainId = 56;
-      const minAmount = toWei("100");
-      const maxAmount = toWei("100000000000");
-      const fixedFee = toWei("0.00001");
-      const transferFee = toWei("0.01");
-      const minReserves = toWei("0.2");
-      const supportedChainIds = [42, 3, 56];
-      const amountThreshold = toWei("10000000000000");
-      const name = "MUSD";
-      const symbol = "Magic Dollar";
-      const wrappedAsset = await WrappedAsset.new(
-        name,
-        symbol,
-        [this.debridge.address, alice],
-        {
+  
+    context("Test setting configurations by different users", () => {
+      it("should set aggregator if called by the admin", async function() {
+        const aggregator = this.aggregator.address;
+        await this.debridge.setAggregator(aggregator, false, {
           from: alice,
-        }
-      );
-      await this.debridge.addExternalAsset(
-        tokenAddress,
-        wrappedAsset.address,
-        chainId,
-        minAmount,
-        maxAmount,
-        minReserves,
-        amountThreshold,
-        supportedChainIds,
-        [
-          {
-            transferFee,
-            fixedFee,
-            isSupported,
-          },
-          {
-            transferFee,
-            fixedFee,
-            isSupported,
-          },
-          {
-            transferFee,
-            fixedFee,
-            isSupported,
-          },
-        ],
-        {
+        });
+        const newAggregator = await this.debridge.fullAggregator();
+        assert.equal(aggregator, newAggregator);
+      });
+  
+      it("should set fee proxy if called by the admin", async function() {
+        const feeProxy = this.feeProxy.address;
+        await this.debridge.setFeeProxy(feeProxy, {
           from: alice,
-        }
-      );
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        3
-      );
-      assert.equal(debridge.chainId.toString(), chainId);
-      assert.equal(debridge.minAmount.toString(), minAmount);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
-      assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
-      assert.equal(debridge.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReserves.toString(), minReserves);
+        });
+        const newFeeProxy = await this.debridge.feeProxy();
+        assert.equal(feeProxy, newFeeProxy);
+      });
+  
+      it("should set defi controller if called by the admin", async function() {
+        const defiController = this.defiController.address;
+        await this.debridge.setDefiController(defiController, {
+          from: alice,
+        });
+        const newDefiController = await this.debridge.defiController();
+        assert.equal(defiController, newDefiController);
+      });
+  
+      it("should set weth if called by the admin", async function() {
+        const weth = this.weth.address;
+        await this.debridge.setWeth(weth, {
+          from: alice,
+        });
+        const newWeth = await this.debridge.weth();
+        assert.equal(weth, newWeth);
+      });
+  
+      it("should reject setting aggregator if called by the non-admin", async function() {
+        await expectRevert(
+          this.debridge.setAggregator(ZERO_ADDRESS, false, {
+            from: bob,
+          }),
+          "onlyAdmin: bad role"
+        );
+      });
+  
+      it("should reject setting fee proxy if called by the non-admin", async function() {
+        await expectRevert(
+          this.debridge.setFeeProxy(ZERO_ADDRESS, {
+            from: bob,
+          }),
+          "onlyAdmin: bad role"
+        );
+      });
+  
+      it("should reject setting defi controller if called by the non-admin", async function() {
+        await expectRevert(
+          this.debridge.setDefiController(ZERO_ADDRESS, {
+            from: bob,
+          }),
+          "onlyAdmin: bad role"
+        );
+      });
+  
+      it("should reject setting weth if called by the non-admin", async function() {
+        await expectRevert(
+          this.debridge.setWeth(ZERO_ADDRESS, {
+            from: bob,
+          }),
+          "onlyAdmin: bad role"
+        );
+      });
     });
-
-    it("should add native asset if called by the admin", async function() {
-      const tokenAddress = this.mockToken.address;
-      const chainId = await this.debridge.chainId();
-      const minAmount = toWei("100");
-      const maxAmount = toWei("100000000000");
-      const amountThreshold = toWei("10000000000000");
-      const fixedFee = toWei("0.00001");
-      const transferFee = toWei("0.01");
-      const minReserves = toWei("0.2");
-      const supportedChainIds = [42, 3];
-      await this.debridge.addNativeAsset(
-        tokenAddress,
-        minAmount,
-        maxAmount,
-        minReserves,
-        amountThreshold,
-        supportedChainIds,
-        [
-          {
-            transferFee,
-            fixedFee,
-            isSupported,
-          },
-          {
-            transferFee,
-            fixedFee,
-            isSupported,
-          },
-        ],
-        {
+  
+    context("Test managing assets", () => {
+      before(async function() {
+        currentChainId = await this.debridge.chainId();
+        const newSupply = toWei("100");
+        await this.linkToken.mint(alice, newSupply, {
           from: alice,
-        }
-      );
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        3
-      );
-      assert.equal(debridge.tokenAddress, tokenAddress);
-      assert.equal(debridge.chainId.toString(), chainId);
-      assert.equal(debridge.minAmount.toString(), minAmount);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(supportedChainInfo.fixedFee.toString(), fixedFee);
-      assert.equal(supportedChainInfo.transferFee.toString(), transferFee);
-      assert.equal(debridge.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReserves.toString(), minReserves);
+        });
+        await this.dbrToken.mint(alice, newSupply, {
+          from: alice,
+        });
+        await this.dbrToken.transferAndCall(
+          this.aggregator.address.toString(),
+          newSupply,
+          "0x",
+          {
+            from: alice,
+          }
+        );
+        await this.linkToken.transferAndCall(
+          this.aggregator.address.toString(),
+          newSupply,
+          "0x",
+          {
+            from: alice,
+          }
+        );
+      });
+  
+      const isSupported = true;
+      it("should add external asset if called by the admin", async function() {
+        const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+        const chainId = 56;
+        const minAmount = toWei("100");
+        const maxAmount = toWei("100000000000000000");
+        const amountThreshold = toWei("10000000000000");
+        const fixedNativeFee = toWei("0.00001");
+        const transferFee = toWei("0.01");
+        const minReserves = toWei("0.2");
+        const supportedChainIds = [42, 3, 56];
+        const name = "MUSD";
+        const symbol = "Magic Dollar";
+        const decimals = 18;
+        const debridgeId = await this.debridge.getDebridgeId(
+          chainId,
+          tokenAddress
+        );
+          //   function confirmNewAsset(
+          //     address _tokenAddress,
+          //     uint256 _chainId,
+          //     string memory _name,
+          //     string memory _symbol,
+          //     uint8 _decimals
+          // )
+        await this.aggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
+          from: this.initialOracles[0].address,
+        });
+  
+          //   function getDeployId(
+          //     bytes32 _debridgeId,
+          //     string memory _name,
+          //     string memory _symbol,
+          //     uint8 _decimals
+          // )
+        // let deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals) 
+        // //function deployAsset(bytes32 _deployId)
+        // await this.debridge.checkAndDeployAsset(debridgeId, {
+        //   from: this.initialOracles[0].address,
+        // });
+        await this.debridge.updateAsset(
+          debridgeId,
+          minAmount,
+          maxAmount,
+          minReserves,
+          amountThreshold,
+          {
+            from: alice,
+          }
+        );
+        const debridge = await this.debridge.getDebridge(debridgeId);
+        assert.equal(debridge.minAmount.toString(), minAmount);
+        assert.equal(debridge.maxAmount.toString(), maxAmount);
+        assert.equal(debridge.collectedFees.toString(), "0");
+        assert.equal(debridge.balance.toString(), "0");
+        assert.equal(debridge.minReserves.toString(), minReserves);
+      });
     });
-  });
 
   context("Test send method", () => {
     it("should send native tokens from the current chain", async function() {
@@ -330,35 +307,74 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       const balance = toBN(await web3.eth.getBalance(this.debridge.address));
       const debridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        chainIdTo
-      );
+      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
+
       const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
-        .div(toBN(toWei("1")))
-        .add(toBN(supportedChainInfo.fixedFee));
+        .div(toBN(toWei("1")));
+        //.add(toBN(supportedChainInfo.fixedFee));
+      const collectedNativeFees = await this.debridge.collectedFees();
       await this.debridge.autoSend(
-        debridgeId,
+        tokenAddress,
         receiver,
         amount,
         chainIdTo,
         reserveAddress,
         claimFee,
         data,
+        false,
         {
           value: amount,
           from: alice,
         }
       );
       const newBalance = toBN(await web3.eth.getBalance(this.debridge.address));
+      const newCollectedNativeFees = await this.debridge.collectedFees();
       const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
-        debridge.collectedFees.add(fees).toString(),
+        debridge.collectedFees
+
+          .add(toBN(supportedChainInfo.fixedNativeFee))
+          .add(fees)
+          .toString(),
         newDebridge.collectedFees.toString()
       );
+      assert.equal(
+        collectedNativeFees.toString(),
+        newCollectedNativeFees.toString()
+      );
     });
+
+  //   it("should update asset if called by the admin after deploy assets by send", async function () {
+  //     const tokenAddress = ZERO_ADDRESS;
+  //     const chainId = await this.debridge.chainId();
+  //     const debridgeId = await this.debridge.getDebridgeId(
+  //       chainId,
+  //       tokenAddress
+  //     );
+  //     const minAmount = toWei("0.0001");
+  //     const maxAmount = toWei("100000000000");
+  //     const amountThreshold = toWei("10000000000000");
+  //     const minReserves = toWei("0.2");
+
+  //     await this.debridge.updateAsset(
+  //       debridgeId,
+  //       minAmount,
+  //       maxAmount,
+  //       minReserves,
+  //       amountThreshold,
+  //       {
+  //         from: alice,
+  //       }
+  //     );
+  //     const debridge = await this.debridge.getDebridge(debridgeId);
+  //     assert.equal(debridge.minAmount.toString(), minAmount);
+  //     assert.equal(debridge.maxAmount.toString(), maxAmount);
+  //     assert.equal(debridge.collectedFees.toString(), "0");
+  //     assert.equal(debridge.balance.toString(), "0");
+  //     assert.equal(debridge.minReserves.toString(), minReserves);
+  // });
 
     it("should send ERC20 tokens from the current chain", async function() {
       const tokenAddress = this.mockToken.address;
@@ -382,26 +398,27 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
         await this.mockToken.balanceOf(this.debridge.address)
       );
       const debridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        chainIdTo
-      );
+      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
+      const collectedNativeFees = await this.debridge.collectedFees();
       const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
-        .div(toBN(toWei("1")))
-        .add(toBN(supportedChainInfo.fixedFee));
+        .div(toBN(toWei("1")));
+        //.add(toBN(supportedChainInfo.fixedFee));
       await this.debridge.autoSend(
-        debridgeId,
+        tokenAddress,
         receiver,
         amount,
         chainIdTo,
         reserveAddress,
         claimFee,
         data,
+        false,
         {
+          value: supportedChainInfo.fixedNativeFee,
           from: alice,
         }
       );
+      const newCollectedNativeFees = await this.debridge.collectedFees();
       const newBalance = toBN(
         await this.mockToken.balanceOf(this.debridge.address)
       );
@@ -410,6 +427,12 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       assert.equal(
         debridge.collectedFees.add(fees).toString(),
         newDebridge.collectedFees.toString()
+      );
+      assert.equal(
+        collectedNativeFees
+          .add(toBN(supportedChainInfo.fixedNativeFee))
+          .toString(),
+        newCollectedNativeFees.toString()
       );
     });
 
@@ -421,55 +444,26 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       const claimFee = toBN(toWei("0.0001"));
       const data = "0x";
       const chainIdTo = 42;
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
+      // const debridgeId = await this.debridge.getDebridgeId(
+      //   chainId,
+      //   tokenAddress
+      // );
       await expectRevert(
         this.debridge.autoSend(
-          debridgeId,
+          tokenAddress,
           receiver,
           amount,
           chainIdTo,
           reserveAddress,
           claimFee,
           data,
+          false,
           {
             value: toWei("0.1"),
             from: alice,
           }
         ),
         "send: amount mismatch"
-      );
-    });
-
-    it("should reject sending too few tokens", async function() {
-      const tokenAddress = ZERO_ADDRESS;
-      const receiver = bob;
-      const chainId = await this.debridge.chainId();
-      const amount = toBN(toWei("0.1"));
-      const claimFee = toBN(toWei("0.0001"));
-      const data = "0x";
-      const chainIdTo = 42;
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      await expectRevert(
-        this.debridge.autoSend(
-          debridgeId,
-          receiver,
-          amount,
-          chainIdTo,
-          reserveAddress,
-          claimFee,
-          data,
-          {
-            value: amount,
-            from: alice,
-          }
-        ),
-        "send: amount too low"
       );
     });
 
@@ -487,13 +481,14 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       await expectRevert(
         this.debridge.autoSend(
-          debridgeId,
+          tokenAddress,
           receiver,
           amount,
           chainIdTo,
           reserveAddress,
           claimFee,
           data,
+          false,
           {
             value: amount,
             from: alice,
@@ -517,13 +512,14 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       await expectRevert(
         this.debridge.autoSend(
-          debridgeId,
+          tokenAddress,
           receiver,
           amount,
           chainIdTo,
           reserveAddress,
           claimFee,
           data,
+          false,
           {
             value: amount,
             from: alice,
@@ -547,13 +543,14 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       );
       await expectRevert(
         this.debridge.autoSend(
-          debridgeId,
+          tokenAddress,
           receiver,
           amount,
           chainIdTo,
           reserveAddress,
           claimFee,
           data,
+          false,
           {
             value: amount,
             from: alice,
@@ -573,13 +570,14 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       const debridgeId = await this.debridge.getDebridgeId(42, tokenAddress);
       await expectRevert(
         this.debridge.autoSend(
-          debridgeId,
+          tokenAddress,
           receiver,
           amount,
           chainIdTo,
           reserveAddress,
           claimFee,
           data,
+          false,
           {
             value: amount,
             from: alice,
@@ -662,6 +660,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
         reserveAddress,
         claimFee,
         data,
+        [],
         {
           from: alice,
         }
@@ -706,11 +705,12 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
           reserveAddress,
           claimFee,
           data,
+          [],
           {
             from: alice,
           }
         ),
-        "autoMint: not confirmed"
+        "not confirmed"
       );
     });
 
@@ -730,6 +730,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
           reserveAddress,
           claimFee,
           data,
+          [],
           {
             from: alice,
           }
@@ -753,6 +754,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
           reserveAddress,
           claimFee,
           data,
+          [],
           {
             from: alice,
           }
@@ -770,7 +772,7 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainIdTo = 56;
       const receiver = alice;
-      const amount = toBN(toWei("100"));
+      const amount = toBN(toWei("10"));
       const debridgeId = await this.debridge.getDebridgeId(
         chainIdTo,
         tokenAddress
@@ -807,10 +809,8 @@ contract("AutoFullDebridge", function([alice, bob, carol, eve, devid]) {
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.debridge.getDebridge(debridgeId);
-      const supportedChainInfo = await this.debridge.getChainIdSupport(
-        debridgeId,
-        chainIdTo
-      );
+      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
+
       const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
         .div(toBN(toWei("1")))

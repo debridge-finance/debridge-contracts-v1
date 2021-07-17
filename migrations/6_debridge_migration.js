@@ -1,5 +1,5 @@
 const Debridge = artifacts.require("FullDebridge");
-const LightDebridge = artifacts.require("LightDebridge");
+const LightDebridge = artifacts.require("FullDebridge");
 const FullAggregator = artifacts.require("FullAggregator");
 const LightVerifier = artifacts.require("LightVerifier");
 const CallProxy = artifacts.require("CallProxy");
@@ -15,10 +15,22 @@ module.exports = async function(deployer, network) {
   let debridgeInstance;
   if (debridgeInitParams.type == "full") {
     let weth = await getWeth(deployer, network);
+    //function initialize(
+    //    uint256 _excessConfirmations,
+    //    address _ligthAggregator,
+    //    address _fullAggregator,
+    //    address _callProxy,
+    //    uint256[] memory _supportedChainIds,
+    //    ChainSupportInfo[] memory _chainSupportInfo,
+    //    IWETH _weth,
+    //    IFeeProxy _feeProxy,
+    //    IDefiController _defiController
+    //)
     await deployProxy(
       Debridge,
       [
         debridgeInitParams.excessConfirmations,
+        LightVerifier.address.toString(),
         FullAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
@@ -37,6 +49,7 @@ module.exports = async function(deployer, network) {
       [
         debridgeInitParams.excessConfirmations,
         LightVerifier.address.toString(),
+        FullAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
         debridgeInitParams.chainSupportInfo,
