@@ -13,7 +13,7 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
     bytes32 public constant PERMIT_TYPEHASH =
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public nonces; // transfer's counter
-
+    uint8 internal _decimals;
     modifier onlyMinter {
         require(hasRole(MINTER_ROLE, msg.sender), "onlyMinter: bad role");
         _;
@@ -26,9 +26,12 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
     constructor(
         string memory _name,
         string memory _symbol,
+        uint8 _tokenDecimals,
+        address _admin,
         address[] memory _minters
     ) ERC20(_name, _symbol) {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _decimals = _tokenDecimals;
+        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
         for (uint256 i = 0; i < _minters.length; i++) {
             _setupRole(MINTER_ROLE, _minters[i]);
         }
@@ -84,28 +87,31 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
         bytes32 _s
     ) external override {
         require(_deadline >= block.timestamp, "permit: EXPIRED");
-        bytes32 digest =
-            keccak256(
-                abi.encodePacked(
-                    "\x19\x01",
-                    DOMAIN_SEPARATOR,
-                    keccak256(
-                        abi.encode(
-                            PERMIT_TYPEHASH,
-                            _owner,
-                            _spender,
-                            _value,
-                            nonces[_owner]++,
-                            _deadline
-                        )
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        PERMIT_TYPEHASH,
+                        _owner,
+                        _spender,
+                        _value,
+                        nonces[_owner]++,
+                        _deadline
                     )
                 )
-            );
+            )
+        );
         address recoveredAddress = ecrecover(digest, _v, _r, _s);
         require(
             recoveredAddress != address(0) && recoveredAddress == _owner,
             "permit: invalid signature"
         );
         _approve(_owner, _spender, _value);
+    }
+
+    function decimals() public view override returns (uint8) {
+        return _decimals;
     }
 }

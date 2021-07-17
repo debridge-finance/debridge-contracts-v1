@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "../interfaces/ILightVerifier.sol";
 import "../interfaces/IDebridge.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
@@ -21,18 +22,13 @@ contract FullDebridge is Debridge, IFullDebridge {
     IWETH public weth; // wrapped native token contract
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _minAmount Minimal amount of current chain token to be wrapped.
-    /// @param _maxAmount Maximum amount of current chain token to be wrapped.
-    /// @param _minReserves Minimal reserve ratio.
-    /// @param _aggregator Submission aggregator address.
+    /// @param _ligthAggregator Aggregator address to verify signatures
+    /// @param _fullAggregator Aggregator address to verify by oracles confirmations
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initialize(
         uint256 _excessConfirmations,
-        uint256 _minAmount,
-        uint256 _maxAmount,
-        uint256 _minReserves,
-        uint256 _amountThreshold,
-        address _aggregator,
+        address _ligthAggregator,
+        address _fullAggregator,
         address _callProxy,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo,
@@ -42,11 +38,8 @@ contract FullDebridge is Debridge, IFullDebridge {
     ) public payable initializer {
         super._initialize(
             _excessConfirmations,
-            _minAmount,
-            _maxAmount,
-            _minReserves,
-            _amountThreshold,
-            _aggregator,
+            _ligthAggregator,
+            _fullAggregator,
             _callProxy,
             _supportedChainIds,
             _chainSupportInfo,
@@ -57,10 +50,10 @@ contract FullDebridge is Debridge, IFullDebridge {
     }
 
     /// @dev Mints wrapped asset on the current chain.
-    /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    /// @param _signatures Array of oracles signatures.
     /// @param _fallbackAddress Receiver of the tokens if the call fails.
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
@@ -70,33 +63,33 @@ contract FullDebridge is Debridge, IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
     ) external whenNotPaused() {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
-        require(confirmed, "autoMint: not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "autoMint: amount not confirmed"
-            );
-        }
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
+        );
+
+        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
+                                           ? ligthAggregator 
+                                           : fullAggregator);
+
+        _checkConfirmations(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures);
+
         _mint(
             submissionId,
             _debridgeId,
@@ -109,10 +102,10 @@ contract FullDebridge is Debridge, IFullDebridge {
     }
 
     /// @dev Mints wrapped asset on the current chain.
-    /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    /// @param _signatures Array of oracles signatures.
     /// @param _fallbackAddress Receiver of the tokens if the call fails.
     /// @param _executionFee Fee paid to the transaction executor.
     /// @param _data Chain id of the target chain.
@@ -122,39 +115,35 @@ contract FullDebridge is Debridge, IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external whenNotPaused() {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
-        require(
-            aggregatorInfo.isValid,
-            "mintWithOldAggregator: invalidAggregator"
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
         );
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregatorInfo.aggregator)
-                .getSubmissionConfirmations(submissionId);
-        require(confirmed, "mintWithOldAggregator: not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "mintWithOldAggregator: amount not confirmed"
-            );
-        }
+
+        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
+                                        ? getOldLightAggregator[_aggregatorVersion].aggregator
+                                        : getOldFullAggregator[_aggregatorVersion].aggregator);
+
+        _checkConfirmationsOldAggregator(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures, 
+            _aggregatorVersion);
+
         _mint(
             submissionId,
             _debridgeId,
@@ -167,37 +156,37 @@ contract FullDebridge is Debridge, IFullDebridge {
     }
 
     /// @dev Mints wrapped asset on the current chain.
-    /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    /// @param _signatures Array of oracles signatures.
     function mint(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes[] calldata _signatures
     ) external override whenNotPaused() {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
-        require(confirmed, "mint: not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "mint: amount not confirmed"
-            );
-        }
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
+        );
+        
+        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
+                                         ? ligthAggregator 
+                                         : fullAggregator);
+
+        _checkConfirmations(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures);
+
         _mint(
             submissionId,
             _debridgeId,
@@ -210,10 +199,10 @@ contract FullDebridge is Debridge, IFullDebridge {
     }
 
     /// @dev Mints wrapped asset on the current chain.
-    /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
     /// @param _nonce Submission id.
+    /// @param _signatures Array of oracles signatures.
     /// @param _aggregatorVersion Aggregator version.
     function mintWithOldAggregator(
         bytes32 _debridgeId,
@@ -221,33 +210,30 @@ contract FullDebridge is Debridge, IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
-        require(
-            aggregatorInfo.isValid,
-            "mintWithOldAggregator: invalidAggregator"
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
         );
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregatorInfo.aggregator)
-                .getSubmissionConfirmations(submissionId);
-        require(confirmed, "mintWithOldAggregator: not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "mintWithOldAggregator: amount not confirmed"
-            );
-        }
+        
+        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
+                                        ? getOldLightAggregator[_aggregatorVersion].aggregator
+                                        : getOldFullAggregator[_aggregatorVersion].aggregator);
+            
+
+        _checkConfirmationsOldAggregator(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures,
+            _aggregatorVersion);
+
         _mint(
             submissionId,
             _debridgeId,
@@ -270,33 +256,29 @@ contract FullDebridge is Debridge, IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
     ) external whenNotPaused() {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
-        require(confirmed, "autoClaim: not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "autoClaim: amount not confirmed"
-            );
-        }
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
+        );
+
+        _checkConfirmations(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures);
+
         _claim(
             submissionId,
             _debridgeId,
@@ -322,35 +304,31 @@ contract FullDebridge is Debridge, IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
     ) external whenNotPaused() {
-        bytes32 submissionId =
-            getAutoSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce,
-                _fallbackAddress,
-                _executionFee,
-                _data
-            );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregatorInfo.aggregator)
-                .getSubmissionConfirmations(submissionId);
-        require(confirmed, "autoClaimWithOldAggregator: not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "autoClaimWithOldAggregator: amount not confirmed"
-            );
-        }
+        bytes32 submissionId = getAutoSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce,
+            _fallbackAddress,
+            _executionFee,
+            _data
+        );
+        
+        _checkConfirmationsOldAggregator(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures, 
+            _aggregatorVersion);
+
         _claim(
             submissionId,
             _debridgeId,
@@ -373,28 +351,24 @@ contract FullDebridge is Debridge, IFullDebridge {
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes[] calldata _signatures
     ) external override whenNotPaused() {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregator).getSubmissionConfirmations(
-                submissionId
-            );
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "claim: amount not confirmed"
-            );
-        }
-        require(confirmed, "claim: not confirmed");
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
+        );
+        
+        _checkConfirmations(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures);
+
         _claim(
             submissionId,
             _debridgeId,
@@ -418,33 +392,25 @@ contract FullDebridge is Debridge, IFullDebridge {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
+        bytes[] calldata _signatures,
         uint8 _aggregatorVersion
     ) external override {
-        bytes32 submissionId =
-            getSubmisionId(
-                _debridgeId,
-                _chainIdFrom,
-                chainId,
-                _amount,
-                _receiver,
-                _nonce
-            );
-        AggregatorInfo memory aggregatorInfo =
-            getOldAggregator[_aggregatorVersion];
-        require(
-            aggregatorInfo.isValid,
-            "mintWithOldAggregator: invalidAggregator"
+        bytes32 submissionId = getSubmisionId(
+            _debridgeId,
+            _chainIdFrom,
+            chainId,
+            _amount,
+            _receiver,
+            _nonce
         );
-        (uint256 confirmations, bool confirmed) =
-            IFullAggregator(aggregatorInfo.aggregator)
-                .getSubmissionConfirmations(submissionId);
-        require(confirmed, "claimWithOldAggregator: not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "claimWithOldAggregator: amount not confirmed"
-            );
-        }
+        
+        _checkConfirmationsOldAggregator(
+            submissionId, 
+            _debridgeId, 
+            _amount, 
+            _signatures, 
+            _aggregatorVersion);
+
         _claim(
             submissionId,
             _debridgeId,
@@ -456,6 +422,7 @@ contract FullDebridge is Debridge, IFullDebridge {
         );
     }
 
+
     /* ADMIN */
 
     /// @dev Fund aggregator.
@@ -465,23 +432,24 @@ contract FullDebridge is Debridge, IFullDebridge {
         external
         onlyAdmin()
     {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(
-            debridge.collectedFees >= _amount,
-            "fundAggregator: not enough fee"
-        );
-        debridge.collectedFees -= _amount;
-        if (debridge.tokenAddress == address(0)) {
-            weth.deposit{value: _amount}();
-            weth.transfer(address(feeProxy), _amount);
-            feeProxy.swapToLink(address(weth), _amount, aggregator);
-        } else {
-            IERC20(debridge.tokenAddress).safeTransfer(
-                address(feeProxy),
-                _amount
-            );
-            feeProxy.swapToLink(debridge.tokenAddress, _amount, aggregator);
-        }
+        //TODO: need swap to ETH and transfer to ethereum network
+        // DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        // require(
+        //     debridge.collectedFees >= _amount,
+        //     "fundAggregator: not enough fee"
+        // );
+        // debridge.collectedFees -= _amount;
+        // if (debridge.tokenAddress == address(0)) {
+        //     weth.deposit{value: _amount}();
+        //     weth.transfer(address(feeProxy), _amount);
+        //     feeProxy.swapToLink(address(weth), _amount, aggregator);
+        // } else {
+        //     IERC20(debridge.tokenAddress).safeTransfer(
+        //         address(feeProxy),
+        //         _amount
+        //     );
+        //     feeProxy.swapToLink(debridge.tokenAddress, _amount, aggregator);
+        // }
     }
 
     /// @dev Set fee converter proxy.
@@ -494,5 +462,64 @@ contract FullDebridge is Debridge, IFullDebridge {
     /// @param _weth Weth address.
     function setWeth(IWETH _weth) external onlyAdmin() {
         weth = _weth;
+    }
+
+
+     /* internal */
+
+     
+    function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal 
+    {
+        if(!getDebridge[debridgeId].exist)
+        {
+            (address wrappedAssetAddress, uint256 nativeChainId) = IFullAggregator(aggregatorAddress).deployAsset(debridgeId);
+            require(
+                wrappedAssetAddress != address(0),
+                "mint: wrapped asset not exist"
+            );
+            _addAsset(debridgeId, wrappedAssetAddress, nativeChainId);
+        }
+    }
+
+     function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId, 
+                                 uint256 _amount, bytes[] memory _signatures) 
+        internal{
+        (uint256 confirmations, bool confirmed) = 
+                _signatures.length > 0 
+                ? ILightVerifier(ligthAggregator).submit(_submissionId, _signatures)
+                : IFullAggregator(fullAggregator).getSubmissionConfirmations(_submissionId);
+        require(confirmed, "not confirmed ");
+        if (_amount >= getAmountThreshold[_debridgeId]) {
+            require(
+                confirmations >= excessConfirmations,
+                "amount not confirmed"
+            );
+        }
+    }
+
+    function _checkConfirmationsOldAggregator(bytes32 _submissionId, bytes32 _debridgeId, 
+                                              uint256 _amount, bytes[] memory _signatures,
+                                              uint8 _aggregatorVersion) 
+        internal{
+
+        AggregatorInfo memory aggregatorInfo 
+                = _signatures.length > 0 
+                ? getOldLightAggregator[_aggregatorVersion]
+                : getOldFullAggregator[_aggregatorVersion];
+        require(
+            aggregatorInfo.isValid,
+            "invalidAggregator"
+        );
+        (uint256 confirmations, bool confirmed) = 
+                _signatures.length > 0 
+                ? ILightVerifier(aggregatorInfo.aggregator).submit(_submissionId, _signatures)
+                : IFullAggregator(aggregatorInfo.aggregator).getSubmissionConfirmations(_submissionId);
+        require(confirmed, "not confirmed");
+        if (_amount >= getAmountThreshold[_debridgeId]) {
+            require(
+                confirmations >= excessConfirmations,
+                "amount not confirmed"
+            );
+        }
     }
 }

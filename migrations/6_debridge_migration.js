@@ -1,5 +1,5 @@
 const Debridge = artifacts.require("FullDebridge");
-const LightDebridge = artifacts.require("LightDebridge");
+const LightDebridge = artifacts.require("FullDebridge");
 const FullAggregator = artifacts.require("FullAggregator");
 const LightVerifier = artifacts.require("LightVerifier");
 const CallProxy = artifacts.require("CallProxy");
@@ -12,16 +12,25 @@ module.exports = async function(deployer, network) {
   if (network == "test") return;
 
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
+  let debridgeInstance;
   if (debridgeInitParams.type == "full") {
     let weth = await getWeth(deployer, network);
+    //function initialize(
+    //    uint256 _excessConfirmations,
+    //    address _ligthAggregator,
+    //    address _fullAggregator,
+    //    address _callProxy,
+    //    uint256[] memory _supportedChainIds,
+    //    ChainSupportInfo[] memory _chainSupportInfo,
+    //    IWETH _weth,
+    //    IFeeProxy _feeProxy,
+    //    IDefiController _defiController
+    //)
     await deployProxy(
       Debridge,
       [
         debridgeInitParams.excessConfirmations,
-        debridgeInitParams.minTransferAmount,
-        debridgeInitParams.maxTransferAmount,
-        debridgeInitParams.minReserves,
-        debridgeInitParams.amountThreshold,
+        LightVerifier.address.toString(),
         FullAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
@@ -32,16 +41,15 @@ module.exports = async function(deployer, network) {
       ],
       { deployer }
     );
+    aggregatorInstance = await FullAggregator.deployed();
+    debridgeInstance = await Debridge.deployed();
   } else {
     await deployProxy(
       LightDebridge,
       [
         debridgeInitParams.excessConfirmations,
-        debridgeInitParams.minTransferAmount,
-        debridgeInitParams.maxTransferAmount,
-        debridgeInitParams.minReserves,
-        debridgeInitParams.amountThreshold,
         LightVerifier.address.toString(),
+        FullAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
         debridgeInitParams.chainSupportInfo,
@@ -49,5 +57,10 @@ module.exports = async function(deployer, network) {
       ],
       { deployer }
     );
+    aggregatorInstance = await LightVerifier.deployed();
+    debridgeInstance = await LightDebridge.deployed();
   }
+  await aggregatorInstance.setDebridgeAddress(
+    debridgeInstance.address.toString()
+  );
 };

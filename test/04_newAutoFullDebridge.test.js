@@ -1,26 +1,28 @@
-const Web3 = require("web3");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
-const { deployProxy } = require("@openzeppelin/truffle-upgrades");
-const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
-const FullAggregator = artifacts.require("FullAggregator");
-const LightVerifier = artifacts.require("LightVerifier");
+const Aggregator = artifacts.require("FullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const Debridge = artifacts.require("FullDebridge");
 const WrappedAsset = artifacts.require("WrappedAsset");
+const FeeProxy = artifacts.require("FeeProxy");
 const CallProxy = artifacts.require("CallProxy");
+const UniswapV2Factory = artifacts.require("UniswapV2Factory");
+const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const DefiController = artifacts.require("DefiController");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const WETH9 = artifacts.require("WETH9");
 const { toWei, fromWei, toBN } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
-const Tx = require("ethereumjs-tx");
-const bscWeb3 = new Web3(process.env.TEST_BSC_PROVIDER);
-const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
+contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
+  const reserveAddress = devid;
+  const claimFee = toBN(toWei("0"));
+  const data = "0x";
+
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -31,41 +33,19 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
       from: alice,
     });
-    this.amountThreshold = toWei("1000");
+    this.amountThreshols = toWei("1000");
     this.oraclePayment = toWei("0.001");
     this.bonusPayment = toWei("0.001");
-    this.minConfirmations = 3;
-    //this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
-    //this.aggregatorInstance = new web3.eth.Contract(
-    //  FullAggregator.abi,
-    //  this.fullAggregatorAddress
-    //);
+    this.minConfirmations = 1;
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
 
-    this.fullAggregator = await FullAggregator.new(
+    this.aggregator = await Aggregator.new(
       this.minConfirmations,
       this.oraclePayment,
       this.bonusPayment,
       this.linkToken.address,
       this.dbrToken.address,
-      this.confirmationThreshold,
-      this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
-      {
-        from: alice,
-      }
-    );
-    // constructor(
-    //   uint256 _minConfirmations,
-    //   uint256 _confirmationThreshold,
-    //   uint256 _excessConfirmations,
-    //   address _wrappedAssetAdmin,
-    //   address _debridgeAddress
-    // )
-    this.lightVerifier = await LightVerifier.new(
-      this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
       alice,
@@ -84,60 +64,55 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         admin: carol,
       },
       {
-        address: carol,
-        admin: eve,
-      },
-      {
         address: eve,
-        admin: carol,
-      },
-      {
-        address: fei,
-        admin: eve,
-      },
-      {
-        address: devid,
         admin: carol,
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.lightVerifier.addOracle(oracle.address, {
+      await this.aggregator.addOracle(oracle.address, oracle.admin, {
         from: alice,
       });
     }
-    this.defiController = await DefiController.new({
+    this.uniswapFactory = await UniswapV2Factory.new(carol, {
       from: alice,
     });
+    this.feeProxy = await FeeProxy.new(
+      this.linkToken.address,
+      this.uniswapFactory.address,
+      {
+        from: alice,
+      }
+    );
     this.callProxy = await CallProxy.new({
       from: alice,
     });
+    this.defiController = await DefiController.new({
+      from: alice,
+    });
     const minAmount = toWei("1");
-    const maxAmount = toWei("100000000000");
+    const maxAmount = toWei("1000000");
     const fixedNativeFee = toWei("0.00001");
     const transferFee = toWei("0.001");
     const minReserves = toWei("0.2");
     const isSupported = true;
-    const supportedChainIds =[42, 56];
+    const supportedChainIds = [42, 56];
     this.weth = await WETH9.new({
       from: alice,
     });
 
-    //function initialize(
-    //    uint256 _excessConfirmations,
-    //    address _ligthAggregator,
-    //    address _fullAggregator,
-    //    address _callProxy,
-    //    uint256[] memory _supportedChainIds,
-    //    ChainSupportInfo[] memory _chainSupportInfo,
-    //    IWETH _weth,
-    //    IFeeProxy _feeProxy,
-    //    IDefiController _defiController
-    //)
-
+    //     uint256 _excessConfirmations,
+    //     address _ligthAggregator,
+    //     address _fullAggregator,
+    //     address _callProxy,
+    //     uint256[] memory _supportedChainIds,
+    //     ChainSupportInfo[] memory _chainSupportInfo,
+    //     IWETH _weth,
+    //     IFeeProxy _feeProxy,
+    //     IDefiController _defiController
     this.debridge = await deployProxy(Debridge, [
       this.excessConfirmations,
-      this.lightVerifier.address.toString(),
-      this.fullAggregator.address.toString(),
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
       this.callProxy.address.toString(),
       supportedChainIds,
       [
@@ -152,22 +127,30 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
           isSupported,
         },
       ],
-        ZERO_ADDRESS,
-        ZERO_ADDRESS,
-        ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
     ]);
-
-    await this.lightVerifier.setDebridgeAddress(this.debridge.address.toString());
+    await this.aggregator.setDebridgeAddress(this.debridge.address.toString());
   });
 
   context("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function() {
-      const aggregator = this.lightVerifier.address;
-      await this.debridge.setAggregator(aggregator, true,{
+      const aggregator = this.aggregator.address;
+      await this.debridge.setAggregator(aggregator, false, {
         from: alice,
       });
-      const newAggregator = await this.debridge.ligthAggregator();
+      const newAggregator = await this.debridge.fullAggregator();
       assert.equal(aggregator, newAggregator);
+    });
+
+    it("should set fee proxy if called by the admin", async function() {
+      const feeProxy = this.feeProxy.address;
+      await this.debridge.setFeeProxy(feeProxy, {
+        from: alice,
+      });
+      const newFeeProxy = await this.debridge.feeProxy();
+      assert.equal(feeProxy, newFeeProxy);
     });
 
     it("should set defi controller if called by the admin", async function() {
@@ -179,9 +162,27 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       assert.equal(defiController, newDefiController);
     });
 
+    it("should set weth if called by the admin", async function() {
+      const weth = this.weth.address;
+      await this.debridge.setWeth(weth, {
+        from: alice,
+      });
+      const newWeth = await this.debridge.weth();
+      assert.equal(weth, newWeth);
+    });
+
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.setAggregator(ZERO_ADDRESS, true,{
+        this.debridge.setAggregator(ZERO_ADDRESS, false, {
+          from: bob,
+        }),
+        "onlyAdmin: bad role"
+      );
+    });
+
+    it("should reject setting fee proxy if called by the non-admin", async function() {
+      await expectRevert(
+        this.debridge.setFeeProxy(ZERO_ADDRESS, {
           from: bob,
         }),
         "onlyAdmin: bad role"
@@ -196,67 +197,94 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         "onlyAdmin: bad role"
       );
     });
+
+    it("should reject setting weth if called by the non-admin", async function() {
+      await expectRevert(
+        this.debridge.setWeth(ZERO_ADDRESS, {
+          from: bob,
+        }),
+        "onlyAdmin: bad role"
+      );
+    });
   });
 
   context("Test managing assets", () => {
+    before(async function() {
+      currentChainId = await this.debridge.chainId();
+      const newSupply = toWei("100");
+      await this.linkToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.dbrToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.dbrToken.transferAndCall(
+        this.aggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
+      await this.linkToken.transferAndCall(
+        this.aggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
+    });
+
     const isSupported = true;
     it("should add external asset if called by the admin", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
-      const minAmount = toWei("0.0001");
-      const maxAmount = toWei("100000000000");
+      const minAmount = toWei("100");
+      const maxAmount = toWei("100000000000000000");
       const amountThreshold = toWei("10000000000000");
-      const fixedFee = toWei("0.00001");
+      const fixedNativeFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
-      const supportedChainIds = [42, 3];
+      const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
       const decimals = 18;
-
-      //   function confirmNewAsset(
-      //     address _tokenAddress,
-      //     uint256 _chainId,
-      //     string memory _name,
-      //     string memory _symbol,
-      //     uint8 _decimals,
-      //     bytes[] memory _signatures
-      // ) 
-      const debridgeId = await this.lightVerifier.getDebridgeId(chainId, tokenAddress);
-      console.log('debridgeId '+debridgeId);
-      const deployId = await this.lightVerifier.getDeployId(debridgeId, name, symbol, decimals);
-
-      let signatures = [];
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        signatures.push(
-          (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
-        );
-      }
-      await this.lightVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
+      const debridgeId = await this.debridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+        //   function confirmNewAsset(
+        //     address _tokenAddress,
+        //     uint256 _chainId,
+        //     string memory _name,
+        //     string memory _symbol,
+        //     uint8 _decimals
+        // )
+      await this.aggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
         from: this.initialOracles[0].address,
       });
-      
-      ////   function getDeployId(
-      ////     bytes32 _debridgeId,
-      ////     string memory _name,
-      ////     string memory _symbol,
-      ////     uint8 _decimals
-      //// )
-      ////function deployAsset(bytes32 _deployId)
-      //await this.lightVerifier.deployAsset(deployId, {
-      //  from: this.initialOracles[0].address,
-      //});
 
+        //   function getDeployId(
+        //     bytes32 _debridgeId,
+        //     string memory _name,
+        //     string memory _symbol,
+        //     uint8 _decimals
+        // )
+      // let deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals) 
+      // //function deployAsset(bytes32 _deployId)
+      // await this.debridge.checkAndDeployAsset(debridgeId, {
+      //   from: this.initialOracles[0].address,
+      // });
       await this.debridge.updateAsset(
-       debridgeId,
-       minAmount,
-       maxAmount,
-       minReserves,
-       amountThreshold,
-       {
-         from: alice,
-       }
+        debridgeId,
+        minAmount,
+        maxAmount,
+        minReserves,
+        amountThreshold,
+        {
+          from: alice,
+        }
       );
       const debridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(debridge.minAmount.toString(), minAmount);
@@ -285,11 +313,14 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         .mul(amount)
         .div(toBN(toWei("1")));
       const collectedNativeFees = await this.debridge.collectedFees();
-      await this.debridge.send(
+      await this.debridge.autoSend(
         tokenAddress,
         receiver,
         amount,
         chainIdTo,
+        reserveAddress,
+        claimFee,
+        data,
         false,
         {
           value: amount,
@@ -302,6 +333,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
         debridge.collectedFees
+
           .add(toBN(supportedChainInfo.fixedNativeFee))
           .add(fees)
           .toString(),
@@ -338,11 +370,14 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const fees = toBN(supportedChainInfo.transferFee)
         .mul(amount)
         .div(toBN(toWei("1")));
-      await this.debridge.send(
+      await this.debridge.autoSend(
         tokenAddress,
         receiver,
         amount,
         chainIdTo,
+        reserveAddress,
+        claimFee,
+        data,
         false,
         {
           value: supportedChainInfo.fixedNativeFee,
@@ -378,7 +413,11 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, {
+        this.debridge.autoSend(tokenAddress, receiver, amount, chainIdTo, 
+          reserveAddress,
+          claimFee,
+          data,
+          false, {
           value: toWei("0.1"),
           from: alice,
         }),
@@ -397,7 +436,11 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, {
+        this.debridge.autoSend(tokenAddress, receiver, amount, chainIdTo, 
+          reserveAddress,
+          claimFee,
+          data,
+          false, {
           value: amount,
           from: alice,
         }),
@@ -407,69 +450,119 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
   });
 
   context("Test mint method", () => {
-    let debridgeId;
-    const receiver = bob;
-    const amount = toBN(toWei("100"));
-    const nonce = 1;
     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
     const chainId = 56;
+    const receiver = bob;
+    const amount = toBN(toWei("100"));
+    const nonce = 2;
     let currentChainId;
-
     before(async function() {
-      debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      console.log('debridgeId '+debridgeId);
       currentChainId = await this.debridge.chainId();
-      const submission = await this.debridge.getSubmisionId(
+      const newSupply = toWei("100");
+      await this.linkToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.dbrToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.dbrToken.transferAndCall(
+        this.aggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
+      await this.linkToken.transferAndCall(
+        this.aggregator.address.toString(),
+        newSupply,
+        "0x",
+        {
+          from: alice,
+        }
+      );
+      const debridgeId = await this.debridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+
+    //   function getAutoSubmisionId(
+    //     bytes32 _debridgeId,
+    //     uint256 _chainIdFrom,
+    //     uint256 _chainIdTo,
+    //     uint256 _amount,
+    //     address _receiver,
+    //     uint256 _nonce,
+    //     address _fallbackAddress,
+    //     uint256 _executionFee,
+    //     bytes memory _data
+    // )
+      const submission = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainId,
         currentChainId,
         amount,
         receiver,
-        nonce
+        nonce,
+        reserveAddress,
+        claimFee,
+        data,
       );
-      this.signatures = [];
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        this.signatures.push(
-          (await bscWeb3.eth.accounts.sign(submission, oracleKey)).signature
-        );
-      }
+      await this.aggregator.submit(submission, {
+        from: bob,
+      });
+
+      let submissionInfo = await this.aggregator.getSubmissionInfo(submission);
+      let submissionConfirmations = await this.aggregator.getSubmissionConfirmations(submission);
+     
+      assert.equal(1, submissionInfo.confirmations);
+      assert.equal(true, submissionConfirmations[0]);
+      assert.equal(1, submissionConfirmations[1]);
     });
 
     it("should mint when the submission is approved", async function() {
-      const balance  = toBN("0");
+      const debridgeId = await this.debridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+      const balance = toBN("0");
 
-    //   function mint(
-    //     address _tokenAddress,
-    //     uint256 _chainId,
-    //     uint256 _chainIdFrom,
-    //     address _receiver,
-    //     uint256 _amount,
-    //     uint256 _nonce,
-    //     bytes[] calldata _signatures
-    // )
-      await this.debridge.mint(
+      //   function mint(
+      //     address _tokenAddress,
+      //     uint256 _chainId,
+      //     uint256 _chainIdFrom,
+      //     address _receiver,
+      //     uint256 _amount,
+      //     uint256 _nonce,
+      //     bytes[] calldata _signatures
+      // )
+      await this.debridge.autoMint(
         debridgeId,
         chainId,
         receiver,
         amount,
         nonce,
-        this.signatures,
+        [],
+        reserveAddress,
+        claimFee,
+        data,
         {
           from: alice,
         }
       );
       const debridge = await this.debridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-
       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
-      const submissionId = await this.debridge.getSubmisionId(
+      const submissionId = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainId,
         currentChainId,
         amount,
         receiver,
-        nonce
+        nonce,
+        reserveAddress,
+        claimFee,
+        data,
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(
         submissionId
@@ -478,64 +571,28 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       assert.ok(isSubmissionUsed);
     });
 
-
-      // it("should update asset if called by the admin after deploy assets by mint", async function () {
-      //     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      //     const chainId = 56;
-      //     const minAmount = toWei("0.0001");
-      //     const maxAmount = toWei("100000000000");
-      //     const amountThreshold = toWei("10000000000000");
-      //     const fixedFee = toWei("0.00001");
-      //     const transferFee = toWei("0.01");
-      //     const minReserves = toWei("0.2");
-      //     const supportedChainIds = [42, 3];
-      //     const name = "MUSD";
-      //     const symbol = "Magic Dollar";
-      //     const decimals = 18;
-
-      //     await this.debridge.updateAsset(
-      //       debridgeId,
-      //       minAmount,
-      //       maxAmount,
-      //       minReserves,
-      //       amountThreshold,
-      //       {
-      //         from: alice,
-      //       }
-      //     );
-      //     const debridge = await this.debridge.getDebridge(debridgeId);
-      //     assert.equal(debridge.minAmount.toString(), minAmount);
-      //     assert.equal(debridge.maxAmount.toString(), maxAmount);
-      //     assert.equal(debridge.collectedFees.toString(), "0");
-      //     assert.equal(debridge.balance.toString(), "0");
-      //     assert.equal(debridge.minReserves.toString(), minReserves);
-      // });
-
     it("should reject minting with unconfirmed submission", async function() {
-      const wrongnonce = 4;
+      const nonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, [], {//will call IFullAggregator
-          from: alice,
-        }),
+        this.debridge.autoMint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          [],
+          reserveAddress,
+          claimFee,
+          data,
+          {
+            from: alice,
+          }
+        ),
         "not confirmed"
-      );
-    });
-
-    it("should reject minting with error signature", async function() {
-      const wrongnonce = 4;
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, this.signatures, {
-          from: alice,
-        }),
-        "onlyOracle: bad role"
       );
     });
 
@@ -545,11 +602,21 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
-          from: alice,
-        }),
-        "submit: submitted already"
-        //"mint: already used"
+        this.debridge.autoMint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          [],
+          reserveAddress,
+          claimFee,
+          data,
+          {
+            from: alice,
+          }
+        ),
+        "mint: already used"
       );
     });
   });
@@ -559,7 +626,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainIdTo = 56;
       const receiver = alice;
-      const amount = toBN(toWei("5"));
+      const amount = toBN(toWei("100"));
       const debridgeId = await this.debridge.getDebridgeId(
         chainIdTo,
         tokenAddress
@@ -578,11 +645,14 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         bobPrivKey
       );
       const collectedNativeFees = await this.debridge.collectedFees();
-      await this.debridge.burn(
+      await this.debridge.autoBurn(
         debridgeId,
         receiver,
         amount,
         chainIdTo,
+        reserveAddress,
+        claimFee,
+        data,
         deadline,
         signature,
         false,
@@ -604,7 +674,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       );
       assert.equal(
         collectedNativeFees
-        //TODO: check wrong native + token fee
           .add(toBN(supportedChainInfo.fixedNativeFee))
           .toString(),
         newCollectedNativeFees.toString()
@@ -623,59 +692,22 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       const deadline = 0;
       const signature = "0x";
       await expectRevert(
-        this.debridge.burn(
+        this.debridge.autoBurn(
           debridgeId,
           receiver,
           amount,
           42,
+          reserveAddress,
+          claimFee,
+          data,
           deadline,
           signature,
+          false,
           {
             from: alice,
           }
         ),
         "burn: native asset"
-      );
-    });
-
-    it("should reject burning too few tokens", async function() {
-      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const chainIdTo = 56;
-      const receiver = bob;
-      const amount = toBN("10");
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainIdTo,
-        tokenAddress
-        );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-      //const balance = toBN(await wrappedAsset.balanceOf(bob));
-      const deadline = 0;
-      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-      //const signature = "0x";
-      const signature = await permit(
-            wrappedAsset,
-            bob,
-            this.debridge.address,
-            amount,
-            deadline,
-            bobPrivKey
-        );
-      await expectRevert(
-        this.debridge.burn(
-          debridgeId,
-          receiver,
-          amount,
-          chainIdTo,
-          deadline,
-          signature,
-          false,
-          {
-            from: bob,
-            value: supportedChainInfo.fixedNativeFee,
-          }
-        ),
-        "burn: amount too low"
       );
     });
   });
@@ -685,74 +717,94 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     const receiver = bob;
     const amount = toBN(toWei("0.9"));
     const nonce = 4;
+    let chainIdFrom = 50;
     let chainId;
-    let chainIdFrom = 87;
     let debridgeId;
+    let outsideDebridgeId;
     let erc20DebridgeId;
-
     before(async function() {
       chainId = await this.debridge.chainId();
       debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
+      outsideDebridgeId = await this.debridge.getDebridgeId(
+        56,
+        "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+      );
       erc20DebridgeId = await this.debridge.getDebridgeId(
         chainId,
         this.mockToken.address
       );
-      const curentChainSubmission = await this.debridge.getSubmisionId(
+      const cuurentChainSubmission = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainIdFrom,
         chainId,
         amount,
         receiver,
-        nonce
+        nonce,
+        reserveAddress,
+        claimFee,
+        data,
       );
-      this.ethSignatures = [];
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        this.ethSignatures.push(
-          (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
-            .signature
-        );
-      }
-      const erc20Submission = await this.debridge.getSubmisionId(
+      await this.aggregator.submit(cuurentChainSubmission, {
+        from: bob,
+      });
+      const outsideChainSubmission = await this.debridge.getAutoSubmisionId(
+        outsideDebridgeId,
+        chainIdFrom,
+        56,
+        amount,
+        receiver,
+        nonce,
+        reserveAddress,
+        claimFee,
+        data,
+      );
+      await this.aggregator.submit(outsideChainSubmission, {
+        from: bob,
+      });
+      const erc20Submission = await this.debridge.getAutoSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
         chainId,
         amount,
         receiver,
-        nonce
+        nonce,
+        reserveAddress,
+        claimFee,
+        data,
       );
-      this.erc20Signatures = [];
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        this.erc20Signatures.push(
-          (await bscWeb3.eth.accounts.sign(erc20Submission, oracleKey))
-            .signature
-        );
-      }
+      await this.aggregator.submit(erc20Submission, {
+        from: bob,
+      });
     });
 
     it("should claim native token when the submission is approved", async function() {
       const debridge = await this.debridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
-      await this.debridge.claim(
+      await this.debridge.autoClaim(
         debridgeId,
         chainIdFrom,
         receiver,
         amount,
         nonce,
-        this.ethSignatures,
+        [],
+        reserveAddress,
+        claimFee,
+        data,
         {
           from: alice,
         }
       );
       const newBalance = toBN(await web3.eth.getBalance(receiver));
-      const submissionId = await this.debridge.getSubmisionId(
+      const submissionId = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainIdFrom,
-        chainId,
+        await this.debridge.chainId(),
         amount,
         receiver,
-        nonce
+        nonce,
+        reserveAddress,
+        claimFee,
+        data,
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(
         submissionId
@@ -769,25 +821,31 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     it("should claim ERC20 when the submission is approved", async function() {
       const debridge = await this.debridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
-      await this.debridge.claim(
+      await this.debridge.autoClaim(
         erc20DebridgeId,
         chainIdFrom,
         receiver,
         amount,
         nonce,
-        this.erc20Signatures,
+        [],
+        reserveAddress,
+        claimFee,
+        data,
         {
           from: alice,
         }
       );
       const newBalance = toBN(await this.mockToken.balanceOf(receiver));
-      const submissionId = await this.debridge.getSubmisionId(
+      const submissionId = await this.debridge.getAutoSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
-        chainId,
+        await this.debridge.chainId(),
         amount,
         receiver,
-        nonce
+        nonce,
+        reserveAddress,
+        claimFee,
+        data,
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(
         submissionId
@@ -802,39 +860,47 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     });
 
     it("should reject claiming with unconfirmed submission", async function() {
-      const wrongnonce = 122;
+      const nonce = 1;
       await expectRevert(
-        this.debridge.claim(
-          debridgeId,
+        this.debridge.autoClaim(debridgeId, chainIdFrom, receiver, amount, nonce, [],
+          reserveAddress,
+          claimFee,
+          data, {
+          from: alice,
+        }),
+        "not confirmed"
+      );
+    });
+
+    it("should reject claiming the token from outside chain", async function() {
+      await expectRevert(
+        this.debridge.autoClaim(
+          outsideDebridgeId,
           chainIdFrom,
           receiver,
           amount,
-          wrongnonce,
-          this.ethSignatures,
+          nonce,
+          [],
+          reserveAddress,
+          claimFee,
+          data,
           {
             from: alice,
           }
         ),
-        "onlyOracle: bad role"
-        //"not confirmed"
+        "not confirmed"
       );
     });
 
     it("should reject claiming twice", async function() {
       await expectRevert(
-        this.debridge.claim(
-          debridgeId,
-          chainIdFrom,
-          receiver,
-          amount,
-          nonce,
-          this.ethSignatures,
-          {
-            from: alice,
-          }
-        ),
-        //"claim: already used"
-        "submit: submitted already"
+        this.debridge.autoClaim(debridgeId, chainIdFrom, receiver, amount, nonce, [],
+          reserveAddress,
+          claimFee,
+          data, {
+          from: alice,
+        }),
+        "claim: already used"
       );
     });
   });
@@ -917,4 +983,5 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       );
     });
   });
+
 });

@@ -10,4 +10,13 @@ interface IFullAggregator {
         external
         view
         returns (uint256 _confirmations, bool _blockConfirmationPassed);
+
+    function getWrappedAssetAddress(bytes32 _debridgeId)
+        external
+        view
+        returns (address _wrappedAssetAddress);
+    
+    function deployAsset(bytes32 _debridgeId) 
+        external 
+        returns (address wrappedAssetAddress, uint256 nativeChainId);
 }
