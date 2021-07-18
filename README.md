@@ -23,7 +23,7 @@ The full list of contracts:
 - FullAggregator
 - LightVerifier
 - GovToken
-- OracleManager
+- DelegatedStaking
 - CallProxy
 - FeeProxy
 - WrappedAsset
@@ -55,9 +55,9 @@ Is deployed to the chain with high fees and is used to verify the transfer by or
 
 Contains variety of the contracts interfaces.
 
-**OracleManager**
+**DelegatedStaking**
 
-Manages oracles stakes. Oracles are required to stake LINK token to be accepted as an oracle on aggregators.
+Manages oracle and delegator stakes. Oracles are required to stake LINK token to be accepted as an oracle on aggregators.
 
 **GovToken**
 
