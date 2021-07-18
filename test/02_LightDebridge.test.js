@@ -150,6 +150,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
         ZERO_ADDRESS,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
+        devid
     ]);
 
     await this.lightVerifier.setDebridgeAddress(this.debridge.address.toString());

@@ -125,6 +125,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
+      devid
     ]);
     await this.fullAggregator.setDebridgeAddress(this.debridge.address.toString());
   });

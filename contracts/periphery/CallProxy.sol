@@ -27,7 +27,8 @@ contract CallProxy is ICallProxy {
         bytes memory _data
     ) external override returns (bool _result) {
         uint256 amount = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).safeTransfer(_receiver, amount);
+        IERC20(_token).safeApprove(_receiver, 0);
+        IERC20(_token).safeApprove(_receiver, amount);
         _result = externalCall(_receiver, 0, _data.length, _data);
         if (!_result) {
             IERC20(_token).safeTransfer(_reserveAddress, amount);

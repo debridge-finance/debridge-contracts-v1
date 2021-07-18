@@ -20,11 +20,14 @@ contract FullDebridge is Debridge, IFullDebridge {
 
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
+    address treasury;
 
+    
     /// @dev Constructor that initializes the most important configurations.
     /// @param _ligthAggregator Aggregator address to verify signatures
     /// @param _fullAggregator Aggregator address to verify by oracles confirmations
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
+    /// @param _treasury Address to collect a fee
     function initialize(
         uint256 _excessConfirmations,
         address _ligthAggregator,
@@ -34,7 +37,8 @@ contract FullDebridge is Debridge, IFullDebridge {
         ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
         IFeeProxy _feeProxy,
-        IDefiController _defiController
+        IDefiController _defiController,
+        address _treasury
     ) public payable initializer {
         super._initialize(
             _excessConfirmations,
@@ -47,6 +51,7 @@ contract FullDebridge is Debridge, IFullDebridge {
         );
         weth = _weth;
         feeProxy = _feeProxy;
+        treasury = _treasury;
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -194,7 +199,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             _amount,
             address(0),
             0,
-            "0x"
+            ""
         );
     }
 
@@ -241,7 +246,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             _amount,
             address(0),
             0,
-            "0x"
+            ""
         );
     }
 
@@ -376,7 +381,7 @@ contract FullDebridge is Debridge, IFullDebridge {
             _amount,
             address(0),
             0,
-            "0x"
+            ""
         );
     }
 
@@ -418,38 +423,36 @@ contract FullDebridge is Debridge, IFullDebridge {
             _amount,
             address(0),
             0,
-            "0x"
+            ""
         );
     }
 
 
     /* ADMIN */
 
-    /// @dev Fund aggregator.
+    /// @dev Fund treasury.
     /// @param _debridgeId Asset identifier.
     /// @param _amount Submission aggregator address.
-    function fundAggregator(bytes32 _debridgeId, uint256 _amount)
+    function fundTreasury(bytes32 _debridgeId, uint256 _amount)
         external
-        onlyAdmin()
     {
-        //TODO: need swap to ETH and transfer to ethereum network
-        // DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        // require(
-        //     debridge.collectedFees >= _amount,
-        //     "fundAggregator: not enough fee"
-        // );
-        // debridge.collectedFees -= _amount;
-        // if (debridge.tokenAddress == address(0)) {
-        //     weth.deposit{value: _amount}();
-        //     weth.transfer(address(feeProxy), _amount);
-        //     feeProxy.swapToLink(address(weth), _amount, aggregator);
-        // } else {
-        //     IERC20(debridge.tokenAddress).safeTransfer(
-        //         address(feeProxy),
-        //         _amount
-        //     );
-        //     feeProxy.swapToLink(debridge.tokenAddress, _amount, aggregator);
-        // }
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(
+            debridge.collectedFees >= _amount,
+            "fundTreasury: not enough fee"
+        );
+        debridge.collectedFees -= _amount;
+        if (debridge.tokenAddress == address(0)) {
+            weth.deposit{value: _amount}();
+            weth.transfer(address(feeProxy), _amount);
+            feeProxy.swapToLink(address(weth), treasury);
+        } else {
+            IERC20(debridge.tokenAddress).safeTransfer(
+                address(feeProxy),
+                _amount
+            );
+            feeProxy.swapToLink(debridge.tokenAddress, treasury);
+        }
     }
 
     /// @dev Set fee converter proxy.

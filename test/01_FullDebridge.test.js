@@ -128,6 +128,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
+      devid
     ]);
     await this.fullAggregator.setDebridgeAddress(this.debridge.address.toString());
   });
@@ -911,7 +912,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     });
   });
 
-  context("Test fund aggregator", async function() {
+  context("Test fundTreasury", async function() {
     const tokenAddress = ZERO_ADDRESS;
     const amount = toBN(toWei("0.0001"));
     let receiver;
@@ -923,7 +924,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     let mockErc20UniPool;
 
     before(async function() {
-      receiver = this.fullAggregator.address.toString();
+      receiver = devid;
       await this.uniswapFactory.createPair(
         this.linkToken.address,
         this.weth.address,
@@ -986,10 +987,10 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should fund aggregator of native token if it is called by the admin", async function() {
+    it("should fundTreasury of native token", async function() {
       const debridge = await this.debridge.getDebridge(debridgeId);
       const balance = toBN(await this.linkToken.balanceOf(receiver));
-      await this.debridge.fundAggregator(debridgeId, amount, {
+      await this.debridge.fundTreasury(debridgeId, amount, {
         from: alice,
       });
       const newBalance = toBN(await this.linkToken.balanceOf(receiver));
@@ -1001,10 +1002,10 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       assert.ok(newBalance.gt(balance));
     });
 
-    it("should fund aggregator of ERC20 token if it is called by the admin", async function() {
+    it("should fund treasury of ERC20 token", async function() {
       const debridge = await this.debridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.linkToken.balanceOf(receiver));
-      await this.debridge.fundAggregator(erc20DebridgeId, amount, {
+      await this.debridge.fundTreasury(erc20DebridgeId, amount, {
         from: alice,
       });
       const newBalance = toBN(await this.linkToken.balanceOf(receiver));
@@ -1016,32 +1017,23 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       assert.ok(newBalance.gt(balance));
     });
 
-    it("should reject funding aggregator by non-admin", async function() {
-      await expectRevert(
-        this.debridge.fundAggregator(debridgeId, amount, {
-          from: bob,
-        }),
-        "onlyAdmin: bad role"
-      );
-    });
-
-    it("should reject funding aggregator with too many fees", async function() {
+    it("should reject funding treasury with not enough fee", async function() {
       const amount = toBN(toWei("100"));
       await expectRevert(
-        this.debridge.fundAggregator(debridgeId, amount, {
+        this.debridge.fundTreasury(debridgeId, amount, {
           from: alice,
         }),
-        "fundAggregator: not enough fee"
+        "fundTreasury: not enough fee"
       );
     });
 
-    it("should reject funding aggregator if the token not from current chain", async function() {
+    it("should reject funding treasury if the token not from current chain", async function() {
       const amount = toBN(toWei("0.1"));
       await expectRevert(
-        this.debridge.fundAggregator(outsideDebridgeId, amount, {
+        this.debridge.fundTreasury(outsideDebridgeId, amount, {
           from: alice,
         }),
-        "fundAggregator: not enough fee"
+        "fundTreasury: not enough fee"
       );
     });
   });

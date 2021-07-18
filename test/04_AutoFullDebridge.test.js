@@ -64,6 +64,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
           address: eve,
           admin: carol,
         },
+        devid
       ];
       for (let oracle of this.initialOracles) {
         await this.aggregator.addOracle(oracle.address, oracle.admin, {

@@ -4,8 +4,9 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
+import "../interfaces/IFeeProxy.sol";
 
-contract FeeProxy {
+contract FeeProxy is IFeeProxy{
     address public linkToken;
     IUniswapV2Factory public uniswapFactory;
 
@@ -32,11 +33,10 @@ contract FeeProxy {
 
     function swapToLink(
         address _erc20Token,
-        uint256 _amount,
         address _receiver
-    ) external {
+    ) external override{
         IERC20 erc20 = IERC20(_erc20Token);
-        _amount = erc20.balanceOf(address(this));
+        uint256 _amount = erc20.balanceOf(address(this));
         IUniswapV2Pair uniswapPair =
             IUniswapV2Pair(uniswapFactory.getPair(linkToken, _erc20Token));
         erc20.transfer(address(uniswapPair), _amount);
