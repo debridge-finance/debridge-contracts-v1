@@ -1,5 +1,7 @@
 # Debridge Smart Contracts
 
+Complete Documentation [https://docs.debridge.finance/](https://docs.debridge.finance/)
+
 UI deployed on [testv2.debridge.finance](https://testv2.debridge.finance/)
 
 The contracts directory contains the following subfolders:
@@ -18,6 +20,7 @@ A detailed description of each method of the smart contracts can be found in [do
 
 The full list of contracts:
 
+- DeBridgeGate
 - Aggregator
 - LightAggregator
 - FullAggregator
@@ -29,13 +32,20 @@ The full list of contracts:
 - WrappedAsset
 - DefiController
 - Pausable
-- DeBridgeGate
+
+## Transfers
+
+**DeBridgeGate**
+
+Contract for assets transfers. The user can transfer the asset to any of the approved chains. The admin manages the assets, fees and other important protocol parameters.
+
+The detailed methods description can be found in the contracts themselves.
 
 ## Chainlink
 
 **Aggregator**
 
-The base contract for Chainlink oracles management. Allows to add/remove oracles, pay and withdraw oracles reward, manage the minimal required amount of confirmations and assign oracle admins.
+The base contract for Chainlink oracles management. Allows to add/remove oracles, manage the minimal required amount of confirmations and assign oracle admins.
 
 **FullAggregator**
 
@@ -83,13 +93,7 @@ Proxy to execute the other contract calls. This contract is used when the user r
 
 Helper for pausable contracts.
 
-## Transfers
 
-**DeBridgeGate**
-
-Contract for assets transfers. The user can transfer the asset to any of the approved chains. The admin manages the assets, fees and other important protocol parameters.
-
-The detailed methods description can be found in the contracts themselves.
 
 ## How Transfers Works
 
