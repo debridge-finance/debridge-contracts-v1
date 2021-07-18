@@ -447,7 +447,7 @@ contract DelegatedStaking is AccessControl, Initializable {
     view 
     returns (uint256) 
     {
-        UserInfo memory oracle = getUserInfo[_oracle];
+        UserInfo storage oracle = getUserInfo[_oracle];
         require(oracle.isOracle, "getPricePerFullOracleShare: address is not oracle");
         require(oracle.stake[_token].shares > 0, "getPricePerFullOracleShare: oracle has no shares");
         return oracle.totalDelegation[_token]/oracle.stake[_token].shares;
@@ -459,19 +459,18 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _collateral Address of collateral
      */
     function getPoolUSDAmount(address _oracle, address _collateral) internal view returns(uint256) {
-        UserInfo memory oracle = getUserInfo[_oracle];
         uint256 collateralPrice;
         if (collaterals[_collateral].isUSDStable)
             collateralPrice = 10 ** (18 - collaterals[_collateral].decimals);
         else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
-        return oracle.totalDelegation[_collateral]*collateralPrice;
+        return getUserInfo[_oracle].totalDelegation[_collateral]*collateralPrice;
     }
 
     /**
      * @dev Get total USD amount of oracle collateral
      * @param _oracle Address of oracle
      */
-    function getTotalUSDAmount(address _oracle) internal returns(uint256) {
+    function getTotalUSDAmount(address _oracle) internal view returns(uint256) {
         uint256 totalUSDAmount = 0;
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             totalUSDAmount += getPoolUSDAmount(_oracle, collateralAddresses[i]);
@@ -851,14 +850,6 @@ contract DelegatedStaking is AccessControl, Initializable {
         returns (TransferInfo memory)
     {
         return getUserInfo[_oracle].transfers[_transferId];
-    }
-
-    /**
-     * @dev Get info for an oracle
-     * @param _oracle Oracle address
-     */
-    function getOracle(address _oracle) public view returns(UserInfo memory) {
-        return getUserInfo[_oracle];
     }
 
     /** 
