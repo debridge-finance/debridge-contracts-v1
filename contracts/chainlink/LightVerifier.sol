@@ -2,26 +2,33 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/ILightVerifier.sol";
 import "../periphery/WrappedAsset.sol";
 
 contract LightVerifier is AccessControl, ILightVerifier {
-    struct BlockConfirmationsInfo {
-        uint256 count; // current oracle admin
-        bool requireExtraCheck; // current oracle admin
-        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
-    }
+
+    /* ========== STATE VARIABLES ========== */
 
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
     uint256 public confirmationThreshold; // bonus reward for one submission
     uint256 public minConfirmations; // minimal required confirmations
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
+    
+    address public wrappedAssetAdmin;
+    address public debridgeAddress;
 
-    modifier onlyAdmin {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
-        _;
+    mapping(bytes32 => bytes32) public confirmedDeployInfo; // debridge Id => deploy Id
+    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
+    mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
+    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
+
+    /* ========== STRUCTS ========== */
+
+    struct BlockConfirmationsInfo {
+        uint256 count; // current oracle admin
+        bool requireExtraCheck; // current oracle admin
+        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
     }
 
     struct SubmissionInfo {
@@ -29,6 +36,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
+
     struct DebridgeDeployInfo {
         address tokenAddress;
         uint256 chainId;
@@ -38,18 +46,22 @@ contract LightVerifier is AccessControl, ILightVerifier {
         uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
-    address public wrappedAssetAdmin;
-    address public debridgeAddress;
-
-    mapping(bytes32 => bytes32) public confirmedDeployInfo; // debridge Id => deploy Id
-    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
-    mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
-    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
+    
+    /* ========== EVENTS ========== */
 
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by the only oracle
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by all the required oracles
     event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
     event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
+
+    /* ========== MODIFIERS ========== */
+
+    modifier onlyAdmin {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
+        _;
+    }
+    
+    /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
@@ -110,42 +122,6 @@ contract LightVerifier is AccessControl, ILightVerifier {
         //TODO: add deployAsset
     }
 
-    /// @dev Confirms the transfer request.
-    function deployAsset(bytes32 _debridgeId) 
-            external override
-            returns (address wrappedAssetAddress, uint256 nativeChainId){
-        require(debridgeAddress == msg.sender, "deployAsset: bad role");
-        bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        //TODO: check 0x
-        require(
-            deployId != "0x",
-            "deployAsset: not found deployId"
-        );
-
-        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(
-            getWrappedAssetAddress[_debridgeId] == address(0),
-            "deployAsset: deployed already"
-        );
-        //TODO: can be removed, we already checked in confirmedDeployInfo
-        require(
-            debridgeInfo.confirmations >= minConfirmations,
-            "deployAsset: not confirmed"
-        );
-        address[] memory minters = new address[](1);
-        minters[0] = debridgeAddress;
-        WrappedAsset wrappedAsset = new WrappedAsset(
-            debridgeInfo.name,
-            debridgeInfo.symbol,
-            debridgeInfo.decimals,
-            wrappedAssetAdmin,
-            minters
-        );
-        getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
-        emit DeployApproved(deployId);
-        return (address(wrappedAsset), debridgeInfo.chainId);
-    }
-
     /// @dev Confirms the mint request.
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
@@ -197,7 +173,45 @@ contract LightVerifier is AccessControl, ILightVerifier {
         );
     }
 
-    /* ADMIN */
+    /* ========== deployAsset ========== */
+
+    /// @dev deploy wrapped token, called by DeBridgeGate.
+    function deployAsset(bytes32 _debridgeId) 
+            external override
+            returns (address wrappedAssetAddress, uint256 nativeChainId){
+        require(debridgeAddress == msg.sender, "deployAsset: bad role");
+        bytes32 deployId = confirmedDeployInfo[_debridgeId];
+        
+        require(
+            deployId != "",
+            "deployAsset: not found deployId"
+        );
+
+        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
+        require(
+            getWrappedAssetAddress[_debridgeId] == address(0),
+            "deployAsset: deployed already"
+        );
+        //TODO: can be removed, we already checked in confirmedDeployInfo
+        require(
+            debridgeInfo.confirmations >= minConfirmations,
+            "deployAsset: not confirmed"
+        );
+        address[] memory minters = new address[](1);
+        minters[0] = debridgeAddress;
+        WrappedAsset wrappedAsset = new WrappedAsset(
+            debridgeInfo.name,
+            debridgeInfo.symbol,
+            debridgeInfo.decimals,
+            wrappedAssetAdmin,
+            minters
+        );
+        getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
+        emit DeployApproved(deployId);
+        return (address(wrappedAsset), debridgeInfo.chainId);
+    }
+
+    /* ========== ADMIN ========== */
 
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
@@ -229,7 +243,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
         revokeRole(ORACLE_ROLE, _oracle);
     }
 
-    /* VIEW */
+    /* ========== VIEW ========== */
 
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.

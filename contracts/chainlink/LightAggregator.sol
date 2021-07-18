@@ -1,13 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Aggregator.sol";
 import "../interfaces/ILightAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
 contract LightAggregator is Aggregator, ILightAggregator {
+
+    /* ========== STATE VARIABLES ========== */
+
+    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
+    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
+
+    /* ========== STRUCTS ========== */
+
     struct SubmissionInfo {
         uint256 block; // confirmation block
         uint256 confirmations; // received confirmations count
@@ -26,17 +32,15 @@ contract LightAggregator is Aggregator, ILightAggregator {
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
-    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
-    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
-
-    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
-    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
+    /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
     constructor(uint256 _minConfirmations) 
         Aggregator(_minConfirmations)
     {}
+
+    /* ========== ORACLES  ========== */
 
     /// @dev Confirms the transfer request.
     function confirmNewAsset(
@@ -120,6 +124,8 @@ contract LightAggregator is Aggregator, ILightAggregator {
         emit Confirmed(_submissionId, msg.sender);
     }
 
+    /* ========== VIEW ========== */
+    
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
     /// @return _confirmations number of confirmation.

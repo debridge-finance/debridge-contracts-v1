@@ -2,29 +2,36 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Aggregator is AccessControl {
-    struct OracleInfo {
-        address admin; // current oracle admin
-    }
-    struct BlockConfirmationsInfo {
-        uint256 count; // current oracle admin
-        bool requireExtraCheck; // current oracle admin
-        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
-    }
-    struct PaymentInfo {
-        uint256 allocatedFunds; // asset's amount payed to oracles
-        uint256 availableFunds; // asset's amount available to be payed to oracles
-    }
+
+    /* ========== STATE VARIABLES ========== */
 
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
     uint256 public minConfirmations; // minimal required confirmations
 
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
 
+    /* ========== STRUCTS ========== */
+
+    struct OracleInfo {
+        address admin; // current oracle admin
+    }
+    struct BlockConfirmationsInfo {
+        uint256 count; // count of submissions in block
+        bool requireExtraCheck; // exceed confirmation count for all submissions in block
+        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
+    }
+
+    /* ========== EVENTS ========== */
+
     event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
     event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
+
+    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
+    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
+
+    /* ========== MODIFIERS ========== */
 
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
@@ -35,7 +42,7 @@ contract Aggregator is AccessControl {
         _;
     }
 
-    /* PUBLIC */
+    /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
@@ -46,6 +53,8 @@ contract Aggregator is AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(ORACLE_ROLE, msg.sender);
     }
+
+    /* ========== ORACLES  ========== */
 
     /// @dev Updates oracle's admin address.
     /// @param _oracle Oracle address.
@@ -60,8 +69,7 @@ contract Aggregator is AccessControl {
         getOracleInfo[_oracle].admin = _newOracleAdmin;
     }
 
-    /* ADMIN */
-
+    /* ========== ADMIN ========== */
 
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Confirmation info.
@@ -83,7 +91,7 @@ contract Aggregator is AccessControl {
         revokeRole(ORACLE_ROLE, _oracle);
     }
 
-    /* VIEW */
+    /* ========== VIEW ========== */
 
     /// @dev Calculates asset identifier.
     function getDeployId(
