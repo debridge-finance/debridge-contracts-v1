@@ -107,7 +107,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     this.callProxy = await CallProxy.new({
       from: alice,
     });
-    const minAmount = toWei("1");
     const maxAmount = toWei("100000000000");
     const fixedNativeFee = toWei("0.00001");
     const transferFee = toWei("0.001");
@@ -199,7 +198,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
     it("should add external asset if called by the admin", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
-      const minAmount = toWei("0.0001");
       const maxAmount = toWei("100000000000");
       const amountThreshold = toWei("10000000000000");
       const fixedFee = toWei("0.00001");
@@ -246,7 +244,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
 
       await this.debridge.updateAsset(
        debridgeId,
-       minAmount,
        maxAmount,
        minReserves,
        amountThreshold,
@@ -255,7 +252,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
        }
       );
       const debridge = await this.debridge.getDebridge(debridgeId);
-      assert.equal(debridge.minAmount.toString(), minAmount);
       assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(debridge.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
@@ -478,7 +474,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       // it("should update asset if called by the admin after deploy assets by mint", async function () {
       //     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       //     const chainId = 56;
-      //     const minAmount = toWei("0.0001");
       //     const maxAmount = toWei("100000000000");
       //     const amountThreshold = toWei("10000000000000");
       //     const fixedFee = toWei("0.00001");
@@ -491,7 +486,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
 
       //     await this.debridge.updateAsset(
       //       debridgeId,
-      //       minAmount,
       //       maxAmount,
       //       minReserves,
       //       amountThreshold,
@@ -500,7 +494,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       //       }
       //     );
       //     const debridge = await this.debridge.getDebridge(debridgeId);
-      //     assert.equal(debridge.minAmount.toString(), minAmount);
       //     assert.equal(debridge.maxAmount.toString(), maxAmount);
       //     assert.equal(debridge.collectedFees.toString(), "0");
       //     assert.equal(debridge.balance.toString(), "0");
@@ -634,46 +627,47 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       );
     });
 
-    it("should reject burning too few tokens", async function() {
-      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const chainIdTo = 56;
-      const receiver = bob;
-      const amount = toBN("10");
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainIdTo,
-        tokenAddress
-        );
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-      //const balance = toBN(await wrappedAsset.balanceOf(bob));
-      const deadline = 0;
-      const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-      //const signature = "0x";
-      const signature = await permit(
-            wrappedAsset,
-            bob,
-            this.debridge.address,
-            amount,
-            deadline,
-            bobPrivKey
-        );
-      await expectRevert(
-        this.debridge.burn(
-          debridgeId,
-          receiver,
-          amount,
-          chainIdTo,
-          deadline,
-          signature,
-          false,
-          {
-            from: bob,
-            value: supportedChainInfo.fixedNativeFee,
-          }
-        ),
-        "burn: amount too low"
-      );
-    });
+  //TODO: check 'send: amount does not cover fees' when pay by token
+  //   it("should reject burning too few tokens", async function() {
+  //     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+  //     const chainIdTo = 56;
+  //     const receiver = bob;
+  //     const amount = toBN("10");
+  //     const debridgeId = await this.debridge.getDebridgeId(
+  //       chainIdTo,
+  //       tokenAddress
+  //       );
+  //     const debridge = await this.debridge.getDebridge(debridgeId);
+  //     const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
+  //     //const balance = toBN(await wrappedAsset.balanceOf(bob));
+  //     const deadline = 0;
+  //     const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
+  //     //const signature = "0x";
+  //     const signature = await permit(
+  //           wrappedAsset,
+  //           bob,
+  //           this.debridge.address,
+  //           amount,
+  //           deadline,
+  //           bobPrivKey
+  //       );
+  //     await expectRevert(
+  //       this.debridge.burn(
+  //         debridgeId,
+  //         receiver,
+  //         amount,
+  //         chainIdTo,
+  //         deadline,
+  //         signature,
+  //         false,
+  //         {
+  //           from: bob,
+  //           value: supportedChainInfo.fixedNativeFee,
+  //         }
+  //       ),
+  //       "burn: amount too low"
+  //     );
+  //   });
   });
 
   context("Test claim method", () => {

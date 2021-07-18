@@ -26,7 +26,6 @@ abstract contract Debridge is
     struct DebridgeInfo {
         address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
-        uint256 minAmount; // minimal amount to transfer
         uint256 maxAmount; // minimal amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
@@ -113,7 +112,6 @@ abstract contract Debridge is
         bytes32 indexed debridgeId,
         address indexed tokenAddress,
         uint256 indexed chainId,
-        uint256 minAmount,
         uint256 maxAmount,
         uint256 minReserves
     ); // emited when new asset is supported
@@ -421,18 +419,15 @@ abstract contract Debridge is
 
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.
-    /// @param _minAmount Minimal amount of the asset to be wrapped.
     /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReserves Minimal reserve ration.
     function updateAsset(
         bytes32 _debridgeId,
-        uint256 _minAmount,
         uint256 _maxAmount,
         uint256 _minReserves,
         uint256 _amountThreshold
     ) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        debridge.minAmount = _minAmount;
         debridge.maxAmount = _maxAmount;
         debridge.minReserves = _minReserves;
         getAmountThreshold[_debridgeId] = _amountThreshold;
@@ -593,7 +588,6 @@ abstract contract Debridge is
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
         debridge.chainId = _chainId;
-        debridge.minAmount = 0;
         debridge
         .maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         debridge.minReserves = DENOMINATOR;
@@ -604,7 +598,6 @@ abstract contract Debridge is
             _debridgeId,
             _tokenAddress,
             _chainId,
-            debridge.minAmount,
             debridge.maxAmount,
             debridge.minReserves
         );
@@ -649,7 +642,6 @@ abstract contract Debridge is
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
         require(debridge.chainId == chainId, "send: not native chain");
         require(chainSupportInfo.isSupported, "send: wrong targed chain");
-        require(_amount >= debridge.minAmount, "send: amount too low");
         require(_amount <= debridge.maxAmount, "send: amount too high");
         if (debridge.tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");
@@ -708,7 +700,6 @@ abstract contract Debridge is
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
         require(debridge.chainId != chainId, "burn: native asset");
         require(chainSupportInfo.isSupported, "burn: wrong targed chain");
-        require(_amount >= debridge.minAmount, "burn: amount too low");
         require(_amount <= debridge.maxAmount, "burn: amount too high");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         if (_signature.length > 0) {

@@ -86,7 +86,6 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       this.defiController = await DefiController.new({
         from: alice,
       });
-      const minAmount = toWei("1");
       const maxAmount = toWei("1000000");
       const fixedNativeFee = toWei("0.00001");
       const transferFee = toWei("0.001");
@@ -237,7 +236,6 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       it("should add external asset if called by the admin", async function() {
         const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
         const chainId = 56;
-        const minAmount = toWei("100");
         const maxAmount = toWei("100000000000000000");
         const amountThreshold = toWei("10000000000000");
         const fixedNativeFee = toWei("0.00001");
@@ -275,7 +273,6 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
         // });
         await this.debridge.updateAsset(
           debridgeId,
-          minAmount,
           maxAmount,
           minReserves,
           amountThreshold,
@@ -284,7 +281,6 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
           }
         );
         const debridge = await this.debridge.getDebridge(debridgeId);
-        assert.equal(debridge.minAmount.toString(), minAmount);
         assert.equal(debridge.maxAmount.toString(), maxAmount);
         assert.equal(debridge.collectedFees.toString(), "0");
         assert.equal(debridge.balance.toString(), "0");
@@ -353,14 +349,12 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
   //       chainId,
   //       tokenAddress
   //     );
-  //     const minAmount = toWei("0.0001");
   //     const maxAmount = toWei("100000000000");
   //     const amountThreshold = toWei("10000000000000");
   //     const minReserves = toWei("0.2");
 
   //     await this.debridge.updateAsset(
   //       debridgeId,
-  //       minAmount,
   //       maxAmount,
   //       minReserves,
   //       amountThreshold,
@@ -369,7 +363,6 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
   //       }
   //     );
   //     const debridge = await this.debridge.getDebridge(debridgeId);
-  //     assert.equal(debridge.minAmount.toString(), minAmount);
   //     assert.equal(debridge.maxAmount.toString(), maxAmount);
   //     assert.equal(debridge.collectedFees.toString(), "0");
   //     assert.equal(debridge.balance.toString(), "0");
@@ -917,35 +910,36 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject burning too few tokens", async function() {
-      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const chainId = 56;
-      const receiver = bob;
-      const amount = toBN(toWei("0.1"));
-      const debridgeId = await this.debridge.getDebridgeId(
-        chainId,
-        tokenAddress
-      );
-      const deadline = 0;
-      const signature = "0x";
-      await expectRevert(
-        this.debridge.autoBurn(
-          debridgeId,
-          receiver,
-          amount,
-          chainId,
-          reserveAddress,
-          claimFee,
-          data,
-          deadline,
-          signature,
-          {
-            from: alice,
-          }
-        ),
-        "burn: amount too low"
-      );
-    });
+    //TODO: check 'send: amount does not cover fees' when pay by token
+    // it("should reject burning too few tokens", async function() {
+    //   const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+    //   const chainId = 56;
+    //   const receiver = bob;
+    //   const amount = toBN(toWei("0.1"));
+    //   const debridgeId = await this.debridge.getDebridgeId(
+    //     chainId,
+    //     tokenAddress
+    //   );
+    //   const deadline = 0;
+    //   const signature = "0x";
+    //   await expectRevert(
+    //     this.debridge.autoBurn(
+    //       debridgeId,
+    //       receiver,
+    //       amount,
+    //       chainId,
+    //       reserveAddress,
+    //       claimFee,
+    //       data,
+    //       deadline,
+    //       signature,
+    //       {
+    //         from: alice,
+    //       }
+    //     ),
+    //     "burn: amount too low"
+    //   );
+    // });
   });
 
   context("Test claim method", () => {
