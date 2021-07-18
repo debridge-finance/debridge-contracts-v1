@@ -3,7 +3,7 @@ const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const FullAggregator = artifacts.require("FullAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const Debridge = artifacts.require("FullDebridge");
+const DeBridgeGate = artifacts.require("DeBridgeGate");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
 const CallProxy = artifacts.require("CallProxy");
@@ -107,7 +107,7 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController
-    this.debridge = await deployProxy(Debridge, [
+    this.debridge = await deployProxy(DeBridgeGate, [
       this.excessConfirmations,
       ZERO_ADDRESS,
       ZERO_ADDRESS,

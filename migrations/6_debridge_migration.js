@@ -1,5 +1,5 @@
-const Debridge = artifacts.require("FullDebridge");
-const LightDebridge = artifacts.require("FullDebridge");
+const Debridge = artifacts.require("DeBridgeGate");
+const LightDebridge = artifacts.require("DeBridgeGate");
 const FullAggregator = artifacts.require("FullAggregator");
 const LightVerifier = artifacts.require("LightVerifier");
 const CallProxy = artifacts.require("CallProxy");

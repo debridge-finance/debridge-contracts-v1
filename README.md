@@ -29,9 +29,7 @@ The full list of contracts:
 - WrappedAsset
 - DefiController
 - Pausable
-- Debridge
-- FullDebridge
-- LightDebridge
+- DeBridgeGate
 
 ## Chainlink
 
@@ -87,17 +85,9 @@ Helper for pausable contracts.
 
 ## Transfers
 
-**Debridge**
+**DeBridgeGate**
 
-Base contract for assets transfers. The admin manages the assets, fees and other important protocol parameters. The user can transfer the asset to any of the approved chains.
-
-**FullDebridge**
-
-Extends **Debridge** with the implementation of transfer methods for chains with low fees.
-
-**LightDebridge**
-
-Extends **Debridge** with the implementation of transfer methods to blockchains with high transaction fees (e.g. transfers to Ethereum).
+Contract for assets transfers. The user can transfer the asset to any of the approved chains. The admin manages the assets, fees and other important protocol parameters.
 
 The detailed methods description can be found in the contracts themselves.
 
