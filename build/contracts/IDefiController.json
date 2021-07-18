@@ -20,7 +20,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"claimReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/interfaces/IDefiController.sol\":\"IDefiController\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/interfaces/IDefiController.sol\":{\"keccak256\":\"0xfb5ba95b9c3664797f8bda7e88035567a9ca4427727f8193378d1acc801a532e\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://6dbcd113dd902ad12fbedddd66688106b57c109f75fc59580d0452463293dd2f\",\"dweb:/ipfs/QmfShRd95QMU63sgg1c2DgXAZRq6AXaDMnBNhyBK1YSqmL\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_amount\",\"type\":\"uint256\"}],\"name\":\"claimReserve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol\":\"IDefiController\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol\":{\"keccak256\":\"0xb99c5b968af9f01fc1f0724bf90eb4e6dc19d2af9e1f004b01595fe78701da07\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://c8618fd07d8ea15107952e6bb5a3577e3e7443e1f64e884df6e4a065b7bc876b\",\"dweb:/ipfs/Qma6Xw65i6W65vng6DNb8C6rurQx4HhtjonDzkXdggPu4q\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -28,21 +28,21 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IDefiController {\n    function claimReserve(address _tokenAddress, uint256 _amount) external;\n}\n",
-  "sourcePath": "/root/debridge-contracts/contracts/interfaces/IDefiController.sol",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.2;\r\n\r\ninterface IDefiController {\r\n    function claimReserve(address _tokenAddress, uint256 _amount) external;\r\n}\r\n",
+  "sourcePath": "D:\\Projects\\Debridge\\debridge-contracts-v1\\contracts\\interfaces\\IDefiController.sol",
   "ast": {
-    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol",
     "exportedSymbols": {
       "IDefiController": [
-        1599
+        2201
       ]
     },
-    "id": 1600,
+    "id": 2202,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1591,
+        "id": 2193,
         "literals": [
           "solidity",
           "^",
@@ -50,7 +50,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:23:7"
+        "src": "33:23:8"
       },
       {
         "abstract": false,
@@ -58,36 +58,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1599,
+        "id": 2201,
         "linearizedBaseContracts": [
-          1599
+          2201
         ],
         "name": "IDefiController",
-        "nameLocation": "67:15:7",
+        "nameLocation": "70:15:8",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "functionSelector": "09e62b91",
-            "id": 1598,
+            "id": 2200,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "claimReserve",
-            "nameLocation": "98:12:7",
+            "nameLocation": "102:12:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1596,
+              "id": 2198,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1593,
+                  "id": 2195,
                   "mutability": "mutable",
                   "name": "_tokenAddress",
-                  "nameLocation": "119:13:7",
+                  "nameLocation": "123:13:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1598,
-                  "src": "111:21:7",
+                  "scope": 2200,
+                  "src": "115:21:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -95,10 +95,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1592,
+                    "id": 2194,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "111:7:7",
+                    "src": "115:7:8",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -109,13 +109,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1595,
+                  "id": 2197,
                   "mutability": "mutable",
                   "name": "_amount",
-                  "nameLocation": "142:7:7",
+                  "nameLocation": "146:7:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1598,
-                  "src": "134:15:7",
+                  "scope": 2200,
+                  "src": "138:15:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -123,10 +123,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1594,
+                    "id": 2196,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "134:7:7",
+                    "src": "138:7:8",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -135,40 +135,40 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "110:40:7"
+              "src": "114:40:8"
             },
             "returnParameters": {
-              "id": 1597,
+              "id": 2199,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "159:0:7"
+              "src": "163:0:8"
             },
-            "scope": 1599,
-            "src": "89:71:7",
+            "scope": 2201,
+            "src": "93:71:8",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1600,
-        "src": "57:105:7"
+        "scope": 2202,
+        "src": "60:107:8"
       }
     ],
-    "src": "32:131:7"
+    "src": "33:136:8"
   },
   "legacyAST": {
-    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IDefiController.sol",
+    "absolutePath": "/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IDefiController.sol",
     "exportedSymbols": {
       "IDefiController": [
-        1599
+        2201
       ]
     },
-    "id": 1600,
+    "id": 2202,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1591,
+        "id": 2193,
         "literals": [
           "solidity",
           "^",
@@ -176,7 +176,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:23:7"
+        "src": "33:23:8"
       },
       {
         "abstract": false,
@@ -184,36 +184,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1599,
+        "id": 2201,
         "linearizedBaseContracts": [
-          1599
+          2201
         ],
         "name": "IDefiController",
-        "nameLocation": "67:15:7",
+        "nameLocation": "70:15:8",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "functionSelector": "09e62b91",
-            "id": 1598,
+            "id": 2200,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "claimReserve",
-            "nameLocation": "98:12:7",
+            "nameLocation": "102:12:8",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1596,
+              "id": 2198,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1593,
+                  "id": 2195,
                   "mutability": "mutable",
                   "name": "_tokenAddress",
-                  "nameLocation": "119:13:7",
+                  "nameLocation": "123:13:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1598,
-                  "src": "111:21:7",
+                  "scope": 2200,
+                  "src": "115:21:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -221,10 +221,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1592,
+                    "id": 2194,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "111:7:7",
+                    "src": "115:7:8",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -235,13 +235,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1595,
+                  "id": 2197,
                   "mutability": "mutable",
                   "name": "_amount",
-                  "nameLocation": "142:7:7",
+                  "nameLocation": "146:7:8",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1598,
-                  "src": "134:15:7",
+                  "scope": 2200,
+                  "src": "138:15:8",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -249,10 +249,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 1594,
+                    "id": 2196,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "134:7:7",
+                    "src": "138:7:8",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -261,26 +261,26 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "110:40:7"
+              "src": "114:40:8"
             },
             "returnParameters": {
-              "id": 1597,
+              "id": 2199,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "159:0:7"
+              "src": "163:0:8"
             },
-            "scope": 1599,
-            "src": "89:71:7",
+            "scope": 2201,
+            "src": "93:71:8",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1600,
-        "src": "57:105:7"
+        "scope": 2202,
+        "src": "60:107:8"
       }
     ],
-    "src": "32:131:7"
+    "src": "33:136:8"
   },
   "compiler": {
     "name": "solc",
@@ -288,7 +288,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-20T15:43:29.281Z",
+  "updatedAt": "2021-07-18T12:47:19.621Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

@@ -36,7 +36,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"callERC20\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol\":\"IApproveProxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol\":{\"keccak256\":\"0x6925d937701fe4a7934c1abe1b3a6d29c9ac6bd93545a44d7a58ba250396f632\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://882d46a34a8f6eca38056445227ed6fc5fc0b0dcec99ea5079ee12944f731112\",\"dweb:/ipfs/Qma9zNKkaZNxZ9UGEhqx8z88ErcxVPNi4aFvq3E7uY99kG\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.2+commit.661d1103\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_token\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_fallbackAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"_data\",\"type\":\"bytes\"}],\"name\":\"callERC20\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IApproveProxy.sol\":\"IApproveProxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IApproveProxy.sol\":{\"keccak256\":\"0x68a4097924b1b81c0b5e6072519669bbd34579e561faac97573467b749e19cad\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://7ce2768174ec14a6c14800bfcc694932aa7052a37da99e8fe1841b3c0440a4cd\",\"dweb:/ipfs/QmYPSBfyY6H2B6YgHHL8TH4ghidYw3xJb7cskyCDo2Eexf\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -44,21 +44,21 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.2;\n\ninterface IApproveProxy {\n    function callERC20(\n        address _token,\n        address _fallbackAddress,\n        address _receiver,\n        bytes memory _data\n    ) external returns (bool);\n}\n",
-  "sourcePath": "/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.2;\r\n\r\ninterface IApproveProxy {\r\n    function callERC20(\r\n        address _token,\r\n        address _fallbackAddress,\r\n        address _receiver,\r\n        bytes memory _data\r\n    ) external returns (bool);\r\n}\r\n",
+  "sourcePath": "D:\\Projects\\Debridge\\debridge-contracts-v1\\contracts\\interfaces\\IApproveProxy.sol",
   "ast": {
-    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
+    "absolutePath": "/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IApproveProxy.sol",
     "exportedSymbols": {
       "IApproveProxy": [
-        1473
+        2115
       ]
     },
-    "id": 1474,
+    "id": 2116,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1459,
+        "id": 2101,
         "literals": [
           "solidity",
           "^",
@@ -66,7 +66,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:23:4"
+        "src": "33:23:5"
       },
       {
         "abstract": false,
@@ -74,36 +74,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1473,
+        "id": 2115,
         "linearizedBaseContracts": [
-          1473
+          2115
         ],
         "name": "IApproveProxy",
-        "nameLocation": "67:13:4",
+        "nameLocation": "70:13:5",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "functionSelector": "3bab642f",
-            "id": 1472,
+            "id": 2114,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "callERC20",
-            "nameLocation": "96:9:4",
+            "nameLocation": "100:9:5",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1468,
+              "id": 2110,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1461,
+                  "id": 2103,
                   "mutability": "mutable",
                   "name": "_token",
-                  "nameLocation": "123:6:4",
+                  "nameLocation": "128:6:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "115:14:4",
+                  "scope": 2114,
+                  "src": "120:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -111,10 +111,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1460,
+                    "id": 2102,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "115:7:4",
+                    "src": "120:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -125,13 +125,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1463,
+                  "id": 2105,
                   "mutability": "mutable",
                   "name": "_fallbackAddress",
-                  "nameLocation": "147:16:4",
+                  "nameLocation": "153:16:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "139:24:4",
+                  "scope": 2114,
+                  "src": "145:24:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -139,10 +139,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1462,
+                    "id": 2104,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "139:7:4",
+                    "src": "145:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -153,13 +153,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1465,
+                  "id": 2107,
                   "mutability": "mutable",
                   "name": "_receiver",
-                  "nameLocation": "181:9:4",
+                  "nameLocation": "188:9:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "173:17:4",
+                  "scope": 2114,
+                  "src": "180:17:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -167,10 +167,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1464,
+                    "id": 2106,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "173:7:4",
+                    "src": "180:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -181,13 +181,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1467,
+                  "id": 2109,
                   "mutability": "mutable",
                   "name": "_data",
-                  "nameLocation": "213:5:4",
+                  "nameLocation": "221:5:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "200:18:4",
+                  "scope": 2114,
+                  "src": "208:18:5",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -195,10 +195,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1466,
+                    "id": 2108,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "200:5:4",
+                    "src": "208:5:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -207,21 +207,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "105:119:4"
+              "src": "109:124:5"
             },
             "returnParameters": {
-              "id": 1471,
+              "id": 2113,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1470,
+                  "id": 2112,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "243:4:4",
+                  "scope": 2114,
+                  "src": "252:4:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -229,10 +229,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 1469,
+                    "id": 2111,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "243:4:4",
+                    "src": "252:4:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -241,34 +241,34 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "242:6:4"
+              "src": "251:6:5"
             },
-            "scope": 1473,
-            "src": "87:162:4",
+            "scope": 2115,
+            "src": "91:167:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1474,
-        "src": "57:194:4"
+        "scope": 2116,
+        "src": "60:201:5"
       }
     ],
-    "src": "32:220:4"
+    "src": "33:230:5"
   },
   "legacyAST": {
-    "absolutePath": "/root/debridge-contracts/contracts/interfaces/IApproveProxy.sol",
+    "absolutePath": "/D/Projects/Debridge/debridge-contracts-v1/contracts/interfaces/IApproveProxy.sol",
     "exportedSymbols": {
       "IApproveProxy": [
-        1473
+        2115
       ]
     },
-    "id": 1474,
+    "id": 2116,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1459,
+        "id": 2101,
         "literals": [
           "solidity",
           "^",
@@ -276,7 +276,7 @@
           ".2"
         ],
         "nodeType": "PragmaDirective",
-        "src": "32:23:4"
+        "src": "33:23:5"
       },
       {
         "abstract": false,
@@ -284,36 +284,36 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 1473,
+        "id": 2115,
         "linearizedBaseContracts": [
-          1473
+          2115
         ],
         "name": "IApproveProxy",
-        "nameLocation": "67:13:4",
+        "nameLocation": "70:13:5",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "functionSelector": "3bab642f",
-            "id": 1472,
+            "id": 2114,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "callERC20",
-            "nameLocation": "96:9:4",
+            "nameLocation": "100:9:5",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1468,
+              "id": 2110,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1461,
+                  "id": 2103,
                   "mutability": "mutable",
                   "name": "_token",
-                  "nameLocation": "123:6:4",
+                  "nameLocation": "128:6:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "115:14:4",
+                  "scope": 2114,
+                  "src": "120:14:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -321,10 +321,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1460,
+                    "id": 2102,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "115:7:4",
+                    "src": "120:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -335,13 +335,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1463,
+                  "id": 2105,
                   "mutability": "mutable",
                   "name": "_fallbackAddress",
-                  "nameLocation": "147:16:4",
+                  "nameLocation": "153:16:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "139:24:4",
+                  "scope": 2114,
+                  "src": "145:24:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -349,10 +349,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1462,
+                    "id": 2104,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "139:7:4",
+                    "src": "145:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -363,13 +363,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1465,
+                  "id": 2107,
                   "mutability": "mutable",
                   "name": "_receiver",
-                  "nameLocation": "181:9:4",
+                  "nameLocation": "188:9:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "173:17:4",
+                  "scope": 2114,
+                  "src": "180:17:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -377,10 +377,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 1464,
+                    "id": 2106,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "173:7:4",
+                    "src": "180:7:5",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -391,13 +391,13 @@
                 },
                 {
                   "constant": false,
-                  "id": 1467,
+                  "id": 2109,
                   "mutability": "mutable",
                   "name": "_data",
-                  "nameLocation": "213:5:4",
+                  "nameLocation": "221:5:5",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "200:18:4",
+                  "scope": 2114,
+                  "src": "208:18:5",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -405,10 +405,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1466,
+                    "id": 2108,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "200:5:4",
+                    "src": "208:5:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -417,21 +417,21 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "105:119:4"
+              "src": "109:124:5"
             },
             "returnParameters": {
-              "id": 1471,
+              "id": 2113,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1470,
+                  "id": 2112,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1472,
-                  "src": "243:4:4",
+                  "scope": 2114,
+                  "src": "252:4:5",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -439,10 +439,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 1469,
+                    "id": 2111,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "243:4:4",
+                    "src": "252:4:5",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -451,20 +451,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "242:6:4"
+              "src": "251:6:5"
             },
-            "scope": 1473,
-            "src": "87:162:4",
+            "scope": 2115,
+            "src": "91:167:5",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 1474,
-        "src": "57:194:4"
+        "scope": 2116,
+        "src": "60:201:5"
       }
     ],
-    "src": "32:220:4"
+    "src": "33:230:5"
   },
   "compiler": {
     "name": "solc",
@@ -472,7 +472,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-06-20T15:43:29.279Z",
+  "updatedAt": "2021-07-18T12:47:19.618Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

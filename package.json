@@ -5,6 +5,7 @@
   "scripts": {
     "precompile": "mkdir -p build/contracts/ && cp precompiled/* build/contracts/",
     "compile": "truffle compile",
+    "build": "truffle build",
     "migrate": "truffle migrate",
     "verify": "truffle run verify Aggregator Debridge  ",
     "vefrify": "truffle run verify Aggregator Debridge ",
