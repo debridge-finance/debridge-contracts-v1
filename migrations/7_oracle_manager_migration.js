@@ -1,10 +1,18 @@
 const OracleManager = artifacts.require("OracleManager");
 const { getLinkAddress } = require("./utils");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 
-module.exports = async function(deployer, network, _accounts) {
+module.exports = async function(deployer, network) {
   if (network == "test") return;
-  const timelock = 1209600;
   const link = await getLinkAddress(deployer, network);
-  await deployer.deploy(OracleManager, link, timelock);
+  const OracleManagerInitParams = require("../assets/oracleManagerInitParams")[network];
+  await deployProxy(
+    OracleManager, 
+    [
+      OracleManagerInitParams.timelock, 
+      link
+    ], 
+    { deployer }
+  );
   console.log("OracleManager: " + (await OracleManager.deployed()).address);
 };
