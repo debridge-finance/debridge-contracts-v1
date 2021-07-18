@@ -726,6 +726,51 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       });
     });
 
+    it("should reject when the submission is blocked", async function() {
+      const cuurentChainSubmission = await this.debridge.getSubmisionId(
+        debridgeId,
+        chainIdFrom,
+        chainId,
+        amount,
+        receiver,
+        nonce
+      );
+      await this.debridge.blockSubmission([cuurentChainSubmission], {
+        from: alice,
+      });
+      
+      assert.equal(
+        await this.debridge.isBlockedSubmission(cuurentChainSubmission),
+        true
+      );
+
+      await expectRevert(
+        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, [], {
+          from: alice,
+        }),
+        "claim: blocked submission"
+      );
+    });
+
+    it("should unblock the submission by admin", async function() {
+      const cuurentChainSubmission = await this.debridge.getSubmisionId(
+        debridgeId,
+        chainIdFrom,
+        chainId,
+        amount,
+        receiver,
+        nonce
+      );
+      await this.debridge.unBlockSubmission([cuurentChainSubmission], {
+        from: alice,
+      });
+      
+      assert.equal(
+        await this.debridge.isBlockedSubmission(cuurentChainSubmission),
+        false
+      );
+    })
+
     it("should claim native token when the submission is approved", async function() {
       const debridge = await this.debridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));

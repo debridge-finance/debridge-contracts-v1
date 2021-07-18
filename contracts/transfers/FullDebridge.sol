@@ -22,7 +22,14 @@ contract FullDebridge is Debridge, IFullDebridge {
     IWETH public weth; // wrapped native token contract
     address treasury;
 
-    
+    event Blocked(
+        bytes32 submissionId
+    );
+
+    event Unblocked(
+        bytes32 submissionId
+    );
+
     /// @dev Constructor that initializes the most important configurations.
     /// @param _ligthAggregator Aggregator address to verify signatures
     /// @param _fullAggregator Aggregator address to verify by oracles confirmations
@@ -467,6 +474,24 @@ contract FullDebridge is Debridge, IFullDebridge {
         weth = _weth;
     }
 
+
+    function blockSubmission(
+        bytes32[] memory _submissionIds
+    ) external onlyAdmin() {
+        for (uint256 i = 0; i < _submissionIds.length; i++) {
+           isBlockedSubmission[_submissionIds[i]] = true;
+           emit Blocked(_submissionIds[i]);
+        }
+    }
+
+    function unBlockSubmission(
+        bytes32[] memory _submissionIds
+    ) external onlyAdmin() {
+        for (uint256 i = 0; i < _submissionIds.length; i++) {
+           isBlockedSubmission[_submissionIds[i]] = false;
+           emit Unblocked(_submissionIds[i]);
+        }
+    }
 
      /* internal */
 

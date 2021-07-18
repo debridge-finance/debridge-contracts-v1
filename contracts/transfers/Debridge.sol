@@ -52,6 +52,7 @@ abstract contract Debridge is
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
+    mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
     mapping(uint8 => AggregatorInfo) public getOldLightAggregator; // counter => agrgregator info
     mapping(uint8 => AggregatorInfo) public getOldFullAggregator; // counter => agrgregator info
@@ -762,6 +763,8 @@ abstract contract Debridge is
         bytes memory _data
     ) internal {
         require(!isSubmissionUsed[_submissionId], "mint: already used");
+        require(!isBlockedSubmission[_submissionId], "mint: blocked submission");
+        
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.exist, "mint: debridge not exist");
         
@@ -807,6 +810,8 @@ abstract contract Debridge is
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId == chainId, "claim: wrong target chain");
         require(!isSubmissionUsed[_submissionId], "claim: already used");
+        require(!isBlockedSubmission[_submissionId], "claim: blocked submission");
+
         isSubmissionUsed[_submissionId] = true;
         debridge.balance -= _amount;
         _ensureReserves(debridge, _amount);
