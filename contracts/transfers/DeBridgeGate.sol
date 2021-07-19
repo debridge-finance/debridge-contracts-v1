@@ -729,6 +729,11 @@ contract DeBridgeGate is AccessControl,
         }
     }
 
+    function updateExcessConfirmations(uint256 _excessConfirmations) external onlyAdmin() {
+        excessConfirmations = _excessConfirmations;
+    }
+    
+
     /// @dev Set support for the chains where the token can be transfered.
     /// @param _debridgeId Asset identifier.
     /// @param _chainId Current chain id.
@@ -966,17 +971,13 @@ contract DeBridgeGate is AccessControl,
     }
 
 
-    /* ========== internal ========== */
+    /* ========== INTERNAL ========== */
      
     function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal 
     {
-        if(!getDebridge[debridgeId].exist)
-        {
+        if(!getDebridge[debridgeId].exist){
             (address wrappedAssetAddress, uint256 nativeChainId) = IFullAggregator(aggregatorAddress).deployAsset(debridgeId);
-            require(
-                wrappedAssetAddress != address(0),
-                "mint: wrapped asset not exist"
-            );
+            require(wrappedAssetAddress != address(0), "mint: wrapped asset not exist");
             _addAsset(debridgeId, wrappedAssetAddress, nativeChainId);
         }
     }
@@ -988,12 +989,9 @@ contract DeBridgeGate is AccessControl,
                 _signatures.length > 0 
                 ? ILightVerifier(ligthAggregator).submit(_submissionId, _signatures)
                 : IFullAggregator(fullAggregator).getSubmissionConfirmations(_submissionId);
-        require(confirmed, "not confirmed ");
+        require(confirmed, "not confirmed");
         if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "amount not confirmed"
-            );
+            require(confirmations >= excessConfirmations, "amount not confirmed");
         }
     }
 
@@ -1001,29 +999,20 @@ contract DeBridgeGate is AccessControl,
                                               uint256 _amount, bytes[] memory _signatures,
                                               uint8 _aggregatorVersion) 
         internal{
-
         AggregatorInfo memory aggregatorInfo 
                 = _signatures.length > 0 
                 ? getOldLightAggregator[_aggregatorVersion]
                 : getOldFullAggregator[_aggregatorVersion];
-        require(
-            aggregatorInfo.isValid,
-            "invalidAggregator"
-        );
+        require(aggregatorInfo.isValid, "invalidAggregator" );
         (uint256 confirmations, bool confirmed) = 
                 _signatures.length > 0 
                 ? ILightVerifier(aggregatorInfo.aggregator).submit(_submissionId, _signatures)
                 : IFullAggregator(aggregatorInfo.aggregator).getSubmissionConfirmations(_submissionId);
         require(confirmed, "not confirmed");
         if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(
-                confirmations >= excessConfirmations,
-                "amount not confirmed"
-            );
+            require(confirmations >= excessConfirmations, "amount not confirmed");
         }
     }
-
-    /* INTERNAL */
 
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.
@@ -1038,12 +1027,14 @@ contract DeBridgeGate is AccessControl,
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
         debridge.chainId = _chainId;
-        debridge
-        .maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
-        debridge.minReserves = DENOMINATOR;
-        getAmountThreshold[
-            _debridgeId
-        ] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        //Don't override if the admin already set maxAmount
+        if(debridge.maxAmount == 0){
+            debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        }
+        // debridge.minReserves = DENOMINATOR;
+        if(getAmountThreshold[_debridgeId] == 0){
+            getAmountThreshold[_debridgeId] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        }
         emit PairAdded(
             _debridgeId,
             _tokenAddress,

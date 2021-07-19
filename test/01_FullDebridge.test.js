@@ -236,11 +236,11 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
     });
 
     const isSupported = true;
-    it("should add external asset if called by the admin", async function() {
+    it("should update external asset if called by the admin", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
-      const maxAmount = toWei("100000000000000000");
-      const amountThreshold = toWei("10000000000000");
+      const maxAmount = toWei("1000000");
+      const amountThreshold = toWei("10");
       const fixedNativeFee = toWei("0.00001");
       const transferFee = toWei("0.01");
       const minReserves = toWei("0.2");
@@ -288,7 +288,20 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       assert.equal(debridge.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
       assert.equal(debridge.minReserves.toString(), minReserves);
+
+      assert.equal(await this.debridge.getAmountThreshold(debridgeId), amountThreshold);
     });
+  });
+
+  it("should update excessConfirmations if called by the admin", async function() {
+    let newExcessConfirmations = 2;
+    await this.debridge.updateExcessConfirmations(
+      newExcessConfirmations,
+      {
+        from: alice,
+      }
+    );
+    assert.equal(await this.debridge.excessConfirmations(), newExcessConfirmations);
   });
 
   context("Test send method", () => {
@@ -494,6 +507,54 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       assert.equal(1, submissionInfo.confirmations);
       assert.equal(true, submissionConfirmations[0]);
       assert.equal(1, submissionConfirmations[1]);
+    });
+
+    it("should reject exceed amount", async function() {
+      const debridgeId = await this.debridge.getDebridgeId(
+        chainId,
+        tokenAddress
+      );
+
+      // console.log("getAmountThreshold: " + (await this.debridge.getAmountThreshold(debridgeId)).toString());
+      // console.log("excessConfirmations: " + (await this.debridge.excessConfirmations()).toString());
+      // console.log("amount: " + amount);
+
+      // const submission = await this.debridge.getSubmisionId(
+      //   debridgeId,
+      //   chainId,
+      //   currentChainId,
+      //   amount,
+      //   receiver,
+      //   nonce
+      // );
+      // let submissionInfo = await this.fullAggregator.getSubmissionInfo(submission);
+      // console.log("submissionInfo.confirmations: " + submissionInfo.confirmations.toString());
+
+      await expectRevert(
+        this.debridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
+        "amount not confirmed"
+      );
+    });
+
+    it("update reduce ExcessConfirmations if called by the admin", async function() {
+      let newExcessConfirmations = 1;
+      await this.debridge.updateExcessConfirmations(
+        newExcessConfirmations,
+        {
+          from: alice,
+        }
+      );
+      assert.equal(await this.debridge.excessConfirmations(), newExcessConfirmations);
     });
 
     it("should mint when the submission is approved", async function() {
