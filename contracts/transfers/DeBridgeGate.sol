@@ -1095,12 +1095,16 @@ contract DeBridgeGate is AccessControl,
         require(_amount <= debridge.maxAmount, "send: amount too high");
         if (debridge.tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");
-        } else {
-            IERC20(debridge.tokenAddress).safeTransferFrom(
+         } else {
+            IERC20 token = IERC20(debridge.tokenAddress);
+            uint256 balanceBefore = token.balanceOf(address(this));
+            token.safeTransferFrom(
                 msg.sender,
                 address(this),
                 _amount
             );
+            // Received real amount
+            _amount = token.balanceOf(address(this)) - balanceBefore;
         }
         if (_useAssetFee || debridge.tokenAddress == address(0)) {
             uint256 fixedFee = debridge.tokenAddress == address(0)
