@@ -25,7 +25,6 @@ The full list of contracts:
 - LightAggregator
 - FullAggregator
 - LightVerifier
-- GovToken
 - DelegatedStaking
 - CallProxy
 - FeeProxy
@@ -66,10 +65,6 @@ Contains variety of the contracts interfaces.
 **DelegatedStaking**
 
 Manages oracle and delegator stakes. Oracles are required to stake LINK token to be accepted as an oracle on aggregators.
-
-**GovToken**
-
-Governance token.
 
 ## Periphery
 

@@ -1,13 +1,11 @@
 const FeeProxy = artifacts.require("FeeProxy");
 const CallProxy = artifacts.require("CallProxy");
-const ApproveProxy = artifacts.require("ApproveProxy");
 const { getLinkAddress, getUniswapFactory } = require("./utils");
 
 module.exports = async function(deployer, network, accounts) {
   if (network == "test") return;
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
   await deployer.deploy(CallProxy);
-  await deployer.deploy(ApproveProxy);
 
   if (debridgeInitParams.type == "light") return;
 

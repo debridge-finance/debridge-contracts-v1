@@ -2,7 +2,7 @@ const FullAggregator = artifacts.require("FullAggregator");
 const LightAggregator = artifacts.require("LightAggregator");
 const LightVerifier = artifacts.require("LightVerifier");
 const { getLinkAddress } = require("./utils");
-const GovToken = artifacts.require("GovToken");
+const GovToken = artifacts.require("WrappedAsset");
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network, accounts) {
