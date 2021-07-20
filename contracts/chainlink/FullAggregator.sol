@@ -20,23 +20,6 @@ contract FullAggregator is Aggregator, IFullAggregator {
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
     mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
 
-    /* ========== STRUCTS ========== */
-
-    struct SubmissionInfo {
-        uint256 block; // confirmation block
-        uint256 confirmations; // received confirmations count
-        mapping(address => bool) hasVerified; // verifier => has already voted
-    }
-    struct DebridgeDeployInfo {
-        address tokenAddress; //native token address
-        uint256 chainId; //native chainId
-        string name;
-        string symbol;
-        uint8 decimals;
-        uint256 confirmations; // received confirmations count
-        mapping(address => bool) hasVerified; // verifier => has already voted
-    }
-
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -85,14 +68,8 @@ contract FullAggregator is Aggregator, IFullAggregator {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(
-            getWrappedAssetAddress[debridgeId] == address(0),
-            "deployAsset: deployed already"
-        );
-        require(
-            !debridgeInfo.hasVerified[msg.sender],
-            "deployAsset: submitted already"
-        );
+        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
+        require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
         debridgeInfo.tokenAddress = _tokenAddress;
@@ -120,10 +97,7 @@ contract FullAggregator is Aggregator, IFullAggregator {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
             _submissionId
         ];
-        require(
-            !submissionInfo.hasVerified[msg.sender],
-            "submit: submitted already"
-        );
+        require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         submissionInfo.confirmations += 1;
         submissionInfo.hasVerified[msg.sender] = true;
         if (submissionInfo.confirmations >= minConfirmations) {
@@ -152,22 +126,12 @@ contract FullAggregator is Aggregator, IFullAggregator {
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
 
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        
-        require(
-            deployId != "",
-            "deployAsset: not found deployId"
-        );
+        require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(
-            getWrappedAssetAddress[_debridgeId] == address(0),
-            "deployAsset: deployed already"
-        );
+        require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
         //TODO: can be removed, we already checked in confirmedDeployInfo
-        require(
-            debridgeInfo.confirmations >= minConfirmations,
-            "deployAsset: not confirmed"
-        );
+        require(debridgeInfo.confirmations >= minConfirmations, "deployAsset: not confirmed");
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
         WrappedAsset wrappedAsset = new WrappedAsset(
@@ -186,9 +150,7 @@ contract FullAggregator is Aggregator, IFullAggregator {
 
     /// @dev Sets minimal required confirmations.
     /// @param _excessConfirmations Confirmation info.
-    function setExcessConfirmations(uint256 _excessConfirmations)
-        public
-        onlyAdmin
+    function setExcessConfirmations(uint256 _excessConfirmations) public onlyAdmin
     {
         excessConfirmations = _excessConfirmations;
     }

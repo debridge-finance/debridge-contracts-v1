@@ -2,8 +2,9 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
+import "../interfaces/IAggregator.sol";
 
-contract Aggregator is AccessControl {
+contract Aggregator is AccessControl, IAggregator {
 
     /* ========== STATE VARIABLES ========== */
 
@@ -11,25 +12,6 @@ contract Aggregator is AccessControl {
     uint256 public minConfirmations; // minimal required confirmations
 
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
-
-    /* ========== STRUCTS ========== */
-
-    struct OracleInfo {
-        address admin; // current oracle admin
-    }
-    struct BlockConfirmationsInfo {
-        uint256 count; // count of submissions in block
-        bool requireExtraCheck; // exceed confirmation count for all submissions in block
-        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
-    }
-
-    /* ========== EVENTS ========== */
-
-    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
-    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
-
-    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
-    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
 
     /* ========== MODIFIERS ========== */
 
@@ -62,10 +44,7 @@ contract Aggregator is AccessControl {
     function updateOracleAdmin(address _oracle, address _newOracleAdmin)
         external
     {
-        require(
-            getOracleInfo[_oracle].admin == msg.sender,
-            "updateOracleAdmin: only callable by admin"
-        );
+        require(getOracleInfo[_oracle].admin == msg.sender, "only callable by admin");
         getOracleInfo[_oracle].admin = _newOracleAdmin;
     }
 
@@ -74,6 +53,7 @@ contract Aggregator is AccessControl {
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Confirmation info.
     function setMinConfirmations(uint256 _minConfirmations) public onlyAdmin {
+        require(_minConfirmations > 0, "Must be greater than zero");
         minConfirmations = _minConfirmations;
     }
 

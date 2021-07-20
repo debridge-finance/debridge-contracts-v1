@@ -23,37 +23,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
 
-    /* ========== STRUCTS ========== */
-
-    struct BlockConfirmationsInfo {
-        uint256 count; // current oracle admin
-        bool requireExtraCheck; // current oracle admin
-        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
-    }
-
-    struct SubmissionInfo {
-        uint256 block; // confirmation block
-        uint256 confirmations; // received confirmations count
-        mapping(address => bool) hasVerified; // verifier => has already voted
-    }
-
-    struct DebridgeDeployInfo {
-        address tokenAddress;
-        uint256 chainId;
-        string name;
-        string symbol;
-        uint8 decimals;
-        uint256 confirmations; // received confirmations count
-        mapping(address => bool) hasVerified; // verifier => has already voted
-    }
     
-    /* ========== EVENTS ========== */
-
-    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by the only oracle
-    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by all the required oracles
-    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
-    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
-
     /* ========== MODIFIERS ========== */
 
     modifier onlyAdmin {
@@ -126,22 +96,16 @@ contract LightVerifier is AccessControl, ILightVerifier {
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
-        external
-        override
+        external override
         returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signatures[i]);
             bytes32 unsignedMsg = getUnsignedMsg(_submissionId);
             address oracle = ecrecover(unsignedMsg, v, r, s);
             require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
-            require(
-                !submissionInfo.hasVerified[oracle],
-                "submit: submitted already"
-            );
+            require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
             submissionInfo.confirmations += 1;
             submissionInfo.hasVerified[oracle] = true;
             emit Confirmed(_submissionId, oracle);
@@ -182,21 +146,12 @@ contract LightVerifier is AccessControl, ILightVerifier {
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         
-        require(
-            deployId != "",
-            "deployAsset: not found deployId"
-        );
+        require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(
-            getWrappedAssetAddress[_debridgeId] == address(0),
-            "deployAsset: deployed already"
-        );
+        require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
         //TODO: can be removed, we already checked in confirmedDeployInfo
-        require(
-            debridgeInfo.confirmations >= minConfirmations,
-            "deployAsset: not confirmed"
-        );
+        require(debridgeInfo.confirmations >= minConfirmations, "deployAsset: not confirmed");
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
         WrappedAsset wrappedAsset = new WrappedAsset(
@@ -250,9 +205,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     /// @return _confirmations number of confirmation.
     /// @return _blockConfirmationPassed Whether transfer request is confirmed.
     function getSubmissionConfirmations(bytes32 _submissionId)
-        external
-        view
-        override
+        external view override
         returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
@@ -277,9 +230,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     /// @dev Prepares raw msg that was signed by the oracle.
     /// @param _submissionId Submission identifier.
     function getUnsignedMsg(bytes32 _submissionId)
-        public
-        pure
-        returns (bytes32)
+        public pure returns (bytes32)
     {
         return
             keccak256(
@@ -301,10 +252,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
             uint8 v
         )
     {
-        require(
-            _signature.length == 65,
-            "splitSignature: invalid signature length"
-        );
+        require(_signature.length == 65, "splitSignature: invalid signature length");
         assembly {
             r := mload(add(_signature, 32))
             s := mload(add(_signature, 64))
@@ -316,10 +264,7 @@ contract LightVerifier is AccessControl, ILightVerifier {
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
     function getDebridgeId(uint256 _chainId, address _tokenAddress)
-        public
-        pure
-        returns (bytes32)
-    {
+        public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 

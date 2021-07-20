@@ -12,26 +12,6 @@ contract LightAggregator is Aggregator, ILightAggregator {
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
 
-    /* ========== STRUCTS ========== */
-
-    struct SubmissionInfo {
-        uint256 block; // confirmation block
-        uint256 confirmations; // received confirmations count
-        bytes[] signatures;
-        mapping(address => bool) hasVerified; // verifier => has already voted
-    }
-    struct DebridgeDeployInfo {
-        address tokenAddress;
-        uint256 chainId;
-        string name;
-        string symbol;
-        uint8 decimals;
-        bool approved;
-        uint256 confirmations; // received confirmations count
-        bytes[] signatures;
-        mapping(address => bool) hasVerified; // verifier => has already voted
-    }
-
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -55,10 +35,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         require(!debridgeInfo.approved, "deployAsset: submitted already");
-        require(
-            !debridgeInfo.hasVerified[msg.sender],
-            "deployAsset: submitted already"
-        );
+        require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
         bytes32 unsignedMsg = getUnsignedMsg(deployId);
         address oracle = ecrecover(unsignedMsg, v, r, s);
@@ -79,14 +56,8 @@ contract LightAggregator is Aggregator, ILightAggregator {
     /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.
     /// @param _signatures Oracles signature.
-    function submitMany(
-        bytes32[] memory _submissionIds,
-        bytes[] memory _signatures
-    ) external override onlyOracle {
-        require(
-            _submissionIds.length == _signatures.length,
-            "submitMany: signatures and submission count mismatch"
-        );
+    function submitMany(bytes32[] memory _submissionIds, bytes[] memory _signatures) external override onlyOracle {
+        require(_submissionIds.length == _signatures.length, "signatures and submission count mismatch");
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i], _signatures[i]);
         }
@@ -95,11 +66,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
     /// @dev Confirms the transfer request.
     /// @param _submissionId Submission identifier.
     /// @param _signature Oracle's signature.
-    function submit(bytes32 _submissionId, bytes memory _signature)
-        external
-        override
-        onlyOracle
-    {
+    function submit(bytes32 _submissionId, bytes memory _signature) external override onlyOracle {
         _submit(_submissionId, _signature);
     }
 
@@ -110,10 +77,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
             _submissionId
         ];
-        require(
-            !submissionInfo.hasVerified[msg.sender],
-            "submit: submitted already"
-        );
+        require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
         bytes32 unsignedMsg = getUnsignedMsg(_submissionId);
         address oracle = ecrecover(unsignedMsg, v, r, s);
@@ -131,10 +95,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
     /// @return _confirmations number of confirmation.
     /// @return _confirmed Whether transfer request is confirmed.
     function getSubmissionConfirmations(bytes32 _submissionId)
-        external
-        view
-        override
-        returns (uint256 _confirmations, bool _confirmed)
+        external view override returns (uint256 _confirmations, bool _confirmed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
             _submissionId
@@ -147,9 +108,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
     /// @param _submissionId Submission identifier.
     /// @return Oracles signatures.
     function getSubmissionSignatures(bytes32 _submissionId)
-        external
-        view
-        returns (bytes[] memory)
+        external view returns (bytes[] memory)
     {
         return getSubmissionInfo[_submissionId].signatures;
     }
@@ -157,9 +116,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
     /// @dev Prepares raw msg that was signed by the oracle.
     /// @param _submissionId Submission identifier.
     function getUnsignedMsg(bytes32 _submissionId)
-        public
-        pure
-        returns (bytes32)
+        public pure returns (bytes32)
     {
         return
             keccak256(

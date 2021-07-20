@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "../interfaces/ILightVerifier.sol";
-import "../interfaces/IDebridge.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
@@ -18,7 +17,6 @@ import "../periphery/WrappedAsset.sol";
 import "../periphery/Pausable.sol";
 
 contract DeBridgeGate is AccessControl,
-                         IDebridge,
                          Initializable,
                          Pausable,
                          IDeBridgeGate {
@@ -50,24 +48,6 @@ contract DeBridgeGate is AccessControl,
     IWETH public weth; // wrapped native token contract
     address treasury; //address of treasury
 
-    /* ========== STRUCTS ========== */
-
-    struct DebridgeInfo {
-        address tokenAddress; // asset address on the current chain
-        uint256 chainId; // native chain id
-        uint256 maxAmount; // minimal amount to transfer
-        uint256 collectedFees; // total collected fees that can be used to buy LINK
-        uint256 balance; // total locked assets
-        uint256 minReserves; // minimal hot reserves
-        mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
-        bool exist;
-    }
-
-    struct AggregatorInfo {
-        address aggregator; // aggregator address
-        bool isValid; // if is still valid
-    }
-
     /* ========== MODIFIERS ========== */
 
     bytes32 public constant AGGREGATOR_ROLE = keccak256("AGGREGATOR_ROLE");
@@ -78,10 +58,7 @@ contract DeBridgeGate is AccessControl,
     }
 
     modifier onlyDefiController {
-        require(
-            address(defiController) == msg.sender,
-            "defiController: bad role"
-        );
+        require(address(defiController) == msg.sender, "defiController: bad role");
         _;
     }
     modifier onlyAdmin {
@@ -307,7 +284,7 @@ contract DeBridgeGate is AccessControl,
         uint256 _executionFee,
         bytes memory _data,
         bool _useAssetFee
-    ) external payable whenNotPaused() {
+    ) external payable override whenNotPaused() {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         //require(_executionFee != 0, "autoSend: fee too low");
         _amount = _send(
@@ -364,7 +341,7 @@ contract DeBridgeGate is AccessControl,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
-    ) external whenNotPaused() {
+    ) external override whenNotPaused() {
         bytes32 submissionId = getAutoSubmisionId(
             _debridgeId,
             _chainIdFrom,
@@ -417,7 +394,7 @@ contract DeBridgeGate is AccessControl,
         uint256 _deadline,
         bytes memory _signature,
         bool _useAssetFee
-    ) external payable whenNotPaused() {
+    ) external payable override whenNotPaused() {
         //require(_executionFee != 0, "autoBurn: fee too low");
         _amount = _burn(
             _debridgeId,
@@ -470,7 +447,7 @@ contract DeBridgeGate is AccessControl,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
-    ) external whenNotPaused() {
+    ) external override whenNotPaused() {
         bytes32 submissionId = getAutoSubmisionId(
             _debridgeId,
             _chainIdFrom,
@@ -612,7 +589,7 @@ contract DeBridgeGate is AccessControl,
         uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
-    ) external whenNotPaused() {
+    ) external override whenNotPaused() {
         bytes32 submissionId = getAutoSubmisionId(
             _debridgeId,
             _chainIdFrom,
@@ -666,7 +643,7 @@ contract DeBridgeGate is AccessControl,
         uint256 _executionFee,
         bytes memory _data,
         uint8 _aggregatorVersion
-    ) external whenNotPaused() {
+    ) external override whenNotPaused() {
         bytes32 submissionId = getAutoSubmisionId(
             _debridgeId,
             _chainIdFrom,
@@ -742,7 +719,7 @@ contract DeBridgeGate is AccessControl,
         bytes32 _debridgeId,
         uint256 _chainId,
         bool _isSupported
-    ) external override onlyAdmin() {
+    ) external onlyAdmin() {
         getChainSupport[_chainId].isSupported = _isSupported;
         if (_isSupported) {
             emit ChainSupportAdded(_debridgeId, _chainId);
@@ -792,32 +769,20 @@ contract DeBridgeGate is AccessControl,
     /// @dev Set aggregator address.
     /// @param _aggregatorVersion Submission aggregator address.
     /// @param _isValid Is valid.
-    function manageOldAggregator(uint8 _aggregatorVersion, bool _isLight, bool _isValid)
-        external
-        onlyAdmin()
-    {
+    function manageOldAggregator(uint8 _aggregatorVersion, bool _isLight, bool _isValid) external onlyAdmin() {
         if(_isLight){
-            require(
-                _aggregatorVersion < aggregatorLightVersion,
-                "manageOldAggregator: version too high"
-            );
+            require(_aggregatorVersion < aggregatorLightVersion, "manageOldAggregator: version too high");
             getOldLightAggregator[_aggregatorVersion].isValid = _isValid;
         }
         else{
-            require(
-                _aggregatorVersion < aggregatorFullVersion,
-                "manageOldAggregator: version too high"
-            );
+            require(_aggregatorVersion < aggregatorFullVersion, "manageOldAggregator: version too high");
             getOldFullAggregator[_aggregatorVersion].isValid = _isValid;
         }
     }
 
     /// @dev Set defi controoler.
     /// @param _defiController Defi controller address address.
-    function setDefiController(IDefiController _defiController)
-        external
-        onlyAdmin()
-    {
+    function setDefiController(IDefiController _defiController) external onlyAdmin() {
         // TODO: claim all the reserves before
         defiController = _defiController;
     }
@@ -836,17 +801,10 @@ contract DeBridgeGate is AccessControl,
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of tokens to withdraw.
-    function withdrawFee(
-        bytes32 _debridgeId,
-        address _receiver,
-        uint256 _amount
-    ) external onlyAdmin() {
+    function withdrawFee(bytes32 _debridgeId, address _receiver, uint256 _amount) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         // require(debridge.chainId == chainId, "withdrawFee: wrong target chain");
-        require(
-            debridge.collectedFees >= _amount,
-            "withdrawFee: not enough fee"
-        );
+        require(debridge.collectedFees >= _amount, "withdrawFee: not enough fee");
         debridge.collectedFees -= _amount;
         if (
             debridge.chainId == chainId && debridge.tokenAddress == address(0)
@@ -860,10 +818,7 @@ contract DeBridgeGate is AccessControl,
     /// @dev Withdraw fees.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of tokens to withdraw.
-    function withdrawNativeFee(address _receiver, uint256 _amount)
-        external
-        onlyAdmin()
-    {
+    function withdrawNativeFee(address _receiver, uint256 _amount) external onlyAdmin() {
         require(collectedFees >= _amount, "withdrawNativeFee: not enough fee");
         collectedFees -= _amount;
         payable(_receiver).transfer(_amount);
@@ -881,10 +836,7 @@ contract DeBridgeGate is AccessControl,
         uint256 minReserves = (debridge.balance * debridge.minReserves) /
             DENOMINATOR;
         uint256 balance = getBalance(debridge.tokenAddress);
-        require(
-            minReserves + _amount > balance,
-            "requestReserves: not enough reserves"
-        );
+        require( minReserves + _amount > balance, "requestReserves: not enough reserves");
         if (debridge.tokenAddress == address(0)) {
             payable(address(defiController)).transfer(_amount);
         } else {
@@ -917,14 +869,9 @@ contract DeBridgeGate is AccessControl,
     /// @dev Fund treasury.
     /// @param _debridgeId Asset identifier.
     /// @param _amount Submission aggregator address.
-    function fundTreasury(bytes32 _debridgeId, uint256 _amount)
-        external
-    {
+    function fundTreasury(bytes32 _debridgeId, uint256 _amount) external {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(
-            debridge.collectedFees >= _amount,
-            "fundTreasury: not enough fee"
-        );
+        require(debridge.collectedFees >= _amount, "fundTreasury: not enough fee");
         debridge.collectedFees -= _amount;
         if (debridge.tokenAddress == address(0)) {
             weth.deposit{value: _amount}();
@@ -952,18 +899,14 @@ contract DeBridgeGate is AccessControl,
     }
 
 
-    function blockSubmission(
-        bytes32[] memory _submissionIds
-    ) external onlyAdmin() {
+    function blockSubmission(bytes32[] memory _submissionIds) external onlyAdmin() {
         for (uint256 i = 0; i < _submissionIds.length; i++) {
            isBlockedSubmission[_submissionIds[i]] = true;
            emit Blocked(_submissionIds[i]);
         }
     }
 
-    function unBlockSubmission(
-        bytes32[] memory _submissionIds
-    ) external onlyAdmin() {
+    function unBlockSubmission(bytes32[] memory _submissionIds) external onlyAdmin() {
         for (uint256 i = 0; i < _submissionIds.length; i++) {
            isBlockedSubmission[_submissionIds[i]] = false;
            emit Unblocked(_submissionIds[i]);
@@ -973,18 +916,18 @@ contract DeBridgeGate is AccessControl,
 
     /* ========== INTERNAL ========== */
      
-    function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal 
-    {
+    function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal {
         if(!getDebridge[debridgeId].exist){
-            (address wrappedAssetAddress, uint256 nativeChainId) = IFullAggregator(aggregatorAddress).deployAsset(debridgeId);
+            (address wrappedAssetAddress, uint256 nativeChainId) = 
+                    IFullAggregator(aggregatorAddress).deployAsset(debridgeId);
             require(wrappedAssetAddress != address(0), "mint: wrapped asset not exist");
             _addAsset(debridgeId, wrappedAssetAddress, nativeChainId);
         }
     }
 
      function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId, 
-                                 uint256 _amount, bytes[] memory _signatures) 
-        internal{
+                                  uint256 _amount, bytes[] memory _signatures) 
+        internal {
         (uint256 confirmations, bool confirmed) = 
                 _signatures.length > 0 
                 ? ILightVerifier(ligthAggregator).submit(_submissionId, _signatures)
@@ -998,7 +941,7 @@ contract DeBridgeGate is AccessControl,
     function _checkConfirmationsOldAggregator(bytes32 _submissionId, bytes32 _debridgeId, 
                                               uint256 _amount, bytes[] memory _signatures,
                                               uint8 _aggregatorVersion) 
-        internal{
+        internal {
         AggregatorInfo memory aggregatorInfo 
                 = _signatures.length > 0 
                 ? getOldLightAggregator[_aggregatorVersion]
@@ -1018,11 +961,7 @@ contract DeBridgeGate is AccessControl,
     /// @param _debridgeId Asset identifier.
     /// @param _tokenAddress Address of the asset on the other chain.
     /// @param _chainId Current chain id.
-    function _addAsset(
-        bytes32 _debridgeId,
-        address _tokenAddress,
-        uint256 _chainId
-    ) internal {
+    function _addAsset(bytes32 _debridgeId, address _tokenAddress, uint256 _chainId) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
@@ -1047,9 +986,7 @@ contract DeBridgeGate is AccessControl,
     /// @dev Request the assets to be used in defi protocol.
     /// @param _debridge Asset info.
     /// @param _amount Required amount of tokens.
-    function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount)
-        internal
-    {
+    function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount) internal {
         uint256 minReserves = (_debridge.balance * _debridge.minReserves) /
             DENOMINATOR;
         uint256 balance = getBalance(_debridge.tokenAddress);
@@ -1101,10 +1038,7 @@ contract DeBridgeGate is AccessControl,
             uint256 fixedFee = debridge.tokenAddress == address(0)
                 ? chainSupportInfo.fixedNativeFee
                 : debridge.getChainFee[_chainIdTo];
-            require(
-                fixedFee != 0,
-                "send: fixed fee for asset is not supported"
-            );
+            require(fixedFee != 0, "send: fixed fee for asset is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFee) /
                 DENOMINATOR;
@@ -1113,16 +1047,12 @@ contract DeBridgeGate is AccessControl,
             _amount -= transferFee;
         } else {
             {
-                uint256 transferFee = (_amount * chainSupportInfo.transferFee) /
-                    DENOMINATOR;
+                uint256 transferFee = (_amount*chainSupportInfo.transferFee)/DENOMINATOR;
                 require(_amount >= transferFee, "send: amount not cover fees");
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
             }
-            require(
-                msg.value >= chainSupportInfo.fixedNativeFee,
-                "send: amount not cover fees"
-            );
+            require(msg.value >= chainSupportInfo.fixedNativeFee, "send: amount not cover fees");
             collectedFees += msg.value;
         }
         debridge.balance += _amount;
@@ -1162,10 +1092,7 @@ contract DeBridgeGate is AccessControl,
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
         if (_useAssetFee) {
             uint256 fixedFee = debridge.getChainFee[_chainIdTo];
-            require(
-                fixedFee != 0,
-                "send: fixed fee for asset is not supported"
-            );
+            require(fixedFee != 0, "send: fixed fee for asset is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFee) /
                 DENOMINATOR;
@@ -1174,16 +1101,12 @@ contract DeBridgeGate is AccessControl,
             _amount -= transferFee;
         } else {
             {
-                uint256 transferFee = (_amount * chainSupportInfo.transferFee) /
-                    DENOMINATOR;
+                uint256 transferFee = (_amount*chainSupportInfo.transferFee)/DENOMINATOR;
                 require(_amount >= transferFee, "send: amount not cover fees");
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
             }
-            require(
-                msg.value >= chainSupportInfo.fixedNativeFee,
-                "send: amount not cover fees"
-            );
+            require(msg.value >= chainSupportInfo.fixedNativeFee, "send: amount not cover fees");
             collectedFees += msg.value;
         }
         wrappedAsset.burn(_amount);
@@ -1307,10 +1230,7 @@ contract DeBridgeGate is AccessControl,
             uint8 v
         )
     {
-        require(
-            _signature.length == 65,
-            "splitSignature: invalid signature length"
-        );
+        require(_signature.length == 65, "splitSignature: invalid signature length");
         assembly {
             r := mload(add(_signature, 32))
             s := mload(add(_signature, 64))
@@ -1403,78 +1323,4 @@ contract DeBridgeGate is AccessControl,
                 )
             );
     }
-
-    /* ========== EVENTS ========== */
-
-    event Sent(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 amount,
-        address receiver,
-        uint256 nonce,
-        uint256 chainIdTo
-    ); // emited once the native tokens are locked to be sent to the other chain
-    event AutoSent(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 amount,
-        address receiver,
-        uint256 nonce,
-        uint256 chainIdTo,
-        uint256 claimFee,
-        address fallbackAddress,
-        bytes data
-    ); // emited once the native tokens are locked to be sent to the other chain
-    event Minted(
-        bytes32 submissionId,
-        uint256 amount,
-        address receiver,
-        bytes32 debridgeId
-    ); // emited once the wrapped tokens are minted on the current chain
-    event Burnt(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 amount,
-        address receiver,
-        uint256 nonce,
-        uint256 chainIdTo
-    ); // emited once the wrapped tokens are sent to the contract
-    event AutoBurnt(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 amount,
-        address receiver,
-        uint256 nonce,
-        uint256 chainIdTo,
-        uint256 claimFee,
-        address fallbackAddress,
-        bytes data
-    ); // emited once the wrapped tokens are sent to the contract
-    event Claimed(
-        bytes32 submissionId,
-        uint256 amount,
-        address receiver,
-        bytes32 debridgeId
-    ); // emited once the tokens are withdrawn on native chain
-    event PairAdded(
-        bytes32 indexed debridgeId,
-        address indexed tokenAddress,
-        uint256 indexed chainId,
-        uint256 maxAmount,
-        uint256 minReserves
-    ); // emited when new asset is supported
-    event ChainSupportAdded(
-        bytes32 indexed debridgeId,
-        uint256 indexed chainId
-    ); // emited when the asset is allowed to be spent on other chains
-    event ChainSupportRemoved(
-        bytes32 indexed debridgeId,
-        uint256 indexed chainId
-    ); // emited when the asset is disallowed to be spent on other chains
-    event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
-    event CallProxyUpdated(address callProxy); // emited when the new call proxy set
-    event AutoRequestExecuted(bytes32 submissionId, bool success); // emited when the new call proxy set
-        
-    event Blocked(bytes32 submissionId); //Block submission
-    event Unblocked(bytes32 submissionId); //UnBlock submission
 }
