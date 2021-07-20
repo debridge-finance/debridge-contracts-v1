@@ -18,7 +18,7 @@ const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
+contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -30,8 +30,6 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       from: alice,
     });
     this.amountThreshols = toWei("1000");
-    this.oraclePayment = toWei("0.001");
-    this.bonusPayment = toWei("0.001");
     this.minConfirmations = 1;
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
@@ -1069,9 +1067,9 @@ contract("FullDebridge", function([alice, bob, carol, eve, devid]) {
       });
       await this.weth.deposit({
         from: carol,
-        value: toWei("10"),
+        value: toWei("0.1"),
       });
-      await this.weth.transfer(wethUniPool.address, toWei("5"), {
+      await this.weth.transfer(wethUniPool.address, toWei("0.1"), {
         from: carol,
       });
       await this.linkToken.mint(mockErc20UniPool.address, toWei("100"), {

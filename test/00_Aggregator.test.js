@@ -1,28 +1,25 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const Aggregator = artifacts.require("FullAggregator");
-const MockLinkToken = artifacts.require("MockLinkToken");
+const FullAggregator = artifacts.require("FullAggregator");
 const { toWei, fromWei, toBN } = web3.utils;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
+  //TODO: add tests confirmNewAsset
   before(async function() {
-    this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
-      from: alice,
-    });
-    this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
-      from: alice,
-    });
-    this.corePayment = toWei("0.001");
-    this.bonusPayment = toWei("0.002");
     this.minConfirmations = 2;
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
-    this.aggregator = await Aggregator.new(
+
+    // constructor(
+    //   uint256 _minConfirmations,
+    //   uint256 _confirmationThreshold,
+    //   uint256 _excessConfirmations,
+    //   address _wrappedAssetAdmin,
+    //   address _debridgeAddress
+    // )
+
+    this.aggregator = await FullAggregator.new(
       this.minConfirmations,
-      this.corePayment,
-      this.bonusPayment,
-      this.linkToken.address,
-      this.dbrToken.address,
       this.confirmationThreshold,
       this.excessConfirmations,
       alice,
@@ -54,15 +51,11 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
 
   it("should have correct initial values", async function() {
     const minConfirmations = await this.aggregator.minConfirmations();
-    const corePayment = await this.aggregator.corePayment();
-    const bonusPayment = await this.aggregator.bonusPayment();
-    const coreToken = await this.aggregator.coreToken();
-    const bonusToken = await this.aggregator.bonusToken();
+    const confirmationThreshold = await this.aggregator.confirmationThreshold();
+    const excessConfirmations = await this.aggregator.excessConfirmations();
     assert.equal(minConfirmations, this.minConfirmations);
-    assert.equal(corePayment, this.corePayment);
-    assert.equal(bonusPayment, this.bonusPayment);
-    assert.equal(coreToken, this.linkToken.address);
-    assert.equal(bonusToken, this.dbrToken.address);
+    assert.equal(confirmationThreshold, this.confirmationThreshold);
+    assert.equal(excessConfirmations, this.excessConfirmations);
   });
 
   context("Test setting configurations by different users", () => {
@@ -75,16 +68,22 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
       assert.equal(minConfirmations, newConfirmations);
     });
 
-    it("should set oracle payment if called by the admin", async function() {
-      const newCorePayment = toWei("0.0001");
-      const newBonusPayment = toWei("0.0002");
-      await this.aggregator.setPayment(newCorePayment, newBonusPayment, {
+    it("should set excessConfirmations if called by the admin", async function() {
+      const newExcessConfirmations = 5;
+      await this.aggregator.setExcessConfirmations(newExcessConfirmations, {
         from: alice,
       });
-      const corePayment = await this.aggregator.corePayment();
-      const bonusPayment = await this.aggregator.bonusPayment();
-      assert.equal(newCorePayment, corePayment);
-      assert.equal(newBonusPayment, bonusPayment);
+      const excessConfirmations = await this.aggregator.excessConfirmations();
+      assert.equal(excessConfirmations, newExcessConfirmations);
+    });
+
+    it("should set confirmationThreshold if called by the admin", async function() {
+      const newThreshold = 5;
+      await this.aggregator.setThreshold(newThreshold, {
+        from: alice,
+      });
+      const confirmationThreshold = await this.aggregator.confirmationThreshold();
+      assert.equal(confirmationThreshold, newThreshold);
     });
 
     it("should add new oracle if called by the admin", async function() {
@@ -94,35 +93,15 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
       //oracleInfo is admin address of oracle
       assert.equal(oracleInfo, eve);
-      const withdrawableCore = await this.aggregator.getWithdrawable(
-        this.linkToken.address,
-        devid
-      );
-      const withdrawableBonus = await this.aggregator.getWithdrawable(
-        this.linkToken.address,
-        devid
-      );
-      assert.equal(withdrawableCore, 0);
-      assert.equal(withdrawableBonus, 0);
     });
 
     it("should remove existed oracle if called by the admin", async function() {
+      //TODO: fix test need to check role
       await this.aggregator.removeOracle(devid, {
         from: alice,
       });
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
       assert.equal(oracleInfo, eve);
-
-      const withdrawableCore = await this.aggregator.getWithdrawable(
-        this.linkToken.address,
-        devid
-      );
-      const withdrawableBonus = await this.aggregator.getWithdrawable(
-        this.linkToken.address,
-        devid
-      );
-      assert.equal(withdrawableCore, 0);
-      assert.equal(withdrawableBonus, 0);
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function() {
@@ -135,12 +114,20 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
       );
     });
 
-    it("should reject setting oracle payment if called by the non-admin", async function() {
-      const newCorePayment = toWei("0.0001");
-      const newBonusPayment = toWei("0.0002");
-      //(uint256 _corePayment, uint256 _bonusPayment)
+    it("should reject setting excessConfirmations if called by the non-admin", async function() {
+      const newConfirmations = 2;
       await expectRevert(
-        this.aggregator.setPayment(newCorePayment, newBonusPayment, {
+        this.aggregator.setExcessConfirmations(newConfirmations, {
+          from: bob,
+        }),
+        "onlyAdmin: bad role"
+      );
+    });
+
+    it("should reject setting confirmationThreshold if called by the non-admin", async function() {
+      const newConfirmations = 2;
+      await expectRevert(
+        this.aggregator.setThreshold(newConfirmations, {
           from: bob,
         }),
         "onlyAdmin: bad role"
@@ -176,354 +163,71 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
         from: alice,
       });
     });
-
-    it("should update bonus token virtual balances once the tokens are transfered with callback", async function() {
-      const amount = toWei("10");
-      const prevDbrPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      await this.dbrToken.transferAndCall(
-        this.aggregator.address.toString(),
-        amount,
-        "0x",
-        {
-          from: alice,
-        }
-      );
-      const newDbrPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      assert.equal(
-        prevDbrPaymentInfo.availableFunds.add(toBN(amount)).toString(),
-        newDbrPaymentInfo.availableFunds.toString()
-      );
-    });
-
-    it("should update core token balances once the tokens are transfered with callback", async function() {
-      const amount = toWei("10");
-      const prevLinkPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      await this.linkToken.transferAndCall(
-        this.aggregator.address.toString(),
-        amount,
-        "0x",
-        {
-          from: alice,
-        }
-      );
-      const newLinkPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      assert.equal(
-        prevLinkPaymentInfo.availableFunds.add(toBN(amount)).toString(),
-        newLinkPaymentInfo.availableFunds.toString()
-      );
-    });
-
-    it("should update virtual balances once the tokens are transfered and the update method is called", async function() {
-      const amount = toWei("10");
-      const prevLinkPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      await this.linkToken.transfer(
-        this.aggregator.address.toString(),
-        amount,
-        {
-          from: alice,
-        }
-      );
-      await this.aggregator.updateAvailableFunds(this.linkToken.address, {
-        from: alice,
-      });
-      const newLinkPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      assert.equal(
-        prevLinkPaymentInfo.availableFunds.add(toBN(amount)).toString(),
-        newLinkPaymentInfo.availableFunds.toString()
-      );
-    });
-  });
-
-  context("Test withdrawing unallocated funds from the contract", () => {
-    it("should withdraw unallocated funds by the admin", async function() {
-      const amount = toWei("5");
-      const prevLinkPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      await this.aggregator.withdrawFunds(this.linkToken.address, bob, amount, {
-        from: alice,
-      });
-      const newLinkPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      assert.equal(
-        prevLinkPaymentInfo.availableFunds.sub(toBN(amount)).toString(),
-        newLinkPaymentInfo.availableFunds.toString()
-      );
-    });
-
-    it("should reject withdrawing unallocated funds if called by the non-admin", async function() {
-      const amount = toWei("5");
-      await expectRevert(
-        this.aggregator.withdrawFunds(this.linkToken.address, devid, amount, {
-          from: bob,
-        }),
-        "onlyAdmin: bad role"
-      );
-    });
-
-    it("should reject withdrawing more than available", async function() {
-      const amount = toWei("50");
-      await expectRevert(
-        this.aggregator.withdrawFunds(this.linkToken.address, devid, amount, {
-          from: alice,
-        }),
-        "insufficient reserve funds"
-      );
-    });
   });
 
   context("Test data submission", () => {
     it("should submit mint identifier by the oracle", async function() {
       const submission =
         "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      const prevCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const prevBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      const corePayment = await this.aggregator.corePayment();
-      const bonusPayment = await this.aggregator.bonusPayment();
+
       await this.aggregator.submit(submission, {
         from: bob,
       });
       const mintInfo = await this.aggregator.getSubmissionInfo(submission);
-      const newCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const newBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
       assert.equal(mintInfo.confirmations, 1);
-      assert.equal(
-        prevCorePaymentInfo.availableFunds.sub(toBN(corePayment)).toString(),
-        newCorePaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevCorePaymentInfo.allocatedFunds.add(toBN(corePayment)).toString(),
-        newCorePaymentInfo.allocatedFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.availableFunds.sub(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.allocatedFunds.add(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.allocatedFunds.toString()
-      );
     });
 
     it("should submit burnt identifier by the oracle", async function() {
       const submission =
         "0x80584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      const prevCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const prevBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      const corePayment = await this.aggregator.corePayment();
-      const bonusPayment = await this.aggregator.bonusPayment();
+     
       await this.aggregator.submit(submission, {
         from: bob,
       });
       const burntInfo = await this.aggregator.getSubmissionInfo(submission);
-      const newCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const newBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
       assert.equal(burntInfo.confirmations, 1);
-      assert.equal(
-        prevCorePaymentInfo.availableFunds.sub(toBN(corePayment)).toString(),
-        newCorePaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevCorePaymentInfo.allocatedFunds.add(toBN(corePayment)).toString(),
-        newCorePaymentInfo.allocatedFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.availableFunds.sub(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.allocatedFunds.add(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.allocatedFunds.toString()
-      );
     });
 
     it("should submit mint identifier by the second oracle", async function() {
       const submission =
         "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      const prevCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const prevBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      const corePayment = await this.aggregator.corePayment();
-      const bonusPayment = await this.aggregator.bonusPayment();
+     
       await this.aggregator.submit(submission, {
         from: alice,
       });
-      const mintInfo = await this.aggregator.getSubmissionInfo(submission);
-      const newCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const newBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
+      const mintInfo = await this.aggregator.getSubmissionInfo(submission);     
       assert.equal(mintInfo.confirmations, 2);
-      assert.equal(
-        prevCorePaymentInfo.availableFunds.sub(toBN(corePayment)).toString(),
-        newCorePaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevCorePaymentInfo.allocatedFunds.add(toBN(corePayment)).toString(),
-        newCorePaymentInfo.allocatedFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.availableFunds.sub(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.allocatedFunds.add(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.allocatedFunds.toString()
-      );
     });
 
     it("should submit burnt identifier by the second oracle", async function() {
       const submission =
         "0x80584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      const prevCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const prevBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      const corePayment = await this.aggregator.corePayment();
-      const bonusPayment = await this.aggregator.bonusPayment();
       await this.aggregator.submit(submission, {
         from: alice,
       });
       const burntInfo = await this.aggregator.getSubmissionInfo(submission);
-      const newCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const newBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
       assert.equal(burntInfo.confirmations, 2);
-      assert.equal(
-        prevCorePaymentInfo.availableFunds.sub(toBN(corePayment)).toString(),
-        newCorePaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevCorePaymentInfo.allocatedFunds.add(toBN(corePayment)).toString(),
-        newCorePaymentInfo.allocatedFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.availableFunds.sub(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.allocatedFunds.add(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.allocatedFunds.toString()
-      );
     });
 
     it("should submit mint identifier by the extra oracle", async function() {
       const submission =
         "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      const prevCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const prevBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      const corePayment = await this.aggregator.corePayment();
-      const bonusPayment = await this.aggregator.bonusPayment();
+        
       await this.aggregator.submit(submission, {
         from: eve,
       });
       const mintInfo = await this.aggregator.getSubmissionInfo(submission);
-      const newCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const newBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
       assert.equal(mintInfo.confirmations, 3);
-      assert.equal(
-        prevCorePaymentInfo.availableFunds.sub(toBN(corePayment)).toString(),
-        newCorePaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevCorePaymentInfo.allocatedFunds.add(toBN(corePayment)).toString(),
-        newCorePaymentInfo.allocatedFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.availableFunds.sub(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.allocatedFunds.add(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.allocatedFunds.toString()
-      );
     });
 
     it("should submit burnt identifier by the extra oracle", async function() {
       const submission =
         "0x80584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      const prevCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const prevBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
-      const corePayment = await this.aggregator.corePayment();
-      const bonusPayment = await this.aggregator.bonusPayment();
       await this.aggregator.submit(submission, {
         from: eve,
       });
       const burntInfo = await this.aggregator.getSubmissionInfo(submission);
-      const newCorePaymentInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const newBonusPaymentInfo = await this.aggregator.getPaymentInfo(
-        this.dbrToken.address
-      );
       assert.equal(burntInfo.confirmations, 3);
-      assert.equal(
-        prevCorePaymentInfo.availableFunds.sub(toBN(corePayment)).toString(),
-        newCorePaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevCorePaymentInfo.allocatedFunds.add(toBN(corePayment)).toString(),
-        newCorePaymentInfo.allocatedFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.availableFunds.sub(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.availableFunds.toString()
-      );
-      assert.equal(
-        prevBonusPaymentInfo.allocatedFunds.add(toBN(bonusPayment)).toString(),
-        newBonusPaymentInfo.allocatedFunds.toString()
-      );
     });
 
     it("should reject submition of mint identifier if called by the non-admin", async function() {
@@ -567,80 +271,6 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
           from: bob,
         }),
         "submit: submitted already"
-      );
-    });
-  });
-
-  context("Test withdrawal oracle reward", () => {
-    it("should withdraw the reward by the oracle admin", async function() {
-      const prevLinkInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const prevAvailableFunds = prevLinkInfo.availableFunds;
-      const prevAllocatedFunds = prevLinkInfo.allocatedFunds;
-      const amount = toWei("0.0001");
-      const prevOracleInfo = await this.aggregator.getWithdrawable(
-        this.linkToken.address,
-        bob
-      );
-      await this.aggregator.withdrawPayment(
-        bob,
-        carol,
-        this.linkToken.address,
-        amount,
-        {
-          from: carol,
-        }
-      );
-      const newOracleInfo = await this.aggregator.getWithdrawable(
-        this.linkToken.address,
-        bob
-      );
-      const newLinkInfo = await this.aggregator.getPaymentInfo(
-        this.linkToken.address
-      );
-      const newAvailableFunds = newLinkInfo.availableFunds;
-      const newAllocatedFunds = newLinkInfo.allocatedFunds;
-      assert.equal(
-        prevOracleInfo.sub(toBN(amount)).toString(),
-        newOracleInfo.toString()
-      );
-      assert.equal(prevAvailableFunds.toString(), newAvailableFunds.toString());
-      assert.equal(
-        prevAllocatedFunds.sub(toBN(amount)).toString(),
-        newAllocatedFunds.toString()
-      );
-    });
-
-    it("should reject withdrawing by non-admint", async function() {
-      const amount = toWei("50");
-      await expectRevert(
-        this.aggregator.withdrawPayment(
-          bob,
-          carol,
-          this.linkToken.address,
-          amount,
-          {
-            from: bob,
-          }
-        ),
-        "withdrawPayment: only callable by admin"
-      );
-    });
-
-    it("should reject withdrawing more than available", async function() {
-      const amount = toWei("50");
-      await expectRevert(
-        this.aggregator.withdrawPayment(
-          bob,
-          carol,
-          this.linkToken.address,
-          amount,
-          {
-            from: carol,
-          }
-        ),
-        "withdrawPayment: insufficient withdrawable funds"
       );
     });
   });

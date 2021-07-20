@@ -50,8 +50,11 @@ module.exports.getUniswapFactory = async (deployer, network) => {
       break;
     case "hecotest":
       uniswapFactory = "0x4fDbE004745c62934C5170c931768Ed1Cc8ceC99";
+    case "test":
+      uniswapFactory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
+      break;
     case "kovan":
-    case "ethereum":
+    case "ethereum":    
     case "kovantest":
       uniswapFactory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
       break;
@@ -72,6 +75,9 @@ module.exports.getWeth = async (deployer, network) => {
     case "development":
       await deployer.deploy(WETH9);
       weth = (await WETH9.deployed()).address;
+      break;
+    case "test":
+      weth = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
       break;
     case "kovan":
     case "hecotest":

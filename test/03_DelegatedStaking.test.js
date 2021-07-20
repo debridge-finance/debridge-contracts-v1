@@ -1041,7 +1041,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         currentDelegatorToShares.toString()
       );
     });
-    it("should fail if transfer already executed", () => {
+    it("should fail if transfer already executed", async function() {
       const transferId = 1;
       await expectRevert(
         this.delegatedStaking.executeTransfer(transferId, { from: eve }),

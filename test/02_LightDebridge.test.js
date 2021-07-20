@@ -20,7 +20,7 @@ const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
+contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid]) {
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -32,8 +32,6 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       from: alice,
     });
     this.amountThreshold = toWei("1000");
-    this.oraclePayment = toWei("0.001");
-    this.bonusPayment = toWei("0.001");
     this.minConfirmations = 3;
     //this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     //this.aggregatorInstance = new web3.eth.Contract(
@@ -218,7 +216,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
       //     bytes[] memory _signatures
       // ) 
       const debridgeId = await this.lightVerifier.getDebridgeId(chainId, tokenAddress);
-      console.log('debridgeId '+debridgeId);
+      //console.log('debridgeId '+debridgeId);
       const deployId = await this.lightVerifier.getDeployId(debridgeId, name, symbol, decimals);
 
       let signatures = [];
@@ -410,7 +408,7 @@ contract("LightDebridge", function([alice, bob, carol, eve, fei, devid]) {
 
     before(async function() {
       debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      console.log('debridgeId '+debridgeId);
+      //console.log('debridgeId '+debridgeId);
       currentChainId = await this.debridge.chainId();
       const submission = await this.debridge.getSubmisionId(
         debridgeId,
