@@ -56,14 +56,14 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const amount = 0;
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const prevDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const prevDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
       await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256, { from: alice });
       await this.delegatedStaking.stake(bob, collateral, amount, {
         from: alice,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const currentDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const currentDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
       assert.equal(
         prevOracleStaking.toString(),
@@ -80,14 +80,14 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const amount = toWei("100");
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const prevDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const prevDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
       await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256, { from: alice });
       await this.delegatedStaking.stake(bob, collateral, amount, {
         from: alice,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const currentDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const currentDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
       assert.equal(
         prevOracleStaking.add(toBN(amount)).toString(),
@@ -196,20 +196,20 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
       const prevDelegatorStaking = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const prevDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
-      const prevTotalOracleShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const prevTotalOracleShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256, { from: eve });
       await this.delegatedStaking.stake(david, collateral, amount, {
         from: eve,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
       const currentDelegatorStaking = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const currentDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
-      const currentTotalOracleShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const currentTotalOracleShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       assert.equal(
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
@@ -226,20 +226,20 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
       const prevDelegatorStaking = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const prevDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
-      const prevTotalOracleShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const prevTotalOracleShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256, { from: eve });
       await this.delegatedStaking.stake(david, collateral, amount, {
         from: eve,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
       const currentDelegatorStaking = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const currentDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
-      const currentTotalOracleShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const currentTotalOracleShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       assert.equal(
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
@@ -320,17 +320,6 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         carol
       );
     });
-    
-    it("should fail if delagation to address is not oracle", async function() {
-      const amount = toWei("50");
-      await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256, { from: carol });
-      await expectRevert(
-        this.delegatedStaking.stake(eve, this.linkToken.address, amount, {
-          from: carol,
-        }),
-        "stake: only delegation to oracle"
-      );
-    });
 
     it("should increment oracle delegator count if does not exist", async function() {
       const amount = toWei("50");
@@ -373,7 +362,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
     it("should give all shares to first depositor, equal to amount", async function() {
       const amount = toWei("50");
       const collateral = this.linkToken.address;
-      const previousShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const previousShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       assert.equal(
         previousShares.toString(),
         "0"
@@ -382,7 +371,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       await this.delegatedStaking.stake(david, collateral, amount, {
         from: eve,
       });
-      const currentShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const currentShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       assert.equal(
         previousShares.add(amount).toString(),
         currentShares.toString()
@@ -401,12 +390,12 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       await this.delegatedStaking.stake(david, collateral, amount, {
         from: eve,
       });
-      const previousShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const previousShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256, { from: carol });
       await this.delegatedStaking.stake(david, collateral, amount, {
         from: carol,
       });
-      const currentShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const currentShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       assert.isAbove(currentShares, previousShares, "shares increase with deposits");
       const firstDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
       const secondDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, carol, collateral)[1];
@@ -461,7 +450,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         this.delegatedStaking.requestUnstake(bob, collateral, alice, amount, {
           from: alice,
         }),
-        "requestUnstake: insufficient withdrawable funds"
+        "requestUnstake: bad amount"
       );
     });
 
@@ -492,20 +481,20 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
       const prevDelegatorStaking = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const prevDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
-      const prevTotalOracleShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const prevTotalOracleShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256, { from: david });
       await this.delegatedStaking.requestUnstake(david, collateral, alice, amount, {
         from: eve,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
       const currentDelegatorStaking = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const currentDelegatorShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
-      const currentTotalOracleShares = await this.delegatedStaking.getOracleStaking(david, collateral)[1];
+      const currentTotalOracleShares = await this.delegatedStaking.getTotalDelegation(david, collateral)[1];
       assert.equal(
         prevOracleStaking.toString(),
         currentOracleStaking.toString()
@@ -573,7 +562,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         this.delegatedStaking.requestUnstake(david, collateral, alice, amount, {
           from: eve,
         }),
-        "requestUnstake: insufficient amount"
+        "requestUnstake: bad share"
       );
     });
 
@@ -584,7 +573,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         this.delegatedStaking.requestUnstake(bob, collateral, alice, amount, {
           from: carol,
         }),
-        "requestUnstake: delegator does not exist"
+        "requestUnstake: delegator !exist"
       );
     });
   });
@@ -594,14 +583,14 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const prevDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const prevDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
       await this.linkToken.approve(this.delegatedStaking.address, MAX_UINT256);
       await this.delegatedStaking.requestUnstake(bob, collateral, alice, amount, {
         from: alice,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const currentDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const currentDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
       assert.equal(
         prevOracleStaking.sub(toBN(amount)).toString(),
@@ -697,7 +686,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         this.delegatedStaking.executeUnstake(bob, 10, {
           from: alice,
         }),
-        "executeUnstake: withdrawal does not exist"
+        "execUnstake: withdrawal !exist"
       );
     });
   });
@@ -908,7 +897,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         this.delegatedStaking.requestTransfer(david, bob, this.linkToken.address, amount, { 
           from: eve 
         }),
-        "requestTransfer: cannot transfer 0 amount"
+        "requestTransfer: bad shares == 0"
       );
     });
     it("should transfer normal amount of assets", async function() {
@@ -916,8 +905,8 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const collateral = this.linkToken.address;
       const prevOracleFromStake = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const prevOracleToStake = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const prevOracleFromDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
-      const prevOracleToDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const prevOracleFromDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
+      const prevOracleToDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const prevDelegatorFromStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const prevDelegatorFromShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
       const prevDelegatorToStakes = await this.delegatedStaking.getDelegatorStakes(bob, eve, collateral)[0];
@@ -926,8 +915,8 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       await this.delegatedStaking.requestTransfer(david, bob, collateral, amount, { from: eve });
       const currentOracleFromStake = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const currentOracleToStake = await this.delegatedStaking.getOracleStaking(bob, collateral)[0];
-      const currentOracleFromDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
-      const currentOracleToDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral);
+      const currentOracleFromDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
+      const currentOracleToDelegation = await this.delegatedStaking.getTotalDelegation(bob, collateral)[0];
       const currentDelegatorFromStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[0];
       const currentDelegatorFromShares = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral)[1];
       const currentDelegatorToStakes = await this.delegatedStaking.getDelegatorStakes(bob, eve, collateral)[0];
@@ -974,12 +963,12 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
     it("should reject while transferring too many assets", async function() {
       const amount = toWei("50");
       const collateral = this.linkToken.address;
-      await expectRevert(this.delegatedStaking.requestTransfer(david, bob, collateral, amount, { from: eve }), "transferAssets: Insufficient amount for delegator");
+      await expectRevert(this.delegatedStaking.requestTransfer(david, bob, collateral, amount, { from: eve }), "transferAssets: bad oracle share");
     });
     it("should reject when transfer by oracle", async function() {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
-      await expectRevert(this.delegatedStaking.requestTransfer(david, bob, collateral, amount, { from: bob }), "requestTransfer: callable by delegator");
+      await expectRevert(this.delegatedStaking.requestTransfer(david, bob, collateral, amount, { from: bob }), "requestTransfer: delegator only");
     });
   });
 
@@ -1002,12 +991,12 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const oracleTo = prevTransferRequest.oracleTo;
       const collateral = prevTransferRequest.collateral;
       const amount = prevTransferRequest.amount;
-      const prevOracleToDelegation = await this.delegatedStaking.getTotalDelegation(oracleTo, collateral);
+      const prevOracleToDelegation = await this.delegatedStaking.getTotalDelegation(oracleTo, collateral)[0];
       const prevDelegatorToStakes = await this.delegatedStaking.getDelegatorStakes(oracleTo, eve, collateral)[0];
       const prevDelegatorToShares = await this.delegatedStaking.getDelegatorStakes(oracleTo, eve, collateral)[1];
       await this.delegatedStaking.executeTransfer(transferId, { from: eve });
       const currentTransferRequest = await this.delegatedStaking.getTransferRequest(eve, transferId, { from: eve });
-      const currentOracleToDelegation = await this.delegatedStaking.getTotalDelegation(oracleTo, collateral);
+      const currentOracleToDelegation = await this.delegatedStaking.getTotalDelegation(oracleTo, collateral)[0];
       const currentDelegatorToStakes = await this.delegatedStaking.getDelegatorStakes(oracleTo, eve, collateral)[0];
       const currentDelegatorToShares = await this.delegatedStaking.getDelegatorStakes(oracleTo, eve, collateral)[1];
       assert.equal(currentTransferRequest.executed, true);
@@ -1028,21 +1017,21 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const transferId = 1;
       await expectRevert(
         this.delegatedStaking.executeTransfer(transferId, { from: eve }),
-        "executeTransfer: already executed"
+        "execTransfer: already executed"
       );
     });
     it("should fail if called by oracle", async function() {
       const transferId = 0;
       await expectRevert(
         this.delegatedStaking.executeTransfer(transferId, { from: bob }),
-        "executeTransfer: callable by delegator"
+        "executeTransfer: delegator only"
       );
     });
     it("should fail if transfer does not exist", async function() {
       const transferId = 2;
       await expectRevert(
         this.delegatedStaking.executeTransfer(transferId, { from: eve }),
-        "executeTransfer: transfer request does not exist"
+        "executeTransfer: request !exist"
       );
     });
   });
@@ -1065,11 +1054,11 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const amount = toWei("100"), amountForDelegator = toWei("25");
       const prevOracleStake = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const prevDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
       await this.delegatedStaking.distributeRewards(david, collateral, amount);
       const currentOracleStake = await this.delegatedStaking.getOracleStaking(david, collateral)[0];
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral);
+      const currentDelegation = await this.delegatedStaking.getTotalDelegation(david, collateral)[0];
 
       assert.equal(prevOracleStake.add(toBN(amount - amountForDelegator)).toString(), currentOracleStake.toString(), "oracle staking");
       assert.equal(prevCollateral.add(toBN(amount)).toString(), currentCollateral.toString());
@@ -1081,7 +1070,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       await this.delegatedStaking.updateCollateral(collateral, false);
       await expectRevert(
         this.delegatedStaking.distributeRewards(david, collateral, amount),
-        "distributeRewards: collateral not enabled"
+        "dist: collateral !enabled"
       );
       await this.delegatedStaking.updateCollateral(collateral, true);
     });
@@ -1096,7 +1085,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
         this.delegatedStaking.depositToStrategy(bob, amount, strategy, { 
           from: alice 
         }), 
-        "depositToStrategy: strategy not enabled"
+        "depositToStrategy: !enabled"
       );
       await this.delegatedStaking.updateStrategy(strategy, true);
     });
@@ -1151,7 +1140,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
     it("should fail when deposit insufficient fund", async function() {
       const amount = toWei("320000");
       const strategy = this.mockStrategy.address;
-      await expectRevert(this.delegatedStaking.depositToStrategy(bob, amount, strategy, { from: alice }), "depositToStrategy: Insufficient fund");
+      await expectRevert(this.delegatedStaking.depositToStrategy(bob, amount, strategy, { from: alice }), "depositToStrategy: bad amount");
     });
   });
 
