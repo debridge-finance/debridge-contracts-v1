@@ -117,7 +117,7 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
 
     //function initialize(
     //    uint256 _excessConfirmations,
-    //    address _ligthAggregator,
+    //    address _lightAggregator,
     //    address _fullAggregator,
     //    address _callProxy,
     //    uint256[] memory _supportedChainIds,
@@ -160,7 +160,7 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
       await this.debridge.setAggregator(aggregator, true,{
         from: alice,
       });
-      const newAggregator = await this.debridge.ligthAggregator();
+      const newAggregator = await this.debridge.lightAggregator();
       assert.equal(aggregator, newAggregator);
     });
 

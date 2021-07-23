@@ -28,7 +28,7 @@ contract DeBridgeGate is AccessControl,
     uint256 public chainId; // current chain id
     uint256 public collectedFees; // current native fee
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    address public ligthAggregator; // current aggregator address address to verify signatures
+    address public lightAggregator; // current aggregator address address to verify signatures
     address public fullAggregator; // current aggregator address to verify by oracles confirmations
     address public callProxy; // proxy to execute user's calls
     uint8 public aggregatorLightVersion; // aggregators count
@@ -69,13 +69,13 @@ contract DeBridgeGate is AccessControl,
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _ligthAggregator Aggregator address to verify signatures
+    /// @param _lightAggregator Aggregator address to verify signatures
     /// @param _fullAggregator Aggregator address to verify by oracles confirmations
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     /// @param _treasury Address to collect a fee
     function initialize(
         uint256 _excessConfirmations,
-        address _ligthAggregator,
+        address _lightAggregator,
         address _fullAggregator,
         address _callProxy,
         uint256[] memory _supportedChainIds,
@@ -97,7 +97,7 @@ contract DeBridgeGate is AccessControl,
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
         
-        ligthAggregator = _ligthAggregator;
+        lightAggregator = _lightAggregator;
         fullAggregator = _fullAggregator;
 
         callProxy = _callProxy;
@@ -169,7 +169,7 @@ contract DeBridgeGate is AccessControl,
         );
         
         _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                         ? ligthAggregator 
+                                         ? lightAggregator 
                                          : fullAggregator);
 
         _checkConfirmations(
@@ -355,7 +355,7 @@ contract DeBridgeGate is AccessControl,
         );
 
         _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                           ? ligthAggregator 
+                                           ? lightAggregator 
                                            : fullAggregator);
 
         _checkConfirmations(
@@ -679,7 +679,7 @@ contract DeBridgeGate is AccessControl,
 
     /// @dev Update asset's fees.
     /// @param _supportedChainIds Chain identifiers.
-    /// @param _chainSupportInfo Cahin support info.
+    /// @param _chainSupportInfo Chain support info.
     function updateChainSupport(
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
@@ -694,7 +694,7 @@ contract DeBridgeGate is AccessControl,
     /// @dev Update asset's fees.
     /// @param _debridgeId Asset identifier.
     /// @param _supportedChainIds Chain identifiers.
-    /// @param _assetFeesInfo Cahin support info.
+    /// @param _assetFeesInfo Chain support info.
     function updateAssetFixedFees(
         bytes32 _debridgeId,
         uint256[] memory _supportedChainIds,
@@ -756,7 +756,7 @@ contract DeBridgeGate is AccessControl,
     function setAggregator(address _aggregator, bool _isLight) external onlyAdmin() {
         if(_isLight){
             getOldLightAggregator[aggregatorLightVersion] = AggregatorInfo(_aggregator, true);
-            ligthAggregator = _aggregator;
+            lightAggregator = _aggregator;
             aggregatorLightVersion++;
         }
         else{
@@ -930,7 +930,7 @@ contract DeBridgeGate is AccessControl,
         internal {
         (uint256 confirmations, bool confirmed) = 
                 _signatures.length > 0 
-                ? ILightVerifier(ligthAggregator).submit(_submissionId, _signatures)
+                ? ILightVerifier(lightAggregator).submit(_submissionId, _signatures)
                 : IFullAggregator(fullAggregator).getSubmissionConfirmations(_submissionId);
         require(confirmed, "not confirmed");
         if (_amount >= getAmountThreshold[_debridgeId]) {
