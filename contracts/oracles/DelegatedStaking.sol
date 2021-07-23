@@ -159,7 +159,7 @@ contract DelegatedStaking is AccessControl, Initializable {
             } else {
                 // add user's pending rewards if delegator already exists
                 for (uint256 i = 0; i < collateralAddresses.length; i++) {
-                    address rewardCollateral;
+                    address rewardCollateral = collateralAddresses[i];
                     uint256 pending = delegator.stakes[rewardCollateral].shares
                     * (oracle.accTokensPerShare[rewardCollateral])
                     - (sender.passedRewards[rewardCollateral]);
@@ -230,9 +230,13 @@ contract DelegatedStaking is AccessControl, Initializable {
             delegator.stakes[_collateral].shares -= _amount;
             oracle.delegation[_collateral].shares -= _amount;
             oracle.delegation[_collateral].stakedAmount -= delegatorCollateral;
+            uint256 _shares;
             for (uint256 i = 0; i < collateralAddresses.length; i++) {
                 address rewardCollateral = collateralAddresses[i];
-                uint256 rewardAmount = (_amount * oracle.accTokensPerShare[rewardCollateral]) 
+                _shares = rewardCollateral == _collateral 
+                    ? _amount 
+                    : delegator.stakes[rewardCollateral].shares;
+                uint256 rewardAmount = (_shares * oracle.accTokensPerShare[rewardCollateral]) 
                     - sender.passedRewards[rewardCollateral];
                 if (rewardAmount != 0) {
                     sender.passedRewards[rewardCollateral] = delegator.stakes[rewardCollateral].shares
@@ -337,9 +341,13 @@ contract DelegatedStaking is AccessControl, Initializable {
         require(delegator.stakes[_collateral].shares >= _sharesFrom, "transferAssets: bad shares");
         uint256 amountFrom = _sharesFrom * oracleFrom.delegation[_collateral].stakedAmount 
             / oracleFrom.stake[_collateral].shares;
+        uint256 _shares;
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             address rewardCollateral = collateralAddresses[i];
-            uint256 rewardAmount = (_sharesFrom * oracleFrom.accTokensPerShare[rewardCollateral]) 
+            _shares = rewardCollateral == _collateral 
+                ? _sharesFrom 
+                : delegator.stakes[rewardCollateral].shares;
+            uint256 rewardAmount = (_shares * oracleFrom.accTokensPerShare[rewardCollateral]) 
                 - sender.passedRewards[rewardCollateral];
             if (rewardAmount != 0) {
                 sender.passedRewards[rewardCollateral] = delegator.stakes[rewardCollateral].shares
