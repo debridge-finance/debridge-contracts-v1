@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    name: Lint & Test
+    name: Test
     runs-on: ubuntu-18.04
 
     env:
@@ -42,5 +42,20 @@ jobs:
     - name: Installing dependencies
       run: yarn install --frozen-lockfile
 
-    - name: test
-      run: yarn start-ganache -q & yarn test
+    - name: Start ganache in background
+      run: yarn start-ganache -q &
+
+    - name: Test Aggregator
+      run: yarn test test/00_Aggregator.test.js
+
+    - name: Test DeBridge Full
+      run: yarn test test/01_FullDebridge.test.js
+
+    - name: Test DeBridge Light
+      run: yarn test test/02_LightDebridge.test.js
+
+    - name: Test DeBridge Full Auto
+      run: yarn test test/04_AutoFullDebridge.test.js
+
+    - name: Shutdown ganache
+      run: killall node
