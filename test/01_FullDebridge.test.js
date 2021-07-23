@@ -97,7 +97,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
     });
 
     //     uint256 _excessConfirmations,
-    //     address _ligthAggregator,
+    //     address _lightAggregator,
     //     address _fullAggregator,
     //     address _callProxy,
     //     uint256[] memory _supportedChainIds,
