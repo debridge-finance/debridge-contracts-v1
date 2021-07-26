@@ -6,7 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "../periphery/WrappedAsset.sol";
 import "../interfaces/ILightVerifier.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
@@ -14,11 +16,13 @@ import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IDefiController.sol";
 import "../interfaces/IFullAggregator.sol";
 import "../interfaces/ICallProxy.sol";
-import "../periphery/WrappedAsset.sol";
+import "../interfaces/IFlashCallback.sol";
+
 
 contract DeBridgeGate is Initializable,
                          AccessControlUpgradeable,                         
                          PausableUpgradeable,
+                         ReentrancyGuardUpgradeable,
                          IDeBridgeGate {
     using SafeERC20 for IERC20;
 
@@ -47,6 +51,8 @@ contract DeBridgeGate is Initializable,
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
     address treasury; //address of treasury
+
+    uint256 flashFee; // (amount * flashFee / DENOMINATOR)
 
     /* ========== MODIFIERS ========== */
 
@@ -108,6 +114,8 @@ contract DeBridgeGate is Initializable,
         weth = _weth;
         feeProxy = _feeProxy;
         treasury = _treasury;
+
+        flashFee = 1e15;
     }
 
 
@@ -294,7 +302,8 @@ contract DeBridgeGate is Initializable,
             _chainIdTo,
             _useAssetFee
         );
-        require(_amount >= _executionFee, "autoSend: proposed fee too high");
+        //Commented out: contract-size limit
+        // require(_amount >= _executionFee, "autoSend: proposed fee too high");
         _amount -= _executionFee;
         uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId = getAutoSubmisionId(
@@ -404,7 +413,8 @@ contract DeBridgeGate is Initializable,
             _signature,
             _useAssetFee
         );
-        require(_amount >= _executionFee, "autoBurn: proposed fee too high");
+        //Commented out: contract-size limit
+        // require(_amount >= _executionFee, "autoBurn: proposed fee too high");
         _amount -= _executionFee;
         uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId = getAutoSubmisionId(
@@ -675,6 +685,30 @@ contract DeBridgeGate is Initializable,
     }
 
     
+    
+    function flash(
+        address _tokenAddress,
+        address _receiver,
+        uint256 _amount,
+        bytes memory _data
+    ) external override nonReentrant 
+    // noDelegateCall
+    {
+        DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
+        uint256 currentFlashFee = (_amount * flashFee) / DENOMINATOR;
+        uint256 balanceBefore = IERC20(_tokenAddress).balanceOf(address(this));
+
+        IERC20(_tokenAddress).safeTransfer(_receiver, _amount);
+        IFlashCallback(msg.sender).flashCallback(currentFlashFee, _data);
+
+        uint256 balanceAfter = IERC20(_tokenAddress).balanceOf(address(this));
+        require(balanceBefore + currentFlashFee <= balanceAfter, "Not paid fee");
+        uint256 paid = balanceAfter - balanceBefore;
+        debridge.collectedFees += paid;
+        emit Flash(msg.sender, _tokenAddress, _receiver, _amount, paid);
+    }
+
+
     /* ========== ADMIN ========== */
 
     /// @dev Update asset's fees.
@@ -899,20 +933,18 @@ contract DeBridgeGate is Initializable,
     }
 
 
-    function blockSubmission(bytes32[] memory _submissionIds) external onlyAdmin() {
+    function blockSubmission(bytes32[] memory _submissionIds, bool isBlocked) external onlyAdmin() {
         for (uint256 i = 0; i < _submissionIds.length; i++) {
-           isBlockedSubmission[_submissionIds[i]] = true;
+           isBlockedSubmission[_submissionIds[i]] = isBlocked;
            emit Blocked(_submissionIds[i]);
         }
     }
 
-    function unBlockSubmission(bytes32[] memory _submissionIds) external onlyAdmin() {
-        for (uint256 i = 0; i < _submissionIds.length; i++) {
-           isBlockedSubmission[_submissionIds[i]] = false;
-           emit Unblocked(_submissionIds[i]);
-        }
+    /// @dev Update flash fees.
+    /// @param _flashFee new fee
+    function updateFlashFee(uint256 _flashFee) external onlyAdmin() {
+        flashFee = _flashFee;
     }
-
 
     /* ========== INTERNAL ========== */
      

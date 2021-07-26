@@ -237,6 +237,13 @@ interface IDeBridgeGate {
         uint8 _aggregatorVersion
     ) external;
 
+    function flash(
+        address _tokenAddress,
+        address _receiver,
+        uint256 _amount,
+        bytes memory _data
+    ) external;
+
     /* ========== EVENTS ========== */
 
     event Sent(
@@ -310,4 +317,6 @@ interface IDeBridgeGate {
         
     event Blocked(bytes32 submissionId); //Block submission
     event Unblocked(bytes32 submissionId); //UnBlock submission
+
+    event Flash(address sender, address tokenAddress,  address receiver, uint256 amount, uint256 paid);
 }
