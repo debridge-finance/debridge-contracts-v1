@@ -10,6 +10,7 @@
     "verify": "truffle run verify Aggregator Debridge  ",
     "vefrify": "truffle run verify Aggregator Debridge ",
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
+    "pretest": "$npm_execpath compile",
     "test": "truffle test --network test",
     "contract-size": "truffle run contract-size"
   },
