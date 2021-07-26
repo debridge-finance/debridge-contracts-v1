@@ -5,9 +5,6 @@ interface IAggregator {
     
     /* ========== STRUCTS ========== */
 
-    struct OracleInfo {
-        address admin; // current oracle admin
-    }
     struct BlockConfirmationsInfo {
         uint256 count; // count of submissions in block
         bool requireExtraCheck; // exceed confirmation count for all submissions in block

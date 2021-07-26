@@ -43,7 +43,7 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.aggregator.addOracle(oracle.address, oracle.admin, {
+      await this.aggregator.addOracle(oracle.address, {
         from: alice,
       });
     }
@@ -87,12 +87,12 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
     });
 
     it("should add new oracle if called by the admin", async function() {
-      await this.aggregator.addOracle(devid, eve, {
+      await this.aggregator.addOracle(devid, {
         from: alice,
       });
-      const oracleInfo = await this.aggregator.getOracleInfo(devid);
-      //oracleInfo is admin address of oracle
-      assert.equal(oracleInfo, eve);
+      //const oracleInfo = await this.aggregator.getOracleInfo(devid);
+      ////oracleInfo is admin address of oracle
+      //assert.equal(oracleInfo, eve);
     });
 
     it("should remove existed oracle if called by the admin", async function() {
@@ -100,8 +100,9 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
       await this.aggregator.removeOracle(devid, {
         from: alice,
       });
-      const oracleInfo = await this.aggregator.getOracleInfo(devid);
-      assert.equal(oracleInfo, eve);
+      //TODO: add check role
+      //const oracleInfo = await this.aggregator.getOracleInfo(devid);
+      //assert.equal(oracleInfo, eve);
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function() {
@@ -136,7 +137,7 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
 
     it("should reject adding the new oracle if called by the non-admin", async function() {
       await expectRevert(
-        this.aggregator.addOracle(devid, eve, {
+        this.aggregator.addOracle(devid, {
           from: bob,
         }),
         "onlyAdmin: bad role"
