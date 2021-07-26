@@ -53,7 +53,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         uint256 transferCount;
         mapping(uint256 => WithdrawalInfo) withdrawals; // list of withdrawal requests
         mapping(uint256 => TransferInfo) transfers;
-        uint256 profitSharing;  // percentage of profit sharing.
+        uint256 profitSharingBPS;  // profit sharing basis points.
         bool isOracle; // whether is oracles
         mapping(address => DelegatorInfo) delegators;
         mapping(uint256 => address) delegatorAddresses; //delegator list
@@ -648,14 +648,14 @@ contract DelegatedStaking is AccessControl, Initializable {
     }
 
     /**
-     * @dev set percentage of profit sharing
-     * @param _profitSharing percentage of profit sharing
+     * @dev set basis points of profit sharing
+     * @param _profitSharingBPS profit sharing basis points
      */
-    function setProfitSharing(address _oracle, uint256 _profitSharing) external {
+    function setProfitSharing(address _oracle, uint256 _profitSharingBPS) external {
         UserInfo storage oracle = getUserInfo[_oracle];
         require(msg.sender == oracle.admin, "setProfitPercentage: only admin");
-        require(_profitSharing<= 100, "Must be less then 100%" );
-        oracle.profitSharing = _profitSharing;
+        require(_profitSharingBPS<= 10000, "Must be less then 10,000 BPS" );
+        oracle.profitSharingBPS = _profitSharingBPS;
     }
 
     /* ADMIN */
@@ -849,7 +849,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         //collateral.rewards +=_amount;
 
         UserInfo storage oracle = getUserInfo[_oracle];
-        uint256 delegatorsAmount = _amount * oracle.profitSharing / 100;
+        uint256 delegatorsAmount = _amount * oracle.profitSharingBPS / 10000;
 
         //Add rewards to oracle
         oracle.stake[_collateral].stakedAmount += _amount - delegatorsAmount;
