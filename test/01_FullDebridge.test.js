@@ -794,7 +794,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
         receiver,
         nonce
       );
-      await this.debridge.blockSubmission([cuurentChainSubmission], {
+      await this.debridge.blockSubmission([cuurentChainSubmission], true, {
         from: alice,
       });
       
@@ -820,7 +820,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
         receiver,
         nonce
       );
-      await this.debridge.unBlockSubmission([cuurentChainSubmission], {
+      await this.debridge.blockSubmission([cuurentChainSubmission], false, {
         from: alice,
       });
       
