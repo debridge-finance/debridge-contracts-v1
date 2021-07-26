@@ -43,10 +43,10 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
     await this.delegatedStaking.updateCollateral(this.linkToken.address, true);
     await this.delegatedStaking.updateCollateral(this.linkToken.address, false, 0);
     await this.delegatedStaking.addOracle(bob, alice);
-    await this.delegatedStaking.setProfitSharing(bob, 0);
+    await this.delegatedStaking.setProfitSharingBPS(bob, 0);
     await this.delegatedStaking.addOracle(david, alice);
-    await this.delegatedStaking.setProfitSharing(david, 25);
-    await this.priceConsumer.addPriceFeed(this.linkToken.address, 5);
+    await this.delegatedStaking.setProfitSharingBPS(david, 2500);
+    await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, 5);
     await this.delegatedStaking.addStrategy(this.mockStrategy.address, this.linkToken.address, this.linkToken.address);
     await this.delegatedStaking.setTimelockForTransfer(this.timelock);
   });
