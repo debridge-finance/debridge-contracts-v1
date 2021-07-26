@@ -4,8 +4,9 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/ILightVerifier.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
@@ -14,11 +15,10 @@ import "../interfaces/IDefiController.sol";
 import "../interfaces/IFullAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../periphery/WrappedAsset.sol";
-import "../periphery/Pausable.sol";
 
-contract DeBridgeGate is AccessControl,
-                         Initializable,
-                         Pausable,
+contract DeBridgeGate is Initializable,
+                         AccessControlUpgradeable,                         
+                         PausableUpgradeable,
                          IDeBridgeGate {
     using SafeERC20 for IERC20;
 
