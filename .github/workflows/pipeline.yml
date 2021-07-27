@@ -19,6 +19,7 @@ jobs:
     env:
       TEST_BSC_PROVIDER: https://bsc-dataseed.binance.org/
       TEST_ORACLE_KEYS: ${{ secrets.TEST_ORACLE_KEYS}}
+      MNEMONIC: ${{ secrets.MNEMONIC}}
 
     steps:
     - uses: actions/checkout@v2
@@ -55,9 +56,6 @@ jobs:
         steps.cache-yarn-cache.outputs.cache-hit != 'true' ||
         steps.cache-node-modules.outputs.cache-hit != 'true'
 
-    - name: Start ganache in background
-      run: yarn start-ganache -q &
-
     - name: Test Aggregator
       run: yarn test test/00_Aggregator.test.js
 
@@ -70,5 +68,3 @@ jobs:
     - name: Test DeBridge Full Auto
       run: yarn test test/04_AutoFullDebridge.test.js
 
-    - name: Shutdown ganache
-      run: killall node

@@ -3,31 +3,50 @@ const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const Debridge = artifacts.require("DeBridgeGate");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
 const CallProxy = artifacts.require("CallProxy");
-const UniswapV2Factory = artifacts.require("UniswapV2Factory");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const DefiController = artifacts.require("DefiController");
-const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
-const WETH9 = artifacts.require("WETH9");
-const { toWei, fromWei, toBN } = web3.utils;
+const { toWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
+const { BigNumber } = require("ethers")
+
+function toBN(number){
+    return BigNumber.from(number.toString())
+  }
 const transferFeeBps = 50;
 const minReservesBps = 3000;
 const BPS = toBN(10000);
 
-contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid]) {
-  const reserveAddress = devid;
+contract("DeBridgeGate full with auto", function () {
+  let reserveAddress;
   const claimFee = toBN(toWei("0"));
   const data = "0x";
 
-  before(async function() {
+  before(async function() {    
+    this.signers = await ethers.getSigners()
+    aliceAccount=this.signers[0]
+    bobAccount=this.signers[1]
+    carolAccount=this.signers[2]
+    eveAccount=this.signers[3]
+    devidAccount=this.signers[4]
+    alice=aliceAccount.address
+    bob=bobAccount.address
+    carol=carolAccount.address
+    eve=eveAccount.address
+    devid=devidAccount.address
+    reserveAddress = devid
+    const Debridge = await ethers.getContractFactory("DeBridgeGate",alice);
+    const UniswapV2 = await deployments.getArtifact("UniswapV2Factory");
+    const WETH9 = await deployments.getArtifact("WETH9");
+    const UniswapV2Factory = await ethers.getContractFactory(UniswapV2.abi,UniswapV2.bytecode, alice );
+    const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
@@ -71,9 +90,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         from: alice,
       });
     }
-    this.uniswapFactory = await UniswapV2Factory.new(carol, {
-      from: alice,
-    });
+    this.uniswapFactory = await UniswapV2Factory.deploy(carol);
     this.feeProxy = await FeeProxy.new(
       this.linkToken.address,
       this.uniswapFactory.address,
@@ -91,10 +108,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
     const fixedNativeFee = toWei("0.00001");
     const isSupported = true;
     const supportedChainIds = [42, 56];
-    this.weth = await WETH9.new({
-      from: alice,
-    });
-
+    this.weth = await WETH9Factory.deploy();
     //     uint256 _excessConfirmations,
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
@@ -104,7 +118,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController
-    this.debridge = await deployProxy(Debridge, [
+    this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
@@ -169,36 +183,28 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
 
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.setAggregator(ZERO_ADDRESS, false, {
-          from: bob,
-        }),
+        this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS, false),
         "onlyAdmin: bad role"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.setFeeProxy(ZERO_ADDRESS, {
-          from: bob,
-        }),
+        this.debridge.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
         "onlyAdmin: bad role"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.setDefiController(ZERO_ADDRESS, {
-          from: bob,
-        }),
+        this.debridge.connect(bobAccount).setDefiController(ZERO_ADDRESS),
         "onlyAdmin: bad role"
       );
     });
 
     it("should reject setting weth if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.setWeth(ZERO_ADDRESS, {
-          from: bob,
-        }),
+        this.debridge.connect(bobAccount).setWeth(ZERO_ADDRESS),
         "onlyAdmin: bad role"
       );
     });
@@ -443,11 +449,12 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
   context("Test mint method", () => {
     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
     const chainId = 56;
-    const receiver = bob;
+    let receiver;
     const amount = toBN(toWei("100"));
     const nonce = 2;
     let currentChainId;
     before(async function() {
+      receiver = bob
       currentChainId = await this.debridge.chainId();
       const newSupply = toWei("100");
       await this.linkToken.mint(alice, newSupply, {
@@ -625,7 +632,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
       const debridge = await this.debridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
-      const deadline = MAX_UINT256;
+      const deadline = toBN(MAX_UINT256);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const signature = await permit(
         wrappedAsset,
@@ -636,7 +643,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         bobPrivKey
       );
       const collectedNativeFees = await this.debridge.collectedFees();
-      await this.debridge.autoBurn(
+      await this.debridge.connect(bobAccount).autoBurn(
         debridgeId,
         receiver,
         amount,
@@ -648,7 +655,6 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         signature,
         false,
         {
-          from: bob,
           value: supportedChainInfo.fixedNativeFee,
         }
       );
@@ -705,7 +711,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
 
   context("Test claim method", () => {
     const tokenAddress = ZERO_ADDRESS;
-    const receiver = bob;
+    let receiver;
     const amount = toBN(toWei("0.9"));
     const nonce = 4;
     let chainIdFrom = 50;
@@ -714,6 +720,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
     let outsideDebridgeId;
     let erc20DebridgeId;
     before(async function() {
+      receiver = bob
       chainId = await this.debridge.chainId();
       debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       outsideDebridgeId = await this.debridge.getDebridgeId(
@@ -898,7 +905,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
 
   context("Test fee maangement", () => {
     const tokenAddress = ZERO_ADDRESS;
-    const receiver = bob;
+    let receiver;
     const amount = toBN(toWei("0.00001"));
     let chainId;
     let debridgeId;
@@ -906,6 +913,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
     let erc20DebridgeId;
 
     before(async function() {
+      receiver = bob
       chainId = await this.debridge.chainId();
       debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       outsideDebridgeId = await this.debridge.getDebridgeId(42, tokenAddress);
@@ -933,9 +941,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
     it("should withdraw fee of ERC20 token if it is called by the admin", async function() {
       const debridge = await this.debridge.getDebridge(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
-      await this.debridge.withdrawFee(erc20DebridgeId, receiver, amount, {
-        from: alice,
-      });
+      await this.debridge.connect(aliceAccount).withdrawFee(erc20DebridgeId, receiver, amount);
       const newBalance = toBN(await this.mockToken.balanceOf(receiver));
       const newDebridge = await this.debridge.getDebridge(erc20DebridgeId);
       assert.equal(
@@ -947,9 +953,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
 
     it("should reject withdrawing fee by non-admin", async function() {
       await expectRevert(
-        this.debridge.withdrawFee(debridgeId, receiver, amount, {
-          from: bob,
-        }),
+        this.debridge.connect(bobAccount).withdrawFee(debridgeId, receiver, amount),
         "onlyAdmin: bad role"
       );
     });

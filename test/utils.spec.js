@@ -8,7 +8,7 @@ const {
   defaultAbiCoder,
   toUtf8Bytes,
   solidityPack,
-} = require("ethers/utils");
+} = require("ethers/lib/utils");
 
 module.exports.permit = async (
   token,
