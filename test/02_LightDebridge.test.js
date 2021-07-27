@@ -3,8 +3,8 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
-const FullAggregator = artifacts.require("FullAggregator");
-const LightVerifier = artifacts.require("LightVerifier");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
+const SignatureVerifier = artifacts.require("SignatureVerifier");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const Debridge = artifacts.require("DeBridgeGate");
@@ -37,15 +37,15 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
     });
     this.amountThreshold = toWei("1000");
     this.minConfirmations = 3;
-    //this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
+    //this.confirmationAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     //this.aggregatorInstance = new web3.eth.Contract(
-    //  FullAggregator.abi,
-    //  this.fullAggregatorAddress
+    //  ConfirmationAggregator.abi,
+    //  this.confirmationAggregatorAddress
     //);
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
 
-    this.fullAggregator = await FullAggregator.new(
+    this.confirmationAggregator = await ConfirmationAggregator.new(
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
@@ -62,7 +62,7 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
     //   address _wrappedAssetAdmin,
     //   address _debridgeAddress
     // )
-    this.lightVerifier = await LightVerifier.new(
+    this.signatureVerifier = await SignatureVerifier.new(
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
@@ -99,7 +99,7 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.lightVerifier.addOracle(oracle.address, {
+      await this.signatureVerifier.addOracle(oracle.address, {
         from: alice,
       });
     }
@@ -119,8 +119,8 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
 
     //function initialize(
     //    uint256 _excessConfirmations,
-    //    address _lightAggregator,
-    //    address _fullAggregator,
+    //    address _signatureAggregator,
+    //    address _confirmationAggregator,
     //    address _callProxy,
     //    uint256[] memory _supportedChainIds,
     //    ChainSupportInfo[] memory _chainSupportInfo,
@@ -131,8 +131,8 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
 
     this.debridge = await deployProxy(Debridge, [
       this.excessConfirmations,
-      this.lightVerifier.address.toString(),
-      this.fullAggregator.address.toString(),
+      this.signatureVerifier.address.toString(),
+      this.confirmationAggregator.address.toString(),
       this.callProxy.address.toString(),
       supportedChainIds,
       [
@@ -153,16 +153,16 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
         devid
     ]);
 
-    await this.lightVerifier.setDebridgeAddress(this.debridge.address.toString());
+    await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
   });
 
   context("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function() {
-      const aggregator = this.lightVerifier.address;
+      const aggregator = this.signatureVerifier.address;
       await this.debridge.setAggregator(aggregator, true,{
         from: alice,
       });
-      const newAggregator = await this.debridge.lightAggregator();
+      const newAggregator = await this.debridge.signatureAggregator();
       assert.equal(aggregator, newAggregator);
     });
 
@@ -215,9 +215,9 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
       //     uint8 _decimals,
       //     bytes[] memory _signatures
       // ) 
-      const debridgeId = await this.lightVerifier.getDebridgeId(chainId, tokenAddress);
+      const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
       //console.log('debridgeId '+debridgeId);
-      const deployId = await this.lightVerifier.getDeployId(debridgeId, name, symbol, decimals);
+      const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
 
       let signatures = [];
       for (let i = 0; i < oracleKeys.length; i++) {
@@ -226,7 +226,7 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
           (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
         );
       }
-      await this.lightVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
+      await this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
         from: this.initialOracles[0].address,
       });
       
@@ -237,7 +237,7 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
       ////     uint8 _decimals
       //// )
       ////function deployAsset(bytes32 _deployId)
-      //await this.lightVerifier.deployAsset(deployId, {
+      //await this.signatureVerifier.deployAsset(deployId, {
       //  from: this.initialOracles[0].address,
       //});
 
@@ -506,7 +506,7 @@ contract("DeBridgeGate light mode", function([alice, bob, carol, eve, fei, devid
         tokenAddress
       );
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, [], {//will call IFullAggregator
+        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, [], {//will call IConfirmationAggregator
           from: alice,
         }),
         "not confirmed"

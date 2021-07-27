@@ -1,6 +1,6 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
-const FullAggregator = artifacts.require("FullAggregator");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const Debridge = artifacts.require("DeBridgeGate");
@@ -35,7 +35,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
       this.excessConfirmations = 3; //Confirmations count in case of excess activity.
   
-      this.aggregator = await FullAggregator.new(
+      this.aggregator = await ConfirmationAggregator.new(
         this.minConfirmations,
         this.confirmationThreshold,
         this.excessConfirmations,
@@ -92,8 +92,8 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
       });
   
       //     uint256 _excessConfirmations,
-      //     address _lightAggregator,
-      //     address _fullAggregator,
+      //     address _signatureAggregator,
+      //     address _confirmationAggregator,
       //     address _callProxy,
       //     uint256[] memory _supportedChainIds,
       //     ChainSupportInfo[] memory _chainSupportInfo,
@@ -131,7 +131,7 @@ contract("FullDebridge", function ([alice, bob, carol, eve, devid]) {
         await this.debridge.setAggregator(aggregator, false, {
           from: alice,
         });
-        const newAggregator = await this.debridge.fullAggregator();
+        const newAggregator = await this.debridge.confirmationAggregator();
         assert.equal(aggregator, newAggregator);
       });
   

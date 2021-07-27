@@ -1,6 +1,6 @@
 const DeBridgeGate = artifacts.require("DeBridgeGate");
-const FullAggregator = artifacts.require("FullAggregator");
-const LightVerifier = artifacts.require("LightVerifier");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
+const SignatureVerifier = artifacts.require("SignatureVerifier");
 const CallProxy = artifacts.require("CallProxy");
 const FeeProxy = artifacts.require("FeeProxy");
 const DefiController = artifacts.require("DefiController");
@@ -18,8 +18,8 @@ module.exports = async function(deployer, network) {
   if (debridgeInitParams.type == "full") {
     //   function initialize(
     //     uint256 _excessConfirmations,
-    //     address _lightAggregator,
-    //     address _fullAggregator,
+    //     address _signatureAggregator,
+    //     address _confirmationAggregator,
     //     address _callProxy,
     //     uint256[] memory _supportedChainIds,
     //     ChainSupportInfo[] memory _chainSupportInfo,
@@ -32,8 +32,8 @@ module.exports = async function(deployer, network) {
       DeBridgeGate,
       [
         debridgeInitParams.excessConfirmations,    
-        ZERO_ADDRESS, //LightVerifier.address.toString(),
-        FullAggregator.address.toString(),
+        ZERO_ADDRESS, //SignatureVerifier.address.toString(),
+        ConfirmationAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
         debridgeInitParams.chainSupportInfo,
@@ -43,18 +43,18 @@ module.exports = async function(deployer, network) {
       ],
       { deployer }
     );
-    aggregatorInstance = await FullAggregator.deployed();
+    aggregatorInstance = await ConfirmationAggregator.deployed();
     debridgeInstance = await DeBridgeGate.deployed();
 
-    console.log("FullAggregator: " + aggregatorInstance.address);
+    console.log("ConfirmationAggregator: " + aggregatorInstance.address);
     console.log("DeBridgeGate: " + debridgeInstance.address);
   } else {
     await deployProxy(
       DeBridgeGate,
       [
         debridgeInitParams.excessConfirmations,
-        LightVerifier.address.toString(),        
-        ZERO_ADDRESS, //FullAggregator.address.toString(),
+        SignatureVerifier.address.toString(),        
+        ZERO_ADDRESS, //ConfirmationAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
         debridgeInitParams.chainSupportInfo,
@@ -65,10 +65,10 @@ module.exports = async function(deployer, network) {
       ],
       { deployer }
     );
-    aggregatorInstance = await LightVerifier.deployed();
+    aggregatorInstance = await SignatureVerifier.deployed();
     debridgeInstance = await DeBridgeGate.deployed();
 
-    console.log("FullAggregator: " + aggregatorInstance.address);
+    console.log("ConfirmationAggregator: " + aggregatorInstance.address);
     console.log("DeBridgeGate: " + debridgeInstance.address);
   }
   await aggregatorInstance.setDebridgeAddress(

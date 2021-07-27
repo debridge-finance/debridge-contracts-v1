@@ -21,10 +21,10 @@ A detailed description of each method of the smart contracts can be found in [do
 The full list of contracts:
 
 - DeBridgeGate
-- Aggregator
-- LightAggregator
-- FullAggregator
-- LightVerifier
+- AggregatorBase
+- SignatureAggregator
+- ConfirmationAggregator
+- SignatureVerifier
 - DelegatedStaking
 - CallProxy
 - FeeProxy
@@ -42,19 +42,19 @@ The detailed methods description can be found in the contracts themselves.
 
 ## Chainlink
 
-**Aggregator**
+**AggregatorBase**
 
 The base contract for Chainlink oracles management. Allows to add/remove oracles, manage the minimal required amount of confirmations and assign oracle admins.
 
-**FullAggregator**
+**ConfirmationAggregator**
 
-Extends the **Aggregator** with confirmation-related methods; is deployed to the chain with low fees and is used to collect confirmations from oracles.
+Extends the **AggregatorBase** with confirmation-related methods; is deployed to the chain with low fees and is used to collect confirmations from oracles.
 
-**LightAggregator**
+**SignatureAggregator**
 
-Extends the **Aggregator** with confirmation-related methods; is deployed to the chain with low fees and is used to collect signatures from oracles that confirm the transfers.
+Extends the **AggregatorBase** with confirmation-related methods; is deployed to the chain with low fees and is used to collect signatures from oracles that confirm the transfers.
 
-**LightVerifier.sol**
+**SignatureVerifier.sol**
 
 Is deployed to the chain with high fees and is used to verify the transfer by oracles signatures.
 

@@ -3,8 +3,8 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const { deployProxy } = require("@openzeppelin/truffle-upgrades");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
-const FullAggregator = artifacts.require("FullAggregator");
-const LightVerifier = artifacts.require("LightVerifier");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
+const SignatureVerifier = artifacts.require("SignatureVerifier");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const DeBridgeGate = artifacts.require("DeBridgeGate");
@@ -31,14 +31,14 @@ contract("DeBridgeGate AutoLight mode", function([alice, bob, carol, eve, fei, d
     });
     this.minConfirmations = 3;
     this.amountThreshold = toWei("1000");
-    this.fullAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
+    this.confirmationAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     this.aggregatorInstance = new web3.eth.Contract(
-      FullAggregator.abi,
-      this.fullAggregatorAddress
+      ConfirmationAggregator.abi,
+      this.confirmationAggregatorAddress
     );
     this.confirmationThreshold = 5;
     this.excessConfirmations = 3;
-    this.lightAggregator = await LightVerifier.new(
+    this.signatureAggregator = await SignatureVerifier.new(
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
@@ -73,7 +73,7 @@ contract("DeBridgeGate AutoLight mode", function([alice, bob, carol, eve, fei, d
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.lightAggregator.addOracle(oracle.address, {
+      await this.signatureAggregator.addOracle(oracle.address, {
         from: alice,
       });
     }
@@ -99,7 +99,7 @@ contract("DeBridgeGate AutoLight mode", function([alice, bob, carol, eve, fei, d
       maxAmount,
       minReserves,
       this.amountThreshold,
-      this.lightAggregator.address,
+      this.signatureAggregator.address,
       this.callProxy.address.toString(),
       supportedChainIds,
       [

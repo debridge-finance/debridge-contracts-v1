@@ -1,5 +1,5 @@
-const FullAggregator = artifacts.require("FullAggregator");
-const LightAggregator = artifacts.require("LightAggregator");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
+const SignatureAggregator = artifacts.require("SignatureAggregator");
 const ILinkToken = artifacts.require("ILinkToken");
 const { getLinkAddress } = require("./utils");
 
@@ -13,12 +13,12 @@ module.exports = async function(deployer, network) {
 
   // const linkTokenInstance = await ILinkToken.at(link);
   // await linkTokenInstance.transferAndCall(
-  //   FullAggregator.address.toString(),
+  //   ConfirmationAggregator.address.toString(),
   //   amount,
   //   "0x"
   // );
   // await linkTokenInstance.transferAndCall(
-  //   LightAggregator.address.toString(),
+  //   SignatureAggregator.address.toString(),
   //   amount,
   //   "0x"
   // );

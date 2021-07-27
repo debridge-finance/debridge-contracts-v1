@@ -2,9 +2,9 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interfaces/IAggregator.sol";
+import "../interfaces/IAggregatorBase.sol";
 
-contract Aggregator is AccessControl, IAggregator {
+contract AggregatorBase is AccessControl, IAggregatorBase {
 
     /* ========== STATE VARIABLES ========== */
 

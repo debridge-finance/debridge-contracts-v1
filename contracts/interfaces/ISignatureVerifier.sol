@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-interface ILightVerifier {
+interface ISignatureVerifier {
     /* ========== STRUCTS ========== */
 
     struct BlockConfirmationsInfo {

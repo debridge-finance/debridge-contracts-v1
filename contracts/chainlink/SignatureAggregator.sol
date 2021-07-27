@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./Aggregator.sol";
-import "../interfaces/ILightAggregator.sol";
+import "./AggregatorBase.sol";
+import "../interfaces/ISignatureAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
-contract LightAggregator is Aggregator, ILightAggregator {
+contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     /* ========== STATE VARIABLES ========== */
 
@@ -17,7 +17,7 @@ contract LightAggregator is Aggregator, ILightAggregator {
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
     constructor(uint256 _minConfirmations) 
-        Aggregator(_minConfirmations)
+        AggregatorBase(_minConfirmations)
     {}
 
     /* ========== ORACLES  ========== */

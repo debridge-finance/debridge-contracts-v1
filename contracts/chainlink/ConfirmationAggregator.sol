@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./Aggregator.sol";
-import "../interfaces/IFullAggregator.sol";
+import "./AggregatorBase.sol";
+import "../interfaces/IConfirmationAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
-contract FullAggregator is Aggregator, IFullAggregator {
+contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     
     /* ========== STATE VARIABLES ========== */
 
@@ -33,7 +33,7 @@ contract FullAggregator is Aggregator, IFullAggregator {
         address _wrappedAssetAdmin,
         address _debridgeAddress
     )
-        Aggregator(
+        AggregatorBase(
             _minConfirmations
         )
     {
