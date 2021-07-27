@@ -56,6 +56,9 @@ jobs:
         steps.cache-yarn-cache.outputs.cache-hit != 'true' ||
         steps.cache-node-modules.outputs.cache-hit != 'true'
 
+    - name: Test CallProxy
+      run: yarn run hardhat test test/00_CallProxy.test.js
+
     - name: Test Aggregator
       run: yarn test test/00_Aggregator.test.js
 
