@@ -1,6 +1,6 @@
 # Test cases
 
-## Test Item: FullAggregator
+## Test Item: ConfirmationAggregator
 
 ### General requirements
 

@@ -2,10 +2,10 @@
 pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interfaces/ILightVerifier.sol";
+import "../interfaces/ISignatureVerifier.sol";
 import "../periphery/WrappedAsset.sol";
 
-contract LightVerifier is AccessControl, ILightVerifier {
+contract SignatureVerifier is AccessControl, ISignatureVerifier {
 
     /* ========== STATE VARIABLES ========== */
 

@@ -1,6 +1,6 @@
-const FullAggregator = artifacts.require("FullAggregator");
-const LightAggregator = artifacts.require("LightAggregator");
-const LightVerifier = artifacts.require("LightVerifier");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
+const SignatureAggregator = artifacts.require("SignatureAggregator");
+const SignatureVerifier = artifacts.require("SignatureVerifier");
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network, accounts) {
@@ -16,7 +16,7 @@ module.exports = async function(deployer, network, accounts) {
     //     address _debridgeAddress
     // )
     await deployer.deploy(
-      FullAggregator,
+      ConfirmationAggregator,
       debridgeInitParams.minConfirmations,
       debridgeInitParams.confirmationThreshold,
       debridgeInitParams.excessConfirmations,
@@ -27,16 +27,16 @@ module.exports = async function(deployer, network, accounts) {
     //TODO: deploy Light Aggregator in arbitrum
     // constructor(uint256 _minConfirmations) 
     await deployer.deploy(
-      LightAggregator,
+      SignatureAggregator,
       debridgeInitParams.minConfirmations
     );
-    let aggregatorInstance = await FullAggregator.deployed();
-    let lightAggregatorInstance = await LightAggregator.deployed();
-    console.log("FullAggregator: " + aggregatorInstance.address);
-    console.log("LightAggregator: " + LightAggregator.address);
+    let aggregatorInstance = await ConfirmationAggregator.deployed();
+    let signatureAggregatorInstance = await SignatureAggregator.deployed();
+    console.log("ConfirmationAggregator: " + aggregatorInstance.address);
+    console.log("SignatureAggregator: " + SignatureAggregator.address);
     for (let oracle of debridgeInitParams.oracles) {
       await aggregatorInstance.addOracle(oracle.address, oracle.admin);
-      await lightAggregatorInstance.addOracle(oracle.address, oracle.admin);
+      await signatureAggregatorInstance.addOracle(oracle.address, oracle.admin);
       console.log("addOracle: " + oracle.address);
     }
   } else {
@@ -49,15 +49,15 @@ module.exports = async function(deployer, network, accounts) {
   //     address _debridgeAddress
   // )
     await deployer.deploy(
-      LightVerifier,
+      SignatureVerifier,
       debridgeInitParams.minConfirmations,
       debridgeInitParams.confirmationThreshold,
       debridgeInitParams.excessConfirmations,
       accounts[0],
       ZERO_ADDRESS
     );
-    let aggregatorInstance = await LightVerifier.deployed();
-    console.log("LightVerifier: " + aggregatorInstance.address);
+    let aggregatorInstance = await SignatureVerifier.deployed();
+    console.log("SignatureVerifier: " + aggregatorInstance.address);
     for (let oracle of debridgeInitParams.oracles) {
       await aggregatorInstance.addOracle(oracle.address);
       console.log("addOracle: " + oracle.address);

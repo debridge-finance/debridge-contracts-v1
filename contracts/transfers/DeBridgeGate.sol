@@ -9,12 +9,12 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../periphery/WrappedAsset.sol";
-import "../interfaces/ILightVerifier.sol";
+import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IDefiController.sol";
-import "../interfaces/IFullAggregator.sol";
+import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 
@@ -35,8 +35,8 @@ contract DeBridgeGate is Initializable,
     uint256 public chainId; // current chain id
     uint256 public collectedFees; // current native fee
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    address public lightAggregator; // current aggregator address address to verify signatures
-    address public fullAggregator; // current aggregator address to verify by oracles confirmations
+    address public signatureVerifier; // current signatureVerifier address to verify signatures
+    address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     address public callProxy; // proxy to execute user's calls
     uint8 public aggregatorLightVersion; // aggregators count
     uint8 public aggregatorFullVersion; // aggregators count
@@ -46,8 +46,8 @@ contract DeBridgeGate is Initializable,
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
-    mapping(uint8 => AggregatorInfo) public getOldLightAggregator; // counter => agrgregator info
-    mapping(uint8 => AggregatorInfo) public getOldFullAggregator; // counter => agrgregator info
+    mapping(uint8 => AggregatorInfo) public getOldSignatureVerifier; // counter => agrgregator info
+    mapping(uint8 => AggregatorInfo) public getOldConfirmationAggregator; // counter => agrgregator info
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
 
@@ -72,14 +72,14 @@ contract DeBridgeGate is Initializable,
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _lightAggregator Aggregator address to verify signatures
-    /// @param _fullAggregator Aggregator address to verify by oracles confirmations
+    /// @param _signatureVerifier Aggregator address to verify signatures
+    /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     /// @param _treasury Address to collect a fee
     function initialize(
         uint256 _excessConfirmations,
-        address _lightAggregator,
-        address _fullAggregator,
+        address _signatureVerifier,
+        address _confirmationAggregator,
         address _callProxy,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo,
@@ -100,8 +100,8 @@ contract DeBridgeGate is Initializable,
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
         
-        lightAggregator = _lightAggregator;
-        fullAggregator = _fullAggregator;
+        signatureVerifier = _signatureVerifier;
+        confirmationAggregator = _confirmationAggregator;
 
         callProxy = _callProxy;
         defiController = _defiController;
@@ -174,8 +174,8 @@ contract DeBridgeGate is Initializable,
         );
         
         _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                         ? lightAggregator 
-                                         : fullAggregator);
+                                         ? signatureVerifier 
+                                         : confirmationAggregator);
 
         _checkConfirmations(
             submissionId, 
@@ -361,8 +361,8 @@ contract DeBridgeGate is Initializable,
         );
 
         _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                           ? lightAggregator 
-                                           : fullAggregator);
+                                           ? signatureVerifier 
+                                           : confirmationAggregator);
 
         _checkConfirmations(
             submissionId, 
@@ -511,8 +511,8 @@ contract DeBridgeGate is Initializable,
         );
         
         _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                        ? getOldLightAggregator[_aggregatorVersion].aggregator
-                                        : getOldFullAggregator[_aggregatorVersion].aggregator);
+                                        ? getOldSignatureVerifier[_aggregatorVersion].aggregator
+                                        : getOldConfirmationAggregator[_aggregatorVersion].aggregator);
             
 
         _checkConfirmationsOldAggregator(
@@ -610,8 +610,8 @@ contract DeBridgeGate is Initializable,
         );
 
         _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                        ? getOldLightAggregator[_aggregatorVersion].aggregator
-                                        : getOldFullAggregator[_aggregatorVersion].aggregator);
+                                        ? getOldSignatureVerifier[_aggregatorVersion].aggregator
+                                        : getOldConfirmationAggregator[_aggregatorVersion].aggregator);
 
         _checkConfirmationsOldAggregator(
             submissionId, 
@@ -786,13 +786,13 @@ contract DeBridgeGate is Initializable,
     /// @param _aggregator Submission aggregator address.
     function setAggregator(address _aggregator, bool _isLight) external onlyAdmin() {
         if(_isLight){
-            getOldLightAggregator[aggregatorLightVersion] = AggregatorInfo(_aggregator, true);
-            lightAggregator = _aggregator;
+            getOldSignatureVerifier[aggregatorLightVersion] = AggregatorInfo(_aggregator, true);
+            signatureVerifier = _aggregator;
             aggregatorLightVersion++;
         }
         else{
-            getOldFullAggregator[aggregatorFullVersion] = AggregatorInfo(_aggregator, true);
-            fullAggregator = _aggregator;
+            getOldConfirmationAggregator[aggregatorFullVersion] = AggregatorInfo(_aggregator, true);
+            confirmationAggregator = _aggregator;
             aggregatorFullVersion++;
         }
     }
@@ -803,11 +803,11 @@ contract DeBridgeGate is Initializable,
     function manageOldAggregator(uint8 _aggregatorVersion, bool _isLight, bool _isValid) external onlyAdmin() {
         if(_isLight){
             require(_aggregatorVersion < aggregatorLightVersion, "manageOldAggregator: version too high");
-            getOldLightAggregator[_aggregatorVersion].isValid = _isValid;
+            getOldSignatureVerifier[_aggregatorVersion].isValid = _isValid;
         }
         else{
             require(_aggregatorVersion < aggregatorFullVersion, "manageOldAggregator: version too high");
-            getOldFullAggregator[_aggregatorVersion].isValid = _isValid;
+            getOldConfirmationAggregator[_aggregatorVersion].isValid = _isValid;
         }
     }
 
@@ -947,7 +947,7 @@ contract DeBridgeGate is Initializable,
     function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal {
         if(!getDebridge[debridgeId].exist){
             (address wrappedAssetAddress, uint256 nativeChainId) = 
-                    IFullAggregator(aggregatorAddress).deployAsset(debridgeId);
+                    IConfirmationAggregator(aggregatorAddress).deployAsset(debridgeId);
             require(wrappedAssetAddress != address(0), "mint: wrapped asset not exist");
             _addAsset(debridgeId, wrappedAssetAddress, nativeChainId);
         }
@@ -958,8 +958,8 @@ contract DeBridgeGate is Initializable,
         internal {
         (uint256 confirmations, bool confirmed) = 
                 _signatures.length > 0 
-                ? ILightVerifier(lightAggregator).submit(_submissionId, _signatures)
-                : IFullAggregator(fullAggregator).getSubmissionConfirmations(_submissionId);
+                ? ISignatureVerifier(signatureVerifier).submit(_submissionId, _signatures)
+                : IConfirmationAggregator(confirmationAggregator).getSubmissionConfirmations(_submissionId);
         require(confirmed, "not confirmed");
         if (_amount >= getAmountThreshold[_debridgeId]) {
             require(confirmations >= excessConfirmations, "amount not confirmed");
@@ -972,13 +972,13 @@ contract DeBridgeGate is Initializable,
         internal {
         AggregatorInfo memory aggregatorInfo 
                 = _signatures.length > 0 
-                ? getOldLightAggregator[_aggregatorVersion]
-                : getOldFullAggregator[_aggregatorVersion];
+                ? getOldSignatureVerifier[_aggregatorVersion]
+                : getOldConfirmationAggregator[_aggregatorVersion];
         require(aggregatorInfo.isValid, "invalidAggregator" );
         (uint256 confirmations, bool confirmed) = 
                 _signatures.length > 0 
-                ? ILightVerifier(aggregatorInfo.aggregator).submit(_submissionId, _signatures)
-                : IFullAggregator(aggregatorInfo.aggregator).getSubmissionConfirmations(_submissionId);
+                ? ISignatureVerifier(aggregatorInfo.aggregator).submit(_submissionId, _signatures)
+                : IConfirmationAggregator(aggregatorInfo.aggregator).getSubmissionConfirmations(_submissionId);
         require(confirmed, "not confirmed");
         if (_amount >= getAmountThreshold[_debridgeId]) {
             require(confirmations >= excessConfirmations, "amount not confirmed");

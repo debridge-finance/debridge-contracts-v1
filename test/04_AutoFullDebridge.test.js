@@ -1,6 +1,6 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
-const FullAggregator = artifacts.require("FullAggregator");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const Debridge = artifacts.require("DeBridgeGate");
@@ -42,7 +42,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
 
-    this.fullAggregator = await FullAggregator.new(
+    this.confirmationAggregator = await ConfirmationAggregator.new(
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
@@ -67,7 +67,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.fullAggregator.addOracle(oracle.address, oracle.admin, {
+      await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, {
         from: alice,
       });
     }
@@ -96,8 +96,8 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
     });
 
     //     uint256 _excessConfirmations,
-    //     address _lightAggregator,
-    //     address _fullAggregator,
+    //     address _signatureVerifier,
+    //     address _confirmationAggregator,
     //     address _callProxy,
     //     uint256[] memory _supportedChainIds,
     //     ChainSupportInfo[] memory _chainSupportInfo,
@@ -127,16 +127,16 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
       ZERO_ADDRESS,
       devid
     ]);
-    await this.fullAggregator.setDebridgeAddress(this.debridge.address.toString());
+    await this.confirmationAggregator.setDebridgeAddress(this.debridge.address.toString());
   });
 
   context("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function() {
-      const aggregator = this.fullAggregator.address;
+      const aggregator = this.confirmationAggregator.address;
       await this.debridge.setAggregator(aggregator, false, {
         from: alice,
       });
-      const newAggregator = await this.debridge.fullAggregator();
+      const newAggregator = await this.debridge.confirmationAggregator();
       assert.equal(aggregator, newAggregator);
     });
 
@@ -215,7 +215,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         from: alice,
       });
       //await this.dbrToken.transferAndCall(
-      //  this.fullAggregator.address.toString(),
+      //  this.confirmationAggregator.address.toString(),
       //  newSupply,
       //  "0x",
       //  {
@@ -223,7 +223,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
       //  }
       //);
       //await this.linkToken.transferAndCall(
-      //  this.fullAggregator.address.toString(),
+      //  this.confirmationAggregator.address.toString(),
       //  newSupply,
       //  "0x",
       //  {
@@ -254,7 +254,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         //     string memory _symbol,
         //     uint8 _decimals
         // )
-      await this.fullAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
+      await this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
         from: this.initialOracles[0].address,
       });
 
@@ -264,7 +264,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         //     string memory _symbol,
         //     uint8 _decimals
         // )
-      // let deployId = await this.fullAggregator.getDeployId(debridgeId, name, symbol, decimals) 
+      // let deployId = await this.confirmationAggregator.getDeployId(debridgeId, name, symbol, decimals) 
       // //function deployAsset(bytes32 _deployId)
       // await this.debridge.checkAndDeployAsset(debridgeId, {
       //   from: this.initialOracles[0].address,
@@ -457,7 +457,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         from: alice,
       });
       //await this.dbrToken.transferAndCall(
-      //  this.fullAggregator.address.toString(),
+      //  this.confirmationAggregator.address.toString(),
       //  newSupply,
       //  "0x",
       //  {
@@ -465,7 +465,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
       //  }
       //);
       //await this.linkToken.transferAndCall(
-      //  this.fullAggregator.address.toString(),
+      //  this.confirmationAggregator.address.toString(),
       //  newSupply,
       //  "0x",
       //  {
@@ -499,12 +499,12 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         claimFee,
         data,
       );
-      await this.fullAggregator.submit(submission, {
+      await this.confirmationAggregator.submit(submission, {
         from: bob,
       });
 
-      let submissionInfo = await this.fullAggregator.getSubmissionInfo(submission);
-      let submissionConfirmations = await this.fullAggregator.getSubmissionConfirmations(submission);
+      let submissionInfo = await this.confirmationAggregator.getSubmissionInfo(submission);
+      let submissionConfirmations = await this.confirmationAggregator.getSubmissionConfirmations(submission);
      
       assert.equal(1, submissionInfo.confirmations);
       assert.equal(true, submissionConfirmations[0]);
@@ -735,7 +735,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         claimFee,
         data,
       );
-      await this.fullAggregator.submit(cuurentChainSubmission, {
+      await this.confirmationAggregator.submit(cuurentChainSubmission, {
         from: bob,
       });
       const outsideChainSubmission = await this.debridge.getAutoSubmisionId(
@@ -749,7 +749,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         claimFee,
         data,
       );
-      await this.fullAggregator.submit(outsideChainSubmission, {
+      await this.confirmationAggregator.submit(outsideChainSubmission, {
         from: bob,
       });
       const erc20Submission = await this.debridge.getAutoSubmisionId(
@@ -763,7 +763,7 @@ contract("DeBridgeGate full with auto", function ([alice, bob, carol, eve, devid
         claimFee,
         data,
       );
-      await this.fullAggregator.submit(erc20Submission, {
+      await this.confirmationAggregator.submit(erc20Submission, {
         from: bob,
       });
     });

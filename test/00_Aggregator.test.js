@@ -1,9 +1,9 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const FullAggregator = artifacts.require("FullAggregator");
+const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
 const { toWei, fromWei, toBN } = web3.utils;
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
+contract("ConfirmationAggregator", function([alice, bob, carol, eve, devid]) {
   //TODO: add tests confirmNewAsset
   before(async function() {
     this.minConfirmations = 2;
@@ -18,7 +18,7 @@ contract("FullAggregator", function([alice, bob, carol, eve, devid]) {
     //   address _debridgeAddress
     // )
 
-    this.aggregator = await FullAggregator.new(
+    this.aggregator = await ConfirmationAggregator.new(
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
