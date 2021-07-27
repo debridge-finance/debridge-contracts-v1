@@ -176,7 +176,7 @@ contract DelegatedStaking is AccessControl, Initializable {
                           dependencyRewards +=
                                 delegator.stakes[collateralAddresses[k]].shares
                                 * oracle.dependsAccTokensPerShare[collateralAddresses[k]][rewardCollateral]
-                                / 1e18; //TODO: check decimals in contract. we need to set 1e6 for USDT
+                                / 1e18;
                     }
                 }
                 pendingReward = pendingReward + dependencyRewards - delegator.passedRewards[rewardCollateral];
@@ -475,11 +475,12 @@ contract DelegatedStaking is AccessControl, Initializable {
     function getPoolUSDAmount(address _oracle, address _collateral) internal view returns(uint256) {
         uint256 collateralPrice;
         if (collaterals[_collateral].isUSDStable)
-            collateralPrice =  10 ** (18+(18 - collaterals[_collateral].decimals));//We don't suppport decimals greater then 18
+            collateralPrice = 1e18; // We don't suppport decimals greater than 18
             //for decimals 6 will be 1e24
             //for decimals 18 will be 1e18
-        else collateralPrice = priceConsumer.getPriceOfToken(_collateral);//TODO: check that decimals is 18
-        return getUserInfo[_oracle].delegation[_collateral].stakedAmount*collateralPrice/1e18;//TODO: check decimals (added /1e18)
+        else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
+        return getUserInfo[_oracle].delegation[_collateral].stakedAmount*collateralPrice
+            * 10 ** (collaterals[_collateral].decimals % 18);
     }
 
     /**
@@ -856,10 +857,10 @@ contract DelegatedStaking is AccessControl, Initializable {
 
             if(currentCollateral==_collateral){
                 //Increase accumulated rewards per share
-                oracle.accTokensPerShare[currentCollateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares; //TODO: check decimals (added *1e18)
+                oracle.accTokensPerShare[currentCollateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
             } else {
                 //Add a reward pool dependency
-                oracle.dependsAccTokensPerShare[currentCollateral][_collateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares; //TODO: check decimals (added *1e18)
+                oracle.dependsAccTokensPerShare[currentCollateral][_collateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
             }
         }
         emit RewardsDistributed(_oracle, _collateral, _amount);
