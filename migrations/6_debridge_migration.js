@@ -18,7 +18,7 @@ module.exports = async function(deployer, network) {
   if (debridgeInitParams.type == "full") {
     //   function initialize(
     //     uint256 _excessConfirmations,
-    //     address _signatureAggregator,
+    //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
     //     uint256[] memory _supportedChainIds,

@@ -6,7 +6,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const wrappedAssetAbi = require("../build/contracts/WrappedAsset.json").abi;
 const confirmationAggregatorAbi = require("../build/contracts/ConfirmationAggregator.json").abi;
 const fullDebridgeAbi = require("../build/contracts/FullDebridge.json").abi;
-const signatureAggregatorAbi = require("../build/contracts/SignatureVerifier.json").abi;
+const signatureVerifierAbi = require("../build/contracts/SignatureVerifier.json").abi;
 const lightDebridgeAbi = require("../build/contracts/LightDebridge.json").abi;
 
 const hecoWeb3 = new Web3(process.env.HECO_PROVIDER);
@@ -35,7 +35,7 @@ const hecoInfo = {
 };
 const ethInfo = {
   aggregatorInstance: new ethWeb3.eth.Contract(
-    signatureAggregatorAbi,
+    signatureVerifierAbi,
     process.env.ETH_AGGREGATOR
   ),
   debridgeInstance: new ethWeb3.eth.Contract(

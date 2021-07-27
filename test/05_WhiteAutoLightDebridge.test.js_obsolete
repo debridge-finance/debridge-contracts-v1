@@ -38,7 +38,7 @@ contract("DeBridgeGate AutoLight mode", function([alice, bob, carol, eve, fei, d
     );
     this.confirmationThreshold = 5;
     this.excessConfirmations = 3;
-    this.signatureAggregator = await SignatureVerifier.new(
+    this.signatureVerifier = await SignatureVerifier.new(
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
@@ -73,7 +73,7 @@ contract("DeBridgeGate AutoLight mode", function([alice, bob, carol, eve, fei, d
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.signatureAggregator.addOracle(oracle.address, {
+      await this.signatureVerifier.addOracle(oracle.address, {
         from: alice,
       });
     }
@@ -99,7 +99,7 @@ contract("DeBridgeGate AutoLight mode", function([alice, bob, carol, eve, fei, d
       maxAmount,
       minReserves,
       this.amountThreshold,
-      this.signatureAggregator.address,
+      this.signatureVerifier.address,
       this.callProxy.address.toString(),
       supportedChainIds,
       [
