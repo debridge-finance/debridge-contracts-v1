@@ -66,7 +66,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.fullAggregator.addOracle(oracle.address, {
+      await this.fullAggregator.addOracle(oracle.address, oracle.admin, {
         from: alice,
       });
     }

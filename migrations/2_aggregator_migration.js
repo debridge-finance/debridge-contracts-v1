@@ -35,8 +35,8 @@ module.exports = async function(deployer, network, accounts) {
     console.log("FullAggregator: " + aggregatorInstance.address);
     console.log("LightAggregator: " + LightAggregator.address);
     for (let oracle of debridgeInitParams.oracles) {
-      await aggregatorInstance.addOracle(oracle.address);
-      await lightAggregatorInstance.addOracle(oracle.address);
+      await aggregatorInstance.addOracle(oracle.address, oracle.admin);
+      await lightAggregatorInstance.addOracle(oracle.address, oracle.admin);
       console.log("addOracle: " + oracle.address);
     }
   } else {

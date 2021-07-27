@@ -28,8 +28,7 @@ contract DeBridgeGate is Initializable,
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public constant BPS = 1e4; //Basis points (BPS)
-
+    uint256 public constant DENOMINATOR = 1e18; // accuacy multiplyer
     uint256 public chainId; // current chain id
     uint256 public collectedFees; // current native fee
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
@@ -53,15 +52,21 @@ contract DeBridgeGate is Initializable,
     IWETH public weth; // wrapped native token contract
     address treasury; //address of treasury
 
-    uint256 flashFeeBPS; // fee in BPS
+    uint256 flashFee; // (amount * flashFee / DENOMINATOR)
 
     /* ========== MODIFIERS ========== */
+
+    bytes32 public constant AGGREGATOR_ROLE = keccak256("AGGREGATOR_ROLE");
+
+    modifier onlyAggregator {
+        require(hasRole(AGGREGATOR_ROLE, msg.sender), "onlyAggregator: bad role");
+        _;
+    }
 
     modifier onlyDefiController {
         require(address(defiController) == msg.sender, "defiController: bad role");
         _;
     }
-
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
@@ -85,7 +90,7 @@ contract DeBridgeGate is Initializable,
         IFeeProxy _feeProxy,
         IDefiController _defiController,
         address _treasury
-    ) public initializer {
+    ) public payable initializer {
         uint256 cid;
         assembly {
             cid := chainid()
@@ -110,7 +115,7 @@ contract DeBridgeGate is Initializable,
         feeProxy = _feeProxy;
         treasury = _treasury;
 
-        flashFeeBPS = 10;
+        flashFee = 1e15;
     }
 
 
@@ -690,7 +695,7 @@ contract DeBridgeGate is Initializable,
     // noDelegateCall
     {
         DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
-        uint256 currentFlashFee = (_amount * flashFeeBPS) / BPS;
+        uint256 currentFlashFee = (_amount * flashFee) / DENOMINATOR;
         uint256 balanceBefore = IERC20(_tokenAddress).balanceOf(address(this));
 
         IERC20(_tokenAddress).safeTransfer(_receiver, _amount);
@@ -767,16 +772,16 @@ contract DeBridgeGate is Initializable,
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.
     /// @param _maxAmount Maximum amount of current chain token to be wrapped.
-    /// @param _minReservesBPS Minimal reserve ration in BPS.
+    /// @param _minReserves Minimal reserve ration.
     function updateAsset(
         bytes32 _debridgeId,
         uint256 _maxAmount,
-        uint256 _minReservesBPS,
+        uint256 _minReserves,
         uint256 _amountThreshold
     ) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.maxAmount = _maxAmount;
-        debridge.minReservesBPS = _minReservesBPS;
+        debridge.minReserves = _minReserves;
         getAmountThreshold[_debridgeId] = _amountThreshold;
     }
 
@@ -862,7 +867,8 @@ contract DeBridgeGate is Initializable,
     {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
-        uint256 minReserves = (debridge.balance * debridge.minReservesBPS) / BPS;
+        uint256 minReserves = (debridge.balance * debridge.minReserves) /
+            DENOMINATOR;
         uint256 balance = getBalance(debridge.tokenAddress);
         require( minReserves + _amount > balance, "requestReserves: not enough reserves");
         if (debridge.tokenAddress == address(0)) {
@@ -935,9 +941,9 @@ contract DeBridgeGate is Initializable,
     }
 
     /// @dev Update flash fees.
-    /// @param _flashFeeBPS new fee in BPS
-    function updateFlashFee(uint256 _flashFeeBPS) external onlyAdmin() {
-        flashFeeBPS = _flashFeeBPS;
+    /// @param _flashFee new fee
+    function updateFlashFee(uint256 _flashFee) external onlyAdmin() {
+        flashFee = _flashFee;
     }
 
     /* ========== INTERNAL ========== */
@@ -996,7 +1002,7 @@ contract DeBridgeGate is Initializable,
         if(debridge.maxAmount == 0){
             debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
-        // debridge.minReservesBPS = BPS;
+        // debridge.minReserves = DENOMINATOR;
         if(getAmountThreshold[_debridgeId] == 0){
             getAmountThreshold[_debridgeId] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
@@ -1005,7 +1011,7 @@ contract DeBridgeGate is Initializable,
             _tokenAddress,
             _chainId,
             debridge.maxAmount,
-            debridge.minReservesBPS
+            debridge.minReserves
         );
     }
 
@@ -1013,7 +1019,8 @@ contract DeBridgeGate is Initializable,
     /// @param _debridge Asset info.
     /// @param _amount Required amount of tokens.
     function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount) internal {
-        uint256 minReserves = (_debridge.balance * _debridge.minReservesBPS) / BPS;
+        uint256 minReserves = (_debridge.balance * _debridge.minReserves) /
+            DENOMINATOR;
         uint256 balance = getBalance(_debridge.tokenAddress);
         uint256 requestedReserves = minReserves > _amount
             ? minReserves
@@ -1065,13 +1072,14 @@ contract DeBridgeGate is Initializable,
                 : debridge.getChainFee[_chainIdTo];
             require(fixedFee != 0, "send: fixed fee for asset is not supported");
             uint256 transferFee = fixedFee +
-                (_amount * chainSupportInfo.transferFeeBPS) / BPS;
+                (_amount * chainSupportInfo.transferFee) /
+                DENOMINATOR;
             require(_amount >= transferFee, "send: amount not cover fees");
             debridge.collectedFees += transferFee;
             _amount -= transferFee;
         } else {
             {
-                uint256 transferFee = (_amount*chainSupportInfo.transferFeeBPS) / BPS;
+                uint256 transferFee = (_amount*chainSupportInfo.transferFee)/DENOMINATOR;
                 require(_amount >= transferFee, "send: amount not cover fees");
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
@@ -1118,13 +1126,14 @@ contract DeBridgeGate is Initializable,
             uint256 fixedFee = debridge.getChainFee[_chainIdTo];
             require(fixedFee != 0, "send: fixed fee for asset is not supported");
             uint256 transferFee = fixedFee +
-                (_amount * chainSupportInfo.transferFeeBPS) / BPS;
+                (_amount * chainSupportInfo.transferFee) /
+                DENOMINATOR;
             require(_amount >= transferFee, "send: amount not cover fees");
             debridge.collectedFees += transferFee;
             _amount -= transferFee;
         } else {
             {
-                uint256 transferFee = (_amount*chainSupportInfo.transferFeeBPS)/BPS;
+                uint256 transferFee = (_amount*chainSupportInfo.transferFee)/DENOMINATOR;
                 require(_amount >= transferFee, "send: amount not cover fees");
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;

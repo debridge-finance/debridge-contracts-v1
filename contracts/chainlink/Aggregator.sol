@@ -11,6 +11,8 @@ contract Aggregator is AccessControl, IAggregator {
     bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
     uint256 public minConfirmations; // minimal required confirmations
 
+    mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyAdmin {
@@ -34,6 +36,18 @@ contract Aggregator is AccessControl, IAggregator {
         _setupRole(ORACLE_ROLE, msg.sender);
     }
 
+    /* ========== ORACLES  ========== */
+
+    /// @dev Updates oracle's admin address.
+    /// @param _oracle Oracle address.
+    /// @param _newOracleAdmin New oracle address.
+    function updateOracleAdmin(address _oracle, address _newOracleAdmin)
+        external
+    {
+        require(getOracleInfo[_oracle].admin == msg.sender, "only callable by admin");
+        getOracleInfo[_oracle].admin = _newOracleAdmin;
+    }
+
     /* ========== ADMIN ========== */
 
     /// @dev Sets minimal required confirmations.
@@ -45,8 +59,10 @@ contract Aggregator is AccessControl, IAggregator {
 
     /// @dev Add new oracle.
     /// @param _oracle Oracle address.
-    function addOracle(address _oracle) external onlyAdmin {
+    /// @param _admin Admin address.
+    function addOracle(address _oracle, address _admin) external onlyAdmin {
         grantRole(ORACLE_ROLE, _oracle);
+        getOracleInfo[_oracle].admin = _admin;
     }
 
     /// @dev Remove oracle.
