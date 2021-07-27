@@ -11,7 +11,7 @@ interface IDeBridgeGate {
         uint256 maxAmount; // minimal amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
-        uint256 minReservesBPS; // minimal hot reserves in BPS
+        uint256 minReservesBps; // minimal hot reserves in basis points (1/10000)
         mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
         bool exist;
     }
@@ -24,7 +24,7 @@ interface IDeBridgeGate {
     struct ChainSupportInfo {
         bool isSupported; // whether the chain for the asset is supported
         uint256 fixedNativeFee; // transfer fixed fee
-        uint256 transferFeeBPS; // transfer fee rate (in % of transferred amount)
+        uint256 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
     }
 
     /* ========== FUNCTIONS ========== */
@@ -301,7 +301,7 @@ interface IDeBridgeGate {
         address indexed tokenAddress,
         uint256 indexed chainId,
         uint256 maxAmount,
-        uint256 minReservesBPS
+        uint256 minReservesBps
     ); // emited when new asset is supported
     event ChainSupportAdded(
         bytes32 indexed debridgeId,

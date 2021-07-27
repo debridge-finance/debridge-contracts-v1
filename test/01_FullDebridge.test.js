@@ -18,8 +18,8 @@ const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
-const transferFeeBPS = 50;
-const minReservesBPS = 3000;
+const transferFeeBps = 50;
+const minReservesBps = 3000;
 const BPS = toBN(10000);
 
 contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
@@ -115,12 +115,12 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       supportedChainIds,
       [
         {
-          transferFeeBPS,
+          transferFeeBps,
           fixedNativeFee,
           isSupported,
         },
         {
-          transferFeeBPS,
+          transferFeeBps,
           fixedNativeFee,
           isSupported,
         },
@@ -275,7 +275,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       await this.debridge.updateAsset(
         debridgeId,
         maxAmount,
-        minReservesBPS,
+        minReservesBps,
         amountThreshold,
         {
           from: alice,
@@ -285,7 +285,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(debridge.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReservesBPS.toString(), minReservesBPS);
+      assert.equal(debridge.minReservesBps.toString(), minReservesBps);
 
       assert.equal(await this.debridge.getAmountThreshold(debridgeId), amountThreshold);
     });
@@ -316,7 +316,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       const balance = toBN(await web3.eth.getBalance(this.debridge.address));
       const debridge = await this.debridge.getDebridge(debridgeId);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-      const fees = toBN(supportedChainInfo.transferFeeBPS)
+      const fees = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
         .div(BPS);
       const collectedNativeFees = await this.debridge.collectedFees();
@@ -371,7 +371,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       const debridge = await this.debridge.getDebridge(debridgeId);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const collectedNativeFees = await this.debridge.collectedFees();
-      const fees = toBN(supportedChainInfo.transferFeeBPS)
+      const fees = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
         .div(BPS);
       await this.debridge.send(
@@ -685,7 +685,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.debridge.getDebridge(debridgeId);
-      const fees = toBN(supportedChainInfo.transferFeeBPS)
+      const fees = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
         .div(BPS);
       assert.equal(
