@@ -301,7 +301,7 @@ interface IDeBridgeGate {
         address indexed tokenAddress,
         uint256 indexed chainId,
         uint256 maxAmount,
-        uint256 minReserves
+        uint256 minReservesBPS
     ); // emited when new asset is supported
     event ChainSupportAdded(
         bytes32 indexed debridgeId,

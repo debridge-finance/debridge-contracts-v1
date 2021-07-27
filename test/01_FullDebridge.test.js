@@ -18,6 +18,10 @@ const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
   "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
+const transferFeeBPS = 50;
+const minReservesBPS = 3000;
+const BPS = toBN(10000);
+
 contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
   before(async function() {
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
@@ -88,8 +92,6 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
     });
     const maxAmount = toWei("1000000");
     const fixedNativeFee = toWei("0.00001");
-    const transferFee = toWei("0.001");
-    const minReserves = toWei("0.2");
     const isSupported = true;
     const supportedChainIds = [42, 56];
     this.weth = await WETH9.new({
@@ -113,12 +115,12 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       supportedChainIds,
       [
         {
-          transferFee,
+          transferFeeBPS,
           fixedNativeFee,
           isSupported,
         },
         {
-          transferFee,
+          transferFeeBPS,
           fixedNativeFee,
           isSupported,
         },
@@ -240,8 +242,6 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       const maxAmount = toWei("1000000");
       const amountThreshold = toWei("10");
       const fixedNativeFee = toWei("0.00001");
-      const transferFee = toWei("0.01");
-      const minReserves = toWei("0.2");
       const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
@@ -275,7 +275,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       await this.debridge.updateAsset(
         debridgeId,
         maxAmount,
-        minReserves,
+        minReservesBPS,
         amountThreshold,
         {
           from: alice,
@@ -285,7 +285,7 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(debridge.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReserves.toString(), minReserves);
+      assert.equal(debridge.minReservesBPS.toString(), minReservesBPS);
 
       assert.equal(await this.debridge.getAmountThreshold(debridgeId), amountThreshold);
     });
@@ -316,9 +316,9 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       const balance = toBN(await web3.eth.getBalance(this.debridge.address));
       const debridge = await this.debridge.getDebridge(debridgeId);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-      const fees = toBN(supportedChainInfo.transferFee)
+      const fees = toBN(supportedChainInfo.transferFeeBPS)
         .mul(amount)
-        .div(toBN(toWei("1")));
+        .div(BPS);
       const collectedNativeFees = await this.debridge.collectedFees();
       await this.debridge.send(
         tokenAddress,
@@ -371,9 +371,9 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       const debridge = await this.debridge.getDebridge(debridgeId);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const collectedNativeFees = await this.debridge.collectedFees();
-      const fees = toBN(supportedChainInfo.transferFee)
+      const fees = toBN(supportedChainInfo.transferFeeBPS)
         .mul(amount)
-        .div(toBN(toWei("1")));
+        .div(BPS);
       await this.debridge.send(
         tokenAddress,
         receiver,
@@ -685,9 +685,9 @@ contract("DeBridgeGate full mode", function([alice, bob, carol, eve, devid]) {
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.debridge.getDebridge(debridgeId);
-      const fees = toBN(supportedChainInfo.transferFee)
+      const fees = toBN(supportedChainInfo.transferFeeBPS)
         .mul(amount)
-        .div(toBN(toWei("1")));
+        .div(BPS);
       assert.equal(
         debridge.collectedFees.add(fees).toString(),
         newDebridge.collectedFees.toString()
