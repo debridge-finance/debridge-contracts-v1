@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 describe("CallProxy", function () {
   before(async function () {
-    [deployer, reserve, receiver] = await ethers.getSigners();
+    [deployer, reserve, receiver, tokenHolder] = await ethers.getSigners();
   });
 
   beforeEach(async function () {
@@ -136,7 +136,36 @@ describe("CallProxy", function () {
           );
         });
 
-        it("swapExactETHForTokens");
+        it("successful swapExactETHForTokens", async function () {
+          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+          const callData = this.router.interface.encodeFunctionData("swapExactETHForTokens", [
+            1,
+            [this.weth.address, this.token.address],
+            tokenHolder.address,
+            9999999999,
+          ]);
+          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, { value: 1234534567 });
+          // relaxed check because AMM price impact and Uniswap v2 fee
+          expect(await this.token.balanceOf(tokenHolder.address)).to.be.gt("1230000000");
+        });
+
+        it("reverting swapExactETHForTokens", async function () {
+          const reserveETHBalanceBefore = await ethers.provider.getBalance(reserve.address);
+          // amountOutMin increased to enforce swap failure
+          const callData = this.router.interface.encodeFunctionData("swapExactETHForTokens", [
+            9999999999,
+            [this.weth.address, this.token.address],
+            tokenHolder.address,
+            9999999999,
+          ]);
+          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, { value: 1234534567 });
+          const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
+          // Results of failing swap:
+          // * Swap had no effect (no ETH spent, no tokens acquired)
+          // * ETHers of tx.value got evacuated to reserve.address
+          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+          expect(reserveETHBalanceAfter.sub(reserveETHBalanceBefore)).to.be.equal("1234534567");
+        });
 
         it("swapETHForExactTokens");
       });
