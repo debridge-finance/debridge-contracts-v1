@@ -1,4 +1,5 @@
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
 describe("CallProxy", function () {
   before(async function () {
@@ -93,7 +94,48 @@ describe("CallProxy", function () {
       });
 
       describe("when receiver is uniswap", function () {
-        it("addLiquidityETH");
+        beforeEach(async function () {
+          const WETH9Artifact = await deployments.getArtifact("WETH9");
+          const WETH9Factory = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
+          this.weth = await WETH9Factory.deploy();
+          await this.weth.deployed();
+
+          const MockTokenArtifact = await deployments.getArtifact("MockToken");
+          const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+          this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
+          await this.token.deployed();
+
+          const UniswapV2FactoryArtifact = await deployments.getArtifact("UniswapV2Factory");
+          const UniswapV2Factory = await ethers.getContractFactory(UniswapV2FactoryArtifact.abi, UniswapV2FactoryArtifact.bytecode);
+          this.factory = await UniswapV2Factory.deploy(deployer.address);
+          await this.factory.deployed();
+
+          const UniswapV2RouterArtifact = await deployments.getArtifact("UniswapV2Router02");
+          const UniswapV2Router = await ethers.getContractFactory(UniswapV2RouterArtifact.abi, UniswapV2RouterArtifact.bytecode);
+          this.router = await UniswapV2Router.deploy(this.factory.address, this.weth.address);
+          await this.router.deployed();
+
+          const UniswapV2PairArtifact = await deployments.getArtifact("UniswapV2Pair");
+          const UniswapV2Pair = await ethers.getContractFactory(UniswapV2PairArtifact.abi, UniswapV2PairArtifact.bytecode);
+          const pairResult = await this.factory.createPair(this.weth.address, this.token.address);
+          this.pair = await UniswapV2Pair.attach((await pairResult.wait()).events[0].args.pair);
+
+          await this.token.mint(deployer.address, ethers.constants.WeiPerEther.mul("10"));
+          await this.token.approve(this.router.address, ethers.constants.MaxUint256);
+          await this.weth.deposit({ value: ethers.constants.WeiPerEther.mul("10") });
+          await this.weth.approve(this.router.address, ethers.constants.MaxUint256);
+
+          await this.router.addLiquidity(
+            this.weth.address,
+            this.token.address,
+            ethers.constants.WeiPerEther.mul("1"),
+            ethers.constants.WeiPerEther.mul("1"),
+            0,
+            0,
+            deployer.address,
+            9999999999
+          );
+        });
 
         it("swapExactETHForTokens");
 
