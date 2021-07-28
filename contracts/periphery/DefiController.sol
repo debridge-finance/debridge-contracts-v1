@@ -47,9 +47,12 @@ contract DefiController is AccessControl {
 
     /* ========== CONSTRUCTOR  ========== */
     
-    constructor(IDeBridgeGate _deBridgeGate) {
+
+    constructor(){
+        // TODO: restore after fix tests
+        // IDeBridgeGate _deBridgeGate) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        deBridgeGate = _deBridgeGate;
+        // deBridgeGate = _deBridgeGate;
     }
 
     function depositToStrategy(uint256 _amount, address _strategy) external onlyWorker{
@@ -76,6 +79,9 @@ contract DefiController is AccessControl {
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
     }
 
+    function addDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
+        deBridgeGate = _deBridgeGate;
+    }
 
     function addWorker(address _worker) external onlyAdmin {
         grantRole(WORKER_ROLE, _worker);
