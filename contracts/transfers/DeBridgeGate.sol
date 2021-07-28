@@ -17,14 +17,16 @@ import "../interfaces/IDefiController.sol";
 import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
-
+import "../libraries/SignatureUtil.sol";
 
 contract DeBridgeGate is Initializable,
                          AccessControlUpgradeable,                         
                          PausableUpgradeable,
                          ReentrancyGuardUpgradeable,
                          IDeBridgeGate {
+
     using SafeERC20 for IERC20;
+    using SignatureUtil for bytes;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -1108,7 +1110,7 @@ contract DeBridgeGate is Initializable,
         require(_amount <= debridge.maxAmount, "burn: amount too high");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         if (_signature.length > 0) {
-            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
+            (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
             wrappedAsset.permit(
                 msg.sender,
                 address(this),
@@ -1247,25 +1249,6 @@ contract DeBridgeGate is Initializable,
     }
 
     /* VIEW */
-
-    /// @dev Splits signature bytes to r,s,v components.
-    /// @param _signature Signature bytes in format r+s+v.
-    function splitSignature(bytes memory _signature)
-        public
-        pure
-        returns (
-            bytes32 r,
-            bytes32 s,
-            uint8 v
-        )
-    {
-        require(_signature.length == 65, "splitSignature: invalid signature length");
-        assembly {
-            r := mload(add(_signature, 32))
-            s := mload(add(_signature, 64))
-            v := byte(0, mload(add(_signature, 96)))
-        }
-    }
 
     /// @dev Get the balance.
     /// @param _tokenAddress Address of the asset on the other chain.

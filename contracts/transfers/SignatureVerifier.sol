@@ -4,8 +4,12 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../periphery/WrappedAsset.sol";
+import "../libraries/SignatureUtil.sol";
 
 contract SignatureVerifier is AccessControl, ISignatureVerifier {
+
+    using SignatureUtil for bytes;
+    using SignatureUtil for bytes32;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -74,8 +78,8 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
         debridgeInfo.chainId = _chainId;
         debridgeInfo.decimals = _decimals;
         for (uint256 i = 0; i < _signatures.length; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signatures[i]);
-            bytes32 unsignedMsg = getUnsignedMsg(deployId);
+            (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
+            bytes32 unsignedMsg = deployId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
             require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
             require(
@@ -101,8 +105,8 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         for (uint256 i = 0; i < _signatures.length; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signatures[i]);
-            bytes32 unsignedMsg = getUnsignedMsg(_submissionId);
+            (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
+            bytes32 unsignedMsg = _submissionId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
             require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
             require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
@@ -227,38 +231,7 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
         );
     }
 
-    /// @dev Prepares raw msg that was signed by the oracle.
-    /// @param _submissionId Submission identifier.
-    function getUnsignedMsg(bytes32 _submissionId)
-        public pure returns (bytes32)
-    {
-        return
-            keccak256(
-                abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
-                    _submissionId
-                )
-            );
-    }
-
-    /// @dev Splits signature bytes to r,s,v components.
-    /// @param _signature Signature bytes in format r+s+v.
-    function splitSignature(bytes memory _signature)
-        public
-        pure
-        returns (
-            bytes32 r,
-            bytes32 s,
-            uint8 v
-        )
-    {
-        require(_signature.length == 65, "splitSignature: invalid signature length");
-        assembly {
-            r := mload(add(_signature, 32))
-            s := mload(add(_signature, 64))
-            v := byte(0, mload(add(_signature, 96)))
-        }
-    }
+   
 
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
