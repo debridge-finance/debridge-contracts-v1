@@ -859,7 +859,7 @@ contract DeBridgeGate is Initializable,
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to request.
     function requestReserves(address _tokenAddress, uint256 _amount)
-        external
+        external override
         onlyDefiController()
     {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
@@ -875,14 +875,15 @@ contract DeBridgeGate is Initializable,
                 _amount
             );
         }
+        debridge.lookedInStrategies += _amount;
     }
 
     /// @dev Return the assets that were used in defi protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
-        external
-        payable
+        external 
+        payable override
         onlyDefiController()
     {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
@@ -893,6 +894,9 @@ contract DeBridgeGate is Initializable,
                 address(this),
                 _amount
             );
+            debridge.lookedInStrategies += _amount;
+        } else {
+            debridge.lookedInStrategies += msg.value;
         }
     }
 

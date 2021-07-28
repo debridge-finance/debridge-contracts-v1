@@ -11,6 +11,7 @@ interface IDeBridgeGate {
         uint256 maxAmount; // minimal amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
+        uint256 lookedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
         uint256 minReservesBps; // minimal hot reserves in basis points (1/10000)
         mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
         bool exist;
@@ -244,6 +245,18 @@ interface IDeBridgeGate {
         bytes memory _data
     ) external;
 
+    /// @dev Request the assets to be used in defi protocol.
+    /// @param _tokenAddress Asset address.
+    /// @param _amount Amount of tokens to request.
+    function requestReserves(address _tokenAddress, uint256 _amount)
+        external;
+
+    /// @dev Return the assets that were used in defi protocol.
+    /// @param _tokenAddress Asset address.
+    /// @param _amount Amount of tokens to claim.
+    function returnReserves(address _tokenAddress, uint256 _amount)
+        external payable;
+    
     /* ========== EVENTS ========== */
 
     event Sent(
