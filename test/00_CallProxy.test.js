@@ -75,8 +75,7 @@ describe("CallProxy", function () {
           const receiverContract = await receiverContractFactory.deploy();
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          // ABI-encoded call of setUint256Payable(12345)
-          const callData = "0xa85dcaea0000000000000000000000000000000000000000000000000000000000003039";
+          const callData = receiverContract.interface.encodeFunctionData("setUint256Payable", [12345]);
           const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, { value: 12348767 });
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setUint256Payable");
