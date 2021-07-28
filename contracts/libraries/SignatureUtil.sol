@@ -6,7 +6,7 @@ library SignatureUtil {
     /// @dev Prepares raw msg that was signed by the oracle.
     /// @param _submissionId Submission identifier.
     function getUnsignedMsg(bytes32 _submissionId)
-        public pure returns (bytes32)
+        internal pure returns (bytes32)
     {
         return
             keccak256(
@@ -20,7 +20,7 @@ library SignatureUtil {
     /// @dev Splits signature bytes to r,s,v components.
     /// @param _signature Signature bytes in format r+s+v.
     function splitSignature(bytes memory _signature)
-        public
+        internal
         pure
         returns (
             bytes32 r,
