@@ -1140,4 +1140,41 @@ contract("DeBridgeGate full mode",  function() {
       );
     });
   });
+
+  context("after upgrade V1 to V2", async function() {
+
+    beforeEach(async function() {
+      this.wethValueBeforeUpgrade = await this.debridge.weth();
+      const DebridgeV2Factory = await ethers.getContractFactory("DeBridgeGateV2");
+      this.debridgeV2 = await upgrades.upgradeProxy(this.debridge.address, DebridgeV2Factory);
+    });
+
+    it("V1 and V2 instances use same address", async function() {
+      expect(this.debridge.address).to.be.equal(this.debridgeV2.address);
+    });
+
+    it("BPS_DENOMINATOR constant goes from new implementation", async function() {
+      expect(await this.debridgeV2.BPS_DENOMINATOR()).to.be.equal("11111");
+    });
+
+    it("chainId public variable reused from store", async function() {
+      expect(await this.debridgeV2.chainId()).to.be.equal("1");
+    });
+
+    it("weth public variable reused from store and not changed", async function() {
+      expect(await this.debridgeV2.weth()).to.be.equal(this.wethValueBeforeUpgrade);
+    });
+
+    it("Deprecated method reverts (removed in V2)", async function() {
+      await expect(this.debridge.setWeth("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef")).to.be.reverted;
+      expect(await this.debridgeV2.weth()).to.be.equal(this.wethValueBeforeUpgrade);
+    });
+
+    it("Newly introduced V2 method mutates the stored variable", async function() {
+      expect(await this.debridgeV2.weth()).to.be.equal(this.wethValueBeforeUpgrade);
+      await this.debridgeV2.setWethNew("0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF")
+      expect(await this.debridgeV2.weth()).to.be.equal("0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF");
+    });
+
+  });
 });
