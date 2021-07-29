@@ -6,12 +6,19 @@ pragma solidity ^0.8.0;
 contract MockProxyReceiver {
 
     uint256 public result = 0;
+    uint256[] public resultArray;
     uint256 public weiReceived = 0;
     string public lastHit = "";
 
     function setUint256Payable(uint256 _result) external payable {
         lastHit = "setUint256Payable";
         result = _result;
+        weiReceived = msg.value;
+    }
+
+    function setArrayUint256Payable(uint256[] memory _result) external payable {
+        lastHit = "setArrayUint256Payable";
+        resultArray = _result;
         weiReceived = msg.value;
     }
 

@@ -89,7 +89,33 @@ describe("CallProxy", function () {
           expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("12348767");
         });
 
-        it("call with array");
+        it("call with array", async function () {
+          const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+          const receiverContract = await receiverContractFactory.deploy();
+          const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
+          const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
+          const callData = receiverContract.interface.encodeFunctionData("setArrayUint256Payable", [[1,12,123,1234,12345,123456,1234567,12345678,123456789,1234567890]]);
+          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, { value: 12348767 });
+          // check internal tx hit correct function
+          expect(await receiverContract.lastHit()).to.be.equal("setArrayUint256Payable");
+          // check internal tx was ok and uint256 arg passed and saved successfully
+          expect(await receiverContract.resultArray(0)).to.be.equal(1);
+          expect(await receiverContract.resultArray(1)).to.be.equal(12);
+          expect(await receiverContract.resultArray(2)).to.be.equal(123);
+          expect(await receiverContract.resultArray(3)).to.be.equal(1234);
+          expect(await receiverContract.resultArray(4)).to.be.equal(12345);
+          expect(await receiverContract.resultArray(5)).to.be.equal(123456);
+          expect(await receiverContract.resultArray(6)).to.be.equal(1234567);
+          expect(await receiverContract.resultArray(7)).to.be.equal(12345678);
+          expect(await receiverContract.resultArray(8)).to.be.equal(123456789);
+          expect(await receiverContract.resultArray(9)).to.be.equal(1234567890);
+          expect(await receiverContract.weiReceived()).to.be.equal("12348767");
+          const receiverBalanceAfter = await ethers.provider.getBalance(receiverContract.address);
+          const reserveBalanceAfter = await ethers.provider.getBalance(reserve.address);
+          expect(reserveBalanceAfter.sub(reserveBalanceBefore)).to.be.equal("0");
+          // transferred balance appeared on receiving contract as expected
+          expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("12348767");
+        });
       });
 
       describe("when receiver is uniswap", function () {
