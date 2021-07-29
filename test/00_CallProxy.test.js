@@ -185,7 +185,6 @@ describe("CallProxy", function () {
       });
 
       describe("when receiver is uniswap", function () {
-        it("addLiquidity");
 
         it("swapTokensForExactTokens");
 
@@ -205,7 +204,6 @@ describe("CallProxy", function () {
         it("call with array");
       });
       describe("when receiver is uniswap", function () {
-        it("addLiquidityETH");
         it("swapExactETHForTokens");
         it("swapETHForExactTokens");
       });
@@ -219,7 +217,6 @@ describe("CallProxy", function () {
         it("call with array");
       });
       describe("when receiver is uniswap", function () {
-        it("addLiquidity");
         it("swapTokensForExactTokens");
         it("swapTokensForExactETH");
         it("swapExactTokensForETH");
