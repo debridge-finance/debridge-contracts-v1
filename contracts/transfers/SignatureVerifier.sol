@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./OraclesManagement.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
-contract SignatureVerifier is AccessControl, ISignatureVerifier {
+contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
 
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
 
     /* ========== STATE VARIABLES ========== */
 
-    bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
     uint256 public confirmationThreshold; // bonus reward for one submission
     uint256 public minConfirmations; // minimal required confirmations
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
@@ -27,14 +26,7 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
 
-    
-    /* ========== MODIFIERS ========== */
-
-    modifier onlyAdmin {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
-        _;
-    }
-    
+   
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -77,11 +69,14 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
         debridgeInfo.tokenAddress = _tokenAddress;
         debridgeInfo.chainId = _chainId;
         debridgeInfo.decimals = _decimals;
+        //Count of required(DSRM) oracles confirmation
+        uint256 currentRequiredOraclesCount;
+
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             bytes32 unsignedMsg = deployId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
-            if(hasRole(ORACLE_ROLE, oracle)) {
+            if(oracles[oracle].isValid) {
                 require(
                     !debridgeInfo.hasVerified[oracle],
                     "deployAsset: submitted already"
@@ -89,11 +84,17 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
                 debridgeInfo.hasVerified[oracle] = true;
                 emit DeployConfirmed(deployId, oracle);
                 debridgeInfo.confirmations += 1;
+                if(oracles[oracle].required) {
+                    currentRequiredOraclesCount += 1;
+                }
             }
         }
-        if( debridgeInfo.confirmations >= minConfirmations){
-            confirmedDeployInfo[debridgeId] = deployId;
-        }
+        
+        require(debridgeInfo.confirmations >= minConfirmations, "not confirmed");
+        require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles");
+
+        confirmedDeployInfo[debridgeId] = deployId;
+        
         //TODO: add deployAsset
     }
 
@@ -105,11 +106,14 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
         returns (uint256 _confirmations, bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
+        //Count of required(DSRM) oracles confirmation
+        uint256 currentRequiredOraclesCount;
+        
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             bytes32 unsignedMsg = _submissionId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
-            if(hasRole(ORACLE_ROLE, oracle)) {
+            if(oracles[oracle].isValid) {
                 require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
                 submissionInfo.confirmations += 1;
                 submissionInfo.hasVerified[oracle] = true;
@@ -128,8 +132,14 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
                     submissionInfo.block = block.number;
                     emit SubmissionApproved(_submissionId);
                 }
+                if(oracles[oracle].required) {
+                    currentRequiredOraclesCount += 1;
+                }
             }
         }
+
+        require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles" );
+        
         return (
             submissionInfo.confirmations,
             submissionInfo.confirmations >=
@@ -190,17 +200,7 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
         minConfirmations = _minConfirmations;
     }
 
-    /// @dev Adds new oracle.
-    /// @param _oracle Oracle address.
-    function addOracle(address _oracle) external onlyAdmin {
-        grantRole(ORACLE_ROLE, _oracle);
-    }
-
-    /// @dev Removes oracle.
-    /// @param _oracle Oracle address.
-    function removeOracle(address _oracle) external onlyAdmin {
-        revokeRole(ORACLE_ROLE, _oracle);
-    }
+    
 
     /* ========== VIEW ========== */
 

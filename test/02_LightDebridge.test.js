@@ -62,7 +62,7 @@ contract("DeBridgeGate light mode", function() {
     //  this.confirmationAggregatorAddress
     //);
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
-    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+    this.excessConfirmations = 4; //Confirmations count in case of excess activity.
 
     this.confirmationAggregator = await ConfirmationAggregator.new(
       this.minConfirmations,
@@ -92,10 +92,10 @@ contract("DeBridgeGate light mode", function() {
       }
     );
     this.initialOracles = [
-      {
-        address: alice,
-        admin: alice,
-      },
+      // {
+      //   address: alice,
+      //   admin: alice,
+      // },
       {
         address: bob,
         admin: carol,
@@ -118,10 +118,16 @@ contract("DeBridgeGate light mode", function() {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.signatureVerifier.addOracle(oracle.address, {
+      await this.signatureVerifier.updateOracle(oracle.address, false, true, {
         from: alice,
       });
     }
+
+    //Alice is required oracle
+    await this.signatureVerifier.updateOracle(alice, true, true, {
+      from: alice,
+    });
+
     this.defiController = await DefiController.new({
       from: alice,
     });
@@ -268,6 +274,62 @@ contract("DeBridgeGate light mode", function() {
       assert.equal(debridge.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
       assert.equal(debridge.minReservesBps.toString(), minReservesBps);
+    });
+
+     it("should reject add external asset without DSRM confirmation", async function() {
+      const tokenAddress = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
+      const chainId = 56;
+      const name = "SPARK";
+      const symbol = "SPARK Dollar";
+      const decimals = 18;
+
+      const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+      //console.log('debridgeId '+debridgeId);
+      const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+
+      let signatures = [];
+      //start from 1 (skipped alice)
+      for (let i = 1; i < oracleKeys.length; i++) {
+        const oracleKey = oracleKeys[i];
+        signatures.push(
+          (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
+        );
+      }
+
+      await expectRevert(
+          this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
+          from: alice,
+        }),
+        "Not confirmed by required oracles"
+      );
+    });
+
+    it("should reject add external asset without -1 confirmation", async function() {
+      const tokenAddress = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
+      const chainId = 56;
+      const name = "MUSD";
+      const symbol = "Magic Dollar";
+      const decimals = 18;
+
+      const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+      //console.log('debridgeId '+debridgeId);
+      const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+
+      let signatures = [];
+      // count of oracles = this.minConfirmations - 1
+      for (let i = 0; i < this.minConfirmations - 1; i++) {
+        const oracleKey = oracleKeys[i];
+        signatures.push(
+          (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
+        );
+      }
+
+      await expectRevert(
+          this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
+          from: alice,
+        }),
+        "not confirmed"
+      );
     });
   });
 
@@ -523,7 +585,7 @@ contract("DeBridgeGate light mode", function() {
         this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, [], {//will call IConfirmationAggregator
           from: alice,
         }),
-        "not confirmed"
+         "not confirmed"
       );
     });
 
@@ -537,7 +599,8 @@ contract("DeBridgeGate light mode", function() {
         this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, this.signatures, {
           from: alice,
         }),
-        "not confirmed"
+        // "not confirmed"
+        "Not confirmed by required oracles"
       );
     });
 
@@ -691,6 +754,7 @@ contract("DeBridgeGate light mode", function() {
     let chainIdFrom = 87;
     let debridgeId;
     let erc20DebridgeId;
+    let curentChainSubmission;
 
     before(async function() {
       receiver = bob;
@@ -700,7 +764,7 @@ contract("DeBridgeGate light mode", function() {
         chainId,
         this.mockToken.address
       );
-      const curentChainSubmission = await this.debridge.getSubmisionId(
+      curentChainSubmission = await this.debridge.getSubmisionId(
         debridgeId,
         chainIdFrom,
         chainId,
@@ -732,6 +796,31 @@ contract("DeBridgeGate light mode", function() {
             .signature
         );
       }
+    });
+
+    it("should reject native token without DSRM confirmation", async function() {
+      let currentSignatures = [];
+      for (let i = 1; i < oracleKeys.length; i++) {
+        const oracleKey = oracleKeys[i];
+        currentSignatures.push(
+          (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
+            .signature
+        );
+      }
+      await expectRevert(
+        this.debridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          currentSignatures,
+          {
+            from: alice,
+          }
+        ),
+        "Not confirmed by required oracles"
+      );
     });
 
     it("should claim native token when the submission is approved", async function() {
@@ -818,8 +907,8 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "not confirmed"
-        //"not confirmed"
+        "Not confirmed by required oracles"
+        // "not confirmed"
       );
     });
 

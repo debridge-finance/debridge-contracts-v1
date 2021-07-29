@@ -59,7 +59,7 @@ module.exports = async function(deployer, network, accounts) {
     let aggregatorInstance = await SignatureVerifier.deployed();
     console.log("SignatureVerifier: " + aggregatorInstance.address);
     for (let oracle of debridgeInitParams.oracles) {
-      await aggregatorInstance.addOracle(oracle.address);
+      await aggregatorInstance.updateOracle(oracle.address, false, true);
       console.log("addOracle: " + oracle.address);
     }
   }
