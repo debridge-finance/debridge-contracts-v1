@@ -1,0 +1,10 @@
+{
+  "plugins": ["prettier"],
+  "extends": ["solhint:recommended"],
+  "rules": {
+    "compiler-version": ["warn", "^0.8.0"],
+    "prettier/prettier": "warn",
+    "max-line-length": ["warn", 145],
+    "indent": ["warn", 4]
+  }
+}
