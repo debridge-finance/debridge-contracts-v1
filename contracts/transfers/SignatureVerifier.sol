@@ -81,14 +81,15 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             bytes32 unsignedMsg = deployId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
-            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
-            require(
-                !debridgeInfo.hasVerified[oracle],
-                "deployAsset: submitted already"
-            );
-            debridgeInfo.hasVerified[oracle] = true;
-            emit DeployConfirmed(deployId, oracle);
-            debridgeInfo.confirmations += 1;
+            if(hasRole(ORACLE_ROLE, oracle)) {
+                require(
+                    !debridgeInfo.hasVerified[oracle],
+                    "deployAsset: submitted already"
+                );
+                debridgeInfo.hasVerified[oracle] = true;
+                emit DeployConfirmed(deployId, oracle);
+                debridgeInfo.confirmations += 1;
+            }
         }
         if( debridgeInfo.confirmations >= minConfirmations){
             confirmedDeployInfo[debridgeId] = deployId;
@@ -108,26 +109,25 @@ contract SignatureVerifier is AccessControl, ISignatureVerifier {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             bytes32 unsignedMsg = _submissionId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
-            require(hasRole(ORACLE_ROLE, oracle), "onlyOracle: bad role");
-            require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
-            submissionInfo.confirmations += 1;
-            submissionInfo.hasVerified[oracle] = true;
-            emit Confirmed(_submissionId, oracle);
-            if (submissionInfo.confirmations >= minConfirmations) {
-
-                    BlockConfirmationsInfo storage _blockConfirmationsInfo
-                 = getConfirmationsPerBlock[block.number];
-                if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
-                    _blockConfirmationsInfo.count += 1;
-                    _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
-                    if (
-                        _blockConfirmationsInfo.count >= confirmationThreshold
-                    ) {
-                        _blockConfirmationsInfo.requireExtraCheck = true;
+            if(hasRole(ORACLE_ROLE, oracle)) {
+                require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
+                submissionInfo.confirmations += 1;
+                submissionInfo.hasVerified[oracle] = true;
+                emit Confirmed(_submissionId, oracle);
+                if (submissionInfo.confirmations >= minConfirmations) {
+                    BlockConfirmationsInfo storage _blockConfirmationsInfo = getConfirmationsPerBlock[block.number];
+                    if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
+                        _blockConfirmationsInfo.count += 1;
+                        _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
+                        if (
+                            _blockConfirmationsInfo.count >= confirmationThreshold
+                        ) {
+                            _blockConfirmationsInfo.requireExtraCheck = true;
+                        }
                     }
+                    submissionInfo.block = block.number;
+                    emit SubmissionApproved(_submissionId);
                 }
-                submissionInfo.block = block.number;
-                emit SubmissionApproved(_submissionId);
             }
         }
         return (

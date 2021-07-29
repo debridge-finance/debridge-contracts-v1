@@ -537,7 +537,7 @@ contract("DeBridgeGate light mode", function() {
         this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, this.signatures, {
           from: alice,
         }),
-        "onlyOracle: bad role"
+        "not confirmed"
       );
     });
 
@@ -818,7 +818,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "onlyOracle: bad role"
+        "not confirmed"
         //"not confirmed"
       );
     });
