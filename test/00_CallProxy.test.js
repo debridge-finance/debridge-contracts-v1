@@ -180,7 +180,27 @@ describe("CallProxy", function () {
         await this.token.mint(this.proxy.address, "8765432");
       });
 
-      it("reverts if _token is non-ERC-20 comlpliant");
+      it("reverts if _token fails", async function () {
+        const BrokenTokenFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const brokenToken = await BrokenTokenFactory.deploy();
+        await expect(this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0x")).to.be.reverted;
+        await expect(this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0xdeadbeef")).to.be.reverted;
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+      });
+
+      it("when receiving contract doesn't pull tokens - they stay on proxy (Is it expected?)", async function () {
+        const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+        // call the method that doesn't pull approved tokens
+        const callData = nonPullingReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
+        await this.proxy.callERC20(this.token.address, reserve.address, nonPullingReceiver.address, callData);
+        // check we hit the non-pulling function
+        expect(await nonPullingReceiver.lastHit()).to.be.equal("setUint256Payable");
+        // token balance stays intact
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+      });
 
       it("when receiver is EOA - tokens stay on proxy (Is it expected?)", async function () {
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
