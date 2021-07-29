@@ -7,8 +7,14 @@ require("@nomiclabs/hardhat-truffle5");
 require('hardhat-deploy');
 require("@nomiclabs/hardhat-waffle");
 require('@openzeppelin/hardhat-upgrades');
+require("hardhat-gas-reporter");
 
 module.exports = {
+  gasReporter: {
+    currency: "USD",
+    gasPrice: 100,
+  },
+  
   paths: {
     sources: "./contracts",
     tests: "./test",
