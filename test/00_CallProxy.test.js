@@ -172,9 +172,24 @@ describe("CallProxy", function () {
     });
 
     describe("ERC20 calls", function () {
+      beforeEach(async function () {
+        const MockTokenArtifact = await deployments.getArtifact("MockToken");
+        const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+        this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
+        await this.token.deployed();
+        await this.token.mint(this.proxy.address, "8765432");
+      });
+
       it("reverts if _token is non-ERC-20 comlpliant");
 
-      it("when receiver is EOA");
+      it("when receiver is EOA - tokens stay on proxy (Is it expected?)", async function () {
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+        transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiver.address, "0x");
+        transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiver.address, "0xdeadbeef");
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+      });
 
       it("when receiver is reverting contract");
 
