@@ -16,10 +16,7 @@ interface IAggregatorBase {
 
     /* ========== EVENTS ========== */
 
-    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
     event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
-
-    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
 
 }

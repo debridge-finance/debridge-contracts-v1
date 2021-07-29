@@ -20,6 +20,11 @@ interface IConfirmationAggregator {
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
+    /* ========== EVENTS ========== */
+    
+    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
+    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
+
     /* ========== FUNCTIONS ========== */
     
     function submit(bytes32 _submissionId) external;

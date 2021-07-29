@@ -54,7 +54,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
             debridgeInfo.approved = true;
             emit DeployApproved(deployId);
         }
-        emit DeployConfirmed(deployId, msg.sender);
+        emit DeployConfirmed(deployId, msg.sender, _signature);
     }
 
     /// @dev Confirms few transfer requests.
@@ -89,7 +89,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         submissionInfo.confirmations += 1;
         submissionInfo.signatures.push(_signature);
         submissionInfo.hasVerified[msg.sender] = true;
-        emit Confirmed(_submissionId, msg.sender);
+        emit Confirmed(_submissionId, msg.sender, _signature);
     }
 
     /* ========== VIEW ========== */
