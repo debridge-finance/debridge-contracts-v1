@@ -1950,6 +1950,15 @@
     web3 "^1.2.5"
     web3-utils "^1.2.5"
 
+"@openzeppelin/truffle-upgrades@^1.5.1":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/truffle-upgrades/-/truffle-upgrades-1.8.0.tgz#19b4236c2567ba360e21c0421fe072c2a37350f9"
+  integrity sha512-r8++PttYI9CoBW65GygpYvxKrMeO9NThP4KLWlZuKHqzwjqh1rweoEZA7Cbsgguz8HZI/ivdue4m+bv45CBcLA==
+  dependencies:
+    "@openzeppelin/upgrades-core" "^1.8.0"
+    "@truffle/contract" "^4.2.12"
+    solidity-ast "^0.4.15"
+
 "@openzeppelin/upgrades-core@^1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@openzeppelin/upgrades-core/-/upgrades-core-1.8.0.tgz#b2d6f747e3a4c3e37a18d1b13f45b7617dde2260"
@@ -2590,7 +2599,7 @@
     ajv "^6.10.0"
     debug "^4.3.1"
 
-"@truffle/contract@^4.0.35", "@truffle/contract@^4.3.8":
+"@truffle/contract@^4.0.35", "@truffle/contract@^4.2.12", "@truffle/contract@^4.3.8":
   version "4.3.26"
   resolved "https://registry.yarnpkg.com/@truffle/contract/-/contract-4.3.26.tgz#822f258b235d0a1ab43a448ff36896e4b04ac13e"
   integrity sha512-WWFdIAIjnU+jbfpgOcJSsPA2Lo/gRE5XjZTKLuMVy+5cSdltClu6/Sa1/fKd7Yy+msecpN2olHXaVks9DDuNUQ==
