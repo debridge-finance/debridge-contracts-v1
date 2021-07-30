@@ -90,7 +90,7 @@ contract("DeBridgeGate full mode",  function() {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, {
+      await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, false, {
         from: alice,
       });
     }

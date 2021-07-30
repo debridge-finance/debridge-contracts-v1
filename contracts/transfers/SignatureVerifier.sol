@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "./OraclesManagement.sol";
+import "./AggregatorBase.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
-contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
+contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
@@ -14,7 +14,6 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
     /* ========== STATE VARIABLES ========== */
 
     uint256 public confirmationThreshold; // bonus reward for one submission
-    uint256 public minConfirmations; // minimal required confirmations
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
     
@@ -39,13 +38,11 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
         uint256 _excessConfirmations,
         address _wrappedAssetAdmin,
         address _debridgeAddress
-    ) {
+    ) AggregatorBase(_minConfirmations){
         confirmationThreshold = _confirmationThreshold;
-        minConfirmations = _minConfirmations;
         excessConfirmations = _excessConfirmations;
         wrappedAssetAdmin = _wrappedAssetAdmin;
         debridgeAddress = _debridgeAddress;
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     /// @dev Confirms the transfer request.
@@ -76,7 +73,7 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             bytes32 unsignedMsg = deployId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
-            if(oracles[oracle].isValid) {
+            if(getOracleInfo[oracle].isValid) {
                 require(
                     !debridgeInfo.hasVerified[oracle],
                     "deployAsset: submitted already"
@@ -84,7 +81,7 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
                 debridgeInfo.hasVerified[oracle] = true;
                 emit DeployConfirmed(deployId, oracle);
                 debridgeInfo.confirmations += 1;
-                if(oracles[oracle].required) {
+                if(getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
             }
@@ -113,7 +110,7 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             bytes32 unsignedMsg = _submissionId.getUnsignedMsg();
             address oracle = ecrecover(unsignedMsg, v, r, s);
-            if(oracles[oracle].isValid) {
+            if(getOracleInfo[oracle].isValid) {
                 require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
                 submissionInfo.confirmations += 1;
                 submissionInfo.hasVerified[oracle] = true;
@@ -132,7 +129,7 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
                     submissionInfo.block = block.number;
                     emit SubmissionApproved(_submissionId);
                 }
-                if(oracles[oracle].required) {
+                if(getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
             }
@@ -194,11 +191,6 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
         debridgeAddress = _debridgeAddress;
     }
 
-    /// @dev Sets minimal required confirmations.
-    /// @param _minConfirmations Minimal required confirmations.
-    function setMinConfirmations(uint256 _minConfirmations) external onlyAdmin {
-        minConfirmations = _minConfirmations;
-    }
 
     
 
@@ -229,26 +221,5 @@ contract SignatureVerifier is OraclesManagement, ISignatureVerifier {
                         : minConfirmations
                 )
         );
-    }
-
-   
-
-    /// @dev Calculates asset identifier.
-    /// @param _chainId Current chain id.
-    /// @param _tokenAddress Address of the asset on the other chain.
-    function getDebridgeId(uint256 _chainId, address _tokenAddress)
-        public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_chainId, _tokenAddress));
-    }
-
-    /// @dev Calculates asset identifier.
-    function getDeployId(
-        bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) public pure returns (bytes32) {
-        return
-            keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
     }
 }

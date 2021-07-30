@@ -35,8 +35,8 @@ module.exports = async function(deployer, network, accounts) {
     console.log("ConfirmationAggregator: " + aggregatorInstance.address);
     console.log("SignatureAggregator: " + SignatureAggregator.address);
     for (let oracle of debridgeInitParams.oracles) {
-      await aggregatorInstance.addOracle(oracle.address, oracle.admin);
-      await signatureAggregatorInstance.addOracle(oracle.address, oracle.admin);
+      await aggregatorInstance.addOracle(oracle.address, oracle.admin, false);
+      await signatureAggregatorInstance.addOracle(oracle.address, oracle.admin, false);
       console.log("addOracle: " + oracle.address);
     }
   } else {
@@ -59,7 +59,7 @@ module.exports = async function(deployer, network, accounts) {
     let aggregatorInstance = await SignatureVerifier.deployed();
     console.log("SignatureVerifier: " + aggregatorInstance.address);
     for (let oracle of debridgeInitParams.oracles) {
-      await aggregatorInstance.updateOracle(oracle.address, false, true);
+      await aggregatorInstance.addOracle(oracle.address, oracle.address, false);
       console.log("addOracle: " + oracle.address);
     }
   }

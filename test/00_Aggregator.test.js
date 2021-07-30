@@ -43,7 +43,7 @@ contract("ConfirmationAggregator", function([alice, bob, carol, eve, devid]) {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.aggregator.addOracle(oracle.address, oracle.admin, {
+      await this.aggregator.addOracle(oracle.address, oracle.admin, false, {
         from: alice,
       });
     }
@@ -87,21 +87,45 @@ contract("ConfirmationAggregator", function([alice, bob, carol, eve, devid]) {
     });
 
     it("should add new oracle if called by the admin", async function() {
-      await this.aggregator.addOracle(devid, eve, {
+      let isRequired = true;
+      await this.aggregator.addOracle(devid, eve, isRequired, {
         from: alice,
       });
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
       //oracleInfo is admin address of oracle
-      assert.equal(oracleInfo, eve);
+      assert.equal(oracleInfo.exist, true);
+      assert.equal(oracleInfo.isValid, true);
+      assert.equal(oracleInfo.required, isRequired);
+      assert.equal(oracleInfo.admin, eve);
+
+      const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
+      assert.equal(requiredOraclesCount, 1);
     });
 
-    it("should remove existed oracle if called by the admin", async function() {
-      //TODO: fix test need to check role
-      await this.aggregator.removeOracle(devid, {
+    it("should updateOracle oracle (disable) if called by the admin", async function() {
+      await this.aggregator.updateOracle(devid, false, false, {
         from: alice,
       });
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
-      assert.equal(oracleInfo, eve);
+
+      assert.equal(oracleInfo.exist, true);
+      assert.equal(oracleInfo.isValid, false);
+      assert.equal(oracleInfo.required, false);
+      assert.equal(oracleInfo.admin, eve);
+
+      const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
+      assert.equal(requiredOraclesCount, 0);
+    });
+
+    it("should update oracles admin if called by the admin", async function() {
+      //TODO: fix test need to check role
+      await this.aggregator.updateOracleAdminByOwner(devid, devid, {
+        from: alice,
+      });
+      const oracleInfo = await this.aggregator.getOracleInfo(devid);
+
+      assert.equal(oracleInfo.exist, true);
+      assert.equal(oracleInfo.admin, devid);
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function() {
@@ -136,7 +160,7 @@ contract("ConfirmationAggregator", function([alice, bob, carol, eve, devid]) {
 
     it("should reject adding the new oracle if called by the non-admin", async function() {
       await expectRevert(
-        this.aggregator.addOracle(devid, eve, {
+        this.aggregator.addOracle(devid, eve, false, {
           from: bob,
         }),
         "onlyAdmin: bad role"
@@ -145,7 +169,7 @@ contract("ConfirmationAggregator", function([alice, bob, carol, eve, devid]) {
 
     it("should reject removing the new oracle if called by the non-admin", async function() {
       await expectRevert(
-        this.aggregator.removeOracle(devid, {
+        this.aggregator.updateOracle(devid, false, false, {
           from: bob,
         }),
         "onlyAdmin: bad role"

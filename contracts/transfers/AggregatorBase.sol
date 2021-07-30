@@ -8,10 +8,11 @@ contract AggregatorBase is AccessControl, IAggregatorBase {
 
     /* ========== STATE VARIABLES ========== */
 
-    bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE"); // role allowed to submit the data
     uint256 public minConfirmations; // minimal required confirmations
 
+    address[] public oracleAddresses;
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
+    uint256 public requiredOraclesCount; // count of required oracles
 
     /* ========== MODIFIERS ========== */
 
@@ -20,7 +21,7 @@ contract AggregatorBase is AccessControl, IAggregatorBase {
         _;
     }
     modifier onlyOracle {
-        require(hasRole(ORACLE_ROLE, msg.sender), "onlyOracle: bad role");
+        require(getOracleInfo[msg.sender].isValid, "onlyOracle: bad role");
         _;
     }
 
@@ -33,7 +34,6 @@ contract AggregatorBase is AccessControl, IAggregatorBase {
     ) {
         minConfirmations = _minConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(ORACLE_ROLE, msg.sender);
     }
 
     /* ========== ORACLES  ========== */
@@ -46,6 +46,7 @@ contract AggregatorBase is AccessControl, IAggregatorBase {
     {
         require(getOracleInfo[_oracle].admin == msg.sender, "only callable by admin");
         getOracleInfo[_oracle].admin = _newOracleAdmin;
+        emit UpdateOracleAdmin(_oracle, _newOracleAdmin);
     }
 
     /* ========== ADMIN ========== */
@@ -57,18 +58,58 @@ contract AggregatorBase is AccessControl, IAggregatorBase {
         minConfirmations = _minConfirmations;
     }
 
-    /// @dev Add new oracle.
+
+    /// @dev Add oracle.
     /// @param _oracle Oracle address.
-    /// @param _admin Admin address.
-    function addOracle(address _oracle, address _admin) external onlyAdmin {
-        grantRole(ORACLE_ROLE, _oracle);
-        getOracleInfo[_oracle].admin = _admin;
+    /// @param _admin Oracles admin address.
+    /// @param _required Without this oracle, the transfer will not be confirmed
+    function addOracle(address _oracle, address _admin, bool _required) external onlyAdmin {
+        OracleInfo storage oracleInfo = getOracleInfo[_oracle];
+        require(!oracleInfo.exist, "Already exist");
+
+        oracleAddresses.push(_oracle);
+
+        if(_required){
+            requiredOraclesCount += 1;
+        }
+        
+        oracleInfo.exist = true;
+        oracleInfo.isValid = true;
+        oracleInfo.required = _required;
+        oracleInfo.admin = _admin;
+
+        emit AddOracle(_oracle, _admin,_required);
     }
 
-    /// @dev Remove oracle.
+    /// @dev Update oracle.
     /// @param _oracle Oracle address.
-    function removeOracle(address _oracle) external onlyAdmin {
-        revokeRole(ORACLE_ROLE, _oracle);
+    /// @param _isValid is valid oracle
+    /// @param _required Without this oracle, the transfer will not be confirmed
+    function updateOracle(address _oracle, bool _isValid, bool _required) external onlyAdmin {
+        OracleInfo storage oracleInfo = getOracleInfo[_oracle];
+        require(oracleInfo.exist, "Not exist");
+        require(_isValid || !_isValid && !_required, "Need to disable required");
+
+        oracleInfo.isValid = _isValid;
+
+        if (oracleInfo.required && !_required){
+            requiredOraclesCount -= 1;
+        }
+        else if (!oracleInfo.required && _required){
+            requiredOraclesCount += 1;
+        }
+        oracleInfo.required = _required;
+        emit UpdateOracle(_oracle, _required, _isValid);
+    }
+
+    /// @dev Update oracle admin.
+    /// @param _oracle Oracle address.
+    /// @param _admin new admin address.
+    function updateOracleAdminByOwner(address _oracle, address _admin) external onlyAdmin {
+        OracleInfo storage oracleInfo = getOracleInfo[_oracle];
+        require(oracleInfo.exist, "Not exist");
+        oracleInfo.admin = _admin;
+        emit UpdateOracleAdminByOwner(_oracle, _admin);
     }
 
     /* ========== VIEW ========== */
