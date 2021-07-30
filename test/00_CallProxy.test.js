@@ -94,7 +94,9 @@ describe("CallProxy", function () {
           const receiverContract = await receiverContractFactory.deploy();
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          const callData = receiverContract.interface.encodeFunctionData("setArrayUint256Payable", [[1,12,123,1234,12345,123456,1234567,12345678,123456789,1234567890]]);
+          const callData = receiverContract.interface.encodeFunctionData("setArrayUint256Payable", [
+            [1, 12, 123, 1234, 12345, 123456, 1234567, 12345678, 123456789, 1234567890],
+          ]);
           const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, { value: 12348767 });
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setArrayUint256Payable");
@@ -214,7 +216,7 @@ describe("CallProxy", function () {
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
       });
 
-      it("when receiving contract doesn't pull tokens - they stay on proxy (Is it expected?)", async function () {
+      it("when receiving contract doesn't pull tokens - they transfer to reserve", async function () {
         const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
         const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
@@ -225,16 +227,17 @@ describe("CallProxy", function () {
         // check we hit the non-pulling function
         expect(await nonPullingReceiver.lastHit()).to.be.equal("setUint256Payable");
         // token balance stays intact
-        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
       });
 
-      it("when receiver is EOA - tokens stay on proxy (Is it expected?)", async function () {
+      it("when receiver is EOA - tokens transfer to reserve", async function () {
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
         transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiver.address, "0x");
         transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiver.address, "0xdeadbeef");
-        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
-        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
       });
 
       it("when receiver is reverting contract");
@@ -255,6 +258,7 @@ describe("CallProxy", function () {
           ]);
           const receiverBalanceBefore = await this.token.balanceOf(receiverContract.address);
           const reserveBalanceBefore = await this.token.balanceOf(reserve.address);
+          const proxyBalance = await this.token.balanceOf(this.proxy.address);
           const transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiverContract.address, callData);
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setArrayAndPullToken");
@@ -272,14 +276,15 @@ describe("CallProxy", function () {
           expect(await receiverContract.tokensReceived()).to.be.equal("1111");
           const receiverBalanceAfter = await this.token.balanceOf(receiverContract.address);
           const reserveBalanceAfter = await this.token.balanceOf(reserve.address);
-          expect(reserveBalanceAfter.sub(reserveBalanceBefore)).to.be.equal("0");
+          const proxyBalanceAfter = await this.token.balanceOf(this.proxy.address);
+          expect(reserveBalanceAfter).to.be.equal(proxyBalance);
+          expect(proxyBalanceAfter).to.be.equal("0");
           // transferred balance appeared on receiving contract as expected
           expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1111");
         });
       });
 
       describe("when receiver is uniswap", function () {
-
         it("swapTokensForExactTokens");
 
         it("swapTokensForExactETH");
