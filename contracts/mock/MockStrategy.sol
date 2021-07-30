@@ -5,7 +5,7 @@ import "../interfaces/IStrategy.sol";
 
 contract MockStrategy is IStrategy {
     function deposit(address _token, uint256 _amount) external override {
-        
+        // TODO
     }
 
     function withdraw(address _token, uint256 _amount) external override {

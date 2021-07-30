@@ -96,9 +96,11 @@ contract DelegatedStaking is AccessControl, Initializable {
     mapping(address => UserInfo) public getUserInfo; // oracle address => oracle details
     uint256 public timelock; // duration of withdrawal timelock
     uint256 public timelockForDelegate = 2 weeks;
+    uint256 public constant BPS_DENOMINATOR = 10000; // Basis points, or bps, equal to 1/10000 used to express relative value
+    uint256 public minProfitSharingBPS = 5000;
     mapping(address => Collateral) public collaterals;
     address[] public collateralAddresses;
-    mapping(address => uint256) accumulatedProtocolRewards;
+    mapping(address => uint256) public accumulatedProtocolRewards;
     mapping(address => Strategy) public strategies;
     address[] public strategyAddresses;
     IPriceConsumer public priceConsumer;
@@ -374,66 +376,6 @@ contract DelegatedStaking is AccessControl, Initializable {
     }
 
     /**
-     * @dev Get price per share
-     * @param _strategy Address of strategy
-     * @param _token Address of token
-     */
-    function getPricePerFullShare(address _strategy, address _token)
-    external
-    view
-    returns (uint256)
-    {
-        Strategy memory strategy = strategies[_strategy];
-        require(strategy.totalShares > 0, "getPPFS: strategy has no shares");
-        uint256 totalStrategyTokenReserves = IStrategy(_strategy).updateReserves(address(this), _token);
-        return totalStrategyTokenReserves/strategy.totalShares;
-    }
-
-    /**
-     * @dev Get price per oracle share
-     * @param _oracle Address of oracle
-     * @param _token Address of token
-     */
-    function getPricePerFullOracleShare(address _oracle, address _token)
-    external
-    view
-    returns (uint256)
-    {
-        UserInfo storage oracle = getUserInfo[_oracle];
-        require(oracle.isOracle, "getPPFOS: address is not oracle");
-        require(oracle.delegation[_token].shares > 0, "getPPFOS: oracle has no shares");
-        return oracle.delegation[_token].stakedAmount/oracle.delegation[_token].shares;
-    }
-
-    /**
-     * @dev Get USD amount of oracle collateral
-     * @param _oracle Address of oracle
-     * @param _collateral Address of collateral
-     */
-    function getPoolUSDAmount(address _oracle, address _collateral) internal view returns(uint256) {
-        uint256 collateralPrice;
-        if (collaterals[_collateral].isUSDStable)
-            collateralPrice = 1e18; // We don't suppport decimals greater than 18
-            //for decimals 6 will be 1e24
-            //for decimals 18 will be 1e18
-        else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
-        return getUserInfo[_oracle].delegation[_collateral].stakedAmount*collateralPrice
-            * 10 ** (collaterals[_collateral].decimals % 18);
-    }
-
-    /**
-     * @dev Get total USD amount of oracle collateral
-     * @param _oracle Address of oracle
-     */
-    function getTotalUSDAmount(address _oracle) internal view returns(uint256) {
-        uint256 totalUSDAmount = 0;
-        for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            totalUSDAmount += getPoolUSDAmount(_oracle, collateralAddresses[i]);
-        }
-        return totalUSDAmount;
-    }
-
-    /**
      * @dev Stake token to strategies to earn rewards
      * @param _oracle address of oracle
      * @param _amount Amount to be staked
@@ -620,13 +562,57 @@ contract DelegatedStaking is AccessControl, Initializable {
 
     /**
      * @dev set basis points of profit sharing
+     * @param _oracle address of oracle
      * @param _profitSharingBPS profit sharing basis points
      */
     function setProfitSharing(address _oracle, uint256 _profitSharingBPS) external {
         UserInfo storage oracle = getUserInfo[_oracle];
         require(msg.sender == oracle.admin, "setProfitPercentage: only admin");
-        require(_profitSharingBPS<= 10000, "Must be less then 10,000 BPS" );
+        require(_profitSharingBPS >= minProfitSharingBPS, "Must be greater than min bps");
+        require(_profitSharingBPS<= BPS_DENOMINATOR, "Must be less than 10,000 BPS" );
         oracle.profitSharingBPS = _profitSharingBPS;
+    }
+
+    /**
+     * @dev Distributes oracle rewards to oracle/delegators
+     * @param _oracle address of oracle
+     * @param _collateral address of collateral
+     * @param _amount amount of token
+     */
+    function distributeRewards(address _oracle, address _collateral, uint256 _amount) external {
+        Collateral storage collateral = collaterals[_collateral];
+
+        require(collateral.isEnabled, "collateral disabled");
+        IERC20(_collateral).safeTransferFrom( msg.sender, address(this), _amount);
+        collateral.totalLocked += _amount;
+        collateral.rewards +=_amount;
+        accumulatedProtocolRewards[_collateral] += _amount;
+
+        UserInfo storage oracle = getUserInfo[_oracle];
+        uint256 delegatorsAmount = _amount * oracle.profitSharingBPS / BPS_DENOMINATOR;
+
+        //Add rewards to oracle
+        oracle.stake[_collateral] += _amount - delegatorsAmount;
+        oracle.accumulatedRewards[_collateral] += _amount - delegatorsAmount;
+
+        // All colaterals of the oracle valued in usd
+        uint256 totalUSDAmount = getTotalUSDAmount(_oracle);
+        for (uint256 i = 0; i < collateralAddresses.length; i++) {
+            address currentCollateral = collateralAddresses[i];
+            // How many rewards each collateral receives
+            uint256 accTokens = delegatorsAmount *
+                getPoolUSDAmount(_oracle, currentCollateral) /
+                totalUSDAmount;
+
+            if(currentCollateral==_collateral){
+                //Increase accumulated rewards per share
+                oracle.accTokensPerShare[currentCollateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
+            } else {
+                //Add a reward pool dependency
+                oracle.dependsAccTokensPerShare[currentCollateral][_collateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
+            }
+        }
+        emit RewardsDistributed(_oracle, _collateral, _amount);
     }
 
     /* ADMIN */
@@ -643,6 +629,15 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function setTimelockForTransfer(uint256 _newTimelock) external onlyAdmin() {
         timelockForDelegate = _newTimelock;
+    }
+
+    /**
+     * @dev set min basis points of profit sharing
+     * @param _profitSharingBPS profit sharing basis points
+     */
+    function setMinProfitSharing(uint256 _profitSharingBPS) external onlyAdmin() {
+        require(_profitSharingBPS<= BPS_DENOMINATOR, "Must be less than 10,000 BPS" );
+        minProfitSharingBPS = _profitSharingBPS;
     }
 
     /// @dev Add new oracle.
@@ -804,47 +799,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         priceConsumer = _priceConsumer;
     }
 
-    /**
-     * @dev Distributes oracle rewards to oracle/delegators
-     * @param _oracle address of oracle
-     * @param _collateral address of collateral
-     * @param _amount amount of token
-     */
-    function distributeRewards(address _oracle, address _collateral, uint256 _amount) external {
-        Collateral storage collateral = collaterals[_collateral];
-
-        require(collateral.isEnabled, "collateral disabled");
-        IERC20(_collateral).safeTransferFrom( msg.sender, address(this), _amount);
-        collateral.totalLocked += _amount;
-        collateral.rewards +=_amount;
-        accumulatedProtocolRewards[_collateral] += _amount;
-
-        UserInfo storage oracle = getUserInfo[_oracle];
-        uint256 delegatorsAmount = _amount * oracle.profitSharingBPS / 10000;
-
-        //Add rewards to oracle
-        oracle.stake[_collateral] += _amount - delegatorsAmount;
-        oracle.accumulatedRewards[_collateral] += _amount - delegatorsAmount;
-
-        // All colaterals of the oracle valued in usd
-        uint256 totalUSDAmount = getTotalUSDAmount(_oracle);
-        for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            address currentCollateral = collateralAddresses[i];
-            // How many rewards each collateral receives
-            uint256 accTokens = delegatorsAmount *
-                getPoolUSDAmount(_oracle, currentCollateral) /
-                totalUSDAmount;
-
-            if(currentCollateral==_collateral){
-                //Increase accumulated rewards per share
-                oracle.accTokensPerShare[currentCollateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
-            } else {
-                //Add a reward pool dependency
-                oracle.dependsAccTokensPerShare[currentCollateral][_collateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
-            }
-        }
-        emit RewardsDistributed(_oracle, _collateral, _amount);
-    }
+    /* internal & views */
 
     /**
      * @dev Credits delegator share of oracle rewards and updated passed rewards
@@ -944,40 +899,99 @@ contract DelegatedStaking is AccessControl, Initializable {
         return _amount * _totalAmount / _totalShares;
     }
 
-    /// @dev Get withdrawal request.
-    /// @param _oracle Oracle address.
-    /// @param _withdrawalId Withdrawal identifier.
-    function getWithdrawalRequest(address _oracle, uint256 _withdrawalId)
+    /**
+     * @dev Get price per share
+     * @param _strategy Address of strategy
+     * @param _collateral Address of collateral
+     */
+    function getPricePerFullStrategyShare(address _strategy, address _collateral)
+        external
+        view
+        returns (uint256)
+    {
+        Strategy memory strategy = strategies[_strategy];
+        require(strategy.totalShares > 0, "getPPFS: strategy has no shares");
+        uint256 totalStrategyTokenReserves = IStrategy(_strategy).updateReserves(address(this), _collateral);
+        return totalStrategyTokenReserves/strategy.totalShares;
+    }
+
+    /**
+     * @dev Get price per oracle share
+     * @param _oracle Address of oracle
+     * @param _collateral Address of collateral
+     */
+    function getPricePerFullOracleShare(address _oracle, address _collateral)
+        external
+        view
+        returns (uint256)
+    {
+        UserInfo storage oracle = getUserInfo[_oracle];
+        require(oracle.isOracle, "getPPFOS: address is not oracle");
+        require(oracle.delegation[_collateral].shares > 0, "getPPFOS: oracle has no shares");
+        return oracle.delegation[_collateral].stakedAmount/oracle.delegation[_collateral].shares;
+    }
+
+    /**
+     * @dev Get USD amount of oracle collateral
+     * @param _oracle Address of oracle
+     * @param _collateral Address of collateral
+     */
+    function getPoolUSDAmount(address _oracle, address _collateral) public view returns(uint256) {
+        uint256 collateralPrice;
+        if (collaterals[_collateral].isUSDStable)
+            collateralPrice = 1e18; // We don't suppport decimals greater than 18
+            //for decimals 6 will be 1e24
+            //for decimals 18 will be 1e18
+        else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
+        return getUserInfo[_oracle].delegation[_collateral].stakedAmount*collateralPrice
+            * 10 ** (collaterals[_collateral].decimals % 18);
+    }
+
+    /**
+     * @dev Get total USD amount of oracle collateral
+     * @param _oracle Address of oracle
+     */
+    function getTotalUSDAmount(address _oracle) public view returns(uint256) {
+        uint256 totalUSDAmount = 0;
+        for (uint256 i = 0; i < collateralAddresses.length; i++) {
+            totalUSDAmount += getPoolUSDAmount(_oracle, collateralAddresses[i]);
+        }
+        return totalUSDAmount;
+    }
+
+    /**
+     * @dev Get withdrawal request.
+     * @param _user User address.
+     * @param _withdrawalId Withdrawal identifier.
+     */
+    function getWithdrawalRequest(address _user, uint256 _withdrawalId)
         public
         view
         returns (WithdrawalInfo memory)
     {
-        return getUserInfo[_oracle].withdrawals[_withdrawalId];
+        return getUserInfo[_user].withdrawals[_withdrawalId];
     }
 
     /**
      * @dev Get transfer request
-     * @param _oracle Oracle address
+     * @param _user User address
      * @param _transferId Transfer identifier
      */
-    function getTransferRequest(address _oracle, uint256 _transferId)
+    function getTransferRequest(address _user, uint256 _transferId)
         public
         view
         returns (TransferInfo memory)
     {
-        return getUserInfo[_oracle].transfers[_transferId];
+        return getUserInfo[_user].transfers[_transferId];
     }
 
     /**
-     * @dev get stake property of oracle, returns stakedAmount and shares
+     * @dev get stake property of oracle
      * @param _oracle address of oracle
      * @param _collateral Address of collateral
      */
-    function getOracleStaking(address _oracle, address _collateral) public view returns (uint256, uint256) {
-        return (
-            getUserInfo[_oracle].stake[_collateral],
-            getUserInfo[_oracle].delegation[_collateral].shares
-        );
+    function getOracleStaking(address _oracle, address _collateral) public view returns (uint256) {
+        return getUserInfo[_oracle].stake[_collateral];
     }
 
     /**
@@ -999,15 +1013,15 @@ contract DelegatedStaking is AccessControl, Initializable {
 
     /**
      * @dev get user rewards
-     * @param _account address of account
+     * @param _user address of account
      * @param _collateral Address of collateral
      */
-    function getUserRewards(address _account, address _collateral)
+    function getUserRewards(address _user, address _collateral)
         public
         view
         returns(uint256)
     {
-        return getUserInfo[_account].accumulatedRewards[_collateral];
+        return getUserInfo[_user].accumulatedRewards[_collateral];
     }
 
     /**
@@ -1087,10 +1101,6 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function getAccountTransferCount(address _account) public view returns(uint256) {
         return getUserInfo[_account].transferCount;
-    }
-
-    function min(uint256 a, uint256 b) internal pure returns(uint256) {
-        return a < b ? a : b;
     }
 
     /* modifiers */
