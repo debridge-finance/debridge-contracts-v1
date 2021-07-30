@@ -29,7 +29,8 @@ contract CallProxy is ICallProxy {
         IERC20(_token).safeApprove(_receiver, 0);
         IERC20(_token).safeApprove(_receiver, amount);
         _result = externalCall(_receiver, 0, _data.length, _data);
-        if (!_result) {
+        amount = IERC20(_token).balanceOf(address(this));
+        if (!_result || amount>0) {
             IERC20(_token).safeTransfer(_reserveAddress, amount);
         }
     }
