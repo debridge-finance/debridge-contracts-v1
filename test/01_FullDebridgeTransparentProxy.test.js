@@ -24,7 +24,7 @@ const transferFeeBps = 50;
 const minReservesBps = 3000;
 const BPS = toBN(10000);
 
-contract("DeBridgeGate full mode",  function() {
+contract("DeBridgeGate full mode (Transparent Proxy)",  function() {
 
   before(async function() {
     this.signers = await ethers.getSigners()
@@ -1141,7 +1141,7 @@ contract("DeBridgeGate full mode",  function() {
     });
   });
 
-  context("after upgrade V1 to V2", async function() {
+  context("after Transparent upgrade V1 to V2", async function() {
 
     beforeEach(async function() {
       this.wethValueBeforeUpgrade = await this.debridge.weth();
