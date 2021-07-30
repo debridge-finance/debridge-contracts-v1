@@ -32,12 +32,24 @@ contract("DeBridgeGate full mode",  function() {
     bobAccount=this.signers[1]
     carolAccount=this.signers[2]
     eveAccount=this.signers[3]
-    devidAccount=this.signers[4]
+    feiAccount=this.signers[4]
+    devidAccount=this.signers[5]
     alice=aliceAccount.address
     bob=bobAccount.address
     carol=carolAccount.address
     eve=eveAccount.address
+    fei=feiAccount.address
     devid=devidAccount.address
+
+    //this.oraclesAddressescounts = [
+    //  // aliceAccount,
+    //  bobAccount,
+    //  carolAccount,
+    //  eveAccount,
+    //  feiAccount,
+    //  devidAccount
+    //];
+
     //console.log(alice,bob,carol,eve,devid)
     const UniswapV2 = await deployments.getArtifact("UniswapV2Factory");
     const WETH9 = await deployments.getArtifact("WETH9");
@@ -54,9 +66,9 @@ contract("DeBridgeGate full mode",  function() {
       from: alice,
     });
     this.amountThreshols = toWei("1000");
-    this.minConfirmations = 1;
+    this.minConfirmations = 2;
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
-    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+    this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
     // constructor(
     //     uint256 _minConfirmations,
@@ -76,24 +88,42 @@ contract("DeBridgeGate full mode",  function() {
       }
     );
     this.initialOracles = [
-      {
-        address: alice,
-        admin: alice,
-      },
-      {
-        address: bob,
-        admin: carol,
-      },
-      {
-        address: eve,
-        admin: carol,
-      },
+        // {
+        //   address: alice,
+        //   admin: alice,
+        // },
+        {
+            address: bob,
+            admin: carol,
+        },
+        {
+            address: carol,
+            admin: eve,
+        },
+        {
+            address: eve,
+            admin: carol,
+        },
+        {
+            address: fei,
+            admin: eve,
+        },
+        {
+            address: devid,
+            admin: carol,
+        },
     ];
     for (let oracle of this.initialOracles) {
       await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, false, {
         from: alice,
       });
     }
+
+    //Alice is required oracle
+    await this.confirmationAggregator.addOracle(alice, alice, true, {
+      from: alice,
+    });
+
     this.uniswapFactory = await UniswapV2Factory.deploy(carol);
     this.feeProxy = await FeeProxy.new(
       this.linkToken.address,
@@ -244,13 +274,11 @@ contract("DeBridgeGate full mode",  function() {
     });
 
     const isSupported = true;
-    it("should update external asset if called by the admin", async function() {
+    it("should confirm new asset if called by the oracles", async function() {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;
       const maxAmount = toWei("1000000");
       const amountThreshold = toWei("10");
-      const fixedNativeFee = toWei("0.00001");
-      const supportedChainIds = [42, 3, 56];
       const name = "MUSD";
       const symbol = "Magic Dollar";
       const decimals = 18;
@@ -265,10 +293,11 @@ contract("DeBridgeGate full mode",  function() {
         //     string memory _symbol,
         //     uint8 _decimals
         // )
-      await this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
-        from: this.initialOracles[0].address,
-      });
-
+      for (let oracle of this.initialOracles) {
+        await this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
+          from: oracle.address,
+        });
+      }
         //   function getDeployId(
         //     bytes32 _debridgeId,
         //     string memory _name,
@@ -299,8 +328,54 @@ contract("DeBridgeGate full mode",  function() {
     });
   });
 
+  //TODO: ADDDDD
+  //it("should reject add external asset without DSRM confirmation", async function() {
+  //  const tokenAddress = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
+  //  const chainId = 56;
+  //  const name = "SPARK";
+  //  const symbol = "SPARK Dollar";
+  //  const decimals = 18;
+
+  //  //start from 1 (skipped alice)
+  //  for (let i = 1; i < this.initialOracles.length; i++) {
+  //    this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
+  //      from: this.initialOracles[i],
+  //    })
+  //  }
+
+  //  //TODO: need to deploy assets by debridge gate
+  //  await expectRevert(
+  //      this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
+  //      from: alice,
+  //    }),
+  //    "Not confirmed by required oracles"
+  //  );
+  //});
+
+  //it("should reject add external asset without -1 confirmation", async function() {
+  //  const tokenAddress = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
+  //  const chainId = 56;
+  //  const name = "MUSD";
+  //  const symbol = "Magic Dollar";
+  //  const decimals = 18;
+
+  //  for (let i = 1; i < this.initialOracles.length; i++) {
+  //    this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
+  //      from: this.initialOracles[i],
+  //    })
+  //  }
+
+  //  //TODO: need to deploy assets by debridge gate
+  //  await expectRevert(
+  //      this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
+  //      from: alice,
+  //    }),
+  //    "not confirmed"
+  //  );
+  //});
+
   it("should update excessConfirmations if called by the admin", async function() {
-    let newExcessConfirmations = 2;
+    let newExcessConfirmations = 9;
     await this.debridge.updateExcessConfirmations(
       newExcessConfirmations,
       {
@@ -457,6 +532,8 @@ contract("DeBridgeGate full mode",  function() {
     const amount = toBN(toWei("100"));
     const nonce = 2;
     let currentChainId;
+    let submissionId;
+    let debridgeId;
     before(async function() {
       receiver=bob
       currentChainId = await this.debridge.chainId();
@@ -483,7 +560,7 @@ contract("DeBridgeGate full mode",  function() {
       //    from: alice,
       //  }
       //);
-      const debridgeId = await this.debridge.getDebridgeId(
+      debridgeId = await this.debridge.getDebridgeId(
         chainId,
         tokenAddress
       );
@@ -496,7 +573,7 @@ contract("DeBridgeGate full mode",  function() {
       //     address _receiver,
       //     uint256 _nonce
       // )
-      const submission = await this.debridge.getSubmisionId(
+      submissionId = await this.debridge.getSubmisionId(
         debridgeId,
         chainId,
         currentChainId,
@@ -504,16 +581,68 @@ contract("DeBridgeGate full mode",  function() {
         receiver,
         nonce
       );
-      await this.confirmationAggregator.submit(submission, {
-        from: bob,
-      });
 
-      let submissionInfo = await this.confirmationAggregator.getSubmissionInfo(submission);
-      let submissionConfirmations = await this.confirmationAggregator.getSubmissionConfirmations(submission);
+      for (let oracle of this.initialOracles) {
+        await this.confirmationAggregator.submit(submissionId, {
+          from: oracle.address,
+        });
+      }
+
+    });
+    it("check confirmation without DSRM confirmation", async function() {
+      
+      let submissionInfo = await this.confirmationAggregator.getSubmissionInfo(submissionId);
+      let submissionConfirmations = await this.confirmationAggregator.getSubmissionConfirmations(submissionId);
      
-      assert.equal(1, submissionInfo.confirmations);
-      assert.equal(true, submissionConfirmations[0]);
-      assert.equal(1, submissionConfirmations[1]);
+      assert.equal(submissionInfo.confirmations, this.initialOracles.length);
+      assert.equal(submissionInfo.requiredConfirmations, 0);
+      assert.equal(submissionInfo.isConfirmed, false);
+
+      assert.equal(this.initialOracles.length, submissionConfirmations[0]);
+      assert.equal(false, submissionConfirmations[1]);
+    });
+
+    
+    
+    it("should reject native token without DSRM confirmation", async function() {
+     
+      await expectRevert(
+        this.debridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
+        "not confirmed"
+      );
+    });
+    
+    it("confirm by required oracle", async function() {
+      await this.confirmationAggregator.submit(submissionId, {
+        from: alice,
+      });
+    });
+
+    it("check confirmation with DSRM confirmation", async function() {
+      const submissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        submissionId
+      );
+      // struct SubmissionInfo {
+      //   uint256 block; // confirmation block
+      //   uint256 confirmations; // received confirmations count
+      //   uint256 requiredConfirmations; // required oracles (DSRM) received confirmations count
+      //   bool isConfirmed; // is confirmed submission (user can claim)
+      //   mapping(address => bool) hasVerified; // verifier => has already voted
+      // }
+      assert.equal(submissionInfo.confirmations, this.initialOracles.length+1);
+      console.log(`confirmations: ${submissionInfo.confirmations}`);
+      assert.equal(submissionInfo.requiredConfirmations, 1);
+      assert.equal(submissionInfo.isConfirmed, true);
     });
 
     it("should reject exceed amount", async function() {
@@ -554,7 +683,7 @@ contract("DeBridgeGate full mode",  function() {
     });
 
     it("update reduce ExcessConfirmations if called by the admin", async function() {
-      let newExcessConfirmations = 1;
+      let newExcessConfirmations = 3;
       await this.debridge.updateExcessConfirmations(
         newExcessConfirmations,
         {
@@ -563,6 +692,44 @@ contract("DeBridgeGate full mode",  function() {
       );
       assert.equal(await this.debridge.excessConfirmations(), newExcessConfirmations);
     });
+
+    it("should reject when the submission is blocked", async function() {
+      await this.debridge.blockSubmission([submissionId], true, {
+        from: alice,
+      });
+      
+      assert.equal(
+        await this.debridge.isBlockedSubmission(submissionId),
+        true
+      );
+
+      await expectRevert(
+        this.debridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
+        "mint: blocked submission"
+      );
+    });
+
+    it("should unblock the submission by admin", async function() {
+      await this.debridge.blockSubmission([submissionId], false, {
+        from: alice,
+      });
+      
+      assert.equal(
+        await this.debridge.isBlockedSubmission(submissionId),
+        false
+      );
+    })
+
 
     it("should mint when the submission is approved", async function() {
       const debridgeId = await this.debridge.getDebridgeId(
@@ -747,6 +914,9 @@ contract("DeBridgeGate full mode",  function() {
     let debridgeId;
     let outsideDebridgeId;
     let erc20DebridgeId;
+    let curentChainSubmission;
+    let outsideChainSubmission;
+    let erc20Submission;
     before(async function() {
       receiver=bob;
       chainId = await this.debridge.chainId();
@@ -759,7 +929,7 @@ contract("DeBridgeGate full mode",  function() {
         chainId,
         this.mockToken.address
       );
-      const cuurentChainSubmission = await this.debridge.getSubmisionId(
+      curentChainSubmission = await this.debridge.getSubmisionId(
         debridgeId,
         chainIdFrom,
         chainId,
@@ -767,10 +937,7 @@ contract("DeBridgeGate full mode",  function() {
         receiver,
         nonce
       );
-      await this.confirmationAggregator.submit(cuurentChainSubmission, {
-        from: bob,
-      });
-      const outsideChainSubmission = await this.debridge.getSubmisionId(
+      outsideChainSubmission = await this.debridge.getSubmisionId(
         outsideDebridgeId,
         chainIdFrom,
         56,
@@ -778,10 +945,7 @@ contract("DeBridgeGate full mode",  function() {
         receiver,
         nonce
       );
-      await this.confirmationAggregator.submit(outsideChainSubmission, {
-        from: bob,
-      });
-      const erc20Submission = await this.debridge.getSubmisionId(
+      erc20Submission = await this.debridge.getSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
         chainId,
@@ -789,8 +953,76 @@ contract("DeBridgeGate full mode",  function() {
         receiver,
         nonce
       );
+      for (let oracle of this.initialOracles) {
+        await this.confirmationAggregator.submit(curentChainSubmission, {
+          from: oracle.address,
+        });
+        await this.confirmationAggregator.submit(outsideChainSubmission, {
+          from: oracle.address,
+        });
+        await this.confirmationAggregator.submit(erc20Submission, {
+          from: oracle.address,
+        });
+      }
+    });
+    it("check confirmation without DSRM confirmation", async function() {
+      const curentChainSubmissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        curentChainSubmission
+      );
+      const outsideChainSubmissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        outsideChainSubmission
+      );
+      const erc20SubmissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        erc20Submission
+      );
+      // struct SubmissionInfo {
+      //   uint256 block; // confirmation block
+      //   uint256 confirmations; // received confirmations count
+      //   uint256 requiredConfirmations; // required oracles (DSRM) received confirmations count
+      //   bool isConfirmed; // is confirmed submission (user can claim)
+      //   mapping(address => bool) hasVerified; // verifier => has already voted
+      // }
+      assert.equal(curentChainSubmissionInfo.confirmations, this.initialOracles.length);
+      assert.equal(curentChainSubmissionInfo.requiredConfirmations, 0);
+      assert.equal(curentChainSubmissionInfo.isConfirmed, false);
+
+      assert.equal(outsideChainSubmissionInfo.confirmations, this.initialOracles.length);
+      assert.equal(outsideChainSubmissionInfo.requiredConfirmations, 0);
+      assert.equal(outsideChainSubmissionInfo.isConfirmed, false);
+
+      assert.equal(erc20SubmissionInfo.confirmations, this.initialOracles.length);
+      assert.equal(erc20SubmissionInfo.requiredConfirmations, 0);
+      assert.equal(erc20SubmissionInfo.isConfirmed, false);
+
+    });
+
+    it("should reject native token without DSRM confirmation", async function() {
+     
+      await expectRevert(
+        this.debridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          [],
+          {
+            from: alice,
+          }
+        ),
+        "not confirmed"
+      );
+    });
+    
+    it("confirm by required oracle", async function() {
+      await this.confirmationAggregator.submit(curentChainSubmission, {
+        from: alice,
+      });
+      await this.confirmationAggregator.submit(outsideChainSubmission, {
+        from: alice,
+      });
       await this.confirmationAggregator.submit(erc20Submission, {
-        from: bob,
+        from: alice,
       });
     });
 
@@ -839,9 +1071,40 @@ contract("DeBridgeGate full mode",  function() {
       );
     })
 
+    it("check confirmation with DSRM confirmation", async function() {
+      const curentChainSubmissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        curentChainSubmission
+      );
+      const outsideChainSubmissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        outsideChainSubmission
+      );
+      const erc20SubmissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        erc20Submission
+      );
+      // struct SubmissionInfo {
+      //   uint256 block; // confirmation block
+      //   uint256 confirmations; // received confirmations count
+      //   uint256 requiredConfirmations; // required oracles (DSRM) received confirmations count
+      //   bool isConfirmed; // is confirmed submission (user can claim)
+      //   mapping(address => bool) hasVerified; // verifier => has already voted
+      // }
+      assert.equal(curentChainSubmissionInfo.confirmations, this.initialOracles.length+1);
+      assert.equal(curentChainSubmissionInfo.requiredConfirmations, 1);
+      assert.equal(curentChainSubmissionInfo.isConfirmed, true);
+
+      assert.equal(outsideChainSubmissionInfo.confirmations, this.initialOracles.length+1);
+      assert.equal(outsideChainSubmissionInfo.requiredConfirmations, 1);
+      assert.equal(outsideChainSubmissionInfo.isConfirmed, true);
+
+      assert.equal(erc20SubmissionInfo.confirmations, this.initialOracles.length+1);
+      assert.equal(erc20SubmissionInfo.requiredConfirmations, 1);
+      assert.equal(erc20SubmissionInfo.isConfirmed, true);
+    });
+
     it("should claim native token when the submission is approved", async function() {
       const debridge = await this.debridge.getDebridge(debridgeId);
       const balance = toBN(await web3.eth.getBalance(receiver));
+
       await this.debridge.claim(
         debridgeId,
         chainIdFrom,

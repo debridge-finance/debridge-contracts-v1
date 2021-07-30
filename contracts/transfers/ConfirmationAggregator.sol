@@ -76,6 +76,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         debridgeInfo.chainId = _chainId;
         debridgeInfo.decimals = _decimals;
         debridgeInfo.confirmations += 1;
+        if(getOracleInfo[msg.sender].required){
+            debridgeInfo.requiredConfirmations += 1;
+        }
         debridgeInfo.hasVerified[msg.sender] = true;
         
         if( debridgeInfo.confirmations >= minConfirmations){
@@ -99,11 +102,13 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         ];
         require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         submissionInfo.confirmations += 1;
+        if(getOracleInfo[msg.sender].required) {
+            submissionInfo.requiredConfirmations += 1;
+        }
         submissionInfo.hasVerified[msg.sender] = true;
         if (submissionInfo.confirmations >= minConfirmations) {
-
-                BlockConfirmationsInfo storage _blockConfirmationsInfo
-             = getConfirmationsPerBlock[block.number];
+            BlockConfirmationsInfo storage _blockConfirmationsInfo
+                = getConfirmationsPerBlock[block.number];
             if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
                 _blockConfirmationsInfo.count += 1;
                 _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
@@ -112,7 +117,14 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
                 }
             }
             submissionInfo.block = block.number;
-            emit SubmissionApproved(_submissionId);
+
+            if(submissionInfo.requiredConfirmations >= requiredOraclesCount 
+                && (!_blockConfirmationsInfo.requireExtraCheck
+                    || _blockConfirmationsInfo.requireExtraCheck 
+                        && submissionInfo.confirmations >= excessConfirmations)) {
+                submissionInfo.isConfirmed = true;
+                emit SubmissionApproved(_submissionId);
+            }
         }
         emit Confirmed(_submissionId, msg.sender);
     }
@@ -178,28 +190,17 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
     /// @return _confirmations number of confirmation.
-    /// @return _blockConfirmationPassed Whether transfer request is confirmed.
+    /// @return _isConfirmed is confirmed sumbission.
     function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
         override
-        returns (uint256 _confirmations, bool _blockConfirmationPassed)
+        returns (uint256 _confirmations, bool _isConfirmed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
             _submissionId
         ];
 
-
-        BlockConfirmationsInfo storage _blockConfirmationsInfo = getConfirmationsPerBlock[submissionInfo.block];
-        _confirmations = submissionInfo.confirmations;
-        return (
-            _confirmations,
-            _confirmations >=
-                (
-                    (_blockConfirmationsInfo.requireExtraCheck)
-                        ? excessConfirmations
-                        : minConfirmations
-                )
-        );
+        return (submissionInfo.confirmations, submissionInfo.isConfirmed);
     }
 }

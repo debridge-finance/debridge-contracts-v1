@@ -190,36 +190,4 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
         debridgeAddress = _debridgeAddress;
     }
-
-
-    
-
-    /* ========== VIEW ========== */
-
-    /// @dev Returns whether transfer request is confirmed.
-    /// @param _submissionId Submission identifier.
-    /// @return _confirmations number of confirmation.
-    /// @return _blockConfirmationPassed Whether transfer request is confirmed.
-    function getSubmissionConfirmations(bytes32 _submissionId)
-        external view override
-        returns (uint256 _confirmations, bool _blockConfirmationPassed)
-    {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
-
-
-            BlockConfirmationsInfo storage _blockConfirmationsInfo
-         = getConfirmationsPerBlock[submissionInfo.block];
-        _confirmations = submissionInfo.confirmations;
-        return (
-            _confirmations,
-            _confirmations >=
-                (
-                    (_blockConfirmationsInfo.requireExtraCheck)
-                        ? excessConfirmations
-                        : minConfirmations
-                )
-        );
-    }
 }
