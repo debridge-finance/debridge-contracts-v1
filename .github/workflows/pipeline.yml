@@ -59,18 +59,7 @@ jobs:
     - name: Lint (Hardhat-Solhint)
       run: yarn run hardhat check
 
-    - name: Test CallProxy
-      run: yarn run hardhat test test/00_CallProxy.test.js
+    - name: Tests coverage
+      run: yarn coverage
 
-    - name: Test Aggregator
-      run: yarn test test/00_Aggregator.test.js
-
-    - name: Test DeBridge Full
-      run: yarn test test/01_FullDebridge.test.js
-
-    - name: Test DeBridge Light
-      run: yarn test test/02_LightDebridge.test.js
-
-    - name: Test DeBridge Full Auto
-      run: yarn test test/04_AutoFullDebridge.test.js
 
