@@ -182,7 +182,7 @@ contract("DeBridgeGate full mode",  function() {
   context("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function() {
       const aggregator = this.confirmationAggregator.address;
-      await this.debridge.setAggregator(aggregator, false, {
+      await this.debridge.setAggregator(aggregator, {
         from: alice,
       });
       const newAggregator = await this.debridge.confirmationAggregator();
@@ -218,7 +218,7 @@ contract("DeBridgeGate full mode",  function() {
 
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS, false),
+        this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS),
         "onlyAdmin: bad role"
       );
     });

@@ -48,8 +48,6 @@ contract DeBridgeGate is Initializable,
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
-    mapping(uint8 => AggregatorInfo) public getOldSignatureVerifier; // counter => agrgregator info
-    mapping(uint8 => AggregatorInfo) public getOldConfirmationAggregator; // counter => agrgregator info
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
 
@@ -486,204 +484,6 @@ contract DeBridgeGate is Initializable,
         );
     }
 
-    /* ========== OldAggregator mint, claim ========== */
-
-    /// @dev Mints wrapped asset on the current chain.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    /// @param _nonce Submission id.
-    /// @param _signatures Array of oracles signatures.
-    /// @param _aggregatorVersion Aggregator version.
-    function mintWithOldAggregator(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes[] calldata _signatures,
-        uint8 _aggregatorVersion
-    ) external override whenNotPaused(){
-        bytes32 submissionId = getSubmisionId(
-            _debridgeId,
-            _chainIdFrom,
-            chainId,
-            _amount,
-            _receiver,
-            _nonce
-        );
-        
-        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                        ? getOldSignatureVerifier[_aggregatorVersion].aggregator
-                                        : getOldConfirmationAggregator[_aggregatorVersion].aggregator);
-            
-
-        _checkConfirmationsOldAggregator(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
-            _signatures,
-            _aggregatorVersion);
-
-        _mint(
-            submissionId,
-            _debridgeId,
-            _receiver,
-            _amount,
-            address(0),
-            0,
-            ""
-        );
-    }
-
-    /// @dev Unlock the asset on the current chain and transfer to receiver.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _nonce Submission id.
-    /// @param _aggregatorVersion Aggregator version.
-    function claimWithOldAggregator(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes[] calldata _signatures,
-        uint8 _aggregatorVersion
-    ) external override whenNotPaused(){
-        bytes32 submissionId = getSubmisionId(
-            _debridgeId,
-            _chainIdFrom,
-            chainId,
-            _amount,
-            _receiver,
-            _nonce
-        );
-        
-        _checkConfirmationsOldAggregator(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
-            _signatures, 
-            _aggregatorVersion);
-
-        _claim(
-            submissionId,
-            _debridgeId,
-            _receiver,
-            _amount,
-            address(0),
-            0,
-            ""
-        );
-    }
-
-    /* ========== AUTO OldAggregator mint, claim ========== */
-
-    /// @dev Mints wrapped asset on the current chain.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    /// @param _nonce Submission id.
-    /// @param _signatures Array of oracles signatures.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    function autoMintWithOldAggregator(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes[] calldata _signatures,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _aggregatorVersion
-    ) external override whenNotPaused() {
-        bytes32 submissionId = getAutoSubmisionId(
-            _debridgeId,
-            _chainIdFrom,
-            chainId,
-            _amount,
-            _receiver,
-            _nonce,
-            _fallbackAddress,
-            _executionFee,
-            _data
-        );
-
-        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                        ? getOldSignatureVerifier[_aggregatorVersion].aggregator
-                                        : getOldConfirmationAggregator[_aggregatorVersion].aggregator);
-
-        _checkConfirmationsOldAggregator(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
-            _signatures, 
-            _aggregatorVersion);
-
-        _mint(
-            submissionId,
-            _debridgeId,
-            _receiver,
-            _amount,
-            _fallbackAddress,
-            _executionFee,
-            _data
-        );
-    }
-
-    /// @dev Unlock the asset on the current chain and transfer to receiver.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _nonce Submission id.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    function autoClaimWithOldAggregator(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes[] calldata _signatures,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _aggregatorVersion
-    ) external override whenNotPaused() {
-        bytes32 submissionId = getAutoSubmisionId(
-            _debridgeId,
-            _chainIdFrom,
-            chainId,
-            _amount,
-            _receiver,
-            _nonce,
-            _fallbackAddress,
-            _executionFee,
-            _data
-        );
-        
-        _checkConfirmationsOldAggregator(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
-            _signatures, 
-            _aggregatorVersion);
-
-        _claim(
-            submissionId,
-            _debridgeId,
-            _receiver,
-            _amount,
-            _fallbackAddress,
-            _executionFee,
-            _data
-        );
-    }
-
-    
     
     function flash(
         address _tokenAddress,
@@ -786,31 +586,14 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Set aggregator address.
     /// @param _aggregator Submission aggregator address.
-    function setAggregator(address _aggregator, bool _isLight) external onlyAdmin() {
-        if(_isLight){
-            getOldSignatureVerifier[aggregatorLightVersion] = AggregatorInfo(_aggregator, true);
-            signatureVerifier = _aggregator;
-            aggregatorLightVersion++;
-        }
-        else{
-            getOldConfirmationAggregator[aggregatorFullVersion] = AggregatorInfo(_aggregator, true);
-            confirmationAggregator = _aggregator;
-            aggregatorFullVersion++;
-        }
+    function setAggregator(address _aggregator) external onlyAdmin() {
+        confirmationAggregator = _aggregator;
     }
 
     /// @dev Set aggregator address.
-    /// @param _aggregatorVersion Submission aggregator address.
-    /// @param _isValid Is valid.
-    function manageOldAggregator(uint8 _aggregatorVersion, bool _isLight, bool _isValid) external onlyAdmin() {
-        if(_isLight){
-            require(_aggregatorVersion < aggregatorLightVersion, "manageOldAggregator: version too high");
-            getOldSignatureVerifier[_aggregatorVersion].isValid = _isValid;
-        }
-        else{
-            require(_aggregatorVersion < aggregatorFullVersion, "manageOldAggregator: version too high");
-            getOldConfirmationAggregator[_aggregatorVersion].isValid = _isValid;
-        }
+    /// @param _verifier Signature verifier address.
+    function setSignatureVerifier(address _verifier) external onlyAdmin() {
+        signatureVerifier = _verifier;
     }
 
     /// @dev Set defi controoler.
@@ -972,24 +755,6 @@ contract DeBridgeGate is Initializable,
         }
     }
 
-    function _checkConfirmationsOldAggregator(bytes32 _submissionId, bytes32 _debridgeId, 
-                                              uint256 _amount, bytes[] memory _signatures,
-                                              uint8 _aggregatorVersion) 
-        internal {
-        AggregatorInfo memory aggregatorInfo 
-                = _signatures.length > 0 
-                ? getOldSignatureVerifier[_aggregatorVersion]
-                : getOldConfirmationAggregator[_aggregatorVersion];
-        require(aggregatorInfo.isValid, "invalidAggregator" );
-        (uint256 confirmations, bool confirmed) = 
-                _signatures.length > 0 
-                ? ISignatureVerifier(aggregatorInfo.aggregator).submit(_submissionId, _signatures)
-                : IConfirmationAggregator(aggregatorInfo.aggregator).getSubmissionConfirmations(_submissionId);
-        require(confirmed, "not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(confirmations >= excessConfirmations, "amount not confirmed");
-        }
-    }
 
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.

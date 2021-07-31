@@ -180,13 +180,12 @@ contract("DeBridgeGate light mode", function() {
   });
 
   context("Test setting configurations by different users", () => {
-    it("should set aggregator if called by the admin", async function() {
-      const aggregator = this.signatureVerifier.address;
-      await this.debridge.setAggregator(aggregator, true,{
+    it("should set Verifier if called by the admin", async function() {
+      await this.debridge.setSignatureVerifier(this.signatureVerifier.address, {
         from: alice,
       });
       const newAggregator = await this.debridge.signatureVerifier();
-      assert.equal(aggregator, newAggregator);
+      assert.equal(this.signatureVerifier.address, newAggregator);
     });
 
     it("should set defi controller if called by the admin", async function() {
@@ -198,9 +197,9 @@ contract("DeBridgeGate light mode", function() {
       assert.equal(defiController, newDefiController);
     });
 
-    it("should reject setting aggregator if called by the non-admin", async function() {
+    it("should reject setting Verifier if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS, true),
+        this.debridge.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
         "onlyAdmin: bad role"
       );
     });
