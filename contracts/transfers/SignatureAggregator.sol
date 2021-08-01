@@ -20,9 +20,11 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    constructor(uint256 _minConfirmations) 
-        AggregatorBase(_minConfirmations)
-    {}
+    function initialize(uint256 _minConfirmations) 
+        public initializer 
+    {
+        AggregatorBase.initializeBase(_minConfirmations);
+    }
 
     /* ========== ORACLES  ========== */
 

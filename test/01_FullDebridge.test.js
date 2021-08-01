@@ -1,6 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
-const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -54,6 +53,8 @@ contract("DeBridgeGate full mode",  function() {
     const UniswapV2 = await deployments.getArtifact("UniswapV2Factory");
     const WETH9 = await deployments.getArtifact("WETH9");
     const DeBridgeGate = await ethers.getContractFactory("DeBridgeGate",alice);
+    const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator",alice);
+
     const UniswapV2Factory = await ethers.getContractFactory(UniswapV2.abi,UniswapV2.bytecode, alice );
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
@@ -70,45 +71,49 @@ contract("DeBridgeGate full mode",  function() {
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
-    // constructor(
+    //   function initialize(
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
     //     address _wrappedAssetAdmin,
     //     address _debridgeAddress
     // )
-    this.confirmationAggregator = await ConfirmationAggregator.new(
+    this.confirmationAggregator = await upgrades.deployProxy(ConfirmationAggregator, [
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
       alice,
-      ZERO_ADDRESS,
-      {
-        from: alice,
-      }
-    );
+      ZERO_ADDRESS
+    ]);
+
+    await this.confirmationAggregator.deployed();
     this.initialOracles = [
         // {
         //   address: alice,
         //   admin: alice,
         // },
         {
+            account: bobAccount,
             address: bob,
-            admin: carol,
+            admin: carol
         },
         {
+            account: carolAccount,
             address: carol,
             admin: eve,
         },
         {
+            account: eveAccount,
             address: eve,
             admin: carol,
         },
         {
+            account: feiAccount,
             address: fei,
             admin: eve,
         },
         {
+            account: devidAccount,
             address: devid,
             admin: carol,
         },
@@ -144,6 +149,7 @@ contract("DeBridgeGate full mode",  function() {
     const supportedChainIds = [42, 56];
     this.weth = await WETH9Factory.deploy();
 
+    //   function initialize(
     //     uint256 _excessConfirmations,
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
@@ -152,7 +158,9 @@ contract("DeBridgeGate full mode",  function() {
     //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
-    //     IDefiController _defiController
+    //     IDefiController _defiController,
+    //     address _treasury
+    // ) 
     this.debridge = await upgrades.deployProxy(DeBridgeGate, [
       this.excessConfirmations,
       ZERO_ADDRESS,
@@ -176,7 +184,9 @@ contract("DeBridgeGate full mode",  function() {
       ZERO_ADDRESS,
       devid
     ]);
+    await this.debridge.deployed();
     await this.confirmationAggregator.setDebridgeAddress(this.debridge.address.toString());
+    assert.equal(this.debridge.address.toString(), await this.confirmationAggregator.debridgeAddress());
   });
 
   context("Test setting configurations by different users", () => {
@@ -294,9 +304,7 @@ contract("DeBridgeGate full mode",  function() {
         //     uint8 _decimals
         // )
       for (let oracle of this.initialOracles) {
-        await this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
-          from: oracle.address,
-        });
+        await this.confirmationAggregator.connect(oracle.account).confirmNewAsset(tokenAddress, chainId, name, symbol, decimals);
       }
         //   function getDeployId(
         //     bytes32 _debridgeId,
@@ -583,9 +591,7 @@ contract("DeBridgeGate full mode",  function() {
       );
 
       for (let oracle of this.initialOracles) {
-        await this.confirmationAggregator.submit(submissionId, {
-          from: oracle.address,
-        });
+        await this.confirmationAggregator.connect(oracle.account).submit(submissionId);
       }
 
     });
@@ -954,15 +960,9 @@ contract("DeBridgeGate full mode",  function() {
         nonce
       );
       for (let oracle of this.initialOracles) {
-        await this.confirmationAggregator.submit(curentChainSubmission, {
-          from: oracle.address,
-        });
-        await this.confirmationAggregator.submit(outsideChainSubmission, {
-          from: oracle.address,
-        });
-        await this.confirmationAggregator.submit(erc20Submission, {
-          from: oracle.address,
-        });
+        await this.confirmationAggregator.connect(oracle.account).submit(curentChainSubmission);
+        await this.confirmationAggregator.connect(oracle.account).submit(outsideChainSubmission);
+        await this.confirmationAggregator.connect(oracle.account).submit(erc20Submission);
       }
     });
     it("check confirmation without DSRM confirmation", async function() {

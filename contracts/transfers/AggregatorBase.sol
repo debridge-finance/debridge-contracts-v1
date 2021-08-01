@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../interfaces/IAggregatorBase.sol";
 
-contract AggregatorBase is AccessControl, IAggregatorBase {
+contract AggregatorBase is Initializable,
+                           AccessControlUpgradeable,
+                           IAggregatorBase {
 
     /* ========== STATE VARIABLES ========== */
 
@@ -29,9 +32,9 @@ contract AggregatorBase is AccessControl, IAggregatorBase {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    constructor(
-        uint256 _minConfirmations
-    ) {
+    function initializeBase(uint256 _minConfirmations) 
+        internal
+    {
         minConfirmations = _minConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }

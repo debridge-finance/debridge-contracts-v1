@@ -26,17 +26,14 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @param _minConfirmations Common confirmations count.
     /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
-    constructor(
+    function initialize(
         uint256 _minConfirmations,
         uint256 _confirmationThreshold,
         uint256 _excessConfirmations,
         address _wrappedAssetAdmin,
         address _debridgeAddress
-    )
-        AggregatorBase(
-            _minConfirmations
-        )
-    {
+    ) public initializer {
+        AggregatorBase.initializeBase(_minConfirmations);
         confirmationThreshold = _confirmationThreshold;
         excessConfirmations = _excessConfirmations;
         wrappedAssetAdmin = _wrappedAssetAdmin;
