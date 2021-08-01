@@ -87,7 +87,7 @@ contract DefiController is AccessControl {
         grantRole(WORKER_ROLE, _worker);
     }
 
-    function removeOracle(address _worker) external onlyAdmin {
+    function removeWorker(address _worker) external onlyAdmin {
         revokeRole(WORKER_ROLE, _worker);
     }
 }
