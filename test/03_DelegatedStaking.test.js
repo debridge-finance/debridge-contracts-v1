@@ -655,7 +655,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      await this.delegatedStaking.liquidate(bob, collateral, amount, {
+      await this.delegatedStaking.methods['liquidate(address,address,address)'](bob, collateral, amount, {
         from: alice,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
@@ -679,7 +679,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      await this.delegatedStaking.liquidate(bob, collateral, amount, {
+      await this.delegatedStaking.methods['liquidate(address,address,address)'](bob, collateral, amount, {
         from: alice,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
@@ -702,7 +702,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const amount = toWei("1000");
       const collateral = this.linkToken.address;
       await expectRevert(
-        this.delegatedStaking.liquidate(bob, collateral, amount, {
+        this.delegatedStaking.methods['liquidate(address,address,address)'](bob, collateral, amount, {
           from: alice,
         }),
         "liquidate: insufficient balance"
@@ -716,7 +716,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      await this.delegatedStaking.liquidate(bob, collateral, amount, {
+      await this.delegatedStaking.methods['liquidate(address,address,address)'](bob, collateral, amount, {
         from: alice,
       });
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
@@ -739,7 +739,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
       const amount = toWei("1");
       const collateral = this.linkToken.address;
       await expectRevert(
-        this.delegatedStaking.liquidate(bob, collateral, amount, {
+        this.delegatedStaking.methods['liquidate(address,address,address)'](bob, collateral, amount, {
           from: carol,
         }),
         "onlyAdmin: bad role"
