@@ -338,10 +338,11 @@ contract("DeBridgeGate full with auto", function () {
       const balance = toBN(await web3.eth.getBalance(this.debridge.address));
       const debridge = await this.debridge.getDebridge(debridgeId);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-      const fees = toBN(supportedChainInfo.transferFeeBps)
+      const feesWithFix = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
-        .div(BPS);
-      const collectedNativeFees = await this.debridge.collectedFees();
+        .div(BPS)
+        .add(toBN(supportedChainInfo.fixedNativeFee));
+      const collectedNativeFees = await this.debridge.collectedNativeFees();
       await this.debridge.autoSend(
         tokenAddress,
         receiver,
@@ -357,19 +358,17 @@ contract("DeBridgeGate full with auto", function () {
         }
       );
       const newBalance = toBN(await web3.eth.getBalance(this.debridge.address));
-      const newCollectedNativeFees = await this.debridge.collectedFees();
+      const newCollectedNativeFees = await this.debridge.collectedNativeFees();
       const newDebridge = await this.debridge.getDebridge(debridgeId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
       assert.equal(
         debridge.collectedFees
-
-          .add(toBN(supportedChainInfo.fixedNativeFee))
-          .add(fees)
+          .add(feesWithFix)
           .toString(),
         newDebridge.collectedFees.toString()
       );
       assert.equal(
-        collectedNativeFees.toString(),
+        collectedNativeFees.add(feesWithFix).toString(),
         newCollectedNativeFees.toString()
       );
     });
@@ -395,7 +394,7 @@ contract("DeBridgeGate full with auto", function () {
       );
       const debridge = await this.debridge.getDebridge(debridgeId);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-      const collectedNativeFees = await this.debridge.collectedFees();
+      const collectedNativeFees = await this.debridge.collectedNativeFees();
       const fees = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
         .div(BPS);
@@ -413,7 +412,7 @@ contract("DeBridgeGate full with auto", function () {
           from: alice,
         }
       );
-      const newCollectedNativeFees = await this.debridge.collectedFees();
+      const newCollectedNativeFees = await this.debridge.collectedNativeFees();
       const newBalance = toBN(
         await this.mockToken.balanceOf(this.debridge.address)
       );
@@ -672,7 +671,7 @@ contract("DeBridgeGate full with auto", function () {
         deadline,
         bobPrivKey
       );
-      const collectedNativeFees = await this.debridge.collectedFees();
+      const collectedNativeFees = await this.debridge.collectedNativeFees();
       await this.debridge.connect(bobAccount).autoBurn(
         debridgeId,
         receiver,
@@ -688,7 +687,7 @@ contract("DeBridgeGate full with auto", function () {
           value: supportedChainInfo.fixedNativeFee,
         }
       );
-      const newCollectedNativeFees = await this.debridge.collectedFees();
+      const newCollectedNativeFees = await this.debridge.collectedNativeFees();
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridge = await this.debridge.getDebridge(debridgeId);
