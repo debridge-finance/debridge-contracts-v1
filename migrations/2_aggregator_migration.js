@@ -1,6 +1,8 @@
 const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
 const SignatureAggregator = artifacts.require("SignatureAggregator");
 const SignatureVerifier = artifacts.require("SignatureVerifier");
+const { deployProxy } = require("@openzeppelin/truffle-upgrades");
+
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 module.exports = async function(deployer, network, accounts) {
@@ -15,20 +17,26 @@ module.exports = async function(deployer, network, accounts) {
     //     address _wrappedAssetAdmin,
     //     address _debridgeAddress
     // )
-    await deployer.deploy(
+    await deployProxy(
       ConfirmationAggregator,
-      debridgeInitParams.minConfirmations,
-      debridgeInitParams.confirmationThreshold,
-      debridgeInitParams.excessConfirmations,
-      accounts[0],
-      ZERO_ADDRESS
+      [
+        debridgeInitParams.minConfirmations,
+        debridgeInitParams.confirmationThreshold,
+        debridgeInitParams.excessConfirmations,
+        accounts[0],
+        ZERO_ADDRESS
+      ],
+      { deployer }
     );
 
     //TODO: deploy Light Aggregator in arbitrum
     // constructor(uint256 _minConfirmations) 
-    await deployer.deploy(
+    await deployProxy(
       SignatureAggregator,
-      debridgeInitParams.minConfirmations
+      [
+        debridgeInitParams.minConfirmations
+      ],
+      { deployer }
     );
     let aggregatorInstance = await ConfirmationAggregator.deployed();
     let signatureAggregatorInstance = await SignatureAggregator.deployed();
@@ -48,13 +56,16 @@ module.exports = async function(deployer, network, accounts) {
   //     address _wrappedAssetAdmin,
   //     address _debridgeAddress
   // )
-    await deployer.deploy(
+    await deployProxy(
       SignatureVerifier,
-      debridgeInitParams.minConfirmations,
-      debridgeInitParams.confirmationThreshold,
-      debridgeInitParams.excessConfirmations,
-      accounts[0],
-      ZERO_ADDRESS
+      [
+        debridgeInitParams.minConfirmations,
+        debridgeInitParams.confirmationThreshold,
+        debridgeInitParams.excessConfirmations,
+        accounts[0],
+        ZERO_ADDRESS
+      ],
+      { deployer }
     );
     let aggregatorInstance = await SignatureVerifier.deployed();
     console.log("SignatureVerifier: " + aggregatorInstance.address);

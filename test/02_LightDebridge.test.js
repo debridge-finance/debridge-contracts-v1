@@ -2,8 +2,6 @@ const Web3 = require("web3");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
-const ConfirmationAggregator = artifacts.require("ConfirmationAggregator");
-const SignatureVerifier = artifacts.require("SignatureVerifier");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -42,7 +40,10 @@ contract("DeBridgeGate light mode", function() {
     fei=feiAccount.address
     devid=devidAccount.address
 
-    const Debridge = await ethers.getContractFactory("DeBridgeGate",alice);
+    const Debridge = await ethers.getContractFactory("DeBridgeGate", alice);
+    const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator",alice);
+    const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier",alice);
+    
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
@@ -64,59 +65,68 @@ contract("DeBridgeGate light mode", function() {
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 4; //Confirmations count in case of excess activity.
 
-    this.confirmationAggregator = await ConfirmationAggregator.new(
-      this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
-      {
-        from: alice,
-      }
-    );
-    // constructor(
-    //   uint256 _minConfirmations,
-    //   uint256 _confirmationThreshold,
-    //   uint256 _excessConfirmations,
-    //   address _wrappedAssetAdmin,
-    //   address _debridgeAddress
+    //   function initialize(
+    //     uint256 _minConfirmations,
+    //     uint256 _confirmationThreshold,
+    //     uint256 _excessConfirmations,
+    //     address _wrappedAssetAdmin,
+    //     address _debridgeAddress
     // )
-    this.signatureVerifier = await SignatureVerifier.new(
+    this.confirmationAggregator = await upgrades.deployProxy(ConfirmationAggregator, [
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
       alice,
-      ZERO_ADDRESS,
-      {
-        from: alice,
-      }
-    );
+      ZERO_ADDRESS
+    ]);
+    
+    await this.confirmationAggregator.deployed();
+    //   function initialize(
+    //     uint256 _minConfirmations,
+    //     uint256 _confirmationThreshold,
+    //     uint256 _excessConfirmations,
+    //     address _wrappedAssetAdmin,
+    //     address _debridgeAddress
+    // )
+    this.signatureVerifier = await upgrades.deployProxy(SignatureVerifier, [
+      this.minConfirmations,
+      this.confirmationThreshold,
+      this.excessConfirmations,
+      alice,
+      ZERO_ADDRESS
+    ]);
+    await this.signatureVerifier.deployed();
     this.initialOracles = [
       // {
       //   address: alice,
       //   admin: alice,
       // },
       {
-        address: bob,
-        admin: carol,
+          account: bobAccount,
+          address: bob,
+          admin: carol
       },
       {
-        address: carol,
-        admin: eve,
+          account: carolAccount,
+          address: carol,
+          admin: eve,
       },
       {
-        address: eve,
-        admin: carol,
+          account: eveAccount,
+          address: eve,
+          admin: carol,
       },
       {
-        address: fei,
-        admin: eve,
+          account: feiAccount,
+          address: fei,
+          admin: eve,
       },
       {
-        address: devid,
-        admin: carol,
+          account: devidAccount,
+          address: devid,
+          admin: carol,
       },
-    ];
+  ];
     for (let oracle of this.initialOracles) {
       await this.signatureVerifier.addOracle(oracle.address, oracle.address, false, {
         from: alice,
@@ -140,17 +150,18 @@ contract("DeBridgeGate light mode", function() {
     const supportedChainIds =[42, 56];
     this.weth = await WETH9Factory.deploy();
 
-    //function initialize(
-    //    uint256 _excessConfirmations,
-    //    address _signatureVerifier,
-    //    address _confirmationAggregator,
-    //    address _callProxy,
-    //    uint256[] memory _supportedChainIds,
-    //    ChainSupportInfo[] memory _chainSupportInfo,
-    //    IWETH _weth,
-    //    IFeeProxy _feeProxy,
-    //    IDefiController _defiController
-    //)
+    //   function initialize(
+    //     uint256 _excessConfirmations,
+    //     address _signatureVerifier,
+    //     address _confirmationAggregator,
+    //     address _callProxy,
+    //     uint256[] memory _supportedChainIds,
+    //     ChainSupportInfo[] memory _chainSupportInfo,
+    //     IWETH _weth,
+    //     IFeeProxy _feeProxy,
+    //     IDefiController _defiController,
+    //     address _treasury
+    // ) 
 
     this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
@@ -176,17 +187,18 @@ contract("DeBridgeGate light mode", function() {
         devid
     ]);
 
+    await this.debridge.deployed();
+
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
   });
 
   context("Test setting configurations by different users", () => {
-    it("should set aggregator if called by the admin", async function() {
-      const aggregator = this.signatureVerifier.address;
-      await this.debridge.setAggregator(aggregator, true,{
+    it("should set Verifier if called by the admin", async function() {
+      await this.debridge.setSignatureVerifier(this.signatureVerifier.address, {
         from: alice,
       });
       const newAggregator = await this.debridge.signatureVerifier();
-      assert.equal(aggregator, newAggregator);
+      assert.equal(this.signatureVerifier.address, newAggregator);
     });
 
     it("should set defi controller if called by the admin", async function() {
@@ -198,9 +210,9 @@ contract("DeBridgeGate light mode", function() {
       assert.equal(defiController, newDefiController);
     });
 
-    it("should reject setting aggregator if called by the non-admin", async function() {
+    it("should reject setting Verifier if called by the non-admin", async function() {
       await expectRevert(
-        this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS, true),
+        this.debridge.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
         "onlyAdmin: bad role"
       );
     });
@@ -245,9 +257,8 @@ contract("DeBridgeGate light mode", function() {
           (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
         );
       }
-      await this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
-        from: this.initialOracles[0].address,
-      });
+      await this.signatureVerifier.connect(this.initialOracles[0].account)
+          .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
       
       ////   function getDeployId(
       ////     bytes32 _debridgeId,
