@@ -855,9 +855,6 @@ contract DeBridgeGate is Initializable,
             require(_amount >= transferFee, "send: amount not cover fees");
             debridge.collectedFees += transferFee;
             _amount -= transferFee;
-            if(debridge.tokenAddress == address(0)){
-                collectedNativeFees += transferFee;
-            }
         } else {
             {
                 uint256 transferFee = (_amount*chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;

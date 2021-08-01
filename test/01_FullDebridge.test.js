@@ -464,7 +464,9 @@ contract("DeBridgeGate full mode",  function() {
         //console.log(`newDebridgeInfo.collectedFees: ${newDebridgeInfo.collectedFees.toString()}`);
 
         assert.equal(
-          collectedNativeFees.add(feesWithFix).toString(),
+          collectedNativeFees
+                    //.add(feesWithFix)
+                    .toString(),
           newCollectedNativeFees.toString()
         );
       });
