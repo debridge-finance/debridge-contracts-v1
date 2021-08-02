@@ -42,7 +42,7 @@ contract CompoundController is IStrategy {
   }
 
   function deposit(address _token, uint256 _amount) external override {
-    IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+    IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
     address CToken = cToken(_token);
     IERC20(_token).safeApprove(CToken, 0);
     IERC20(_token).safeApprove(CToken, _amount);

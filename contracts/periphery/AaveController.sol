@@ -45,7 +45,7 @@ contract AaveController is IStrategy {
 
   function deposit(address _token, uint256 _amount) external override {
     address lendPool = lendingPool();
-    IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+    IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
     IERC20(_token).safeApprove(lendPool, 0);
     IERC20(_token).safeApprove(lendPool, _amount);
 
