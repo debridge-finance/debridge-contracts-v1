@@ -240,7 +240,20 @@ describe("CallProxy", function () {
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
       });
 
-      it("when receiver is reverting contract");
+      it("when receiver is reverting contract - tokens go to reserve", async function () {
+        // const callData = MockProxyReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
+        const callData = "0xa85dcaea0000000000000000000000000000000000000000000000000000000000003039"
+
+        const alwaysRevertingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const alwaysRevertingReceiver = await alwaysRevertingReceiverContractFactory.deploy();
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
+
+        await this.proxy.callERC20(this.token.address, reserve.address, alwaysRevertingReceiver.address, callData)
+
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
+      });
 
       describe("when receiver is token-pulling contract", function () {
         let receiverContract;
