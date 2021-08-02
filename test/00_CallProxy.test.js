@@ -502,12 +502,154 @@ describe("CallProxy", function () {
     });
     });
     describe("ERC20 calls", function () {
-      it("reverts if _token is non-ERC-20 comlpliant");
-      it("when receiver is EOA");
-      it("when receiver is reverting contract");
+      it("reverts if _token fails", async function () {
+        const BrokenTokenFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const brokenToken = await BrokenTokenFactory.deploy();
+        await expect(this.CallerProxy.transferToken(brokenToken.address, receiver.address,reserve.address,"0x",{ value: 1111 })).to.be.reverted;
+        await expect(this.CallerProxy.transferToken(brokenToken.address, receiver.address,reserve.address,"0xdeadbeef",{ value: 1111 })).to.be.reverted;
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
+      });
+      it("when receiving contract doesn't pull tokens - they transfer to reserve", async function () {
+        await this.token.mint(this.CallerProxy.address, "1111");
+        const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
+        // call the method that doesn't pull approved tokens
+        const callData = nonPullingReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
+        const transferResultTwo = await this.CallerProxy.transferToken(
+          this.token.address, 
+          nonPullingReceiver.address,
+          reserve.address,
+          callData,
+          { value: 1111 }
+        );
+        // check we hit the non-pulling function
+        expect(await nonPullingReceiver.lastHit()).to.be.equal("setUint256Payable");
+        // token balance stays intact
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("1111");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
+      });
+
+      it("when receiver is EOA - tokens transfer to reserve", async function () {
+        await this.token.mint(this.CallerProxy.address, "2222");
+
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
+        expect(await this.token.balanceOf(this.CallerProxy.address)).to.be.equal("2222");
+        const transferResult = await this.CallerProxy.transferToken(
+          this.token.address, 
+          receiver.address,
+          reserve.address,
+          "0x",
+          { value: 1111 }
+        );
+        const transferResultTwo = await this.CallerProxy.transferToken(
+          this.token.address, 
+          receiver.address,
+          reserve.address,
+          "0xdeadbeef",
+          { value: 1111 }
+        );
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("2222");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
+      });
+
+      it("when receiver is reverting contract", async function () {
+        const unusableContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        const unusableContract = await unusableContractFactory.deploy();
+        // call the method that doesn't pull approved tokens
+        const callData = unusableContract.interface.encodeFunctionData("setUint256Payable", [12345]);
+
+        await this.token.mint(this.CallerProxy.address, "1111");
+
+        const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
+
+        await this.proxy.callERC20(this.token.address, reserve.address, nonPullingReceiver.address, callData);
+        const transferResultTwo = await this.CallerProxy.transferToken(
+          this.token.address, 
+          nonPullingReceiver.address,
+          reserve.address,
+          callData,
+          { value: 1111 }
+        );
+        // token balance stays intact
+        expect(await this.token.balanceOf(reserve.address)).to.be.equal("1111");
+        expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
+      });
       describe("when receiver is ordinary contract", function () {
-        it("single-argument call");
-        it("call with array");
+        let receiverContract;
+        beforeEach(async function () {
+          const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+          receiverContract = await receiverContractFactory.deploy();
+          await this.token.mint(this.CallerProxy.address, "1111");
+        });
+        it("single-argument uint256 call and pulled tokens", async function () {
+          const receiverBalanceBefore = await this.token.balanceOf(receiverContract.address);
+          const reserveBalanceBefore = await this.token.balanceOf(reserve.address);
+          const callData = receiverContract.interface.encodeFunctionData("setUint256AndPullToken", [
+            this.token.address,
+            1111,
+            12345,
+          ]);
+          const transferResult = await this.CallerProxy.transferToken(
+            this.token.address, 
+            receiverContract.address,
+            reserve.address,
+            callData,
+            { value: 1111 }
+          );
+          // check internal tx hit correct function
+          expect(await receiverContract.lastHit()).to.be.equal("setUint256AndPullToken");
+          // check internal tx was ok and uint256 arg passed and saved successfully
+          expect(await receiverContract.result()).to.be.equal("12345");
+          const receiverBalanceAfter = await this.token.balanceOf(receiverContract.address);
+          const reserveBalanceAfter = await this.token.balanceOf(reserve.address);
+          expect(reserveBalanceAfter.sub(reserveBalanceBefore)).to.be.equal("0");
+          // transferred balance appeared on receiving contract as expected
+          expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1111");
+        });
+
+        it("receiver got data and pulled tokens", async function () {
+          const callData = receiverContract.interface.encodeFunctionData("setArrayAndPullToken", [
+            this.token.address,
+            1111,
+            [1, 12, 123, 1234, 12345, 123456, 1234567, 12345678, 123456789, 1234567890],
+          ]);
+          const receiverBalanceBefore = await this.token.balanceOf(receiverContract.address);
+          const reserveBalanceBefore = await this.token.balanceOf(reserve.address);
+          const proxyBalance = await this.token.balanceOf(this.proxy.address);
+          const transferResult = await this.CallerProxy.transferToken(
+            this.token.address,            
+            receiverContract.address,
+            reserve.address,
+            callData,
+            {value:1111}
+          );
+          // check internal tx hit correct function
+          expect(await receiverContract.lastHit()).to.be.equal("setArrayAndPullToken");
+          // check internal tx was ok and arguments passed in and saved successfully
+          expect(await receiverContract.resultArray(0)).to.be.equal(1);
+          expect(await receiverContract.resultArray(1)).to.be.equal(12);
+          expect(await receiverContract.resultArray(2)).to.be.equal(123);
+          expect(await receiverContract.resultArray(3)).to.be.equal(1234);
+          expect(await receiverContract.resultArray(4)).to.be.equal(12345);
+          expect(await receiverContract.resultArray(5)).to.be.equal(123456);
+          expect(await receiverContract.resultArray(6)).to.be.equal(1234567);
+          expect(await receiverContract.resultArray(7)).to.be.equal(12345678);
+          expect(await receiverContract.resultArray(8)).to.be.equal(123456789);
+          expect(await receiverContract.resultArray(9)).to.be.equal(1234567890);
+          expect(await receiverContract.tokensReceived()).to.be.equal("1111");
+          const receiverBalanceAfter = await this.token.balanceOf(receiverContract.address);
+          const reserveBalanceAfter = await this.token.balanceOf(reserve.address);
+          const proxyBalanceAfter = await this.token.balanceOf(this.proxy.address);
+          expect(reserveBalanceAfter).to.be.equal(proxyBalance);
+          expect(proxyBalanceAfter).to.be.equal("0");
+          // transferred balance appeared on receiving contract as expected
+          expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1111");
+        });
       });
       describe("when receiver is uniswap", function () {
         it("swapTokensForExactTokens");

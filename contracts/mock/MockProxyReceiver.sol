@@ -34,6 +34,15 @@ contract MockProxyReceiver {
         tokensReceived = balanceAfter - balanceBefore;
     }
 
+    function setUint256AndPullToken(address _token, uint256 _amount, uint256 _result) external {
+        lastHit = "setUint256AndPullToken";
+        result = _result;
+        uint256 balanceBefore = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).safeTransferFrom(address(msg.sender), address(this), _amount);
+        uint256 balanceAfter = IERC20(_token).balanceOf(address(this));
+        tokensReceived = balanceAfter - balanceBefore;
+    }
+
     // This function is called for all messages sent to
     // this contract, except plain Ether transfers
     // (there is no other function except the receive function).
