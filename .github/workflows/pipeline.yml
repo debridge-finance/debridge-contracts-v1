@@ -20,6 +20,7 @@ jobs:
       TEST_BSC_PROVIDER: https://bsc-dataseed.binance.org/
       TEST_ORACLE_KEYS: ${{ secrets.TEST_ORACLE_KEYS}}
       MNEMONIC: ${{ secrets.MNEMONIC}}
+      FORCE_COLOR: true
 
     steps:
     - uses: actions/checkout@v2
@@ -74,3 +75,6 @@ jobs:
     - name: Test DeBridge Full Auto
       run: yarn test test/04_AutoFullDebridge.test.js
 
+    - name: Tests coverage
+      run: yarn coverage
+      continue-on-error: true

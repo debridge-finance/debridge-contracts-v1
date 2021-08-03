@@ -9,6 +9,7 @@ require("@nomiclabs/hardhat-waffle");
 require('@openzeppelin/hardhat-upgrades');
 require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-solhint");
+require("solidity-coverage");
 
 module.exports = {
   gasReporter: {
