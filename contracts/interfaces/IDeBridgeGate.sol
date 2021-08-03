@@ -8,7 +8,7 @@ interface IDeBridgeGate {
     struct DebridgeInfo {
         address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
-        uint256 maxAmount; // minimal amount to transfer
+        uint256 maxAmount; // maximum amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
