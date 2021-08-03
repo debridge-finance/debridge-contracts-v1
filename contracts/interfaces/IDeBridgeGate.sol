@@ -11,7 +11,7 @@ interface IDeBridgeGate {
         uint256 maxAmount; // minimal amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
-        uint256 lookedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
+        uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
         uint256 minReservesBps; // minimal hot reserves in basis points (1/10000)
         mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
         bool exist;

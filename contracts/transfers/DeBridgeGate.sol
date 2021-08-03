@@ -662,7 +662,7 @@ contract DeBridgeGate is Initializable,
                 _amount
             );
         }
-        debridge.lookedInStrategies += _amount;
+        debridge.lockedInStrategies += _amount;
     }
 
     /// @dev Return the assets that were used in defi protocol.
@@ -681,9 +681,9 @@ contract DeBridgeGate is Initializable,
                 address(this),
                 _amount
             );
-            debridge.lookedInStrategies += _amount;
+            debridge.lockedInStrategies += _amount;
         } else {
-            debridge.lookedInStrategies += msg.value;
+            debridge.lockedInStrategies += msg.value;
         }
     }
 
