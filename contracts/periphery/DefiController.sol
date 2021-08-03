@@ -75,8 +75,8 @@ contract DefiController is AccessControl {
         strategyController.withdraw(strategy.strategyToken, _amount);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _amount);
-        //Return tokens to Gate
-        deBridgeGate.requestReserves(strategy.stakeToken, _amount);
+        // Return tokens to Gate
+        deBridgeGate.returnReserves(strategy.stakeToken, _amount);
     }
 
     function addDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
