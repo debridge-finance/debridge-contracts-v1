@@ -31,9 +31,9 @@ contract CallerCallProxy {
                 _data
             );
         } else {
-            IERC20(token).transfer(callProxy, msg.value);
+            IERC20(_token).transfer(callProxy, msg.value);
             status = ICallProxy(callProxy).callERC20(
-                token,
+                _token,
                 _fallbackAddress,
                 _receiver,
                 _data
