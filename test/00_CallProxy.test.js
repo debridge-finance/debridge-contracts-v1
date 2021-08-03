@@ -45,7 +45,9 @@ describe("CallProxy", function () {
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
           // passing empty calldata to hit receive function
           // https://docs.soliditylang.org/en/v0.8.6/contracts.html?highlight=receive#receive-ether-function
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, "0x", { value: 123487678 });
+          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, "0x", {
+            value: 123487678,
+          });
           // check internal tx was ok - hit payable receive() function and saved receiver's states
           expect(await receiverContract.lastHit()).to.be.equal("receive");
           expect(await receiverContract.weiReceived()).to.be.equal("123487678");
@@ -60,7 +62,9 @@ describe("CallProxy", function () {
           const receiverContract = await receiverContractFactory.deploy();
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, 0, { value: 123487678 });
+          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, 0, {
+            value: 123487678,
+          });
           // check internal tx was ok - hit payable fallback() function and saved receiver's state
           expect(await receiverContract.lastHit()).to.be.equal("fallback");
           const receiverBalanceAfter = await ethers.provider.getBalance(receiverContract.address);
@@ -76,7 +80,9 @@ describe("CallProxy", function () {
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
           const callData = receiverContract.interface.encodeFunctionData("setUint256Payable", [12345]);
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, { value: 12348767 });
+          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, {
+            value: 12348767,
+          });
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setUint256Payable");
           // check internal tx was ok and uint256 arg passed and saved successfully
@@ -97,7 +103,9 @@ describe("CallProxy", function () {
           const callData = receiverContract.interface.encodeFunctionData("setArrayUint256Payable", [
             [1, 12, 123, 1234, 12345, 123456, 1234567, 12345678, 123456789, 1234567890],
           ]);
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, { value: 12348767 });
+          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, {
+            value: 12348767,
+          });
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setArrayUint256Payable");
           // check internal tx was ok and uint256 arg passed and saved successfully
@@ -133,17 +141,26 @@ describe("CallProxy", function () {
           await this.token.deployed();
 
           const UniswapV2FactoryArtifact = await deployments.getArtifact("UniswapV2Factory");
-          const UniswapV2Factory = await ethers.getContractFactory(UniswapV2FactoryArtifact.abi, UniswapV2FactoryArtifact.bytecode);
+          const UniswapV2Factory = await ethers.getContractFactory(
+            UniswapV2FactoryArtifact.abi,
+            UniswapV2FactoryArtifact.bytecode
+          );
           this.factory = await UniswapV2Factory.deploy(deployer.address);
           await this.factory.deployed();
 
           const UniswapV2RouterArtifact = await deployments.getArtifact("UniswapV2Router02");
-          const UniswapV2Router = await ethers.getContractFactory(UniswapV2RouterArtifact.abi, UniswapV2RouterArtifact.bytecode);
+          const UniswapV2Router = await ethers.getContractFactory(
+            UniswapV2RouterArtifact.abi,
+            UniswapV2RouterArtifact.bytecode
+          );
           this.router = await UniswapV2Router.deploy(this.factory.address, this.weth.address);
           await this.router.deployed();
 
           const UniswapV2PairArtifact = await deployments.getArtifact("UniswapV2Pair");
-          const UniswapV2Pair = await ethers.getContractFactory(UniswapV2PairArtifact.abi, UniswapV2PairArtifact.bytecode);
+          const UniswapV2Pair = await ethers.getContractFactory(
+            UniswapV2PairArtifact.abi,
+            UniswapV2PairArtifact.bytecode
+          );
           const pairResult = await this.factory.createPair(this.weth.address, this.token.address);
           this.pair = await UniswapV2Pair.attach((await pairResult.wait()).events[0].args.pair);
 
@@ -172,7 +189,9 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, { value: 1234534567 });
+          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
+            value: 1234534567,
+          });
           // relaxed check because AMM price impact and Uniswap v2 fee
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.gt("1230000000");
         });
@@ -186,7 +205,9 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, { value: 1234534567 });
+          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
+            value: 1234534567,
+          });
           const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
           // Results of failing swap:
           // * Swap had no effect (no ETH spent, no tokens acquired)
@@ -195,8 +216,8 @@ describe("CallProxy", function () {
           expect(reserveETHBalanceAfter.sub(reserveETHBalanceBefore)).to.be.equal("1234534567");
         });
 
-        it("swapETHForExactTokens", async function () {
-          amountOut=await this.router.getAmountsOut(100,[this.weth.address, this.token.address])
+        it("successful swapETHForExactTokens", async function () {
+          const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
             amountOut[1],
@@ -204,12 +225,13 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, { value: amountOut[0]});
-          // relaxed check because AMM price impact and Uniswap v2 fee
+          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
+            value: amountOut[0],
+          });
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
         });
 
-        it("reverting swapExactETHForTokens", async function () {
+        it("if swapExactETHForTokens reverts - ETH go to reserve", async function () {
           const reserveETHBalanceBefore = await ethers.provider.getBalance(reserve.address);
           // amountOutMin increased to enforce swap failure
           const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
@@ -218,7 +240,9 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, { value: 1234534567 });
+          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
+            value: 1234534567,
+          });
           const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
           // Results of failing swap:
           // * Swap had no effect (no ETH spent, no tokens acquired)
@@ -242,7 +266,8 @@ describe("CallProxy", function () {
         const BrokenTokenFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
         const brokenToken = await BrokenTokenFactory.deploy();
         await expect(this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0x")).to.be.reverted;
-        await expect(this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0xdeadbeef")).to.be.reverted;
+        await expect(this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0xdeadbeef")).to.be
+          .reverted;
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
       });
 
@@ -265,21 +290,28 @@ describe("CallProxy", function () {
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
         transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiver.address, "0x");
-        transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiver.address, "0xdeadbeef");
+        transferResult = await this.proxy.callERC20(
+          this.token.address,
+          reserve.address,
+          receiver.address,
+          "0xdeadbeef"
+        );
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
       });
 
       it("when receiver is reverting contract - tokens go to reserve", async function () {
         // const callData = MockProxyReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
-        const callData = "0xa85dcaea0000000000000000000000000000000000000000000000000000000000003039"
+        const callData = "0xa85dcaea0000000000000000000000000000000000000000000000000000000000003039";
 
-        const alwaysRevertingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const alwaysRevertingReceiverContractFactory = await ethers.getContractFactory(
+          "MockProxyReceiverAlwaysReverting"
+        );
         const alwaysRevertingReceiver = await alwaysRevertingReceiverContractFactory.deploy();
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
 
-        await this.proxy.callERC20(this.token.address, reserve.address, alwaysRevertingReceiver.address, callData)
+        await this.proxy.callERC20(this.token.address, reserve.address, alwaysRevertingReceiver.address, callData);
 
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
@@ -302,7 +334,12 @@ describe("CallProxy", function () {
           const receiverBalanceBefore = await this.token.balanceOf(receiverContract.address);
           const reserveBalanceBefore = await this.token.balanceOf(reserve.address);
           const proxyBalance = await this.token.balanceOf(this.proxy.address);
-          const transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiverContract.address, callData);
+          const transferResult = await this.proxy.callERC20(
+            this.token.address,
+            reserve.address,
+            receiverContract.address,
+            callData
+          );
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setArrayAndPullToken");
           // check internal tx was ok and arguments passed in and saved successfully
@@ -340,17 +377,26 @@ describe("CallProxy", function () {
           await this.token.deployed();
 
           const UniswapV2FactoryArtifact = await deployments.getArtifact("UniswapV2Factory");
-          const UniswapV2Factory = await ethers.getContractFactory(UniswapV2FactoryArtifact.abi, UniswapV2FactoryArtifact.bytecode);
+          const UniswapV2Factory = await ethers.getContractFactory(
+            UniswapV2FactoryArtifact.abi,
+            UniswapV2FactoryArtifact.bytecode
+          );
           this.factory = await UniswapV2Factory.deploy(deployer.address);
           await this.factory.deployed();
 
           const UniswapV2RouterArtifact = await deployments.getArtifact("UniswapV2Router02");
-          const UniswapV2Router = await ethers.getContractFactory(UniswapV2RouterArtifact.abi, UniswapV2RouterArtifact.bytecode);
+          const UniswapV2Router = await ethers.getContractFactory(
+            UniswapV2RouterArtifact.abi,
+            UniswapV2RouterArtifact.bytecode
+          );
           this.router = await UniswapV2Router.deploy(this.factory.address, this.weth.address);
           await this.router.deployed();
 
           const UniswapV2PairArtifact = await deployments.getArtifact("UniswapV2Pair");
-          const UniswapV2Pair = await ethers.getContractFactory(UniswapV2PairArtifact.abi, UniswapV2PairArtifact.bytecode);
+          const UniswapV2Pair = await ethers.getContractFactory(
+            UniswapV2PairArtifact.abi,
+            UniswapV2PairArtifact.bytecode
+          );
           const pairResult = await this.factory.createPair(this.weth.address, this.token.address);
           this.pair = await UniswapV2Pair.attach((await pairResult.wait()).events[0].args.pair);
 
@@ -369,11 +415,10 @@ describe("CallProxy", function () {
             deployer.address,
             9999999999
           );
-
         });
         it("swapTokensForExactTokens", async function () {
-          await this.weth.transfer(this.proxy.address,1000)
-          amountOut=await this.router.getAmountsOut(100,[this.weth.address, this.token.address])
+          await this.weth.transfer(this.proxy.address, 1000);
+          const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactTokens", [
             amountOut[1],
@@ -382,37 +427,45 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.callERC20(this.weth.address,reserve.address, this.router.address, callData);
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(99);
+          const transferResult = await this.proxy.callERC20(
+            this.weth.address,
+            reserve.address,
+            this.router.address,
+            callData
+          );
+          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
           expect(await this.weth.balanceOf(this.proxy.address)).to.be.equal(0);
-          expect(await this.weth.balanceOf(reserve.address)).to.be.equal(1000-parseInt(amountOut[0]));
+          expect(await this.weth.balanceOf(reserve.address)).to.be.equal(1000 - parseInt(amountOut[0]));
         });
 
         it("swapTokensForExactETH", async function () {
-          const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
-          await this.token.transfer(this.proxy.address,1000)
-          amountOut=await this.router.getAmountsOut(100,[this.token.address, this.weth.address])
+          const tokenHolderBalanceBefore = await ethers.provider.getBalance(tokenHolder.address);
+          await this.token.transfer(this.proxy.address, 1000);
+          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
             amountOut[1],
-            parseInt(amountOut[0])+500,
+            parseInt(amountOut[0]) + 500,
             [this.token.address, this.weth.address],
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.callERC20(this.token.address,reserve.address, this.router.address, callData);
-          const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(99);
+          const transferResult = await this.proxy.callERC20(
+            this.token.address,
+            reserve.address,
+            this.router.address,
+            callData
+          );
+          const tokenHolderBalanceAfter = await ethers.provider.getBalance(tokenHolder.address);
+          expect(tokenHolderBalanceAfter.sub(tokenHolderBalanceBefore)).to.be.equal(amountOut[1]);
           expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
-          expect(await this.token.balanceOf(reserve.address)).to.be.equal(1000-parseInt(amountOut[0]));
+          expect(await this.token.balanceOf(reserve.address)).to.be.equal(1000 - parseInt(amountOut[0]));
         });
 
         it("swapExactTokensForETH", async function () {
           const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
-          await this.token.transfer(this.proxy.address,1000)
-          amountOut=await this.router.getAmountsOut(100,[this.token.address, this.weth.address])
+          await this.token.transfer(this.proxy.address, 1000);
+          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapExactTokensForETH", [
             amountOut[0],
@@ -421,12 +474,16 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.callERC20(this.token.address,reserve.address, this.router.address, callData);
+          const transferResult = await this.proxy.callERC20(
+            this.token.address,
+            reserve.address,
+            this.router.address,
+            callData
+          );
           const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(99);
+          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
           expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
-          expect(await this.token.balanceOf(reserve.address)).to.be.equal(1000-parseInt(amountOut[0]));
+          expect(await this.token.balanceOf(reserve.address)).to.be.equal(1000 - parseInt(amountOut[0]));
         });
       });
     });
@@ -435,22 +492,28 @@ describe("CallProxy", function () {
   describe("Cross-contract interaction", function () {
     before(async function () {
       TokenFactory = await ethers.getContractFactory("MockToken");
-      CallerProxyFactory = await ethers.getContractFactory("CallerCallProxy");
+      ProxyConsumer = await ethers.getContractFactory("MockProxyConsumer");
     });
 
     beforeEach(async function () {
       this.token = await TokenFactory.deploy("TOKEN", "TOKEN", "18");
       await this.token.deployed();
-      this.CallerProxy = await CallerProxyFactory.deploy(this.proxy.address, this.token.address);
-      await this.CallerProxy.deployed();
+      this.ProxyConsumer = await ProxyConsumer.deploy(this.proxy.address, this.token.address);
+      await this.ProxyConsumer.deployed();
     });
 
     describe("plain calls", function () {
       it("when receiver is EOA", async function () {
         const receiverBalanceBefore = await ethers.provider.getBalance(receiver.address);
-        const transferResult = await this.CallerProxy.transferToken(ethers.constants.AddressZero, receiver.address, reserve.address, 0, {
-          value: 1234876,
-        });
+        const transferResult = await this.ProxyConsumer.transferToken(
+          ethers.constants.AddressZero,
+          receiver.address,
+          reserve.address,
+          0,
+          {
+            value: 1234876,
+          }
+        );
         await transferResult.wait();
         const receiverBalanceAfter = await ethers.provider.getBalance(receiver.address);
         expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1234876");
@@ -464,9 +527,15 @@ describe("CallProxy", function () {
         const receiverContract = await receiverContractFactory.deploy();
         const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
         const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-        const transferResult = await this.CallerProxy.transferToken(ethers.constants.AddressZero, receiverContract.address, reserve.address, 0, {
-          value: 1234876,
-        });
+        const transferResult = await this.ProxyConsumer.transferToken(
+          ethers.constants.AddressZero,
+          receiverContract.address,
+          reserve.address,
+          0,
+          {
+            value: 1234876,
+          }
+        );
         const receiverBalanceAfter = await ethers.provider.getBalance(receiverContract.address);
         const reserveBalanceAfter = await ethers.provider.getBalance(reserve.address);
         expect(reserveBalanceAfter.sub(reserveBalanceBefore)).to.be.equal("1234876");
@@ -480,7 +549,7 @@ describe("CallProxy", function () {
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
           const callData = receiverContract.interface.encodeFunctionData("setUint256Payable", [12345]);
-          const transferResult = await this.CallerProxy.transferToken(
+          const transferResult = await this.ProxyConsumer.transferToken(
             ethers.constants.AddressZero,
             receiverContract.address,
             reserve.address,
@@ -507,7 +576,7 @@ describe("CallProxy", function () {
           const callData = receiverContract.interface.encodeFunctionData("setArrayUint256Payable", [
             [1, 12, 123, 1234, 12345, 123456, 1234567, 12345678, 123456789, 1234567890],
           ]);
-          const transferResult = await this.CallerProxy.transferToken(
+          const transferResult = await this.ProxyConsumer.transferToken(
             ethers.constants.AddressZero,
             receiverContract.address,
             reserve.address,
@@ -535,157 +604,175 @@ describe("CallProxy", function () {
           expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("12348767");
         });
 
-      describe("when receiver is uniswap", function () {
-        beforeEach(async function () {
-          const WETH9Artifact = await deployments.getArtifact("WETH9");
-          const WETH9Factory = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
-          this.weth = await WETH9Factory.deploy();
-          await this.weth.deployed();
+        describe("when receiver is uniswap", function () {
+          beforeEach(async function () {
+            const WETH9Artifact = await deployments.getArtifact("WETH9");
+            const WETH9Factory = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
+            this.weth = await WETH9Factory.deploy();
+            await this.weth.deployed();
 
-          const MockTokenArtifact = await deployments.getArtifact("MockToken");
-          const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
-          this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
-          await this.token.deployed();
+            const MockTokenArtifact = await deployments.getArtifact("MockToken");
+            const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+            this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
+            await this.token.deployed();
 
-          const UniswapV2FactoryArtifact = await deployments.getArtifact("UniswapV2Factory");
-          const UniswapV2Factory = await ethers.getContractFactory(UniswapV2FactoryArtifact.abi, UniswapV2FactoryArtifact.bytecode);
-          this.factory = await UniswapV2Factory.deploy(deployer.address);
-          await this.factory.deployed();
+            const UniswapV2FactoryArtifact = await deployments.getArtifact("UniswapV2Factory");
+            const UniswapV2Factory = await ethers.getContractFactory(
+              UniswapV2FactoryArtifact.abi,
+              UniswapV2FactoryArtifact.bytecode
+            );
+            this.factory = await UniswapV2Factory.deploy(deployer.address);
+            await this.factory.deployed();
 
-          const UniswapV2RouterArtifact = await deployments.getArtifact("UniswapV2Router02");
-          const UniswapV2Router = await ethers.getContractFactory(UniswapV2RouterArtifact.abi, UniswapV2RouterArtifact.bytecode);
-          this.router = await UniswapV2Router.deploy(this.factory.address, this.weth.address);
-          await this.router.deployed();
+            const UniswapV2RouterArtifact = await deployments.getArtifact("UniswapV2Router02");
+            const UniswapV2Router = await ethers.getContractFactory(
+              UniswapV2RouterArtifact.abi,
+              UniswapV2RouterArtifact.bytecode
+            );
+            this.router = await UniswapV2Router.deploy(this.factory.address, this.weth.address);
+            await this.router.deployed();
 
-          const UniswapV2PairArtifact = await deployments.getArtifact("UniswapV2Pair");
-          const UniswapV2Pair = await ethers.getContractFactory(UniswapV2PairArtifact.abi, UniswapV2PairArtifact.bytecode);
-          const pairResult = await this.factory.createPair(this.weth.address, this.token.address);
-          this.pair = await UniswapV2Pair.attach((await pairResult.wait()).events[0].args.pair);
+            const UniswapV2PairArtifact = await deployments.getArtifact("UniswapV2Pair");
+            const UniswapV2Pair = await ethers.getContractFactory(
+              UniswapV2PairArtifact.abi,
+              UniswapV2PairArtifact.bytecode
+            );
+            const pairResult = await this.factory.createPair(this.weth.address, this.token.address);
+            this.pair = await UniswapV2Pair.attach((await pairResult.wait()).events[0].args.pair);
 
-          await this.token.mint(deployer.address, ethers.constants.WeiPerEther.mul("10"));
-          await this.token.approve(this.router.address, ethers.constants.MaxUint256);
-          await this.weth.deposit({ value: ethers.constants.WeiPerEther.mul("10") });
-          await this.weth.approve(this.router.address, ethers.constants.MaxUint256);
+            await this.token.mint(deployer.address, ethers.constants.WeiPerEther.mul("10"));
+            await this.token.approve(this.router.address, ethers.constants.MaxUint256);
+            await this.weth.deposit({ value: ethers.constants.WeiPerEther.mul("10") });
+            await this.weth.approve(this.router.address, ethers.constants.MaxUint256);
 
-          await this.router.addLiquidity(
-            this.weth.address,
-            this.token.address,
-            ethers.constants.WeiPerEther.mul("1"),
-            ethers.constants.WeiPerEther.mul("1"),
-            0,
-            0,
-            deployer.address,
-            9999999999
-          );
-        });
+            await this.router.addLiquidity(
+              this.weth.address,
+              this.token.address,
+              ethers.constants.WeiPerEther.mul("1"),
+              ethers.constants.WeiPerEther.mul("1"),
+              0,
+              0,
+              deployer.address,
+              9999999999
+            );
+          });
 
-        it("successful swapExactETHForTokens", async function () {
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
-          const callData = this.router.interface.encodeFunctionData("swapExactETHForTokens", [
-            1,
-            [this.weth.address, this.token.address],
-            tokenHolder.address,
-            9999999999,
-          ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            ethers.constants.AddressZero,
-            this.router.address,
-            reserve.address,
-            callData,
-            { value: 1234534567 }
-          );
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.gt("1230000000");
-        });
+          it("successful swapExactETHForTokens", async function () {
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+            const callData = this.router.interface.encodeFunctionData("swapExactETHForTokens", [
+              1,
+              [this.weth.address, this.token.address],
+              tokenHolder.address,
+              9999999999,
+            ]);
+            const transferResult = await this.ProxyConsumer.transferToken(
+              ethers.constants.AddressZero,
+              this.router.address,
+              reserve.address,
+              callData,
+              { value: 1234534567 }
+            );
+            // relaxed check because AMM price impact and Uniswap v2 fee
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.gt("1230000000");
+          });
 
-        it("reverting swapExactETHForTokens", async function () {
-          const reserveETHBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          // amountOutMin increased to enforce swap failure
-          const callData = this.router.interface.encodeFunctionData("swapExactETHForTokens", [
-            9999999999,
-            [this.weth.address, this.token.address],
-            tokenHolder.address,
-            9999999999,
-          ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            ethers.constants.AddressZero,
-            this.router.address,
-            reserve.address,
-            callData,
-            { value: 1234534567 }
-          );
-          const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
-          // Results of failing swap:
-          // * Swap had no effect (no ETH spent, no tokens acquired)
-          // * ETHers of tx.value got evacuated to reserve.address
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
-          expect(reserveETHBalanceAfter.sub(reserveETHBalanceBefore)).to.be.equal("1234534567");
-        });
+          it("reverting swapExactETHForTokens", async function () {
+            const reserveETHBalanceBefore = await ethers.provider.getBalance(reserve.address);
+            // amountOutMin increased to enforce swap failure
+            const callData = this.router.interface.encodeFunctionData("swapExactETHForTokens", [
+              9999999999,
+              [this.weth.address, this.token.address],
+              tokenHolder.address,
+              9999999999,
+            ]);
+            const transferResult = await this.ProxyConsumer.transferToken(
+              ethers.constants.AddressZero,
+              this.router.address,
+              reserve.address,
+              callData,
+              { value: 1234534567 }
+            );
+            const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
+            // Results of failing swap:
+            // * Swap had no effect (no ETH spent, no tokens acquired)
+            // * ETHers of tx.value got evacuated to reserve.address
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+            expect(reserveETHBalanceAfter.sub(reserveETHBalanceBefore)).to.be.equal("1234534567");
+          });
 
-        it("swapETHForExactTokens", async function () {
-          amountOut=await this.router.getAmountsOut(100,[this.weth.address, this.token.address])
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
-          const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
-            amountOut[1],
-            [this.weth.address, this.token.address],
-            tokenHolder.address,
-            9999999999,
-          ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            ethers.constants.AddressZero,
-            this.router.address,
-            reserve.address,
-            callData,
-            { value: amountOut[0] }
-          );
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
-        });
+          it("swapETHForExactTokens", async function () {
+            const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+            const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
+              amountOut[1],
+              [this.weth.address, this.token.address],
+              tokenHolder.address,
+              9999999999,
+            ]);
+            const transferResult = await this.ProxyConsumer.transferToken(
+              ethers.constants.AddressZero,
+              this.router.address,
+              reserve.address,
+              callData,
+              { value: amountOut[0] }
+            );
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
+          });
 
-        it("reverting swapExactETHForTokens", async function () {
-          const reserveETHBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          // amountOutMin increased to enforce swap failure
-          const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
-            9999999999,
-            [this.weth.address, this.token.address],
-            tokenHolder.address,
-            9999999999,
-          ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            ethers.constants.AddressZero,
-            this.router.address,
-            reserve.address,
-            callData,
-            { value: amountOut[0] }
-          );
-          const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
-          // Results of failing swap:
-          // * Swap had no effect (no ETH spent, no tokens acquired)
-          // * ETHers of tx.value got evacuated to reserve.address
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
-          expect(reserveETHBalanceAfter.sub(reserveETHBalanceBefore)).to.be.equal("100");
+          it("reverting swapExactETHForTokens", async function () {
+            const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
+            const reserveETHBalanceBefore = await ethers.provider.getBalance(reserve.address);
+            // amountOutMin increased to enforce swap failure
+            const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
+              9999999999,
+              [this.weth.address, this.token.address],
+              tokenHolder.address,
+              9999999999,
+            ]);
+            const transferResult = await this.ProxyConsumer.transferToken(
+              ethers.constants.AddressZero,
+              this.router.address,
+              reserve.address,
+              callData,
+              { value: amountOut[0] }
+            );
+            const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
+            // Results of failing swap:
+            // * Swap had no effect (no ETH spent, no tokens acquired)
+            // * ETHers of tx.value got evacuated to reserve.address
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+            expect(reserveETHBalanceAfter.sub(reserveETHBalanceBefore)).to.be.equal("100");
+          });
         });
       });
-    });
     });
     describe("ERC20 calls", function () {
       it("reverts if _token fails", async function () {
         const BrokenTokenFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
         const brokenToken = await BrokenTokenFactory.deploy();
-        await expect(this.CallerProxy.transferToken(brokenToken.address, receiver.address,reserve.address,"0x",{ value: 1111 })).to.be.reverted;
-        await expect(this.CallerProxy.transferToken(brokenToken.address, receiver.address,reserve.address,"0xdeadbeef",{ value: 1111 })).to.be.reverted;
+        await expect(
+          this.ProxyConsumer.transferToken(brokenToken.address, receiver.address, reserve.address, "0x", {
+            value: 1111,
+          })
+        ).to.be.reverted;
+        await expect(
+          this.ProxyConsumer.transferToken(brokenToken.address, receiver.address, reserve.address, "0xdeadbeef", {
+            value: 1111,
+          })
+        ).to.be.reverted;
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
       });
+
       it("when receiving contract doesn't pull tokens - they transfer to reserve", async function () {
-        await this.token.mint(this.CallerProxy.address, "1111");
+        await this.token.mint(this.ProxyConsumer.address, "1111");
         const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
         const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
         // call the method that doesn't pull approved tokens
         const callData = nonPullingReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
-        const transferResultTwo = await this.CallerProxy.transferToken(
-          this.token.address, 
+        const transferResultTwo = await this.ProxyConsumer.transferToken(
+          this.token.address,
           nonPullingReceiver.address,
           reserve.address,
           callData,
@@ -699,23 +786,27 @@ describe("CallProxy", function () {
       });
 
       it("when receiver is EOA - tokens transfer to reserve", async function () {
-        await this.token.mint(this.CallerProxy.address, "2222");
+        await this.token.mint(this.ProxyConsumer.address, "2222");
 
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
-        expect(await this.token.balanceOf(this.CallerProxy.address)).to.be.equal("2222");
-        const transferResult = await this.CallerProxy.transferToken(
-          this.token.address, 
+        expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal("2222");
+        const transferResult = await this.ProxyConsumer.transferToken(
+          this.token.address,
           receiver.address,
           reserve.address,
           "0x",
-          { value: 1111 }
+          {
+            value: 1111,
+          }
         );
-        const transferResultTwo = await this.CallerProxy.transferToken(
-          this.token.address, 
+        const transferResultTwo = await this.ProxyConsumer.transferToken(
+          this.token.address,
           receiver.address,
           reserve.address,
           "0xdeadbeef",
-          { value: 1111 }
+          {
+            value: 1111,
+          }
         );
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("2222");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
@@ -727,7 +818,7 @@ describe("CallProxy", function () {
         // call the method that doesn't pull approved tokens
         const callData = unusableContract.interface.encodeFunctionData("setUint256Payable", [12345]);
 
-        await this.token.mint(this.CallerProxy.address, "1111");
+        await this.token.mint(this.ProxyConsumer.address, "1111");
 
         const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
         const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
@@ -735,8 +826,8 @@ describe("CallProxy", function () {
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
 
         await this.proxy.callERC20(this.token.address, reserve.address, nonPullingReceiver.address, callData);
-        const transferResultTwo = await this.CallerProxy.transferToken(
-          this.token.address, 
+        const transferResultTwo = await this.ProxyConsumer.transferToken(
+          this.token.address,
           nonPullingReceiver.address,
           reserve.address,
           callData,
@@ -751,8 +842,9 @@ describe("CallProxy", function () {
         beforeEach(async function () {
           const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
           receiverContract = await receiverContractFactory.deploy();
-          await this.token.mint(this.CallerProxy.address, "1111");
+          await this.token.mint(this.ProxyConsumer.address, "1111");
         });
+
         it("single-argument uint256 call and pulled tokens", async function () {
           const receiverBalanceBefore = await this.token.balanceOf(receiverContract.address);
           const reserveBalanceBefore = await this.token.balanceOf(reserve.address);
@@ -761,12 +853,14 @@ describe("CallProxy", function () {
             1111,
             12345,
           ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            this.token.address, 
+          const transferResult = await this.ProxyConsumer.transferToken(
+            this.token.address,
             receiverContract.address,
             reserve.address,
             callData,
-            { value: 1111 }
+            {
+              value: 1111,
+            }
           );
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setUint256AndPullToken");
@@ -788,12 +882,14 @@ describe("CallProxy", function () {
           const receiverBalanceBefore = await this.token.balanceOf(receiverContract.address);
           const reserveBalanceBefore = await this.token.balanceOf(reserve.address);
           const proxyBalance = await this.token.balanceOf(this.proxy.address);
-          const transferResult = await this.CallerProxy.transferToken(
-            this.token.address,            
+          const transferResult = await this.ProxyConsumer.transferToken(
+            this.token.address,
             receiverContract.address,
             reserve.address,
             callData,
-            {value:1111}
+            {
+              value: 1111,
+            }
           );
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setArrayAndPullToken");
@@ -818,6 +914,7 @@ describe("CallProxy", function () {
           expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1111");
         });
       });
+
       describe("when receiver is uniswap", function () {
         beforeEach(async function () {
           const WETH9Artifact = await deployments.getArtifact("WETH9");
@@ -831,17 +928,26 @@ describe("CallProxy", function () {
           await this.token.deployed();
 
           const UniswapV2FactoryArtifact = await deployments.getArtifact("UniswapV2Factory");
-          const UniswapV2Factory = await ethers.getContractFactory(UniswapV2FactoryArtifact.abi, UniswapV2FactoryArtifact.bytecode);
+          const UniswapV2Factory = await ethers.getContractFactory(
+            UniswapV2FactoryArtifact.abi,
+            UniswapV2FactoryArtifact.bytecode
+          );
           this.factory = await UniswapV2Factory.deploy(deployer.address);
           await this.factory.deployed();
 
           const UniswapV2RouterArtifact = await deployments.getArtifact("UniswapV2Router02");
-          const UniswapV2Router = await ethers.getContractFactory(UniswapV2RouterArtifact.abi, UniswapV2RouterArtifact.bytecode);
+          const UniswapV2Router = await ethers.getContractFactory(
+            UniswapV2RouterArtifact.abi,
+            UniswapV2RouterArtifact.bytecode
+          );
           this.router = await UniswapV2Router.deploy(this.factory.address, this.weth.address);
           await this.router.deployed();
 
           const UniswapV2PairArtifact = await deployments.getArtifact("UniswapV2Pair");
-          const UniswapV2Pair = await ethers.getContractFactory(UniswapV2PairArtifact.abi, UniswapV2PairArtifact.bytecode);
+          const UniswapV2Pair = await ethers.getContractFactory(
+            UniswapV2PairArtifact.abi,
+            UniswapV2PairArtifact.bytecode
+          );
           const pairResult = await this.factory.createPair(this.weth.address, this.token.address);
           this.pair = await UniswapV2Pair.attach((await pairResult.wait()).events[0].args.pair);
 
@@ -860,11 +966,11 @@ describe("CallProxy", function () {
             deployer.address,
             9999999999
           );
-
         });
+
         it("swapTokensForExactTokens", async function () {
-          await this.weth.transfer(this.CallerProxy.address,1000)
-          amountOut=await this.router.getAmountsOut(100,[this.weth.address, this.token.address])
+          await this.weth.transfer(this.ProxyConsumer.address, 1000);
+          const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactTokens", [
             amountOut[1],
@@ -873,51 +979,53 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            this.weth.address,            
+          const transferResult = await this.ProxyConsumer.transferToken(
+            this.weth.address,
             this.router.address,
             reserve.address,
             callData,
-            {value:amountOut[0]}
+            {
+              value: amountOut[0],
+            }
           );
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(99);
+          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
           expect(await this.weth.balanceOf(this.proxy.address)).to.be.equal(0);
           expect(await this.weth.balanceOf(reserve.address)).to.be.equal(0);
-          expect(await this.weth.balanceOf(this.CallerProxy.address)).to.be.equal(900);
+          expect(await this.weth.balanceOf(this.ProxyConsumer.address)).to.be.equal(900);
         });
 
         it("swapTokensForExactETH", async function () {
           const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
-          await this.token.transfer(this.CallerProxy.address,1000)
-          amountOut=await this.router.getAmountsOut(100,[this.token.address, this.weth.address])
+          await this.token.transfer(this.ProxyConsumer.address, 1000);
+          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
             amountOut[1],
-            parseInt(amountOut[0])+500,
+            parseInt(amountOut[0]) + 500,
             [this.token.address, this.weth.address],
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            this.token.address,            
+          const transferResult = await this.ProxyConsumer.transferToken(
+            this.token.address,
             this.router.address,
             reserve.address,
             callData,
-            {value:parseInt(amountOut[0])+500}
+            {
+              value: parseInt(amountOut[0]) + 500,
+            }
           );
           const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(99);
+          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
           expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
           expect(await this.token.balanceOf(reserve.address)).to.be.equal(500);
-          expect(await this.token.balanceOf(this.CallerProxy.address)).to.be.equal(400);
+          expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(400);
         });
 
         it("swapExactTokensForETH", async function () {
           const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
-          await this.token.transfer(this.CallerProxy.address,1000)
-          amountOut=await this.router.getAmountsOut(100,[this.token.address, this.weth.address])
+          await this.token.transfer(this.ProxyConsumer.address, 1000);
+          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapExactTokensForETH", [
             amountOut[0],
@@ -926,19 +1034,20 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.CallerProxy.transferToken(
-            this.token.address,            
+          const transferResult = await this.ProxyConsumer.transferToken(
+            this.token.address,
             this.router.address,
             reserve.address,
             callData,
-            {value:amountOut[0]}
+            {
+              value: amountOut[0],
+            }
           );
           const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
-          // relaxed check because AMM price impact and Uniswap v2 fee
-          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(99);
+          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
           expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
           expect(await this.token.balanceOf(reserve.address)).to.be.equal(0);
-          expect(await this.token.balanceOf(this.CallerProxy.address)).to.be.equal(900);
+          expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(900);
         });
       });
     });
