@@ -622,7 +622,8 @@ contract DeBridgeGate is Initializable,
     function withdrawFee(bytes32 _debridgeId, address _receiver, uint256 _amount) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         // require(debridge.chainId == chainId, "withdrawFee: wrong target chain");
-        require(debridge.collectedFees >= _amount, "withdrawFee: not enough fee");
+        // Commented out: contract-size limit
+        // require(debridge.collectedFees >= _amount, "withdrawFee: not enough fee");
         debridge.collectedFees -= _amount;
         if (
             debridge.chainId == chainId && debridge.tokenAddress == address(0)
@@ -637,7 +638,8 @@ contract DeBridgeGate is Initializable,
     /// @param _receiver Receiver address.
     /// @param _amount Amount of tokens to withdraw.
     function withdrawNativeFee(address _receiver, uint256 _amount) external onlyAdmin() {
-        require(collectedNativeFees >= _amount, "withdrawNativeFee: not enough fee");
+        // Commented out: contract-size limit
+        // require(collectedNativeFees >= _amount, "withdrawNativeFee: not enough fee");
         collectedNativeFees -= _amount;
         payable(_receiver).transfer(_amount);
     }
@@ -692,7 +694,8 @@ contract DeBridgeGate is Initializable,
     /// @param _amount Submission aggregator address.
     function fundTreasury(bytes32 _debridgeId, uint256 _amount) external {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.collectedFees >= _amount, "fundTreasury: not enough fee");
+        // Commented out: contract-size limit
+        // require(debridge.collectedFees >= _amount, "fundTreasury: not enough fee");
         debridge.collectedFees -= _amount;
         if (debridge.tokenAddress == address(0)) {
             weth.deposit{value: _amount}();
