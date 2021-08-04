@@ -43,7 +43,7 @@ contract DeBridgeGate is Initializable,
     address public callProxy; // proxy to execute user's calls
     uint8 public aggregatorLightVersion; // aggregators count
     uint8 public aggregatorFullVersion; // aggregators count
-    uint256[] public chainIds; // list of all supported chain ids
+    uint256[] public supportedChainIds; // list of all supported chain ids
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
@@ -104,7 +104,7 @@ contract DeBridgeGate is Initializable,
         bytes32 debridgeId = getDebridgeId(chainId, address(0));
         nativeDebridgeId = getDebridgeId(chainId, address(0));
         _addAsset(nativeDebridgeId, address(0), chainId);
-        chainIds = _supportedChainIds;
+        supportedChainIds = _supportedChainIds;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
@@ -526,7 +526,7 @@ contract DeBridgeGate is Initializable,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external onlyAdmin() {
-        chainIds = _supportedChainIds;
+        supportedChainIds = _supportedChainIds;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
