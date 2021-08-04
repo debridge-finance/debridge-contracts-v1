@@ -592,7 +592,7 @@ contract DeBridgeGate is Initializable,
         confirmationAggregator = _aggregator;
     }
 
-    /// @dev Set aggregator address.
+    /// @dev Set signature verifier address.
     /// @param _verifier Signature verifier address.
     function setSignatureVerifier(address _verifier) external onlyAdmin() {
         signatureVerifier = _verifier;
@@ -622,7 +622,8 @@ contract DeBridgeGate is Initializable,
     function withdrawFee(bytes32 _debridgeId, address _receiver, uint256 _amount) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         // require(debridge.chainId == chainId, "withdrawFee: wrong target chain");
-        require(debridge.collectedFees >= _amount, "withdrawFee: not enough fee");
+        // Commented out: contract-size limit
+        // require(debridge.collectedFees >= _amount, "withdrawFee: not enough fee");
         debridge.collectedFees -= _amount;
         if (
             debridge.chainId == chainId && debridge.tokenAddress == address(0)
@@ -637,7 +638,8 @@ contract DeBridgeGate is Initializable,
     /// @param _receiver Receiver address.
     /// @param _amount Amount of tokens to withdraw.
     function withdrawNativeFee(address _receiver, uint256 _amount) external onlyAdmin() {
-        require(collectedNativeFees >= _amount, "withdrawNativeFee: not enough fee");
+        // Commented out: contract-size limit
+        // require(collectedNativeFees >= _amount, "withdrawNativeFee: not enough fee");
         collectedNativeFees -= _amount;
         payable(_receiver).transfer(_amount);
     }
@@ -681,9 +683,9 @@ contract DeBridgeGate is Initializable,
                 address(this),
                 _amount
             );
-            debridge.lockedInStrategies += _amount;
+            debridge.lockedInStrategies -= _amount;
         } else {
-            debridge.lockedInStrategies += msg.value;
+            debridge.lockedInStrategies -= msg.value;
         }
     }
 
@@ -692,7 +694,8 @@ contract DeBridgeGate is Initializable,
     /// @param _amount Submission aggregator address.
     function fundTreasury(bytes32 _debridgeId, uint256 _amount) external {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.collectedFees >= _amount, "fundTreasury: not enough fee");
+        // Commented out: contract-size limit
+        // require(debridge.collectedFees >= _amount, "fundTreasury: not enough fee");
         debridge.collectedFees -= _amount;
         if (debridge.tokenAddress == address(0)) {
             weth.deposit{value: _amount}();
@@ -722,8 +725,12 @@ contract DeBridgeGate is Initializable,
 
     function blockSubmission(bytes32[] memory _submissionIds, bool isBlocked) external onlyAdmin() {
         for (uint256 i = 0; i < _submissionIds.length; i++) {
-           isBlockedSubmission[_submissionIds[i]] = isBlocked;
-           emit Blocked(_submissionIds[i]);
+            isBlockedSubmission[_submissionIds[i]] = isBlocked;
+            if (isBlocked) {
+                emit Blocked(_submissionIds[i]);
+            } else {
+                emit Unblocked(_submissionIds[i]);
+            }
         }
     }
 
@@ -792,7 +799,7 @@ contract DeBridgeGate is Initializable,
         );
     }
 
-    /// @dev Request the assets to be used in defi protocol.
+    /// @dev Ensure that given amount of asset is avaliable
     /// @param _debridge Asset info.
     /// @param _amount Required amount of tokens.
     function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount) internal {

@@ -57,8 +57,8 @@ contract DefiController is AccessControl {
 
     function depositToStrategy(uint256 _amount, address _strategy) external onlyWorker{
         Strategy storage strategy = strategies[_strategy];
-        IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
+        IStrategy strategyController = IStrategy(_strategy);
         //Get tokens from Gate
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
 
