@@ -101,7 +101,6 @@ contract DeBridgeGate is Initializable,
             cid := chainid()
         }
         chainId = cid;
-        bytes32 debridgeId = getDebridgeId(chainId, address(0));
         nativeDebridgeId = getDebridgeId(chainId, address(0));
         _addAsset(nativeDebridgeId, address(0), chainId);
         supportedChainIds = _supportedChainIds;
@@ -554,20 +553,14 @@ contract DeBridgeGate is Initializable,
     
 
     /// @dev Set support for the chains where the token can be transfered.
-    /// @param _debridgeId Asset identifier.
-    /// @param _chainId Current chain id.
+    /// @param _chainId Chain id where tokens are sent.
     /// @param _isSupported Whether the token is transferable to the other chain.
-    function setChainIdSupport(
-        bytes32 _debridgeId,
+    function setChainSupport(
         uint256 _chainId,
         bool _isSupported
     ) external onlyAdmin() {
         getChainSupport[_chainId].isSupported = _isSupported;
-        if (_isSupported) {
-            emit ChainSupportAdded(_debridgeId, _chainId);
-        } else {
-            emit ChainSupportRemoved(_debridgeId, _chainId);
-        }
+        emit ChainSupportUpdated(_chainId, _isSupported);
     }
 
     /// @dev Set proxy address.
