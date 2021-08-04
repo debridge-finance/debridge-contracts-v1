@@ -681,9 +681,9 @@ contract DeBridgeGate is Initializable,
                 address(this),
                 _amount
             );
-            debridge.lockedInStrategies += _amount;
+            debridge.lockedInStrategies -= _amount;
         } else {
-            debridge.lockedInStrategies += msg.value;
+            debridge.lockedInStrategies -= msg.value;
         }
     }
 
