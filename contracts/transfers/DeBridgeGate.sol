@@ -33,9 +33,10 @@ contract DeBridgeGate is Initializable,
     // Basis points or bps equal to 1/10000
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
+    bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to withdraw fee
 
+    bytes32 public nativeDebridgeId; // native token debridgeId
     uint256 public chainId; // current chain id
-    uint256 public collectedNativeFees; // current native fee
     uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
@@ -60,6 +61,11 @@ contract DeBridgeGate is Initializable,
     uint256 flashFeeBps; // fee in basis points (1/10000)
 
     /* ========== MODIFIERS ========== */
+
+    modifier onlyWorker {
+        require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
+        _;
+    }
 
     modifier onlyDefiController {
         require(address(defiController) == msg.sender, "defiController: bad role");
@@ -96,7 +102,8 @@ contract DeBridgeGate is Initializable,
         }
         chainId = cid;
         bytes32 debridgeId = getDebridgeId(chainId, address(0));
-        _addAsset(debridgeId, address(0), chainId);
+        nativeDebridgeId = getDebridgeId(chainId, address(0));
+        _addAsset(nativeDebridgeId, address(0), chainId);
         chainIds = _supportedChainIds;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
@@ -617,31 +624,11 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of tokens to withdraw.
-    function withdrawFee(bytes32 _debridgeId, address _receiver, uint256 _amount) external onlyAdmin() {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        // require(debridge.chainId == chainId, "withdrawFee: wrong target chain");
-        // Commented out: contract-size limit
-        // require(debridge.collectedFees >= _amount, "withdrawFee: not enough fee");
-        debridge.collectedFees -= _amount;
-        if (
-            debridge.chainId == chainId && debridge.tokenAddress == address(0)
-        ) {
-            payable(_receiver).transfer(_amount);
-        } else {
-            IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
-        }
-    }
-
-    /// @dev Withdraw fees.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of tokens to withdraw.
-    function withdrawNativeFee(address _receiver, uint256 _amount) external onlyAdmin() {
-        // Commented out: contract-size limit
-        // require(collectedNativeFees >= _amount, "withdrawNativeFee: not enough fee");
-        collectedNativeFees -= _amount;
-        payable(_receiver).transfer(_amount);
+    function withdrawFee(bytes32 _debridgeId) external payable 
+        //nonReentrant 
+        onlyWorker
+    {
+        //TODO: withdraw fee
     }
 
     /// @dev Request the assets to be used in defi protocol.
@@ -686,27 +673,6 @@ contract DeBridgeGate is Initializable,
             debridge.lockedInStrategies -= _amount;
         } else {
             debridge.lockedInStrategies -= msg.value;
-        }
-    }
-
-    /// @dev Fund treasury.
-    /// @param _debridgeId Asset identifier.
-    /// @param _amount Submission aggregator address.
-    function fundTreasury(bytes32 _debridgeId, uint256 _amount) external {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        // Commented out: contract-size limit
-        // require(debridge.collectedFees >= _amount, "fundTreasury: not enough fee");
-        debridge.collectedFees -= _amount;
-        if (debridge.tokenAddress == address(0)) {
-            weth.deposit{value: _amount}();
-            weth.transfer(address(feeProxy), _amount);
-            feeProxy.swapToLink(address(weth), treasury);
-        } else {
-            IERC20(debridge.tokenAddress).safeTransfer(
-                address(feeProxy),
-                _amount
-            );
-            feeProxy.swapToLink(debridge.tokenAddress, treasury);
         }
     }
 
@@ -876,7 +842,7 @@ contract DeBridgeGate is Initializable,
                 - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR, 
                 "send: amount not cover fees");
             
-            collectedNativeFees += msg.value;
+            getDebridge[nativeDebridgeId].collectedFees += msg.value;
         }
         debridge.balance += _amount;
         return _amount;
@@ -937,7 +903,7 @@ contract DeBridgeGate is Initializable,
             require(msg.value >= chainSupportInfo.fixedNativeFee 
                 - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR, 
                 "send: amount not cover fees");
-            collectedNativeFees += msg.value;
+            getDebridge[nativeDebridgeId].collectedFees += msg.value;
         }
         wrappedAsset.burn(_amount);
         return _amount;
