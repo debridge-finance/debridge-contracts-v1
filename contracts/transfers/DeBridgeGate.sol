@@ -799,7 +799,7 @@ contract DeBridgeGate is Initializable,
         );
     }
 
-    /// @dev Request the assets to be used in defi protocol.
+    /// @dev Ensure that given amount of asset is avaliable
     /// @param _debridge Asset info.
     /// @param _amount Required amount of tokens.
     function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount) internal {
