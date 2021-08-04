@@ -592,7 +592,7 @@ contract DeBridgeGate is Initializable,
         confirmationAggregator = _aggregator;
     }
 
-    /// @dev Set aggregator address.
+    /// @dev Set signature verifier address.
     /// @param _verifier Signature verifier address.
     function setSignatureVerifier(address _verifier) external onlyAdmin() {
         signatureVerifier = _verifier;
