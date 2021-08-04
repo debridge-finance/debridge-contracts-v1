@@ -725,8 +725,12 @@ contract DeBridgeGate is Initializable,
 
     function blockSubmission(bytes32[] memory _submissionIds, bool isBlocked) external onlyAdmin() {
         for (uint256 i = 0; i < _submissionIds.length; i++) {
-           isBlockedSubmission[_submissionIds[i]] = isBlocked;
-           emit Blocked(_submissionIds[i]);
+            isBlockedSubmission[_submissionIds[i]] = isBlocked;
+            if (isBlocked) {
+                emit Blocked(_submissionIds[i]);
+            } else {
+                emit Unblocked(_submissionIds[i]);
+            }
         }
     }
 
