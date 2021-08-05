@@ -13,7 +13,7 @@ interface IAggregatorBase {
     }
 
     struct BlockConfirmationsInfo {
-        uint256 count; // count of submissions in block
+        uint8 count; // count of submissions in block
         bool requireExtraCheck; // exceed confirmation count for all submissions in block
         mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
     }

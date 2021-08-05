@@ -9,8 +9,8 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public confirmationThreshold; // bonus reward for one submission
-    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
+    uint8 public confirmationThreshold; // required confirmations per block before extra check enabled
+    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public wrappedAssetAdmin; // admin for any deployed wrapped asset
     address public debridgeAddress; // Debridge gate address
 
@@ -27,9 +27,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
-        uint256 _minConfirmations,
-        uint256 _confirmationThreshold,
-        uint256 _excessConfirmations,
+        uint8 _minConfirmations,
+        uint8 _confirmationThreshold,
+        uint8 _excessConfirmations,
         address _wrappedAssetAdmin,
         address _debridgeAddress
     ) public initializer {
@@ -157,14 +157,14 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Sets minimal required confirmations.
     /// @param _excessConfirmations Confirmation info.
-    function setExcessConfirmations(uint256 _excessConfirmations) public onlyAdmin
+    function setExcessConfirmations(uint8 _excessConfirmations) public onlyAdmin
     {
         excessConfirmations = _excessConfirmations;
     }
 
     /// @dev Sets minimal required confirmations.
     /// @param _confirmationThreshold Confirmation info.
-    function setThreshold(uint256 _confirmationThreshold) public onlyAdmin {
+    function setThreshold(uint8 _confirmationThreshold) public onlyAdmin {
         confirmationThreshold = _confirmationThreshold;
     }
 
@@ -190,7 +190,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         external
         view
         override
-        returns (uint256 _confirmations, bool _isConfirmed)
+        returns (uint8 _confirmations, bool _isConfirmed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
             _submissionId

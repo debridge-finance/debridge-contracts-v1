@@ -6,15 +6,15 @@ interface IDeBridgeGate {
     /* ========== STRUCTS ========== */
 
     struct DebridgeInfo {
-        address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
         uint256 maxAmount; // maximum amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
         uint256 minReservesBps; // minimal hot reserves in basis points (1/10000)
-        mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
+        address tokenAddress; // asset address on the current chain
         bool exist;
+        mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
     }
 
     struct AggregatorInfo {
@@ -23,9 +23,9 @@ interface IDeBridgeGate {
     }
 
     struct ChainSupportInfo {
-        bool isSupported; // whether the chain for the asset is supported
         uint256 fixedNativeFee; // transfer fixed fee
-        uint256 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
+        bool isSupported; // whether the chain for the asset is supported
+        uint16 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
     }
 
     /* ========== FUNCTIONS ========== */

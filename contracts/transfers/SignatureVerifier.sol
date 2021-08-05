@@ -13,13 +13,12 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public confirmationThreshold; // bonus reward for one submission
-    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
-    
-    address public wrappedAssetAdmin;
-    address public debridgeAddress;
+    uint8 public confirmationThreshold; // required confirmations per block before extra check enabled
+    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
+    address public wrappedAssetAdmin; // admin for any deployed wrapped asset
+    address public debridgeAddress; // Debridge gate address
 
+    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
     mapping(bytes32 => bytes32) public confirmedDeployInfo; // debridge Id => deploy Id
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
@@ -33,9 +32,9 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
-        uint256 _minConfirmations,
-        uint256 _confirmationThreshold,
-        uint256 _excessConfirmations,
+        uint8 _minConfirmations,
+        uint8 _confirmationThreshold,
+        uint8 _excessConfirmations,
         address _wrappedAssetAdmin,
         address _debridgeAddress
     ) public initializer {
@@ -101,7 +100,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _signatures Array of signatures by oracles.
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
         external override
-        returns (uint256 _confirmations, bool _blockConfirmationPassed)
+        returns (uint8 _confirmations, bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         //Count of required(DSRM) oracles confirmation

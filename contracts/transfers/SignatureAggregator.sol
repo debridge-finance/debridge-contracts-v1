@@ -20,7 +20,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initialize(uint256 _minConfirmations)
+    function initialize(uint8 _minConfirmations)
         public initializer
     {
         AggregatorBase.initializeBase(_minConfirmations);
@@ -101,7 +101,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @return _confirmations number of confirmation.
     /// @return _confirmed Whether transfer request is confirmed.
     function getSubmissionConfirmations(bytes32 _submissionId)
-        external view override returns (uint256 _confirmations, bool _confirmed)
+        external view override returns (uint8 _confirmations, bool _confirmed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
             _submissionId

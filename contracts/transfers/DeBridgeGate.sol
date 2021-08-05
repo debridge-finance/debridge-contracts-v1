@@ -37,28 +37,29 @@ contract DeBridgeGate is Initializable,
 
     bytes32 public nativeDebridgeId; // native token debridgeId
     uint256 public chainId; // current chain id
-    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     address public callProxy; // proxy to execute user's calls
+    address public treasury; //address of treasury
+    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint8 public aggregatorLightVersion; // aggregators count
     uint8 public aggregatorFullVersion; // aggregators count
+    uint16 public flashFeeBps; // fee in basis points (1/10000)
+
     uint256[] public supportedChainIds; // list of all supported chain ids
-    IDefiController public defiController; // proxy to use the locked assets in Defi protocols
+
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
+    // move amountThreshold to DebridgeInfo structure ?
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
-
     mapping(address => uint256) public feeDiscount; //fee discount for address
-    
+
+    IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
-    address treasury; //address of treasury
-
-    uint256 flashFeeBps; // fee in basis points (1/10000)
 
     /* ========== MODIFIERS ========== */
 
@@ -85,7 +86,7 @@ contract DeBridgeGate is Initializable,
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     /// @param _treasury Address to collect a fee
     function initialize(
-        uint256 _excessConfirmations,
+        uint8 _excessConfirmations,
         address _signatureVerifier,
         address _confirmationAggregator,
         address _callProxy,
@@ -547,7 +548,7 @@ contract DeBridgeGate is Initializable,
         }
     }
 
-    function updateExcessConfirmations(uint256 _excessConfirmations) external onlyAdmin() {
+    function updateExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin() {
         excessConfirmations = _excessConfirmations;
     }
 
@@ -695,7 +696,7 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Update flash fees.
     /// @param _flashFeeBps new fee in BPS
-    function updateFlashFee(uint256 _flashFeeBps) external onlyAdmin() {
+    function updateFlashFee(uint16 _flashFeeBps) external onlyAdmin() {
         flashFeeBps = _flashFeeBps;
     }
 
@@ -721,7 +722,7 @@ contract DeBridgeGate is Initializable,
      function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId,
                                   uint256 _amount, bytes[] memory _signatures)
         internal {
-        (uint256 confirmations, bool confirmed) =
+        (uint8 confirmations, bool confirmed) =
                 _signatures.length > 0
                 ? ISignatureVerifier(signatureVerifier).submit(_submissionId, _signatures)
                 : IConfirmationAggregator(confirmationAggregator).getSubmissionConfirmations(_submissionId);

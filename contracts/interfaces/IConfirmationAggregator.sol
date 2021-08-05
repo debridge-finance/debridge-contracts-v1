@@ -7,19 +7,19 @@ interface IConfirmationAggregator {
 
     struct SubmissionInfo {
         uint256 block; // confirmation block
-        uint256 confirmations; // received confirmations count
-        uint256 requiredConfirmations; // required oracles (DSRM) received confirmations count
+        uint8 confirmations; // received confirmations count
+        uint8 requiredConfirmations; // required oracles (DSRM) received confirmations count
         bool isConfirmed; // is confirmed submission (user can claim)
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
     struct DebridgeDeployInfo {
-        address tokenAddress; //native token address
         uint256 chainId; //native chainId
+        address tokenAddress; //native token address
+        uint8 confirmations; // received confirmations count
+        uint8 requiredConfirmations; // required oracles (DSRM) received confirmations count
+        uint8 decimals;
         string name;
         string symbol;
-        uint8 decimals;
-        uint256 confirmations; // received confirmations count
-        uint256 requiredConfirmations; // required oracles (DSRM) received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
@@ -37,7 +37,7 @@ interface IConfirmationAggregator {
     function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
-        returns (uint256 _confirmations, bool _isConfirmed);
+        returns (uint8 _confirmations, bool _isConfirmed);
 
     function getWrappedAssetAddress(bytes32 _debridgeId)
         external

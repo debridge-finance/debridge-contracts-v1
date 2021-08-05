@@ -6,17 +6,17 @@ interface ISignatureVerifier {
 
     struct SubmissionInfo {
         uint256 block; // confirmation block
-        uint256 confirmations; // received confirmations count
+        uint8 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
     struct DebridgeDeployInfo {
-        address tokenAddress;
         uint256 chainId;
+        address tokenAddress;
+        uint8 decimals;
+        uint8 confirmations; // received confirmations count
         string name;
         string symbol;
-        uint8 decimals;
-        uint256 confirmations; // received confirmations count
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
@@ -29,7 +29,7 @@ interface ISignatureVerifier {
 
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
         external
-        returns (uint256 _confirmations, bool _blockConfirmationPassed);
+        returns (uint8 _confirmations, bool _blockConfirmationPassed);
 
     function getWrappedAssetAddress(bytes32 _debridgeId)
         external

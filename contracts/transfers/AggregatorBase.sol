@@ -11,11 +11,11 @@ contract AggregatorBase is Initializable,
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public minConfirmations; // minimal required confirmations
+    uint8 public minConfirmations; // minimal required confirmations
+    uint8 public requiredOraclesCount; // count of required oracles
 
     address[] public oracleAddresses;
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
-    uint256 public requiredOraclesCount; // count of required oracles
 
     /* ========== MODIFIERS ========== */
 
@@ -32,7 +32,7 @@ contract AggregatorBase is Initializable,
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initializeBase(uint256 _minConfirmations) 
+    function initializeBase(uint8 _minConfirmations)
         internal
     {
         minConfirmations = _minConfirmations;
@@ -56,7 +56,7 @@ contract AggregatorBase is Initializable,
 
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Confirmation info.
-    function setMinConfirmations(uint256 _minConfirmations) public onlyAdmin {
+    function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
         require(_minConfirmations > 0, "Must be greater than zero");
         minConfirmations = _minConfirmations;
     }
