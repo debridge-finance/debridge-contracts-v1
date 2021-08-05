@@ -577,7 +577,7 @@ contract DeBridgeGate is Initializable,
     function updateAsset(
         bytes32 _debridgeId,
         uint256 _maxAmount,
-        uint256 _minReservesBps,
+        uint16 _minReservesBps,
         uint256 _amountThreshold
     ) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
@@ -602,6 +602,11 @@ contract DeBridgeGate is Initializable,
     /// @param _defiController Defi controller address address.
     function setDefiController(IDefiController _defiController) external onlyAdmin() {
         // TODO: claim all the reserves before
+        // loop lockedInStrategies
+        // defiController.claimReserve(
+        //     _debridge.tokenAddress,
+        //     requestedReserves
+        // );
         defiController = _defiController;
     }
 

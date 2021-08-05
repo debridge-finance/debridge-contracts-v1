@@ -11,8 +11,8 @@ interface IDeBridgeGate {
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
-        uint256 minReservesBps; // minimal hot reserves in basis points (1/10000)
         address tokenAddress; // asset address on the current chain
+        uint16 minReservesBps; // minimal hot reserves in basis points (1/10000)
         bool exist;
         mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
     }
@@ -240,7 +240,7 @@ interface IDeBridgeGate {
         address indexed tokenAddress,
         uint256 indexed chainId,
         uint256 maxAmount,
-        uint256 minReservesBps
+        uint16 minReservesBps
     ); // emited when new asset is supported
     event ChainSupportUpdated(
         uint256 chainId,
