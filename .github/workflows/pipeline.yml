@@ -78,6 +78,9 @@ jobs:
     - name: Test PriceConsumer
       run: yarn test test/06_PriceConsumer.test.js
 
+    - name: Test DefiController
+      run: yarn test test/06_DefiController.test.js
+
     - name: Tests coverage
       run: yarn coverage
       continue-on-error: true
