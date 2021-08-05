@@ -24,12 +24,12 @@ interface IConfirmationAggregator {
     }
 
     /* ========== EVENTS ========== */
-    
+
     event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
     event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by one oracle
 
     /* ========== FUNCTIONS ========== */
-    
+
     function submit(bytes32 _submissionId) external;
 
     function submitMany(bytes32[] memory _submissionIds) external;
@@ -43,8 +43,8 @@ interface IConfirmationAggregator {
         external
         view
         returns (address _wrappedAssetAddress);
-    
-    function deployAsset(bytes32 _debridgeId) 
-        external 
+
+    function deployAsset(bytes32 _debridgeId)
+        external
         returns (address wrappedAssetAddress, uint256 nativeChainId);
 }

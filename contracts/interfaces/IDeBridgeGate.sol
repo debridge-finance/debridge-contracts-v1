@@ -182,7 +182,7 @@ interface IDeBridgeGate {
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
         external payable;
-    
+
     /* ========== EVENTS ========== */
 
     event Sent(
@@ -249,7 +249,7 @@ interface IDeBridgeGate {
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
     event CallProxyUpdated(address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(bytes32 submissionId, bool success); // emited when the new call proxy set
-        
+
     event Blocked(bytes32 submissionId); //Block submission
     event Unblocked(bytes32 submissionId); //UnBlock submission
 

@@ -7,7 +7,7 @@ import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
-    
+
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
 
@@ -20,8 +20,8 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initialize(uint256 _minConfirmations) 
-        public initializer 
+    function initialize(uint256 _minConfirmations)
+        public initializer
     {
         AggregatorBase.initializeBase(_minConfirmations);
     }
@@ -95,7 +95,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     }
 
     /* ========== VIEW ========== */
-    
+
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
     /// @return _confirmations number of confirmation.

@@ -6,7 +6,7 @@ import "../interfaces/IConfirmationAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
 contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
-    
+
     /* ========== STATE VARIABLES ========== */
 
     uint256 public confirmationThreshold; // bonus reward for one submission
@@ -77,7 +77,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
             debridgeInfo.requiredConfirmations += 1;
         }
         debridgeInfo.hasVerified[msg.sender] = true;
-        
+
         if( debridgeInfo.confirmations >= minConfirmations){
             confirmedDeployInfo[debridgeId] = deployId;
         }
@@ -94,9 +94,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @dev Confirms single transfer request.
     /// @param _submissionId Submission identifier.
     function _submit(bytes32 _submissionId) internal {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         submissionInfo.confirmations += 1;
         if(getOracleInfo[msg.sender].required) {
@@ -115,9 +113,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
             }
             submissionInfo.block = block.number;
 
-            if(submissionInfo.requiredConfirmations >= requiredOraclesCount 
+            if(submissionInfo.requiredConfirmations >= requiredOraclesCount
                 && (!_blockConfirmationsInfo.requireExtraCheck
-                    || _blockConfirmationsInfo.requireExtraCheck 
+                    || _blockConfirmationsInfo.requireExtraCheck
                         && submissionInfo.confirmations >= excessConfirmations)) {
                 submissionInfo.isConfirmed = true;
                 emit SubmissionApproved(_submissionId);
@@ -129,7 +127,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /* ========== deployAsset ========== */
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
-    function deployAsset(bytes32 _debridgeId) 
+    function deployAsset(bytes32 _debridgeId)
             external override
             returns (address wrappedAssetAddress, uint256 nativeChainId){
         require(debridgeAddress == msg.sender, "deployAsset: bad role");

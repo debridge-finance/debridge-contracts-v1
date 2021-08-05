@@ -75,7 +75,7 @@ contract AggregatorBase is Initializable,
         if(_required){
             requiredOraclesCount += 1;
         }
-        
+
         oracleInfo.exist = true;
         oracleInfo.isValid = true;
         oracleInfo.required = _required;

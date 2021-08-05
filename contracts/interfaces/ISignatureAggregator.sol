@@ -22,9 +22,9 @@ interface ISignatureAggregator {
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
-    
+
     /* ========== EVENTS ========== */
-    
+
     event DeployConfirmed(bytes32 deployId, address operator, bytes signature); // emitted once the submission is confirmed by one oracle
     event Confirmed(bytes32 submissionId, address operator, bytes signature); // emitted once the submission is confirmed by one oracle
 
