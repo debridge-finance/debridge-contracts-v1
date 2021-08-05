@@ -5,7 +5,7 @@ import "../interfaces/IPriceConsumer.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MockPriceConsumer is IPriceConsumer, Ownable {
-    mapping(address => uint256) priceFeeds;
+    mapping(address => uint256) public priceFeeds;
 
     /**
      * @dev get Price of Token
