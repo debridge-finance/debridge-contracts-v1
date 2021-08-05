@@ -63,10 +63,12 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         uint8 _decimals
     ) external onlyOracle {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
+
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
         require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
+
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
         debridgeInfo.tokenAddress = _tokenAddress;

@@ -635,8 +635,7 @@ contract DeBridgeGate is Initializable,
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
-        uint256 balance = getBalance(debridge.tokenAddress);
-        require( minReserves + _amount > balance, "requestReserves: not enough reserves");
+        require(minReserves + _amount > getBalance(debridge.tokenAddress), "requestReserves: not enough reserves");
         if (debridge.tokenAddress == address(0)) {
             payable(address(defiController)).transfer(_amount);
         } else {

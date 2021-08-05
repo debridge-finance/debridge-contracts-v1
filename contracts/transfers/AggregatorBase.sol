@@ -89,9 +89,10 @@ contract AggregatorBase is Initializable,
     /// @param _isValid is valid oracle
     /// @param _required Without this oracle, the transfer will not be confirmed
     function updateOracle(address _oracle, bool _isValid, bool _required) external onlyAdmin {
+        require(_isValid || !_isValid && !_required, "Need to disable required");
+
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         require(oracleInfo.exist, "Not exist");
-        require(_isValid || !_isValid && !_required, "Need to disable required");
 
         oracleInfo.isValid = _isValid;
 
