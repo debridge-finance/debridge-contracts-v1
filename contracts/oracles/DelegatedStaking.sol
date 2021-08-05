@@ -48,6 +48,14 @@ library DelegatedStakingHelper {
     }
 
     /**
+     * @dev Validates transfer/withdrawal not already executed
+     * @param _executed Executed bool
+     */
+    function _validateNotExecuted(bool _executed) internal pure {
+        require(!_executed, "already executed");
+    }
+
+    /**
      * @dev Validates if collateral is enabled
      * @param _collateralEnabled Collateral enabled bool
      */
@@ -56,11 +64,35 @@ library DelegatedStakingHelper {
     }
 
     /**
+     * @dev Validates if oracle is oracle
+     * @param _isOracle Oracle is oracle bool
+     */
+    function _validateOracle(bool _isOracle) internal pure {
+        require(_isOracle, "only oracle");
+    }
+
+    /**
      * @dev Validates if delegator exists
      * @param _delegatorExists Delegator exists bool
      */
     function _validateDelegator(bool _delegatorExists) internal pure {
         require(_delegatorExists, "delegator !exist");
+    }
+
+    /**
+     * @dev Validates if request exists
+     * @param _requestExists Request exists bool
+     */
+    function _validateRequestExists(bool _requestExists) internal pure {
+        require(_requestExists, "request !exist");
+    }
+
+    /**
+     * @dev Validates if timelock passed
+     * @param _timelockPassed Timelock passed bool
+     */
+    function _validateTimelock(bool _timelockPassed) internal pure {
+        require(_timelockPassed, "too early");
     }
 
     /**
@@ -80,6 +112,10 @@ library DelegatedStakingHelper {
         require(_admin == _sender, "only admin");
     }
 
+    function _validateShares(uint256 _shares) internal pure {
+        require(_shares > 0, "no shares");
+    }
+
     /**
      * @dev Validates if greater than
      * @param _amount Amount to validate
@@ -95,7 +131,7 @@ library DelegatedStakingHelper {
      * @param BPS_DENOMINATOR Maximum amount
      */
     function _validateBPS(uint256 _profitSharingBPS, uint256 BPS_DENOMINATOR) internal pure {
-        require(_profitSharingBPS <= BPS_DENOMINATOR, "BPS <= 10,000" );
+        require(_profitSharingBPS <= BPS_DENOMINATOR, "bad bps" );
     }
 }
 
@@ -372,21 +408,12 @@ contract DelegatedStaking is AccessControl, Initializable {
     function executeUnstake(address _user, uint256 _withdrawalId) external {
         UserInfo storage user = getUserInfo[_user];
         DelegatedStakingHelper._validateAdmin(user.admin,msg.sender);
-        require(
-            _withdrawalId < user.withdrawalCount,
-            "withdrawal !exist"
-        );
+        DelegatedStakingHelper._validateRequestExists(bool(user.withdrawalCount > _withdrawalId));
         WithdrawalInfo storage withdrawal = user.withdrawals[_withdrawalId];
-        require(!withdrawal.executed, "already executed");
-        require(
-            withdrawal.timelock < block.timestamp,
-            "too early"
-        );
+        DelegatedStakingHelper._validateNotExecuted(withdrawal.executed);
+        DelegatedStakingHelper._validateTimelock(bool(withdrawal.timelock < block.timestamp));
         withdrawal.executed = true;
-        require(
-            IERC20(withdrawal.collateral).transfer(withdrawal.receiver, withdrawal.amount),
-            "withdrawal failed"
-        );
+        IERC20(withdrawal.collateral).safeTransfer(withdrawal.receiver, withdrawal.amount);
         emit UnstakeExecuted(_user, _withdrawalId);
     }
 
@@ -402,7 +429,7 @@ contract DelegatedStaking is AccessControl, Initializable {
             DelegatorInfo storage delegator = oracle.delegators[msg.sender];
             DelegatedStakingHelper._validateDelegator(delegator.exists);
             withdrawal = oracle.withdrawals[_withdrawalId];
-            require(!withdrawal.executed, "already executed");
+            DelegatedStakingHelper._validateNotExecuted(withdrawal.executed);
             withdrawal.executed = true;
             uint256 delegatorShares = DelegatedStakingHelper._calculateShares(
                 withdrawal.amount,
@@ -422,7 +449,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         }
         else {
             withdrawal = oracle.withdrawals[_withdrawalId];
-            require(!withdrawal.executed, "already executed");
+            DelegatedStakingHelper._validateNotExecuted(withdrawal.executed);
             withdrawal.executed = true;
             oracle.stake[withdrawal.collateral] += withdrawal.amount;
             collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
@@ -438,7 +465,7 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _sharesFrom Share of collateral
      */
     function requestTransfer(address _oracleFrom, address _oracleTo, address _collateral, uint256 _sharesFrom) external {
-        require(_sharesFrom > 0, "bad share");
+        DelegatedStakingHelper._validateShares(_sharesFrom);
         UserInfo storage oracleFrom = getUserInfo[_oracleFrom];
         DelegatedStakingHelper._validateCollateral(collaterals[_collateral].isEnabled);
         UserInfo storage sender = getUserInfo[msg.sender];
@@ -485,13 +512,10 @@ contract DelegatedStaking is AccessControl, Initializable {
     function executeTransfer(uint256 _transferId) external {
         UserInfo storage sender = getUserInfo[msg.sender];
 
-        require(sender.transferCount > _transferId, "request !exist");
+        DelegatedStakingHelper._validateRequestExists(bool(sender.transferCount > _transferId));
         TransferInfo storage transfer = sender.transfers[_transferId];
-        require(!transfer.executed, "already executed");
-        require(
-            transfer.timelock < block.timestamp,
-            "too early"
-        );
+        DelegatedStakingHelper._validateNotExecuted(transfer.executed);
+        DelegatedStakingHelper._validateTimelock(bool(transfer.timelock < block.timestamp));
         transfer.executed = true;
         UserInfo storage oracleTo = getUserInfo[transfer.oracleTo];
         DelegatorInfo storage delegator = oracleTo.delegators[msg.sender];
@@ -523,7 +547,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         DelegatorInfo storage delegator = oracle.delegators[msg.sender];
         DelegatedStakingHelper._validateDelegator(delegator.exists);
         TransferInfo storage transfer = sender.transfers[_transferId];
-        require(!transfer.executed, "already executed");
+        DelegatedStakingHelper._validateNotExecuted(transfer.executed);
         transfer.executed = true;
         uint256 delegatorShares = DelegatedStakingHelper._calculateShares(
             transfer.amount,
@@ -673,12 +697,11 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function recoverFromEmergency(address _strategy, address[] calldata _oracles) external {
         Strategy storage strategy = strategies[_strategy];
-        require(!strategy.isEnabled, "strategy still enabled");
-        require(strategy.isRecoverable, "strategy funds not recoverable");
-        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
+        require(!strategy.isEnabled, "strategy enabled");
+        require(strategy.isRecoverable, "not recoverable");
         for (uint256 i=0; i<_oracles.length; i++) {
             UserInfo storage oracle = getUserInfo[_oracles[i]];
-            require(oracle.isOracle, "only oracle");
+            DelegatedStakingHelper._validateOracle(oracle.isOracle);
             StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
             uint256 amount = DelegatedStakingHelper._calculateFromShares(
                 depositInfo.shares, strategy.totalReserves, strategy.totalShares
@@ -689,7 +712,6 @@ contract DelegatedStaking is AccessControl, Initializable {
             strategy.totalReserves -= amount;
             oracle.locked[strategy.stakeToken] = 0;
 
-            stakeCollateral.totalLocked += amount;
             emit RecoveredFromEmergency(_oracles[i], amount, _strategy, strategy.stakeToken);
             
             for (uint256 k=0; k<oracle.delegatorCount; k++) {
@@ -704,7 +726,6 @@ contract DelegatedStaking is AccessControl, Initializable {
                 strategy.totalReserves -= amount;
                 delegator.stakes[strategy.stakeToken].locked = 0;
                 
-                stakeCollateral.totalLocked += amount;
                 emit RecoveredFromEmergency(oracle.delegatorAddresses[k], amount, _strategy, strategy.stakeToken);
             }
         }
@@ -754,12 +775,16 @@ contract DelegatedStaking is AccessControl, Initializable {
                 getPoolUSDAmount(_oracle, currentCollateral) /
                 totalUSDAmount;
 
+            uint256 accTokensPerShare = oracle.delegation[currentCollateral].shares > 0
+                ? accTokens * 1e18 / oracle.delegation[currentCollateral].shares
+                : 0;
+
             if(currentCollateral==_collateral){
                 //Increase accumulated rewards per share
-                oracle.accTokensPerShare[currentCollateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
+                oracle.accTokensPerShare[currentCollateral] += accTokensPerShare;
             } else {
                 //Add a reward pool dependency
-                oracle.dependsAccTokensPerShare[currentCollateral][_collateral] += accTokens * 1e18 / oracle.delegation[currentCollateral].shares;
+                oracle.dependsAccTokensPerShare[currentCollateral][_collateral] += accTokensPerShare;
             }
         }
         emit RewardsDistributed(_oracle, _collateral, _amount);
@@ -865,10 +890,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         onlyAdmin()
     {
         DelegatedStakingHelper._validateGtE(collaterals[_collateral].confiscatedFunds, _amount);
-        require(
-            IERC20(_collateral).transfer(_recipient, _amount),
-            "transfer failed"
-        );
+        IERC20(_collateral).safeTransfer(_recipient, _amount);
         collaterals[_collateral].confiscatedFunds -= _amount;
         emit WithdrawnFunds(_recipient, _collateral, _amount);
     }
@@ -1102,7 +1124,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         returns (uint256)
     {
         Strategy memory strategy = strategies[_strategy];
-        require(strategy.totalShares > 0, "no shares");
+        DelegatedStakingHelper._validateShares(strategy.totalShares);
         uint256 totalStrategyTokenReserves = IStrategy(_strategy).updateReserves(address(this), _collateral);
         return totalStrategyTokenReserves/strategy.totalShares;
     }
@@ -1118,8 +1140,8 @@ contract DelegatedStaking is AccessControl, Initializable {
         returns (uint256)
     {
         UserInfo storage oracle = getUserInfo[_oracle];
-        require(oracle.isOracle, "only oracle");
-        require(oracle.delegation[_collateral].shares > 0, "no shares");
+        DelegatedStakingHelper._validateOracle(oracle.isOracle);
+        DelegatedStakingHelper._validateShares(oracle.delegation[_collateral].shares);
         return oracle.delegation[_collateral].stakedAmount/oracle.delegation[_collateral].shares;
     }
 
@@ -1182,12 +1204,15 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _oracle address of oracle
      * @param _collateral Address of collateral
      */
-    function getOracleStaking(address _oracle, address _collateral) external view returns (uint256) {
-        return getUserInfo[_oracle].stake[_collateral];
+    function getOracleStaking(address _oracle, address _collateral) external view returns (uint256, uint256) {
+        return(
+            getUserInfo[_oracle].stake[_collateral],
+            getUserInfo[_oracle].locked[_collateral]
+        );
     }
 
     /**
-     * @dev get delegator stakes
+     * @dev get delegator stakes: returns whether delegator exists, staked amount, shares and locked amount
      * @param _oracle address of oracle
      * @param _delegator address of delegator
      * @param _collateral Address of collateral
@@ -1195,104 +1220,118 @@ contract DelegatedStaking is AccessControl, Initializable {
     function getDelegatorStakes(address _oracle, address _delegator, address _collateral)
         external
         view
-        returns(uint256, uint256)
+        returns(bool, uint256, uint256, uint256)
     {
+        DelegatorInfo storage delegator = getUserInfo[_oracle].delegators[_delegator];
         return (
-            getUserInfo[_oracle].delegators[_delegator].stakes[_collateral].stakedAmount,
-            getUserInfo[_oracle].delegators[_delegator].stakes[_collateral].shares
+            delegator.exists,
+            delegator.stakes[_collateral].stakedAmount,
+            delegator.stakes[_collateral].shares,
+            delegator.stakes[_collateral].locked
         );
     }
 
     /**
-     * @dev get user rewards
+     * @dev get user and protocol rewards
      * @param _user address of account
      * @param _collateral Address of collateral
      */
-    function getUserRewards(address _user, address _collateral)
+    function getRewards(address _user, address _collateral)
         external
         view
-        returns(uint256)
+        returns(uint256, uint256, uint256)
     {
-        return getUserInfo[_user].accumulatedRewards[_collateral];
+        return(
+            getUserInfo[_user].accumulatedRewards[_collateral],
+            collaterals[_collateral].rewards,
+            accumulatedProtocolRewards[_collateral]
+        );
     }
 
     /**
-     * @dev get strategy rewards
-     * @param _strategy address of strategy
-     */
-    function getStrategyRewards(address _strategy)
-        external
-        view
-        returns(uint256)
-    {
-        return strategies[_strategy].rewards;
-    }
-
-    /**
-     * @dev get protocol rewards
-     * @param _collateral Address of collateral
-     */
-    function getProtocolRewards(address _collateral)
-        external
-        view
-        returns(uint256)
-    {
-        return accumulatedProtocolRewards[_collateral];
-    }
-
-    /**
-     * @dev Get total delegation to oracle, returns total delegation amount and total shares
+     * @dev Get delegation info to oracle: returns total delegation amount, total shares, delegator count
      * @param _oracle Address of oracle
      * @param _collateral Address of collateral
      */
-    function getTotalDelegation(address _oracle, address _collateral) external view returns(uint256, uint256) {
+    function getDelegationInfo(address _oracle, address _collateral) external view returns(uint256, uint256, uint256) {
         return (
             getUserInfo[_oracle].delegation[_collateral].stakedAmount,
-            getUserInfo[_oracle].delegation[_collateral].shares
+            getUserInfo[_oracle].delegation[_collateral].shares,
+            getUserInfo[_oracle].delegatorCount
         );
     }
 
     /**
-     * @dev Get total stake to strategy, returns total reserve amount and total shares
+     * @dev Get total stake to strategy: returns total reserve amount, total shares and total rewards
      * @param _strategy Address of strategy
      */
-    function getStrategyStakes(address _strategy) external view returns(uint256, uint256) {
+    function getStrategyStakes(address _strategy) external view returns(uint256, uint256, uint256) {
         return (
             strategies[_strategy].totalReserves, 
-            strategies[_strategy].totalShares
+            strategies[_strategy].totalShares,
+            strategies[_strategy].rewards
+        );
+    }
+    /**
+     * @dev Get account admin address and transfer count
+     * @param _account Address of account
+     */
+    function getAccountInfo(address _account) external view returns(address, uint256) {
+        return(
+            getUserInfo[_account].admin,
+            getUserInfo[_account].transferCount
+        );
+    }
+
+    /** 
+     * @dev Get accumulated tokens per share
+     * @param _oracle Oracle address
+     * @param _collateral Collateral address
+     * @param _dependsCollateral Depends collateral address
+     */
+    function getTokensPerShare(address _oracle, address _collateral, address _dependsCollateral) external view returns(uint256, uint256) {
+        return(
+            getUserInfo[_oracle].accTokensPerShare[_collateral],
+            getUserInfo[_oracle].dependsAccTokensPerShare[_dependsCollateral][_collateral]
         );
     }
 
     /**
-     * @dev Get total number of delegators to oracle
-     * @param _oracle Address of oracle
+     * @dev Gets oracle strategy deposit info
+     * @param _oracle Oracle address
+     * @param _strategy Strategy address
+     * @param _collateral Collateral address
      */
-    function getDelegatorCount(address _oracle) external view returns(uint256) {
-        return getUserInfo[_oracle].delegatorCount;
+    function getStrategyDepositInfo(address _oracle, address _strategy, address _collateral)
+        external
+        view
+        returns(uint256, uint256)
+    {
+        StrategyDepositInfo memory depositInfo = getUserInfo[_oracle].strategyStake[_strategy][_collateral];
+        return(
+            depositInfo.stakedAmount,
+            depositInfo.shares
+        );
     }
 
     /**
-     * @dev Returns whether delegator exists for oracle
-     * @param _oracle Address of oracle
+     * @dev Gets delegator strategy deposit info
+     * @param _oracle Oracle address
+     * @param _delegator Delegator address
+     * @param _strategy Strategy address
+     * @param _collateral Collateral address
      */
-    function doesDelegatorExist(address _oracle, address _delegator) external view returns(bool) {
-        return getUserInfo[_oracle].delegators[_delegator].exists;
-    }
-
-    /**
-     * @dev Get account admin address
-     * @param _account Address of account
-     */
-    function getAccountAdmin(address _account) external view returns(address) {
-        return getUserInfo[_account].admin;
-    }
-
-    /**
-     * @dev Get account transfer count
-     * @param _account Address of account
-     */
-    function getAccountTransferCount(address _account) external view returns(uint256) {
-        return getUserInfo[_account].transferCount;
+    function getStrategyDepositInfo(address _oracle, address _delegator, address _strategy, address _collateral)
+        external
+        view
+        returns(uint256, uint256)
+    {
+        StrategyDepositInfo memory depositInfo = 
+                getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][_collateral];
+        return(
+            depositInfo.stakedAmount,
+            depositInfo.shares
+        );
     }
 
     /* modifiers */
