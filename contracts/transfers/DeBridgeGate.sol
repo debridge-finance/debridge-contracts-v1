@@ -52,7 +52,6 @@ contract DeBridgeGate is Initializable,
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
-    // move amountThreshold to DebridgeInfo structure ?
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
     mapping(address => uint256) public feeDiscount; //fee discount for address
