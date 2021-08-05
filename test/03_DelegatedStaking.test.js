@@ -4,7 +4,7 @@ const { MAX_UINT256, ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/co
 const DelegatedStaking = artifacts.require("DelegatedStaking");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockStrategy = artifacts.require('MockStrategy');
-const MockPriceConsumer = artifacts.require('MockPriceConsumer');
+const PriceConsumer = artifacts.require('PriceConsumer');
 const { toWei, fromWei, toBN } = web3.utils;
 
 function sleep(ms) {
@@ -30,11 +30,11 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
     });
     this.timelock = 2;
     this.mockStrategy = await MockStrategy.new({ from: alice });
-    this.mockPriceConsumer = await MockPriceConsumer.new({ from: alice });
+    this.priceConsumer = await PriceConsumer.new({ from: alice });
     this.delegatedStaking = await DelegatedStaking.new();
     await this.delegatedStaking.initialize(
       this.timelock,
-      this.mockPriceConsumer.address,
+      this.priceConsumer.address,
       {
         from: alice,
       }
@@ -46,7 +46,7 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
     await this.delegatedStaking.setProfitSharing(bob, 0);
     await this.delegatedStaking.addOracle(david, alice);
     await this.delegatedStaking.setProfitSharing(david, 25);
-    await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, 5);
+    await this.priceConsumer.addPriceFeed(this.linkToken.address, 5);
     await this.delegatedStaking.addStrategy(this.mockStrategy.address, this.linkToken.address, this.linkToken.address);
     await this.delegatedStaking.setTimelockForTransfer(this.timelock);
   });
