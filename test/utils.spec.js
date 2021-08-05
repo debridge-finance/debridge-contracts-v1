@@ -1,7 +1,10 @@
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const PERMIT_TYPEHASH =
   "0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9";
-module.exports.ZERO_ADDRESS = ZERO_ADDRESS;
+
+module.exports.ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+module.exports.DEFAULT_ADMIN_ROLE = ethers.utils.hexZeroPad(0, 32);
+module.exports.WORKER_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("WORKER_ROLE"));
+
 const { ecsign } = require("ethereumjs-util");
 const {
   keccak256,
