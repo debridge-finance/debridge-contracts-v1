@@ -212,7 +212,7 @@ contract DelegatedStaking is AccessControl, Initializable {
     mapping(address => UserInfo) public getUserInfo; // oracle address => oracle details
     uint256 public timelock; // duration of withdrawal timelock
     uint256 public constant BPS_DENOMINATOR = 10000; // Basis points, or bps, equal to 1/10000 used to express relative value
-    uint256 public minProfitSharingBPS = 5000;
+    uint256 public minProfitSharingBPS;
     mapping(address => Collateral) public collaterals;
     address[] public collateralAddresses;
     mapping(address => uint256) public accumulatedProtocolRewards;
@@ -228,7 +228,7 @@ contract DelegatedStaking is AccessControl, Initializable {
     event UnstakePaused(address user, uint256 withdrawalId, uint256 timestamp);
     event UnstakeResumed(address user, uint256 withdrawalId, uint256 timestamp);
     event Liquidated(address oracle, address collateral, uint256 amount);
-    event Liquidated(address oracle, address delegator, address collateral, uint256 amount);
+    event LiquidatedDelegator(address oracle, address delegator, address collateral, uint256 amount);
     event DepositedToStrategy(address oracle, address user, uint256 amount, address strategy, address collateral);
     event WithdrawnFromStrategy(address oracle, address user, uint256 amount, address strategy, address collateral);
     event EmergencyWithdrawnFromStrategy(uint256 amount, address strategy, address collateral);
@@ -248,6 +248,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         timelock = _timelock;
         priceConsumer = _priceConsumer;
+        minProfitSharingBPS = 5000;
     }
 
     /**
@@ -743,7 +744,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         delegator.passedRewards[_collateral] = DelegatedStakingHelper._calculatePassedRewards(
                             delegator.stakes[_collateral].shares,
                             oracle.accTokensPerShare[_collateral]);
-        emit Liquidated(_oracle, _delegator, _collateral, _amount);
+        emit LiquidatedDelegator(_oracle, _delegator, _collateral, _amount);
     }
 
     /**
