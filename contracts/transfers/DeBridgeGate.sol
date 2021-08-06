@@ -42,8 +42,6 @@ contract DeBridgeGate is Initializable,
     address public callProxy; // proxy to execute user's calls
     address public treasury; //address of treasury
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    uint8 public aggregatorLightVersion; // aggregators count
-    uint8 public aggregatorFullVersion; // aggregators count
     uint16 public flashFeeBps; // fee in basis points (1/10000)
     uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
 
