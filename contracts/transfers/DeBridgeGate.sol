@@ -615,7 +615,7 @@ contract DeBridgeGate is Initializable,
     }
 
     /// @dev Stop all transfers.
-    function pause() external onlyAdmin() onlyGovMonitoring() {
+    function pause() external onlyGovMonitoring() {
         _pause();
     }
 

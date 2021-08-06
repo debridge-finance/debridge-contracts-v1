@@ -188,7 +188,8 @@ contract("DeBridgeGate light mode", function() {
     ]);
 
     await this.debridge.deployed();
-
+    const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
+    await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
     this.nativeDebridgeId = await this.debridge.nativeDebridgeId();
   });

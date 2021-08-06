@@ -72,6 +72,9 @@ contract("DeBridgeGate full mode", function () {
       devid,
     ]);
     await this.debridge.deployed();
+
+    const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
+    await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
   });
 
   it("should set weth if called by the admin", async function () {
@@ -276,7 +279,7 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should reject stopping (pausing) all transfers if called buy the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bobAccount).pause(), "onlyAdmin: bad role");
+      await expectRevert(this.debridge.connect(bobAccount).pause(), "onlyGovMonitoring: bad role");
     });
 
     it("should reject allowing (uppausing) all transfers if called buy the non-admin", async function () {
