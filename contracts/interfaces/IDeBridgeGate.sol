@@ -8,7 +8,9 @@ interface IDeBridgeGate {
     struct DebridgeInfo {
         uint256 chainId; // native chain id
         uint256 maxAmount; // maximum amount to transfer
-        uint256 collectedFees; // total collected fees that can be used to buy LINK
+        uint256 collectedFees; // total collected fees
+        uint256 donatedFees; // total donated fees
+        uint256 withdrawnFees; // fees that already withdrawn
         uint256 balance; // total locked assets
         uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
         address tokenAddress; // asset address on the current chain
@@ -182,6 +184,11 @@ interface IDeBridgeGate {
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
         external payable;
+    
+    function getDebridgeInfo(bytes32 _debridgeId)
+        external
+        view
+        returns (address _tokenAddress, uint256 _chainId, bool _exist);
 
     /* ========== EVENTS ========== */
 
@@ -254,4 +261,6 @@ interface IDeBridgeGate {
     event Unblocked(bytes32 submissionId); //UnBlock submission
 
     event Flash(address sender, address tokenAddress,  address receiver, uint256 amount, uint256 paid);
+
+    event ReceivedTransferFee(bytes32 debridgeId, uint256 amount);
 }
