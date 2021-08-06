@@ -13,7 +13,7 @@ contract MockDeBridgeGate is DeBridgeGate{
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     /// @param _treasury Address to collect a fee
     function initializeMock(
-        uint256 _excessConfirmations,
+        uint8 _excessConfirmations,
         address _signatureVerifier,
         address _confirmationAggregator,
         address _callProxy,

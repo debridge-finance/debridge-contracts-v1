@@ -45,6 +45,7 @@ contract DeBridgeGate is Initializable,
     uint8 public aggregatorLightVersion; // aggregators count
     uint8 public aggregatorFullVersion; // aggregators count
     uint16 public flashFeeBps; // fee in basis points (1/10000)
+    uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
 
     uint256[] public supportedChainIds; // list of all supported chain ids
 
@@ -60,8 +61,7 @@ contract DeBridgeGate is Initializable,
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
 
-    uint256 public collectRewardBps; // reward BPS that user will receive for collect reawards
-
+    
     /* ========== MODIFIERS ========== */
 
     modifier onlyWorker {
@@ -763,7 +763,7 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Update transfer reward BPS.
     /// @param _collectRewardBps new reward in BPS
-    function updateCollectRewardBps(uint256 _collectRewardBps) external onlyAdmin() {
+    function updateCollectRewardBps(uint16 _collectRewardBps) external onlyAdmin() {
         // save contract size
         // require(_collectRewardBps <= BPS_DENOMINATOR, "Wrong amount");
         collectRewardBps = _collectRewardBps;
@@ -1174,7 +1174,6 @@ contract DeBridgeGate is Initializable,
         view
         override
         returns (address _tokenAddress, uint256 _chainId, bool _exist)
-        //(DebridgeInfo memory)
     {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         return (debridge.tokenAddress, debridge.chainId, debridge.exist);
