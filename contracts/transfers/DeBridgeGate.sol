@@ -34,6 +34,7 @@ contract DeBridgeGate is Initializable,
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
     bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to withdraw fee
+    bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
 
     bytes32 public nativeDebridgeId; // native token debridgeId
     uint256 public chainId; // current chain id
@@ -74,6 +75,11 @@ contract DeBridgeGate is Initializable,
 
     modifier onlyAdmin {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
+        _;
+    }
+
+    modifier onlyGovMonitoring {
+        require(hasRole(GOVMONITORING_ROLE, msg.sender), "onlyGovMonitoring: bad role");
         _;
     }
 
@@ -609,7 +615,7 @@ contract DeBridgeGate is Initializable,
     }
 
     /// @dev Stop all transfers.
-    function pause() external onlyAdmin() whenNotPaused() {
+    function pause() external onlyAdmin() onlyGovMonitoring() {
         _pause();
     }
 
