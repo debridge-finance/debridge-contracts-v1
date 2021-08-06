@@ -43,7 +43,9 @@ contract("DeBridgeGate light mode", function() {
     const Debridge = await ethers.getContractFactory("DeBridgeGate", alice);
     const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator",alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier",alice);
-    
+    const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
+
+
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
@@ -138,9 +140,7 @@ contract("DeBridgeGate light mode", function() {
       from: alice,
     });
 
-    this.defiController = await DefiController.new({
-      from: alice,
-    });
+    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);    
     this.callProxy = await CallProxy.new({
       from: alice,
     });

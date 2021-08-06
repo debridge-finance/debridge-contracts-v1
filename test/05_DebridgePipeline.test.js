@@ -6,7 +6,6 @@ const WrappedAsset = artifacts.require("WrappedAsset");
 const MockFeeProxy = artifacts.require("MockFeeProxy");
 const CallProxy = artifacts.require("CallProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
-const DefiController = artifacts.require("DefiController");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei} = web3.utils;
 const { BigNumber } = require("ethers")
@@ -71,6 +70,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
     const ConfirmationAggregatorFactory = await ethers.getContractFactory("ConfirmationAggregator", alice);
     const DeBridgeGateFactory = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const SignatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier",alice);
+    const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
 
     this.amountThreshols = toWei("1000");
     this.minConfirmations = 2;
@@ -174,9 +174,8 @@ contract("DeBridgeGate real pipeline mode",  function() {
       from: alice,
     });
     //-------Deploy defiController contracts
-    this.defiControllerETH = await DefiController.new({
-      from: alice,
-    });
+    this.defiControllerETH = await upgrades.deployProxy(DefiControllerFactory, []);
+    
     //-------Deploy confirmation aggregator contracts
     //   function initialize(
     //     uint256 _minConfirmations,

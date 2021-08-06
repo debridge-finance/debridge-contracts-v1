@@ -9,8 +9,8 @@ describe("DefiController", function () {
   });
 
   beforeEach(async function () {
-    this.DefiControllerFactory = await ethers.getContractFactory("MockDefiController");
-    this.defiController = await this.DefiControllerFactory.deploy();
+    const DefiControllerFactory = await ethers.getContractFactory("MockDefiController");
+    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
   });
 
   it("contract deployer became admin");

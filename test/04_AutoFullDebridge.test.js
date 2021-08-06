@@ -6,7 +6,6 @@ const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
 const CallProxy = artifacts.require("CallProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
-const DefiController = artifacts.require("DefiController");
 
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
@@ -50,6 +49,8 @@ contract("DeBridgeGate full with auto", function () {
     const WETH9 = await deployments.getArtifact("WETH9");
     const UniswapV2Factory = await ethers.getContractFactory(UniswapV2.abi,UniswapV2.bytecode, alice );
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
+    const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
+    
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
@@ -129,9 +130,7 @@ contract("DeBridgeGate full with auto", function () {
     this.callProxy = await CallProxy.new({
       from: alice,
     });
-    this.defiController = await DefiController.new({
-      from: alice,
-    });
+    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     const maxAmount = toWei("1000000");
     const fixedNativeFee = toWei("0.00001");
     const isSupported = true;

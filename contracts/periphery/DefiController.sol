@@ -3,14 +3,16 @@ pragma solidity ^0.8.2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IStrategy.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract DefiController is AccessControl {
+contract DefiController is Initializable,
+                           AccessControlUpgradeable {
 
     using SafeERC20 for IERC20;
 
@@ -48,9 +50,8 @@ contract DefiController is AccessControl {
     /* ========== CONSTRUCTOR  ========== */
 
 
-    constructor(){
-        // TODO: restore after fix tests
-        // IDeBridgeGate _deBridgeGate) {
+    function initialize()//IDeBridgeGate _deBridgeGate) 
+        public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         // deBridgeGate = _deBridgeGate;
     }
