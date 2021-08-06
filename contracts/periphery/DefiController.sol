@@ -28,7 +28,7 @@ contract DefiController is AccessControl {
 
     /* ========== STATE VARIABLES ========== */
 
-    IDeBridgeGate public deBridgeGate; 
+    IDeBridgeGate public deBridgeGate;
     bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to submit the data
 
     mapping(address => Strategy) public strategies;
@@ -46,7 +46,7 @@ contract DefiController is AccessControl {
     }
 
     /* ========== CONSTRUCTOR  ========== */
-    
+
 
     constructor(){
         // TODO: restore after fix tests

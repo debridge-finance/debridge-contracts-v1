@@ -7,24 +7,24 @@ interface ISignatureAggregator {
 
     struct SubmissionInfo {
         uint256 block; // confirmation block
-        uint256 confirmations; // received confirmations count
+        uint8 confirmations; // received confirmations count
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
     struct DebridgeDeployInfo {
-        address tokenAddress;
         uint256 chainId;
+        address tokenAddress;
+        uint8 decimals;
+        uint8 confirmations; // received confirmations count
+        bool approved;
         string name;
         string symbol;
-        uint8 decimals;
-        bool approved;
-        uint256 confirmations; // received confirmations count
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
-    
+
     /* ========== EVENTS ========== */
-    
+
     event DeployConfirmed(bytes32 deployId, address operator, bytes signature); // emitted once the submission is confirmed by one oracle
     event Confirmed(bytes32 submissionId, address operator, bytes signature); // emitted once the submission is confirmed by one oracle
 
@@ -40,5 +40,5 @@ interface ISignatureAggregator {
     function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
-        returns (uint256 _confirmations, bool _blockConfirmationPassed);
+        returns (uint8 _confirmations, bool _blockConfirmationPassed);
 }

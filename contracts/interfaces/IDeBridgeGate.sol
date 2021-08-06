@@ -6,15 +6,15 @@ interface IDeBridgeGate {
     /* ========== STRUCTS ========== */
 
     struct DebridgeInfo {
-        address tokenAddress; // asset address on the current chain
         uint256 chainId; // native chain id
         uint256 maxAmount; // maximum amount to transfer
         uint256 collectedFees; // total collected fees that can be used to buy LINK
         uint256 balance; // total locked assets
         uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
-        uint256 minReservesBps; // minimal hot reserves in basis points (1/10000)
-        mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
+        address tokenAddress; // asset address on the current chain
+        uint16 minReservesBps; // minimal hot reserves in basis points (1/10000)
         bool exist;
+        mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
     }
 
     struct AggregatorInfo {
@@ -23,9 +23,9 @@ interface IDeBridgeGate {
     }
 
     struct ChainSupportInfo {
-        bool isSupported; // whether the chain for the asset is supported
         uint256 fixedNativeFee; // transfer fixed fee
-        uint256 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
+        bool isSupported; // whether the chain for the asset is supported
+        uint16 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
     }
 
     /* ========== FUNCTIONS ========== */
@@ -182,7 +182,7 @@ interface IDeBridgeGate {
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
         external payable;
-    
+
     /* ========== EVENTS ========== */
 
     event Sent(
@@ -240,7 +240,7 @@ interface IDeBridgeGate {
         address indexed tokenAddress,
         uint256 indexed chainId,
         uint256 maxAmount,
-        uint256 minReservesBps
+        uint16 minReservesBps
     ); // emited when new asset is supported
     event ChainSupportUpdated(
         uint256 chainId,
@@ -249,7 +249,7 @@ interface IDeBridgeGate {
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
     event CallProxyUpdated(address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(bytes32 submissionId, bool success); // emited when the new call proxy set
-        
+
     event Blocked(bytes32 submissionId); //Block submission
     event Unblocked(bytes32 submissionId); //UnBlock submission
 

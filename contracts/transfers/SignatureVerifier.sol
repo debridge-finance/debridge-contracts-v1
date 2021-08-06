@@ -13,19 +13,18 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public confirmationThreshold; // bonus reward for one submission
-    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
-    
-    address public wrappedAssetAdmin;
-    address public debridgeAddress;
+    uint8 public confirmationThreshold; // required confirmations per block before extra check enabled
+    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
+    address public wrappedAssetAdmin; // admin for any deployed wrapped asset
+    address public debridgeAddress; // Debridge gate address
 
+    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
     mapping(bytes32 => bytes32) public confirmedDeployInfo; // debridge Id => deploy Id
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
 
-   
+
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -33,9 +32,9 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
-        uint256 _minConfirmations,
-        uint256 _confirmationThreshold,
-        uint256 _excessConfirmations,
+        uint8 _minConfirmations,
+        uint8 _confirmationThreshold,
+        uint8 _excessConfirmations,
         address _wrappedAssetAdmin,
         address _debridgeAddress
     ) public initializer {
@@ -87,12 +86,12 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
                 }
             }
         }
-        
+
         require(debridgeInfo.confirmations >= minConfirmations, "not confirmed");
         require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles");
 
         confirmedDeployInfo[debridgeId] = deployId;
-        
+
         //TODO: add deployAsset
     }
 
@@ -101,12 +100,12 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _signatures Array of signatures by oracles.
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
         external override
-        returns (uint256 _confirmations, bool _blockConfirmationPassed)
+        returns (uint8 _confirmations, bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         //Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
-        
+
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             bytes32 unsignedMsg = _submissionId.getUnsignedMsg();
@@ -137,7 +136,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         }
 
         require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles" );
-        
+
         return (
             submissionInfo.confirmations,
             submissionInfo.confirmations >=
@@ -152,12 +151,12 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /* ========== deployAsset ========== */
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
-    function deployAsset(bytes32 _debridgeId) 
+    function deployAsset(bytes32 _debridgeId)
             external override
             returns (address wrappedAssetAddress, uint256 nativeChainId){
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        
+
         require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];

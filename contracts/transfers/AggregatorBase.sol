@@ -11,11 +11,11 @@ contract AggregatorBase is Initializable,
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public minConfirmations; // minimal required confirmations
+    uint8 public minConfirmations; // minimal required confirmations
+    uint8 public requiredOraclesCount; // count of required oracles
 
     address[] public oracleAddresses;
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
-    uint256 public requiredOraclesCount; // count of required oracles
 
     /* ========== MODIFIERS ========== */
 
@@ -32,7 +32,7 @@ contract AggregatorBase is Initializable,
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initializeBase(uint256 _minConfirmations) 
+    function initializeBase(uint8 _minConfirmations)
         internal
     {
         minConfirmations = _minConfirmations;
@@ -56,7 +56,7 @@ contract AggregatorBase is Initializable,
 
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Confirmation info.
-    function setMinConfirmations(uint256 _minConfirmations) public onlyAdmin {
+    function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
         require(_minConfirmations > 0, "Must be greater than zero");
         minConfirmations = _minConfirmations;
     }
@@ -75,7 +75,7 @@ contract AggregatorBase is Initializable,
         if(_required){
             requiredOraclesCount += 1;
         }
-        
+
         oracleInfo.exist = true;
         oracleInfo.isValid = true;
         oracleInfo.required = _required;
@@ -89,9 +89,10 @@ contract AggregatorBase is Initializable,
     /// @param _isValid is valid oracle
     /// @param _required Without this oracle, the transfer will not be confirmed
     function updateOracle(address _oracle, bool _isValid, bool _required) external onlyAdmin {
+        require(_isValid || !_isValid && !_required, "Need to disable required");
+
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         require(oracleInfo.exist, "Not exist");
-        require(_isValid || !_isValid && !_required, "Need to disable required");
 
         oracleInfo.isValid = _isValid;
 

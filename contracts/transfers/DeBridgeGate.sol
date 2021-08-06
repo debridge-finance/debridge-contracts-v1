@@ -20,7 +20,7 @@ import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract DeBridgeGate is Initializable,
-                         AccessControlUpgradeable,                         
+                         AccessControlUpgradeable,
                          PausableUpgradeable,
                          ReentrancyGuardUpgradeable,
                          IDeBridgeGate {
@@ -37,28 +37,28 @@ contract DeBridgeGate is Initializable,
 
     bytes32 public nativeDebridgeId; // native token debridgeId
     uint256 public chainId; // current chain id
-    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     address public callProxy; // proxy to execute user's calls
+    address public treasury; //address of treasury
+    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint8 public aggregatorLightVersion; // aggregators count
     uint8 public aggregatorFullVersion; // aggregators count
+    uint16 public flashFeeBps; // fee in basis points (1/10000)
+
     uint256[] public supportedChainIds; // list of all supported chain ids
-    IDefiController public defiController; // proxy to use the locked assets in Defi protocols
+
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(address => uint256) public getUserNonce; // userAddress => transactions count
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
-
     mapping(address => uint256) public feeDiscount; //fee discount for address
-    
+
+    IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
-    address treasury; //address of treasury
-
-    uint256 flashFeeBps; // fee in basis points (1/10000)
 
     /* ========== MODIFIERS ========== */
 
@@ -85,7 +85,7 @@ contract DeBridgeGate is Initializable,
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     /// @param _treasury Address to collect a fee
     function initialize(
-        uint256 _excessConfirmations,
+        uint8 _excessConfirmations,
         address _signatureVerifier,
         address _confirmationAggregator,
         address _callProxy,
@@ -107,7 +107,7 @@ contract DeBridgeGate is Initializable,
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
-        
+
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
 
@@ -180,15 +180,15 @@ contract DeBridgeGate is Initializable,
             _receiver,
             _nonce
         );
-        
-        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                         ? signatureVerifier 
+
+        _checkAndDeployAsset(_debridgeId, _signatures.length > 0
+                                         ? signatureVerifier
                                          : confirmationAggregator);
 
         _checkConfirmations(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
+            submissionId,
+            _debridgeId,
+            _amount,
             _signatures);
 
         _mint(
@@ -259,11 +259,11 @@ contract DeBridgeGate is Initializable,
             _receiver,
             _nonce
         );
-        
+
         _checkConfirmations(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
+            submissionId,
+            _debridgeId,
+            _amount,
             _signatures);
 
         _claim(
@@ -277,7 +277,7 @@ contract DeBridgeGate is Initializable,
         );
     }
 
-     
+
     /* ========== AUTO send, mint, burn, claim ========== */
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
@@ -368,14 +368,14 @@ contract DeBridgeGate is Initializable,
             _data
         );
 
-        _checkAndDeployAsset(_debridgeId, _signatures.length > 0 
-                                           ? signatureVerifier 
+        _checkAndDeployAsset(_debridgeId, _signatures.length > 0
+                                           ? signatureVerifier
                                            : confirmationAggregator);
 
         _checkConfirmations(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
+            submissionId,
+            _debridgeId,
+            _amount,
             _signatures);
 
         _mint(
@@ -476,9 +476,9 @@ contract DeBridgeGate is Initializable,
         );
 
         _checkConfirmations(
-            submissionId, 
-            _debridgeId, 
-            _amount, 
+            submissionId,
+            _debridgeId,
+            _amount,
             _signatures);
 
         _claim(
@@ -498,7 +498,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         bytes memory _data
-    ) external override nonReentrant 
+    ) external override nonReentrant
     // noDelegateCall
     {
         DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
@@ -547,10 +547,10 @@ contract DeBridgeGate is Initializable,
         }
     }
 
-    function updateExcessConfirmations(uint256 _excessConfirmations) external onlyAdmin() {
+    function updateExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin() {
         excessConfirmations = _excessConfirmations;
     }
-    
+
 
     /// @dev Set support for the chains where the token can be transfered.
     /// @param _chainId Chain id where tokens are sent.
@@ -577,7 +577,7 @@ contract DeBridgeGate is Initializable,
     function updateAsset(
         bytes32 _debridgeId,
         uint256 _maxAmount,
-        uint256 _minReservesBps,
+        uint16 _minReservesBps,
         uint256 _amountThreshold
     ) external onlyAdmin() {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
@@ -602,6 +602,11 @@ contract DeBridgeGate is Initializable,
     /// @param _defiController Defi controller address address.
     function setDefiController(IDefiController _defiController) external onlyAdmin() {
         // TODO: claim all the reserves before
+        // loop lockedInStrategies
+        // defiController.claimReserve(
+        //     _debridge.tokenAddress,
+        //     requestedReserves
+        // );
         defiController = _defiController;
     }
 
@@ -617,8 +622,8 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
-    function withdrawFee(bytes32 _debridgeId) external payable 
-        //nonReentrant 
+    function withdrawFee(bytes32 _debridgeId) external payable
+        //nonReentrant
         onlyWorker
     {
         //TODO: withdraw fee
@@ -634,8 +639,7 @@ contract DeBridgeGate is Initializable,
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
-        uint256 balance = getBalance(debridge.tokenAddress);
-        require( minReserves + _amount > balance, "requestReserves: not enough reserves");
+        require(minReserves + _amount > getBalance(debridge.tokenAddress), "requestReserves: not enough reserves");
         if (debridge.tokenAddress == address(0)) {
             payable(address(defiController)).transfer(_amount);
         } else {
@@ -651,7 +655,7 @@ contract DeBridgeGate is Initializable,
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
-        external 
+        external
         payable override
         onlyDefiController()
     {
@@ -663,9 +667,15 @@ contract DeBridgeGate is Initializable,
                 address(this),
                 _amount
             );
-            debridge.lockedInStrategies -= _amount;
+            debridge.lockedInStrategies -=
+                _amount > debridge.lockedInStrategies
+                ? debridge.lockedInStrategies
+                : _amount;
         } else {
-            debridge.lockedInStrategies -= msg.value;
+            debridge.lockedInStrategies -=
+                msg.value > debridge.lockedInStrategies
+                ? debridge.lockedInStrategies
+                : msg.value;
         }
     }
 
@@ -695,7 +705,7 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Update flash fees.
     /// @param _flashFeeBps new fee in BPS
-    function updateFlashFee(uint256 _flashFeeBps) external onlyAdmin() {
+    function updateFlashFee(uint16 _flashFeeBps) external onlyAdmin() {
         flashFeeBps = _flashFeeBps;
     }
 
@@ -708,21 +718,21 @@ contract DeBridgeGate is Initializable,
     }
 
     /* ========== INTERNAL ========== */
-     
+
     function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal {
         if(!getDebridge[debridgeId].exist){
-            (address wrappedAssetAddress, uint256 nativeChainId) = 
+            (address wrappedAssetAddress, uint256 nativeChainId) =
                     IConfirmationAggregator(aggregatorAddress).deployAsset(debridgeId);
             require(wrappedAssetAddress != address(0), "mint: wrapped asset not exist");
             _addAsset(debridgeId, wrappedAssetAddress, nativeChainId);
         }
     }
 
-     function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId, 
-                                  uint256 _amount, bytes[] memory _signatures) 
+     function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId,
+                                  uint256 _amount, bytes[] memory _signatures)
         internal {
-        (uint256 confirmations, bool confirmed) = 
-                _signatures.length > 0 
+        (uint8 confirmations, bool confirmed) =
+                _signatures.length > 0
                 ? ISignatureVerifier(signatureVerifier).submit(_submissionId, _signatures)
                 : IConfirmationAggregator(confirmationAggregator).getSubmissionConfirmations(_submissionId);
         require(confirmed, "not confirmed");
@@ -831,10 +841,10 @@ contract DeBridgeGate is Initializable,
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
             }
-            require(msg.value >= chainSupportInfo.fixedNativeFee 
-                - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR, 
+            require(msg.value >= chainSupportInfo.fixedNativeFee
+                - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR,
                 "send: amount not cover fees");
-            
+
             getDebridge[nativeDebridgeId].collectedFees += msg.value;
         }
         debridge.balance += _amount;
@@ -893,8 +903,8 @@ contract DeBridgeGate is Initializable,
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
             }
-            require(msg.value >= chainSupportInfo.fixedNativeFee 
-                - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR, 
+            require(msg.value >= chainSupportInfo.fixedNativeFee
+                - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR,
                 "send: amount not cover fees");
             getDebridge[nativeDebridgeId].collectedFees += msg.value;
         }
@@ -920,10 +930,10 @@ contract DeBridgeGate is Initializable,
     ) internal {
         require(!isSubmissionUsed[_submissionId], "mint: already used");
         require(!isBlockedSubmission[_submissionId], "mint: blocked submission");
-        
+
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.exist, "mint: debridge not exist");
-        
+
         isSubmissionUsed[_submissionId] = true;
         require(debridge.chainId != chainId, "mint: is native chain");
         if (_executionFee > 0) {
@@ -931,7 +941,7 @@ contract DeBridgeGate is Initializable,
                 msg.sender,
                 _executionFee
             );
-        } 
+        }
         if(_data.length > 0){
             IWrappedAsset(debridge.tokenAddress).mint(callProxy, _amount);
             bool status = ICallProxy(callProxy).callERC20(
@@ -946,7 +956,7 @@ contract DeBridgeGate is Initializable,
         }
         emit Minted(_submissionId, _amount, _receiver, _debridgeId);
     }
-    
+
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
@@ -974,7 +984,7 @@ contract DeBridgeGate is Initializable,
         if (debridge.tokenAddress == address(0)) {
             if (_executionFee > 0) {
                 payable(msg.sender).transfer(_executionFee);
-            } 
+            }
             if(_data.length > 0)
             {
                 bool status = ICallProxy(callProxy).call{value: _amount}(

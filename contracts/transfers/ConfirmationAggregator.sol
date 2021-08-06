@@ -6,11 +6,11 @@ import "../interfaces/IConfirmationAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
 contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
-    
+
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public confirmationThreshold; // bonus reward for one submission
-    uint256 public excessConfirmations; // minimal required confirmations in case of too many confirmations
+    uint8 public confirmationThreshold; // required confirmations per block before extra check enabled
+    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public wrappedAssetAdmin; // admin for any deployed wrapped asset
     address public debridgeAddress; // Debridge gate address
 
@@ -27,9 +27,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @param _confirmationThreshold Confirmations per block before extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
-        uint256 _minConfirmations,
-        uint256 _confirmationThreshold,
-        uint256 _excessConfirmations,
+        uint8 _minConfirmations,
+        uint8 _confirmationThreshold,
+        uint8 _excessConfirmations,
         address _wrappedAssetAdmin,
         address _debridgeAddress
     ) public initializer {
@@ -63,10 +63,12 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         uint8 _decimals
     ) external onlyOracle {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
+
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
         require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
+
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
         debridgeInfo.tokenAddress = _tokenAddress;
@@ -77,7 +79,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
             debridgeInfo.requiredConfirmations += 1;
         }
         debridgeInfo.hasVerified[msg.sender] = true;
-        
+
         if( debridgeInfo.confirmations >= minConfirmations){
             confirmedDeployInfo[debridgeId] = deployId;
         }
@@ -94,9 +96,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @dev Confirms single transfer request.
     /// @param _submissionId Submission identifier.
     function _submit(bytes32 _submissionId) internal {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         submissionInfo.confirmations += 1;
         if(getOracleInfo[msg.sender].required) {
@@ -115,9 +115,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
             }
             submissionInfo.block = block.number;
 
-            if(submissionInfo.requiredConfirmations >= requiredOraclesCount 
+            if(submissionInfo.requiredConfirmations >= requiredOraclesCount
                 && (!_blockConfirmationsInfo.requireExtraCheck
-                    || _blockConfirmationsInfo.requireExtraCheck 
+                    || _blockConfirmationsInfo.requireExtraCheck
                         && submissionInfo.confirmations >= excessConfirmations)) {
                 submissionInfo.isConfirmed = true;
                 emit SubmissionApproved(_submissionId);
@@ -129,7 +129,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /* ========== deployAsset ========== */
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
-    function deployAsset(bytes32 _debridgeId) 
+    function deployAsset(bytes32 _debridgeId)
             external override
             returns (address wrappedAssetAddress, uint256 nativeChainId){
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
@@ -159,14 +159,14 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Sets minimal required confirmations.
     /// @param _excessConfirmations Confirmation info.
-    function setExcessConfirmations(uint256 _excessConfirmations) public onlyAdmin
+    function setExcessConfirmations(uint8 _excessConfirmations) public onlyAdmin
     {
         excessConfirmations = _excessConfirmations;
     }
 
     /// @dev Sets minimal required confirmations.
     /// @param _confirmationThreshold Confirmation info.
-    function setThreshold(uint256 _confirmationThreshold) public onlyAdmin {
+    function setThreshold(uint8 _confirmationThreshold) public onlyAdmin {
         confirmationThreshold = _confirmationThreshold;
     }
 
@@ -192,7 +192,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         external
         view
         override
-        returns (uint256 _confirmations, bool _isConfirmed)
+        returns (uint8 _confirmations, bool _isConfirmed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[
             _submissionId
