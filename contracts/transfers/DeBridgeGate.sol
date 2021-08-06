@@ -831,24 +831,6 @@ contract DeBridgeGate is Initializable,
         );
     }
 
-    /// @dev Ensure that given amount of asset is avaliable
-    /// @param _debridge Asset info.
-    /// @param _amount Required amount of tokens.
-    function _ensureReserves(DebridgeInfo storage _debridge, uint256 _amount) internal {
-        uint256 minReserves = (_debridge.balance * _debridge.minReservesBps) / BPS_DENOMINATOR;
-        uint256 balance = getBalance(_debridge.tokenAddress);
-        uint256 requestedReserves = minReserves > _amount
-            ? minReserves
-            : _amount;
-        if (requestedReserves > balance) {
-            requestedReserves = requestedReserves - balance;
-            defiController.claimReserve(
-                _debridge.tokenAddress,
-                requestedReserves
-            );
-        }
-    }
-
     /// @dev Locks asset on the chain and enables minting on the other chain.
     /// @param _debridgeId Asset identifier.
     /// @param _amount Amount to be transfered (note: the fee can be applyed).
@@ -1043,7 +1025,6 @@ contract DeBridgeGate is Initializable,
 
         isSubmissionUsed[_submissionId] = true;
         debridge.balance -= _amount;
-        _ensureReserves(debridge, _amount);
         if (debridge.tokenAddress == address(0)) {
             if (_executionFee > 0) {
                 payable(msg.sender).transfer(_executionFee);
