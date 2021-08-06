@@ -630,6 +630,7 @@ contract DelegatedStaking is AccessControl, Initializable {
     function withdrawFromStrategy(address _oracle, uint256 _shares, address _strategy) external {
         Strategy storage strategy = strategies[_strategy];
         DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
+        Collateral storage collateral = collaterals[strategy.stakeToken];
         UserInfo storage oracle = getUserInfo[_oracle];
         DelegatorInfo storage delegator = oracle.delegators[msg.sender];
         bool isDelegator;
@@ -661,9 +662,9 @@ contract DelegatedStaking is AccessControl, Initializable {
             IStrategy(_strategy).withdraw(strategy.strategyToken, strategyTokenAmount);
         }
         uint256 receivedAmount = IStrategy(_strategy).updateReserves(address(this), strategy.stakeToken) - beforeBalance;
-        collaterals[strategy.stakeToken].totalLocked += receivedAmount;
+        collateral.totalLocked += receivedAmount;
         uint256 rewardAmount = receivedAmount - stakeCollateral;
-        collaterals[strategy.stakeToken].rewards += rewardAmount;
+        collateral.rewards += rewardAmount;
         strategy.rewards += rewardAmount;
         accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
         if (isDelegator) {
@@ -848,10 +849,11 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function liquidate(address _oracle, address _collateral, uint256 _amount) external onlyAdmin() {
         UserInfo storage oracle = getUserInfo[_oracle];
+        Collateral storage collateral = collaterals[_collateral];
         DelegatedStakingHelper._validateGtE(oracle.stake[_collateral], _amount);
         oracle.stake[_collateral] -= _amount;
-        collaterals[_collateral].confiscatedFunds += _amount;
-        collaterals[_collateral].totalLocked -= _amount;
+        collateral.confiscatedFunds += _amount;
+        collateral.totalLocked -= _amount;
         emit Liquidated(_oracle, _collateral, _amount);
     }
 
@@ -889,9 +891,10 @@ contract DelegatedStaking is AccessControl, Initializable {
         external
         onlyAdmin()
     {
-        DelegatedStakingHelper._validateGtE(collaterals[_collateral].confiscatedFunds, _amount);
+        Collateral storage collateral = collaterals[_collateral];
+        DelegatedStakingHelper._validateGtE(collateral.confiscatedFunds, _amount);
         IERC20(_collateral).safeTransfer(_recipient, _amount);
-        collaterals[_collateral].confiscatedFunds -= _amount;
+        collateral.confiscatedFunds -= _amount;
         emit WithdrawnFunds(_recipient, _collateral, _amount);
     }
 
@@ -1123,10 +1126,9 @@ contract DelegatedStaking is AccessControl, Initializable {
         view
         returns (uint256)
     {
-        Strategy memory strategy = strategies[_strategy];
-        DelegatedStakingHelper._validateShares(strategy.totalShares);
+        DelegatedStakingHelper._validateShares(strategies[_strategy].totalShares);
         uint256 totalStrategyTokenReserves = IStrategy(_strategy).updateReserves(address(this), _collateral);
-        return totalStrategyTokenReserves/strategy.totalShares;
+        return totalStrategyTokenReserves/strategies[_strategy].totalShares;
     }
 
     /**
@@ -1152,13 +1154,14 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function getPoolUSDAmount(address _oracle, address _collateral) public view returns(uint256) {
         uint256 collateralPrice;
-        if (collaterals[_collateral].isUSDStable)
+        Collateral storage collateral = collaterals[_collateral];
+        if (collateral.isUSDStable)
             collateralPrice = 1e18; // We don't suppport decimals greater than 18
             //for decimals 6 will be 1e24
             //for decimals 18 will be 1e18
         else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
         return getUserInfo[_oracle].delegation[_collateral].stakedAmount*collateralPrice
-            * 10 ** (collaterals[_collateral].decimals % 18);
+            * 10 ** (collateral.decimals % 18);
     }
 
     /**
@@ -1205,9 +1208,10 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _collateral Address of collateral
      */
     function getOracleStaking(address _oracle, address _collateral) external view returns (uint256, uint256) {
+        UserInfo storage oracle = getUserInfo[_oracle];
         return(
-            getUserInfo[_oracle].stake[_collateral],
-            getUserInfo[_oracle].locked[_collateral]
+            oracle.stake[_collateral],
+            oracle.locked[_collateral]
         );
     }
 
@@ -1254,10 +1258,11 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _collateral Address of collateral
      */
     function getDelegationInfo(address _oracle, address _collateral) external view returns(uint256, uint256, uint256) {
+        UserInfo storage oracle = getUserInfo[_oracle];
         return (
-            getUserInfo[_oracle].delegation[_collateral].stakedAmount,
-            getUserInfo[_oracle].delegation[_collateral].shares,
-            getUserInfo[_oracle].delegatorCount
+            oracle.delegation[_collateral].stakedAmount,
+            oracle.delegation[_collateral].shares,
+            oracle.delegatorCount
         );
     }
 
@@ -1277,9 +1282,10 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _account Address of account
      */
     function getAccountInfo(address _account) external view returns(address, uint256) {
+        UserInfo storage user = getUserInfo[_account];
         return(
-            getUserInfo[_account].admin,
-            getUserInfo[_account].transferCount
+            user.admin,
+            user.transferCount
         );
     }
 
@@ -1290,9 +1296,10 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _dependsCollateral Depends collateral address
      */
     function getTokensPerShare(address _oracle, address _collateral, address _dependsCollateral) external view returns(uint256, uint256) {
+        UserInfo storage oracle = getUserInfo[_oracle];
         return(
-            getUserInfo[_oracle].accTokensPerShare[_collateral],
-            getUserInfo[_oracle].dependsAccTokensPerShare[_dependsCollateral][_collateral]
+            oracle.accTokensPerShare[_collateral],
+            oracle.dependsAccTokensPerShare[_dependsCollateral][_collateral]
         );
     }
 
@@ -1307,10 +1314,9 @@ contract DelegatedStaking is AccessControl, Initializable {
         view
         returns(uint256, uint256)
     {
-        StrategyDepositInfo memory depositInfo = getUserInfo[_oracle].strategyStake[_strategy][_collateral];
         return(
-            depositInfo.stakedAmount,
-            depositInfo.shares
+            getUserInfo[_oracle].strategyStake[_strategy][_collateral].stakedAmount,
+            getUserInfo[_oracle].strategyStake[_strategy][_collateral].shares
         );
     }
 
@@ -1326,11 +1332,9 @@ contract DelegatedStaking is AccessControl, Initializable {
         view
         returns(uint256, uint256)
     {
-        StrategyDepositInfo memory depositInfo = 
-                getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][_collateral];
         return(
-            depositInfo.stakedAmount,
-            depositInfo.shares
+            getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][_collateral].stakedAmount,
+            getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][_collateral].shares
         );
     }
 

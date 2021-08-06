@@ -7,7 +7,7 @@ const DelegatedStaking = artifacts.require("DelegatedStaking");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockUSDCToken = artifacts.require("MockUSDCToken");
 const MockStrategy = artifacts.require('MockStrategy');
-const PriceConsumer = artifacts.require('PriceConsumer');
+const MockPriceConsumer = artifacts.require('MockPriceConsumer');
 const { toWei, fromWei, toBN } = web3.utils;
 
 function sleep(ms) {
@@ -16,6 +16,20 @@ function sleep(ms) {
 
 contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
   before(async function() {
+    this.signers = await ethers.getSigners()
+    aliceAccount = this.signers[0]
+    bobAccount = this.signers[1]
+    carolAccount = this.signers[2]
+    eveAccount = this.signers[3]
+    davidAccount = this.signers[4]
+    samAccount = this.signers[5]
+    alice = aliceAccount.address
+    bob = bobAccount.address
+    carol = carolAccount.address
+    eve = eveAccount.address
+    david = davidAccount.address
+    sam = samAccount.address
+    
     this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
@@ -42,11 +56,11 @@ contract("DelegatedStaking", function([alice, bob, carol, eve, david, sam]) {
     });
     this.timelock = 1;
     this.mockStrategy = await MockStrategy.new({ from: alice });
-    this.priceConsumer = await PriceConsumer.new({ from: alice });
+    this.mockPriceConsumer = await MockPriceConsumer.new({ from: alice });
     this.delegatedStaking = await DelegatedStaking.new();
     await this.delegatedStaking.initialize(
       this.timelock,
-      this.priceConsumer.address,
+      this.mockPriceConsumer.address,
       {
         from: alice,
       }
