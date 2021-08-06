@@ -45,8 +45,6 @@ contract DeBridgeGate is Initializable,
     uint16 public flashFeeBps; // fee in basis points (1/10000)
     uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
 
-    uint256[] public supportedChainIds; // list of all supported chain ids
-
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
@@ -105,7 +103,6 @@ contract DeBridgeGate is Initializable,
         chainId = cid;
         nativeDebridgeId = getDebridgeId(chainId, address(0));
         _addAsset(nativeDebridgeId, address(0), address(0), chainId);
-        supportedChainIds = _supportedChainIds;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
@@ -527,7 +524,6 @@ contract DeBridgeGate is Initializable,
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external onlyAdmin() {
-        supportedChainIds = _supportedChainIds;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
