@@ -55,6 +55,8 @@ contract DeBridgeGate is Initializable,
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
     mapping(address => uint256) public feeDiscount; //fee discount for address
 
+    mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
+
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
@@ -102,7 +104,7 @@ contract DeBridgeGate is Initializable,
         }
         chainId = cid;
         nativeDebridgeId = getDebridgeId(chainId, address(0));
-        _addAsset(nativeDebridgeId, address(0), chainId);
+        _addAsset(nativeDebridgeId, address(0), address(0), chainId);
         supportedChainIds = _supportedChainIds;
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
@@ -784,10 +786,10 @@ contract DeBridgeGate is Initializable,
 
     function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal {
         if(!getDebridge[debridgeId].exist){
-            (address wrappedAssetAddress, uint256 nativeChainId) =
+            (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId) =
                     IConfirmationAggregator(aggregatorAddress).deployAsset(debridgeId);
             require(wrappedAssetAddress != address(0), "mint: wrapped asset not exist");
-            _addAsset(debridgeId, wrappedAssetAddress, nativeChainId);
+            _addAsset(debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
         }
     }
 
@@ -807,9 +809,10 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.
-    /// @param _tokenAddress Address of the asset on the other chain.
+    /// @param _tokenAddress Address of the asset on the current chain.
+    /// @param _nativeAddress Address of the asset on the native chain.
     /// @param _chainId Current chain id.
-    function _addAsset(bytes32 _debridgeId, address _tokenAddress, uint256 _chainId) internal {
+    function _addAsset(bytes32 _debridgeId, address _tokenAddress, address _nativeAddress, uint256 _chainId) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
@@ -822,6 +825,11 @@ contract DeBridgeGate is Initializable,
         if(getAmountThreshold[_debridgeId] == 0){
             getAmountThreshold[_debridgeId] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
+
+        TokenInfo storage tokenInfo = getNativeInfo[_tokenAddress];
+        tokenInfo.chainId = _chainId;
+        tokenInfo.nativeAddress = _nativeAddress;
+
         emit PairAdded(
             _debridgeId,
             _tokenAddress,
@@ -844,7 +852,7 @@ contract DeBridgeGate is Initializable,
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) {
-            _addAsset(_debridgeId, _tokenAddress, chainId);
+            _addAsset(_debridgeId, _tokenAddress, _tokenAddress, chainId);
         }
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
         require(debridge.chainId == chainId, "send: not native chain");

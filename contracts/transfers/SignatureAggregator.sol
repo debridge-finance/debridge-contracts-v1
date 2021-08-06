@@ -47,6 +47,8 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         address oracle = ecrecover(unsignedMsg, v, r, s);
         require(msg.sender == oracle, "onlyOracle: bad role");
         debridgeInfo.confirmations += 1;
+        debridgeInfo.nativeAddress = _tokenAddress;
+        debridgeInfo.chainId = _chainId;
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
         debridgeInfo.decimals = _decimals;

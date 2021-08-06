@@ -14,7 +14,7 @@ interface IConfirmationAggregator {
     }
     struct DebridgeDeployInfo {
         uint256 chainId; //native chainId
-        address tokenAddress; //native token address
+        address nativeAddress; //native token address
         uint8 confirmations; // received confirmations count
         uint8 requiredConfirmations; // required oracles (DSRM) received confirmations count
         uint8 decimals;
@@ -46,5 +46,5 @@ interface IConfirmationAggregator {
 
     function deployAsset(bytes32 _debridgeId)
         external
-        returns (address wrappedAssetAddress, uint256 nativeChainId);
+        returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId);
 }

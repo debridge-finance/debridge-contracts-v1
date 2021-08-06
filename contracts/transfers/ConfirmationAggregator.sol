@@ -71,7 +71,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
-        debridgeInfo.tokenAddress = _tokenAddress;
+        debridgeInfo.nativeAddress = _tokenAddress;
         debridgeInfo.chainId = _chainId;
         debridgeInfo.decimals = _decimals;
         debridgeInfo.confirmations += 1;
@@ -131,7 +131,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
             external override
-            returns (address wrappedAssetAddress, uint256 nativeChainId){
+            returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId){
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
 
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
@@ -152,7 +152,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         );
         getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
         emit DeployApproved(deployId);
-        return (address(wrappedAsset), debridgeInfo.chainId);
+        return (address(wrappedAsset), debridgeInfo.nativeAddress, debridgeInfo.chainId);
     }
 
     /* ========== ADMIN ========== */

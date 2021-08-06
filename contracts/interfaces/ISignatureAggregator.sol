@@ -12,8 +12,8 @@ interface ISignatureAggregator {
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
     struct DebridgeDeployInfo {
-        uint256 chainId;
-        address tokenAddress;
+        uint256 chainId; //native chainId
+        address nativeAddress; //native token address
         uint8 decimals;
         uint8 confirmations; // received confirmations count
         bool approved;

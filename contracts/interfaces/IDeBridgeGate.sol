@@ -5,6 +5,11 @@ interface IDeBridgeGate {
 
     /* ========== STRUCTS ========== */
 
+    struct TokenInfo {
+        uint256 chainId;
+        address nativeAddress;
+    }
+
     struct DebridgeInfo {
         uint256 chainId; // native chain id
         uint256 maxAmount; // maximum amount to transfer
