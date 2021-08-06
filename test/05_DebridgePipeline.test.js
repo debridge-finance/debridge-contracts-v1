@@ -1469,6 +1469,42 @@ for (let i = 0; i <= 2; i++) {
       assert.equal(balance.add(this.cakeSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
     });
+
+
+    it("should burn (deCake in HECO network)", async function() {
+      const debridgeId = this.cakeDebridgeId;
+      const chainIdTo = ethChainId;
+      const receiver = bob;
+      const amount = toBN(toWei("1"));
+      const debridgeInfo = await this.debridgeHECO.getDebridge(debridgeId);
+      const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
+      const balance = toBN(await wrappedAsset.balanceOf(bob));
+      const deadline = toBN(MAX_UINT256);
+      const supportedChainInfo = await this.debridgeHECO.getChainSupport(chainIdTo);
+      const signature = await permit(
+        wrappedAsset,
+        bob,
+        this.debridgeHECO.address,
+        amount,
+        deadline,
+        bobPrivKey
+      );
+      const nativeDebridgeInfo = await this.debridgeHECO.getDebridge(nativeBSCDebridgeId);
+      let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
+      // fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS));
+      let burnTx = await this.debridgeHECO.connect(bobAccount).burn(
+        debridgeId,
+        receiver,
+        amount,
+        chainIdTo,
+        deadline,
+        signature,
+        false,
+        {
+          value: fixedNativeFeeWithDiscount,
+        }
+      );
+    });
   });
 
 
@@ -1707,7 +1743,6 @@ for (let i = 0; i <= 2; i++) {
       await this.debridgeHECO.updateFeeDiscount(this.feeProxyHECO.address, 10000);
 
       const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
-      const balance = toBN(await this.deLinkToken.balanceOf(this.debridgeHECO.address));
 
       const supportedChainInfo = await this.debridgeHECO.getChainSupport(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
@@ -1721,20 +1756,15 @@ for (let i = 0; i <= 2; i++) {
       let receipt = await sendTx.wait();
       this.burnEventDeCake =receipt.events?.find((x) => {return x.event == "AutoBurnt"});
       // console.log(this.burnEventDeCake);
-
-      const newBalance = toBN(await this.deLinkToken.balanceOf(this.debridgeHECO.address));
-      const diffBalance = balance.sub(newBalance);
       const newDebridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
       // console.log("diffBalance.toString() ",diffBalance.toString());
       // console.log("debridgeInfo.collectedFees ",debridgeInfo.collectedFees.toString());
       // console.log("debridgeInfo.withdrawnFees ",debridgeInfo.withdrawnFees.toString());
       // console.log("newDebridgeInfo.collectedFees ",newDebridgeInfo.collectedFees.toString());
       // console.log("newDebridgeInfo.withdrawnFees ",newDebridgeInfo.withdrawnFees.toString());
-      assert.equal(diffBalance.toString(), debridgeInfo.collectedFees.toString());
+
       assert.equal(0, debridgeInfo.withdrawnFees.toString());
       assert.equal(0, newDebridgeInfo.collectedFees.sub(newDebridgeInfo.withdrawnFees).toString());
-      assert.equal(diffBalance.toString(), newDebridgeInfo.withdrawnFees.toString());
-      assert.equal(0, newBalance.toString());
     });
 
     it("should auto claim fee transaction (burn event deCake from HECO to BSC)", async function() {
@@ -1768,12 +1798,22 @@ for (let i = 0; i <= 2; i++) {
       let receipt = await sendTx.wait();
 
       let ReceivedTransferFee = receipt.events?.find((x) => {return x.event == "ReceivedTransferFee"});
+      //TODO: need to fix gate balance the same
+      // console.log(receipt.events);
       // console.log(ReceivedTransferFee);
       // console.log("amount " + ReceivedTransferFee.args.amount.toString());
       
       const newDebridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
       const newBalance = toBN(await this.cakeToken.balanceOf(this.debridgeBSC.address));
+     
+      // console.log("cakeToken "+ this.cakeToken.address);
+      // console.log("this.debridgeBSC "+ this.debridgeBSC.address);
+      // console.log("balance"+balance.toString());
+      // console.log("+amount "+ currentBurnEvent.args.amount.toString());
+      // console.log("newBalance.toString() "+newBalance.toString());
 
+      // console.log("Proxy balance  "+(await this.cakeToken.balanceOf(this.callProxy.address)).toString());
+      // console.log("Proxy fee balance  "+(await this.cakeToken.balanceOf(this.feeProxyBSC.address)).toString());
       assert.equal(
         balance.add(currentBurnEvent.args.amount).toString(), 
         newBalance.toString());
@@ -1828,7 +1868,7 @@ for (let i = 0; i <= 2; i++) {
       const fakeDebridgeId = await this.debridgeBSC.getDebridgeId(999, "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c");
       await expectRevert(
         this.debridgeBSC.connect(workerAccount).withdrawFee(fakeDebridgeId),
-        "debridge not exist"
+        "Zero collected fees"
       );
     });
   });
