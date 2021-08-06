@@ -41,8 +41,6 @@ contract DeBridgeGate is Initializable,
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     address public callProxy; // proxy to execute user's calls
-    uint8 public aggregatorLightVersion; // aggregators count
-    uint8 public aggregatorFullVersion; // aggregators count
     uint256[] public supportedChainIds; // list of all supported chain ids
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
@@ -56,9 +54,10 @@ contract DeBridgeGate is Initializable,
     
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
-    address treasury; //address of treasury
+    address public treasury; //address of treasury
 
-    uint256 flashFeeBps; // fee in basis points (1/10000)
+    uint256 public flashFeeBps; // fee in basis points (1/10000)
+    uint256 public collectRewardBps; // reward BPS that user will receive for collect reawards
 
     /* ========== MODIFIERS ========== */
 
@@ -592,11 +591,11 @@ contract DeBridgeGate is Initializable,
         confirmationAggregator = _aggregator;
     }
 
-    /// @dev Set signature verifier address.
-    /// @param _verifier Signature verifier address.
-    function setSignatureVerifier(address _verifier) external onlyAdmin() {
-        signatureVerifier = _verifier;
-    }
+    // /// @dev Set signature verifier address.
+    // /// @param _verifier Signature verifier address.
+    // function setSignatureVerifier(address _verifier) external onlyAdmin() {
+    //     signatureVerifier = _verifier;
+    // }
 
     /// @dev Set defi controoler.
     /// @param _defiController Defi controller address address.
@@ -615,13 +614,63 @@ contract DeBridgeGate is Initializable,
         _unpause();
     }
 
+    /// @dev donate fees (called by proxy)
+    /// @param _debridgeId Asset identifier.
+    /// @param _amount amount for transfer.
+    function donateFees(bytes32 _debridgeId, uint256 _amount) 
+        external nonReentrant
+    {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        require(debridge.exist, "debridge not exist");
+        require(debridge.tokenAddress != address(0), "Not for native token");
+
+        IERC20 token = IERC20(debridge.tokenAddress);
+        uint256 balanceBefore = token.balanceOf(address(this));
+        token.safeTransferFrom(
+            msg.sender,
+            address(this),
+            _amount
+        );
+        // Received real amount
+        _amount = token.balanceOf(address(this)) - balanceBefore;
+        
+        debridge.donatedFees += _amount;
+        emit ReceivedTransferFee(_debridgeId, _amount);
+    }
+    
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external payable 
-        //nonReentrant 
+        nonReentrant 
         onlyWorker
     {
-        //TODO: withdraw fee
+        // need to pay fee when call burn/send
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        //Don't needed
+        // require(debridge.exist, "debridge not exist");
+
+        //Amount for transfer to treasure
+        uint256 amount = debridge.collectedFees + debridge.donatedFees - debridge.withdrawnFees;
+        //save contract size
+        require(amount > 0, "Zero collected fees");
+        debridge.withdrawnFees += amount;
+        //Reward amount for user
+        uint256 rewardAmount = amount * collectRewardBps / BPS_DENOMINATOR;
+        amount -= rewardAmount;
+        uint256 ethAmount = msg.value;
+        
+        if (debridge.tokenAddress == address(0)) {
+            ethAmount += amount;
+            if(rewardAmount > 0) {
+                payable(msg.sender).transfer(rewardAmount);
+            }
+        } else {
+            IERC20(debridge.tokenAddress).safeTransfer(address(feeProxy), amount);
+            if(rewardAmount > 0) {
+                IERC20(debridge.tokenAddress).safeTransfer(msg.sender, rewardAmount);
+            }
+        }
+        feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value);
     }
 
     /// @dev Request the assets to be used in defi protocol.
@@ -696,15 +745,30 @@ contract DeBridgeGate is Initializable,
     /// @dev Update flash fees.
     /// @param _flashFeeBps new fee in BPS
     function updateFlashFee(uint256 _flashFeeBps) external onlyAdmin() {
+        // save contract size
+        // require(_flashFeeBps <= BPS_DENOMINATOR, "Wrong amount");
         flashFeeBps = _flashFeeBps;
+    }
+
+    /// @dev Update transfer reward BPS.
+    /// @param _collectRewardBps new reward in BPS
+    function updateCollectRewardBps(uint256 _collectRewardBps) external onlyAdmin() {
+        // save contract size
+        // require(_collectRewardBps <= BPS_DENOMINATOR, "Wrong amount");
+        collectRewardBps = _collectRewardBps;
     }
 
     /// @dev Update discount.
     /// @param _address customer address
     /// @param _discountBps discount
     function updateFeeDiscount(address _address, uint256 _discountBps) external onlyAdmin() {
-        require(_discountBps <= BPS_DENOMINATOR, "Wrong discount");
+        //save contract size
+        // require(_discountBps <= BPS_DENOMINATOR, "Wrong discount");
         feeDiscount[_address] = _discountBps;
+    }
+
+    function updateTreasury(address _address) external onlyAdmin() {
+        treasury = _address;
     }
 
     /* ========== INTERNAL ========== */
@@ -1092,5 +1156,16 @@ contract DeBridgeGate is Initializable,
                     _data
                 )
             );
+    }
+
+    function getDebridgeInfo(bytes32 _debridgeId)
+        external
+        view
+        override
+        returns (address _tokenAddress, uint256 _chainId, bool _exist)
+        //(DebridgeInfo memory)
+    {
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        return (debridge.tokenAddress, debridge.chainId, debridge.exist);
     }
 }
