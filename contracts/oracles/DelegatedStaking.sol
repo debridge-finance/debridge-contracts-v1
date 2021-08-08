@@ -149,17 +149,6 @@ contract DelegatedStaking is AccessControl, Initializable {
         address collateral; // collateral identifier
     }
 
-    struct TransferInfo {
-        uint256 amount; // amount of transfer token
-        uint256 timelock; // time till the asset is locked
-        address oracleFrom; // oracle that token is transferred from
-        address oracleTo; // oracle that token is transferred to
-        bool executed; // whether is executed
-        bool paused;    // whether is paused
-        uint256 pausedTime; // paused timestamp
-        address collateral; // collateral identifier
-    }
-
     struct DelegatorInfo {
         mapping(address => StakeDepositInfo) stakes;
         mapping(address => mapping(address => StrategyDepositInfo)) strategyStakes;
@@ -178,9 +167,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         mapping(address => mapping(address => StrategyDepositInfo)) strategyStake;
         address admin; // current admin
         uint256 withdrawalCount; // withdrawals count
-        uint256 transferCount;
         mapping(uint256 => WithdrawalInfo) withdrawals; // list of withdrawal requests
-        mapping(uint256 => TransferInfo) transfers;
         uint256 profitSharingBPS;  // profit sharing basis points.
         bool isOracle; // whether is oracles
         mapping(address => uint256) stake; // amount of oracle stake per collateral
@@ -224,7 +211,6 @@ contract DelegatedStaking is AccessControl, Initializable {
 
     mapping(address => UserInfo) public getUserInfo; // oracle address => oracle details
     uint256 public timelock; // duration of withdrawal timelock
-    uint256 public timelockForDelegate = 2 weeks;
     uint256 public constant BPS_DENOMINATOR = 10000; // Basis points, or bps, equal to 1/10000 used to express relative value
     uint256 public minProfitSharingBPS = 5000;
     mapping(address => Collateral) public collaterals;
@@ -249,11 +235,6 @@ contract DelegatedStaking is AccessControl, Initializable {
     event RecoveredFromEmergency(address oracle, uint256 amount, address strategy, address collateral);
     event RewardsDistributed(address oracle, address collateral, uint256 amount);
     event WithdrawnFunds(address recipient, address collateral, uint256 amount);
-    event TransferRequested(address delegator, uint256 transferId);
-    event TransferExecuted(address delegator, uint256 transferId);
-    event TransferCancelled(address delegator, uint256 transferId);
-    event TransferPaused(address delegator, uint256 transferId, uint256 timestamp);
-    event TransferResumed(address delegator, uint256 transferId, uint256 timestamp);
 
     /* PUBLIC */
 
@@ -455,115 +436,6 @@ contract DelegatedStaking is AccessControl, Initializable {
             collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
         }
         emit UnstakeCancelled(_oracle, msg.sender, _withdrawalId);
-    }
-
-    /**
-     * @dev request to move assets between oracles
-     * @param _oracleFrom Address of oracle sender
-     * @param _oracleTo Address of oracle receiver
-     * @param _collateral address of collateral
-     * @param _sharesFrom Share of collateral
-     */
-    function requestTransfer(address _oracleFrom, address _oracleTo, address _collateral, uint256 _sharesFrom) external {
-        DelegatedStakingHelper._validateShares(_sharesFrom);
-        UserInfo storage oracleFrom = getUserInfo[_oracleFrom];
-        DelegatedStakingHelper._validateCollateral(collaterals[_collateral].isEnabled);
-        UserInfo storage sender = getUserInfo[msg.sender];
-        DelegatorInfo storage delegator = oracleFrom.delegators[msg.sender];
-        DelegatedStakingHelper._validateDelegator(delegator.exists);
-        DelegatedStakingHelper._validateGtE(oracleFrom.delegation[_collateral].shares, _sharesFrom);
-        DelegatedStakingHelper._validateGtE(delegator.stakes[_collateral].shares, _sharesFrom);
-
-        uint256 dependencyRewards = _creditDelegatorRewards(_oracleFrom, msg.sender, _collateral);
-        uint256 amountFrom = DelegatedStakingHelper._calculateFromShares(
-            _sharesFrom, oracleFrom.delegation[_collateral].stakedAmount,
-            oracleFrom.delegation[_collateral].shares
-        );
-
-        oracleFrom.delegation[_collateral].stakedAmount -= amountFrom;
-        oracleFrom.delegation[_collateral].shares -= _sharesFrom;
-        delegator.stakes[_collateral].shares -= _sharesFrom;
-        delegator.stakes[_collateral].stakedAmount -= amountFrom;
-
-        // recalculate passed rewards with new share amount
-        delegator.passedRewards[_collateral] = DelegatedStakingHelper._calculatePassedRewards(
-                            delegator.stakes[_collateral].shares,
-                            oracleFrom.accTokensPerShare[_collateral])
-                            + dependencyRewards;
-
-        sender.transfers[sender.transferCount] = TransferInfo(
-            amountFrom,
-            block.timestamp + timelockForDelegate,
-            _oracleFrom,
-            _oracleTo,
-            false,
-            false,
-            0,
-            _collateral
-        );
-        sender.transferCount ++;
-        emit TransferRequested(msg.sender, sender.transferCount - 1);
-    }
-
-    /**
-     * @dev Execute transfer request
-     * @param _transferId Identifier of transfer
-     */
-    function executeTransfer(uint256 _transferId) external {
-        UserInfo storage sender = getUserInfo[msg.sender];
-
-        DelegatedStakingHelper._validateRequestExists(bool(sender.transferCount > _transferId));
-        TransferInfo storage transfer = sender.transfers[_transferId];
-        DelegatedStakingHelper._validateNotExecuted(transfer.executed);
-        DelegatedStakingHelper._validateTimelock(bool(transfer.timelock < block.timestamp));
-        transfer.executed = true;
-        UserInfo storage oracleTo = getUserInfo[transfer.oracleTo];
-        DelegatorInfo storage delegator = oracleTo.delegators[msg.sender];
-        oracleTo.delegation[transfer.collateral].stakedAmount += transfer.amount;
-        uint256 sharesTo = oracleTo.delegation[transfer.collateral].shares > 0
-            ? DelegatedStakingHelper._calculateShares(
-                transfer.amount, oracleTo.delegation[transfer.collateral].shares,
-                oracleTo.delegation[transfer.collateral].stakedAmount)
-            : transfer.amount;
-        uint256 dependencyRewards = _creditDelegatorRewards(transfer.oracleTo, msg.sender, transfer.collateral);
-        delegator.stakes[transfer.collateral].stakedAmount += transfer.amount;
-        delegator.stakes[transfer.collateral].shares += sharesTo;
-        // recalculate passed rewards with new share amount
-        delegator.passedRewards[transfer.collateral] = DelegatedStakingHelper._calculatePassedRewards(
-                        delegator.stakes[transfer.collateral].shares,
-                        oracleTo.accTokensPerShare[transfer.collateral])
-                        + dependencyRewards;
-        emit TransferExecuted(msg.sender, _transferId);
-    }
-
-    /**
-     * @dev Cancel transfer
-     * @param _oracle Oracle address
-     * @param _transferId Transfer identifier
-     */
-    function cancelTransfer(address _oracle, uint256 _transferId) external {
-        UserInfo storage oracle = getUserInfo[_oracle];
-        UserInfo storage sender = getUserInfo[msg.sender];
-        DelegatorInfo storage delegator = oracle.delegators[msg.sender];
-        DelegatedStakingHelper._validateDelegator(delegator.exists);
-        TransferInfo storage transfer = sender.transfers[_transferId];
-        DelegatedStakingHelper._validateNotExecuted(transfer.executed);
-        transfer.executed = true;
-        uint256 delegatorShares = DelegatedStakingHelper._calculateShares(
-            transfer.amount,
-            oracle.delegation[transfer.collateral].shares,
-            oracle.delegation[transfer.collateral].stakedAmount
-        );
-        collaterals[transfer.collateral].totalLocked += transfer.amount;
-        delegator.stakes[transfer.collateral].stakedAmount += transfer.amount;
-        delegator.stakes[transfer.collateral].shares += delegatorShares;
-        oracle.delegation[transfer.collateral].shares += delegatorShares;
-        oracle.delegation[transfer.collateral].stakedAmount += transfer.amount;
-        
-        // recalculate passed rewards
-        delegator.passedRewards[transfer.collateral] = DelegatedStakingHelper._calculatePassedRewards(
-                        delegator.stakes[transfer.collateral].shares,
-                        oracle.accTokensPerShare[transfer.collateral]);
     }
 
     /**
@@ -825,14 +697,6 @@ contract DelegatedStaking is AccessControl, Initializable {
     }
 
     /**
-     * @dev Change timelock for delegate
-     * @param _newTimelock new timelock for delegate
-     */
-    function setTimelockForTransfer(uint256 _newTimelock) external onlyAdmin() {
-        timelockForDelegate = _newTimelock;
-    }
-
-    /**
      * @dev set min basis points of profit sharing
      * @param _profitSharingBPS profit sharing basis points
      */
@@ -1001,40 +865,6 @@ contract DelegatedStaking is AccessControl, Initializable {
     }
 
     /**
-     * @dev Pause transfer request.
-     * @param _user address of user
-     */
-    function pauseTransfer(address _user) external onlyAdmin() {
-        UserInfo storage user = getUserInfo[_user];
-        uint256 i;
-        for (i = 0; i < user.transferCount; i ++) {
-            TransferInfo storage transfer = user.transfers[i];
-            if (transfer.paused == false && transfer.executed == false) {
-                transfer.paused = true;
-                transfer.pausedTime = block.timestamp;
-                emit TransferPaused(_user, i, block.timestamp);
-            }
-        }
-    }
-
-    /**
-     * @dev Resume transfer request.
-     * @param _user address of user
-     */
-    function resumeTransfer(address _user) external onlyAdmin() {
-        UserInfo storage user = getUserInfo[_user];
-        uint256 i;
-        for (i = 0; i < user.transferCount; i ++) {
-            TransferInfo storage transfer = user.transfers[i];
-            if (transfer.paused == true && transfer.executed == false) {
-                transfer.paused = false;
-                transfer.timelock += block.timestamp - transfer.pausedTime;
-                emit TransferResumed(_user, i, block.timestamp);
-            }
-        }
-    }
-
-    /**
      * @dev Set Price Consumer
      * @param _priceConsumer address of price consumer
      */
@@ -1189,18 +1019,6 @@ contract DelegatedStaking is AccessControl, Initializable {
         return getUserInfo[_user].withdrawals[_withdrawalId];
     }
 
-    /**
-     * @dev Get transfer request
-     * @param _user User address
-     * @param _transferId Transfer identifier
-     */
-    function getTransferRequest(address _user, uint256 _transferId)
-        external
-        view
-        returns (TransferInfo memory)
-    {
-        return getUserInfo[_user].transfers[_transferId];
-    }
 
     /**
      * @dev get stake property of oracle
@@ -1275,17 +1093,6 @@ contract DelegatedStaking is AccessControl, Initializable {
             strategies[_strategy].totalReserves, 
             strategies[_strategy].totalShares,
             strategies[_strategy].rewards
-        );
-    }
-    /**
-     * @dev Get account admin address and transfer count
-     * @param _account Address of account
-     */
-    function getAccountInfo(address _account) external view returns(address, uint256) {
-        UserInfo storage user = getUserInfo[_account];
-        return(
-            user.admin,
-            user.transferCount
         );
     }
 
