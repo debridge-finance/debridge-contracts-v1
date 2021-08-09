@@ -160,7 +160,9 @@ contract("DeBridgeGate full mode", function () {
 
       // switch backway (to true)
       support = true;
-      const setChainTrueTx = await this.debridge.setChainSupport(chainId, support, { from: alice.address });
+      const setChainTrueTx = await this.debridge.setChainSupport(chainId, support, {
+        from: alice.address,
+      });
       const { isSupported: isSupportedAfter } = await this.debridge.getChainSupport([42]);
       expect(isSupportedAfter).not.equal(isSupportedMiddle);
       expect(support).to.equal(isSupportedAfter);
@@ -172,17 +174,21 @@ contract("DeBridgeGate full mode", function () {
     it("should set CallProxy if called by the admin and emits CallProxyUpdated", async function () {
       const callProxyBefore = await this.debridge.callProxy();
 
-      const setCallProxyTx = await this.debridge.setCallProxy(devid.address, { from: alice.address });
+      const setCallProxyTx = await this.debridge.setCallProxy(devid.address, {
+        from: alice.address,
+      });
 
       const callProxyAfter = await this.debridge.callProxy();
 
       expect(callProxyBefore).not.equal(callProxyAfter);
       expect(devid.address).to.equal(callProxyAfter);
 
-      await expect(setCallProxyTx).to.emit(this.debridge, "CallProxyUpdated").withArgs(devid.address);
+      await expect(setCallProxyTx)
+        .to.emit(this.debridge, "CallProxyUpdated")
+        .withArgs(devid.address);
     });
 
-    it("should update flash fee if called by the admin", async function() {
+    it("should update flash fee if called by the admin", async function () {
       const flashFeeBefore = await this.debridge.flashFeeBps();
       const newFlashFee = 300;
 
@@ -197,7 +203,7 @@ contract("DeBridgeGate full mode", function () {
       const collectRewardBpsBefore = await this.debridge.collectRewardBps();
       const newcollectRewardBps = 20;
 
-      await this.debridge.updateCollectRewardBps(newcollectRewardBps)
+      await this.debridge.updateCollectRewardBps(newcollectRewardBps);
       const collectRewardBpsAfter = await this.debridge.collectRewardBps();
 
       assert.notEqual(collectRewardBpsBefore, collectRewardBpsAfter);
@@ -207,7 +213,7 @@ contract("DeBridgeGate full mode", function () {
     it("should update address treasury if called by the admin", async function () {
       const treasuryAddressBefore = await this.debridge.treasury();
 
-      await this.debridge.updateTreasury(ZERO_ADDRESS)
+      await this.debridge.updateTreasury(ZERO_ADDRESS);
       const treasuryAddressAfter = await this.debridge.treasury();
 
       assert.notEqual(treasuryAddressAfter, treasuryAddressBefore);
@@ -236,17 +242,11 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should reject setting weth if called by the non-admin", async function () {
-      await expectRevert(
-        this.debridge.connect(bob).setWeth(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
-      );
+      await expectRevert(this.debridge.connect(bob).setWeth(ZERO_ADDRESS), "onlyAdmin: bad role");
     });
 
     it("should reject setting flash fee if called by the non-admin", async function () {
-      await expectRevert(
-        this.debridge.connect(bob).updateFlashFee(300),
-        "onlyAdmin: bad role"
-      );
+      await expectRevert(this.debridge.connect(bob).updateFlashFee(300), "onlyAdmin: bad role");
     });
 
     it("should reject updating Chain Support if called by the non-admin", async function () {
@@ -268,9 +268,7 @@ contract("DeBridgeGate full mode", function () {
       const debridgeId = await this.debridge.getDebridgeId(chainId, ZERO_ADDRESS);
 
       await expectRevert(
-        this.debridge
-          .connect(bob)
-          .updateAssetFixedFees(debridgeId, [chainId], [newChainFee]),
+        this.debridge.connect(bob).updateAssetFixedFees(debridgeId, [chainId], [newChainFee]),
         "onlyAdmin: bad role"
       );
     });
@@ -301,10 +299,7 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should reject setting amount flashFeeBps if called by the non-admin", async function () {
-      await expectRevert(
-        this.debridge.connect(bob).updateFlashFee(20),
-        "onlyAdmin: bad role"
-      );
+      await expectRevert(this.debridge.connect(bob).updateFlashFee(20), "onlyAdmin: bad role");
     });
 
     it("should reject setting amount collectRewardBps if called by the non-admin", async function () {
@@ -344,12 +339,57 @@ contract("DeBridgeGate full mode", function () {
 
     it("should update Asset Fixed Fees if called by the admin");
 
-    it("getBalance returns a zero balance eth",async function(){
-      expect(await this.debridge.getBalance(ethers.constants.AddressZero)).to.equal(0)
+    it("getBalance returns a zero balance eth", async function () {
+      expect(await this.debridge.getBalance(ethers.constants.AddressZero)).to.equal(0);
     });
 
-    it("getBalance returns a zero balance token",async function(){
-      expect(await this.debridge.getBalance(this.mockToken.address)).to.equal(0)
+    it("getBalance returns a zero balance token", async function () {
+      expect(await this.debridge.getBalance(this.mockToken.address)).to.equal(0);
+    });
+
+    describe("deploy flash contract", function () {
+      let flash;
+      let flashFactory;
+      before(async function () {
+        flashFactory = await ethers.getContractFactory("MockFlashCallback", alice);
+      });
+      beforeEach(async function () {
+        flash = await flashFactory.deploy();
+        await this.mockToken.mint(flash.address, 1001);
+        await this.mockToken.mint(this.debridge.address, 1000);
+      });
+
+      it("after flash balance on debridge increased", async function () {
+        const amount = toBN(1000);
+        const flashFeeBps = await this.debridge.flashFeeBps();
+        const fee = amount.mul(flashFeeBps).div(BPS);
+        const chainId = await this.debridge.chainId();
+        const debridgeId = await this.debridge.getDebridgeId(chainId, this.mockToken.address);
+        const debridge = await this.debridge.getDebridge(debridgeId);
+        const paidBefore = debridge.collectedFees;
+        const balanceReceiverBefore = await this.mockToken.balanceOf(alice.address);
+
+        await flash.flash(
+          this.debridge.address,
+          this.mockToken.address,
+          alice.address,
+          amount,
+          false
+        );
+
+        const newDebridge = await this.debridge.getDebridge(debridgeId);
+        const paidAfter = newDebridge.collectedFees;
+        const balanceReceiverAfter = await this.mockToken.balanceOf(alice.address);
+
+        expect(toBN(paidBefore).add(fee)).to.equal(toBN(paidAfter));
+        expect(toBN(balanceReceiverBefore).add(amount)).to.equal(toBN(balanceReceiverAfter));
+      });
+
+      it("rejected flash if balance on debridge not increase", async function () {
+        await expect(
+          flash.flash(this.debridge.address, this.mockToken.address, alice.address, 1000, true)
+        ).to.be.revertedWith("Not paid fee");
+      });
     });
 
     context("with uniswap periphery", async function () {
@@ -369,7 +409,11 @@ contract("DeBridgeGate full mode", function () {
       context("with feeProxy", async function () {
         beforeEach(async function () {
           const FeeProxy = await ethers.getContractFactory("FeeProxy");
-          this.feeProxy = await FeeProxy.deploy(this.linkToken.address, this.uniswapFactory.address, treasury.address);
+          this.feeProxy = await FeeProxy.deploy(
+            this.linkToken.address,
+            this.uniswapFactory.address,
+            treasury.address
+          );
           await this.debridge.setFeeProxy(this.feeProxy.address);
         });
 
@@ -785,7 +829,15 @@ contract("DeBridgeGate full mode", function () {
                           );
                           await this.debridge
                             .connect(bob)
-                            .burn(debridgeId, alice.address, amount, chainIdTo, deadline, signature, true);
+                            .burn(
+                              debridgeId,
+                              alice.address,
+                              amount,
+                              chainIdTo,
+                              deadline,
+                              signature,
+                              true
+                            );
                           const newNativeDebridgeInfo = await this.debridge.getDebridge(
                             this.nativeDebridgeId
                           );
@@ -1090,16 +1142,19 @@ contract("DeBridgeGate full mode", function () {
                     ).to.equal(newNativeDebridgeInfo.collectedFees);
                   });
 
-                  it("getBalance returns balance eth that went into functions send + fee",async function(){
+                  it("getBalance returns balance eth that went into functions send + fee", async function () {
                     const chainIdTo = 42;
-                    const fixedNativeFee = (await this.debridge.getChainSupport(chainIdTo)).fixedNativeFee;
+                    const fixedNativeFee = (await this.debridge.getChainSupport(chainIdTo))
+                      .fixedNativeFee;
                     const amount = toBN(toWei("1"));
-                    expect(await this.debridge.getBalance(ethers.constants.AddressZero)).to.equal(amount.add(fixedNativeFee))
+                    expect(await this.debridge.getBalance(ethers.constants.AddressZero)).to.equal(
+                      amount.add(fixedNativeFee)
+                    );
                   });
-              
-                  it("getBalance returns token that went into functions send",async function(){
+
+                  it("getBalance returns token that went into functions send", async function () {
                     const amount = toBN(toWei("100"));
-                    expect(await this.debridge.getBalance(this.mockToken.address)).to.equal(amount)
+                    expect(await this.debridge.getBalance(this.mockToken.address)).to.equal(amount);
                   });
 
                   it("should claim ERC20 when the submission is approved", async function () {
