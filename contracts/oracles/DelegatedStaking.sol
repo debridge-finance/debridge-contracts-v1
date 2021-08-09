@@ -982,17 +982,16 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Get USD amount of oracle collateral
      * @param _oracle Address of oracle
      * @param _collateral Address of collateral
+     * @return USD amount with decimals 18 
      */
     function getPoolUSDAmount(address _oracle, address _collateral) public view returns(uint256) {
         uint256 collateralPrice;
         Collateral storage collateral = collaterals[_collateral];
         if (collateral.isUSDStable)
-            collateralPrice = 1e18; // We don't suppport decimals greater than 18
-            //for decimals 6 will be 1e24
-            //for decimals 18 will be 1e18
+            collateralPrice = 1e18;
         else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
-        return getUserInfo[_oracle].delegation[_collateral].stakedAmount*collateralPrice
-            * 10 ** (collateral.decimals % 18);
+        return getUserInfo[_oracle].delegation[_collateral].stakedAmount * collateralPrice
+                / (10 ** collateral.decimals);
     }
 
     /**
