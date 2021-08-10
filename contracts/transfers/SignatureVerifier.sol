@@ -55,40 +55,39 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         bytes[] memory _signatures
     ) external {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
+        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
+
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(
-            getWrappedAssetAddress[debridgeId] == address(0),
-            "deployAsset: deployed already"
-        );
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
         debridgeInfo.nativeAddress = _tokenAddress;
         debridgeInfo.chainId = _chainId;
         debridgeInfo.decimals = _decimals;
-        //Count of required(DSRM) oracles confirmation
+
+        // Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
+        // stack variable to aggregate confirmations and write to storage once
+        uint8 confirmations = debridgeInfo.confirmations;
 
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
-                require(
-                    !debridgeInfo.hasVerified[oracle],
-                    "deployAsset: submitted already"
-                );
+                require(!debridgeInfo.hasVerified[oracle], "deployAsset: submitted already");
                 debridgeInfo.hasVerified[oracle] = true;
                 emit DeployConfirmed(deployId, oracle);
-                debridgeInfo.confirmations += 1;
+                confirmations += 1;
                 if(getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
             }
         }
 
-        require(debridgeInfo.confirmations >= minConfirmations, "not confirmed");
+        require(confirmations >= minConfirmations, "not confirmed");
         require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles");
 
+        debridgeInfo.confirmations = confirmations;
         confirmedDeployInfo[debridgeId] = deployId;
 
         //TODO: add deployAsset
@@ -102,32 +101,19 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         returns (uint8 _confirmations, bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
-        //Count of required(DSRM) oracles confirmation
+        // Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
+        // stack variable to aggregate confirmations and write to storage once
+        uint8 confirmations = submissionInfo.confirmations;
 
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
-            bytes32 unsignedMsg = _submissionId.getUnsignedMsg();
-            address oracle = ecrecover(unsignedMsg, v, r, s);
+            address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
                 require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
-                submissionInfo.confirmations += 1;
+                confirmations += 1;
                 submissionInfo.hasVerified[oracle] = true;
                 emit Confirmed(_submissionId, oracle);
-                if (submissionInfo.confirmations >= minConfirmations) {
-                    BlockConfirmationsInfo storage _blockConfirmationsInfo = getConfirmationsPerBlock[block.number];
-                    if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
-                        _blockConfirmationsInfo.count += 1;
-                        _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
-                        if (
-                            _blockConfirmationsInfo.count >= confirmationThreshold
-                        ) {
-                            _blockConfirmationsInfo.requireExtraCheck = true;
-                        }
-                    }
-                    submissionInfo.block = block.number;
-                    emit SubmissionApproved(_submissionId);
-                }
                 if(getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
@@ -136,9 +122,24 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
         require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles" );
 
+        submissionInfo.confirmations = confirmations;
+
+        if (confirmations >= minConfirmations) {
+            BlockConfirmationsInfo storage _blockConfirmationsInfo = getConfirmationsPerBlock[block.number];
+            if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
+                _blockConfirmationsInfo.count += 1;
+                _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
+                if (_blockConfirmationsInfo.count >= confirmationThreshold) {
+                    _blockConfirmationsInfo.requireExtraCheck = true;
+                }
+            }
+            submissionInfo.block = block.number;
+            emit SubmissionApproved(_submissionId);
+        }
+
         return (
-            submissionInfo.confirmations,
-            submissionInfo.confirmations >=
+            confirmations,
+            confirmations >=
                 (
                     (getConfirmationsPerBlock[block.number].requireExtraCheck)
                         ? excessConfirmations
