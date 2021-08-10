@@ -79,7 +79,7 @@ jobs:
       run: yarn test test/06_PriceConsumer.test.js
 
     - name: Test DefiController
-      run: yarn test test/06_DefiController.test.js
+      run: yarn test test/DefiController.test.js
 
     - name: Test AaveController (AaveInteractor)
       run: yarn test test/AaveController.test.js

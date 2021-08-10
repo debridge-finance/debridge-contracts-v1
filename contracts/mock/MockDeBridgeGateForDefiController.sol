@@ -10,6 +10,8 @@ contract MockDeBridgeGateForDefiController is DeBridgeGate{
         chainId = 1;
     }
 
+    function sendETH() payable external {}
+
     function addDebridge(
         address tokenAddress,
         uint256 chainId,
