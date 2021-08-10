@@ -71,8 +71,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
-            bytes32 unsignedMsg = deployId.getUnsignedMsg();
-            address oracle = ecrecover(unsignedMsg, v, r, s);
+            address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
                 require(
                     !debridgeInfo.hasVerified[oracle],

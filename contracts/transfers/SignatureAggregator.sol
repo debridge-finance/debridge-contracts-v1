@@ -42,10 +42,11 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         require(!debridgeInfo.approved, "deployAsset: submitted already");
         require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
+
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
-        bytes32 unsignedMsg = deployId.getUnsignedMsg();
-        address oracle = ecrecover(unsignedMsg, v, r, s);
+        address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
         require(msg.sender == oracle, "onlyOracle: bad role");
+
         debridgeInfo.confirmations += 1;
         debridgeInfo.nativeAddress = _tokenAddress;
         debridgeInfo.chainId = _chainId;
@@ -87,8 +88,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         ];
         require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
-        bytes32 unsignedMsg = _submissionId.getUnsignedMsg();
-        address oracle = ecrecover(unsignedMsg, v, r, s);
+        address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
         require(msg.sender == oracle, "onlyOracle: bad role");
         submissionInfo.confirmations += 1;
         submissionInfo.signatures.push(_signature);
