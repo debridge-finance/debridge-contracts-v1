@@ -28,7 +28,7 @@ library SignatureUtil {
             uint8 v
         )
     {
-        require(_signature.length == 65, "splitSignature: invalid signature length");
+        require(_signature.length == 65, "splitSignature: invalid length");
         assembly {
             r := mload(add(_signature, 32))
             s := mload(add(_signature, 64))

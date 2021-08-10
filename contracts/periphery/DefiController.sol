@@ -50,7 +50,7 @@ contract DefiController is Initializable,
     /* ========== CONSTRUCTOR  ========== */
 
 
-    function initialize()//IDeBridgeGate _deBridgeGate) 
+    function initialize()//IDeBridgeGate _deBridgeGate)
         public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         // deBridgeGate = _deBridgeGate;
@@ -58,7 +58,7 @@ contract DefiController is Initializable,
 
     function depositToStrategy(uint256 _amount, address _strategy) external onlyWorker{
         Strategy storage strategy = strategies[_strategy];
-        require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
+        require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
         //Get tokens from Gate
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
@@ -71,7 +71,7 @@ contract DefiController is Initializable,
 
     function withdrawFromStrategy(uint256 _amount, address _strategy) external onlyWorker{
         Strategy storage strategy = strategies[_strategy];
-        require(strategy.isEnabled, "withdrawFromStrategy: strategy is not enabled");
+        require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
         strategyController.withdraw(strategy.strategyToken, _amount);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
