@@ -65,7 +65,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @param _submissionIds Submission identifiers.
     /// @param _signatures Oracles signature.
     function submitMany(bytes32[] memory _submissionIds, bytes[] memory _signatures) external override onlyOracle {
-        require(_submissionIds.length == _signatures.length, "signatures and submission count mismatch");
+        require(_submissionIds.length == _signatures.length, "arguments count mismatch");
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i], _signatures[i]);
         }

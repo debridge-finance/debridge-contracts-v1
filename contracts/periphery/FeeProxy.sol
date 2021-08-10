@@ -95,7 +95,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     {
         (address _tokenAddress, uint256 _nativeChain, bool _exist) = debridgeGate.getDebridgeInfo(_debridgeId);
         require(_exist, "debridge not exist");
-        require(debridgeGateAddresses[_nativeChain] != address(0), "Need to set Debridge gate Addresses");
+        require(debridgeGateAddresses[_nativeChain] != address(0), "No Debridge gate Addresses");
 
         uint256 amount = _tokenAddress == address(0)
                 ? msg.value - _nativeFixFee
@@ -213,11 +213,8 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         uint256 reserveIn,
         uint256 reserveOut
     ) private pure returns (uint256 amountOut) {
-        require(amountIn > 0, "getAmountOut: insuffient amount");
-        require(
-            reserveIn > 0 && reserveOut > 0,
-            "getAmountOut: insuffient liquidity"
-        );
+        require(amountIn > 0, "insuffient amount");
+        require(reserveIn > 0 && reserveOut > 0, "insuffient liquidity");
         uint256 amountInWithFee = amountIn * 997;
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = reserveIn * 1000 + amountInWithFee;

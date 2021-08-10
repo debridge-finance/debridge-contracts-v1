@@ -877,7 +877,7 @@ contract DeBridgeGate is Initializable,
             uint256 fixedFee = debridge.tokenAddress == address(0)
                 ? chainSupportInfo.fixedNativeFee
                 : debridge.getChainFee[_chainIdTo];
-            require(fixedFee != 0, "send: fixed fee for asset is not supported");
+            require(fixedFee != 0, "send: fixed fee is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
             if (feeDiscount[msg.sender] > 0) {
@@ -939,7 +939,7 @@ contract DeBridgeGate is Initializable,
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
         if (_useAssetFee) {
             uint256 fixedFee = debridge.getChainFee[_chainIdTo];
-            require(fixedFee != 0, "send: fixed fee for asset is not supported");
+            require(fixedFee != 0, "send: fixed fee is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
             if (feeDiscount[msg.sender] > 0) {

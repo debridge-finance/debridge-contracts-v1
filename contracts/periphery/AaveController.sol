@@ -81,7 +81,7 @@ contract AaveInteractor is IStrategy {
     require(
       amountWithdrawn == _amount ||
       (_amount == type(uint256).max && maxAmount == IERC20(underlying).balanceOf(address(this))),
-      "Did not withdraw requested amount"
+      "Didn't withdraw requested amount"
     );
   }
 }

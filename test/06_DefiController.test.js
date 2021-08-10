@@ -55,13 +55,13 @@ describe("DefiController", function () {
 
         it("depositToStrategy reverts", async function () {
           await expect(this.defiController.connect(worker).depositToStrategy(amount, this.strategy.address)).to.be.revertedWith(
-            "depositToStrategy: strategy is not enabled"
+            "strategy is not enabled"
           );
         });
 
         it("withdrawFromStrategy reverts", async function () {
           await expect(this.defiController.connect(worker).withdrawFromStrategy(amount, this.strategy.address)).to.be.revertedWith(
-            "withdrawFromStrategy: strategy is not enabled"
+            "strategy is not enabled"
           );
         });
 
