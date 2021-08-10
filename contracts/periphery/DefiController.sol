@@ -60,6 +60,7 @@ contract DefiController is Initializable,
         Strategy storage strategy = strategies[_strategy];
         require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
+        strategy.lockedDepositBody += _amount;
         //Get tokens from Gate
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
 
@@ -73,11 +74,14 @@ contract DefiController is Initializable,
         Strategy storage strategy = strategies[_strategy];
         require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
-        strategyController.withdraw(strategy.strategyToken, _amount);
+        strategy.lockedDepositBody -= _amount;
+        (uint256 _yield, uint256 _body) = strategyController.withdraw(strategy.strategyToken, _amount);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
-        IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _amount);
-        // Return tokens to Gate
-        deBridgeGate.returnReserves(strategy.stakeToken, _amount);
+        IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _body);
+        // Return deposit body and yield to DeBridgeGate
+        // todo: treat situations when _body and/or _yield are 0. Simplified these checks for PoC.
+        deBridgeGate.returnReserves(strategy.stakeToken, _body);
+        deBridgeGate.returnYield(strategy.stakeToken, _yield);
     }
 
     function addDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {

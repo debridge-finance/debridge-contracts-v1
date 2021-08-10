@@ -729,6 +729,30 @@ contract DeBridgeGate is Initializable,
         }
     }
 
+    /// @dev Withdraw collected yield from DefiController and send them to treasury address.
+    ///      Called by DefiController on withdrawal funds from strategy after yield got calculated.
+    /// @param _tokenAddress Asset address.
+    /// @param _amount Amount of tokens to claim.
+    /// todo: fix support of native Ether and ZERO_ADDRESS tokens (is it needed by design?).
+    ///       see returnReserves(...) func and `if (debridge.tokenAddress != address(0))` condition.
+    ///       Discarded it for simplicity.
+    function returnYield(address _tokenAddress, uint256 _amount)
+        external
+        override
+        onlyDefiController()
+    {
+        require(_tokenAddress != address(0), "withdrawYieldToTreasury: token address required");
+        require(treasury != address(0), "withdrawYieldToTreasury: treasury doesn't exist");
+        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
+        DebridgeInfo storage debridge = getDebridge[debridgeId];
+        require(_tokenAddress == debridge.tokenAddress, "withdrawYieldToTreasury: token adress doesn't match DebridgeInfo");
+        IERC20(_tokenAddress).safeTransferFrom(
+            address(defiController),
+            address(treasury),
+            _amount
+        );
+    }
+
     /// @dev Set fee converter proxy.
     /// @param _feeProxy Fee proxy address.
     function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin() {
