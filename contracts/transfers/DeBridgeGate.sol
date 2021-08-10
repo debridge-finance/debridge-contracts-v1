@@ -45,11 +45,11 @@ contract DeBridgeGate is Initializable,
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint16 public flashFeeBps; // fee in basis points (1/10000)
     uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
-
+    uint256 nonce; //outgoing submissions count
+    
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
-    mapping(address => uint256) public getUserNonce; // userAddress => transactions count
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
     mapping(address => uint256) public feeDiscount; //fee discount for address
@@ -151,7 +151,6 @@ contract DeBridgeGate is Initializable,
             _chainIdTo,
             _useAssetFee
         );
-        uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId = getSubmisionId(
             debridgeId,
             chainId,
@@ -161,7 +160,7 @@ contract DeBridgeGate is Initializable,
             nonce
         );
         emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo);
-        getUserNonce[_receiver]++;
+        nonce++;
     }
 
     /// @dev Mints wrapped asset on the current chain.
@@ -229,7 +228,6 @@ contract DeBridgeGate is Initializable,
             _signature,
             _useAssetFee
         );
-        uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId = getSubmisionId(
             _debridgeId,
             chainId,
@@ -239,7 +237,7 @@ contract DeBridgeGate is Initializable,
             nonce
         );
         emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo);
-        getUserNonce[_receiver]++;
+        nonce++;
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -315,7 +313,6 @@ contract DeBridgeGate is Initializable,
         //Commented out: contract-size limit
         // require(_amount >= _executionFee, "autoSend: proposed fee too high");
         _amount -= _executionFee;
-        uint256 nonce = getUserNonce[_receiver];
         bytes32 sentId = getAutoSubmisionId(
             debridgeId,
             chainId,
@@ -338,7 +335,7 @@ contract DeBridgeGate is Initializable,
             _fallbackAddress,
             _data
         );
-        getUserNonce[_receiver]++;
+        nonce++;
     }
 
 
@@ -426,7 +423,6 @@ contract DeBridgeGate is Initializable,
         //Commented out: contract-size limit
         // require(_amount >= _executionFee, "autoBurn: proposed fee too high");
         _amount -= _executionFee;
-        uint256 nonce = getUserNonce[_receiver];
         bytes32 burntId = getAutoSubmisionId(
             _debridgeId,
             chainId,
@@ -449,7 +445,7 @@ contract DeBridgeGate is Initializable,
             _fallbackAddress,
             _data
         );
-        getUserNonce[_receiver]++;
+        nonce++;
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
