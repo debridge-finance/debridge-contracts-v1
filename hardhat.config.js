@@ -65,7 +65,7 @@ module.exports = {
 
   networks: {
     hardhat: {
-      accounts:{mnemonic:process.env.MNEMONIC},
+      accounts:{mnemonic:process.env.MNEMONIC, count: 300},
       chainId: 1
     },
     development: {
