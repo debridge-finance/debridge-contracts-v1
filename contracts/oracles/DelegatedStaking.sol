@@ -1034,7 +1034,7 @@ contract DelegatedStaking is AccessControl, Initializable {
     }
 
     /**
-     * @dev get delegator stakes: returns whether delegator exists, staked amount, shares and locked amount
+     * @dev get delegator stakes: returns whether delegator exists, staked amount, shares, locked amount and passed rewards
      * @param _oracle address of oracle
      * @param _delegator address of delegator
      * @param _collateral Address of collateral
@@ -1042,19 +1042,20 @@ contract DelegatedStaking is AccessControl, Initializable {
     function getDelegatorStakes(address _oracle, address _delegator, address _collateral)
         external
         view
-        returns(bool, uint256, uint256, uint256)
+        returns(bool, uint256, uint256, uint256, uint256)
     {
         DelegatorInfo storage delegator = getUserInfo[_oracle].delegators[_delegator];
         return (
             delegator.exists,
             delegator.stakes[_collateral].stakedAmount,
             delegator.stakes[_collateral].shares,
-            delegator.stakes[_collateral].locked
+            delegator.stakes[_collateral].locked,
+            delegator.passedRewards[_collateral]
         );
     }
 
     /**
-     * @dev get user and protocol rewards
+     * @dev get user, collateral and protocol rewards
      * @param _user address of account
      * @param _collateral Address of collateral
      */
@@ -1114,16 +1115,15 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Gets oracle strategy deposit info
      * @param _oracle Oracle address
      * @param _strategy Strategy address
-     * @param _collateral Collateral address
      */
-    function getStrategyDepositInfo(address _oracle, address _strategy, address _collateral)
+    function getStrategyDepositInfo(address _oracle, address _strategy)
         external
         view
         returns(uint256, uint256)
     {
         return(
-            getUserInfo[_oracle].strategyStake[_strategy][_collateral].stakedAmount,
-            getUserInfo[_oracle].strategyStake[_strategy][_collateral].shares
+            getUserInfo[_oracle].strategyStake[_strategy][strategies[_strategy].stakeToken].stakedAmount,
+            getUserInfo[_oracle].strategyStake[_strategy][strategies[_strategy].stakeToken].shares
         );
     }
 
@@ -1132,16 +1132,15 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _oracle Oracle address
      * @param _delegator Delegator address
      * @param _strategy Strategy address
-     * @param _collateral Collateral address
      */
-    function getStrategyDepositInfo(address _oracle, address _delegator, address _strategy, address _collateral)
+    function getStrategyDepositInfo(address _oracle, address _delegator, address _strategy)
         external
         view
         returns(uint256, uint256)
     {
         return(
-            getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][_collateral].stakedAmount,
-            getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][_collateral].shares
+            getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][strategies[_strategy].stakeToken].stakedAmount,
+            getUserInfo[_oracle].delegators[_delegator].strategyStakes[_strategy][strategies[_strategy].stakeToken].shares
         );
     }
 

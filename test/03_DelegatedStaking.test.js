@@ -8,7 +8,7 @@ const { assert } = require("chai");
 const { deployments, upgrades } = require('hardhat');
 const DelegatedStaking = artifacts.require("DelegatedStaking");
 const MockLinkToken = artifacts.require("MockLinkToken");
-const MockUSDCToken = artifacts.require("MockUSDCToken");
+const MockToken = artifacts.require("MockToken");
 const MockStrategy = artifacts.require('MockStrategy');
 const MockPriceConsumer = artifacts.require('MockPriceConsumer');
 const { toWei, fromWei } = web3.utils;
@@ -26,25 +26,36 @@ contract("DelegatedStaking", function() {
     this.signers = await ethers.getSigners();
     aliceAccount = this.signers[0];
     bobAccount = this.signers[1];
-    carolAccount = this.signers[2];
-    eveAccount = this.signers[3];
-    davidAccount = this.signers[4];
-    samAccount = this.signers[5];
+    sarahAccount = this.signers[2];
+    carolAccount = this.signers[3];
+    eveAccount = this.signers[4];
+    davidAccount = this.signers[5];
+    samAccount = this.signers[6];
     alice = aliceAccount.address;
     bob = bobAccount.address;
+    sarah = sarahAccount.address;
     carol = carolAccount.address;
     eve = eveAccount.address;
     david = davidAccount.address;
     sam = samAccount.address;
     
     this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18);
-    this.usdcToken = await MockUSDCToken.new("USDC Token", "dUSDC", 6);
+    this.usdcToken = await MockToken.new("USDC Token", "dUSDC", 6);
+    this.usdtToken = await MockToken.new("USDT Token", "dUSDT", 6);
+    this.bdrToken = await MockToken.new("deBridge Token", "DBR", 18);
     await this.linkToken.mint(alice, toWei("3200000"));
+    await this.usdcToken.mint(alice, "3200000000000");
+    await this.usdtToken.mint(alice, "3200000000000");
     await this.linkToken.mint(david, toWei("3200000"));
     await this.linkToken.mint(eve, toWei("3200000"));
-    await this.usdcToken.mint(eve, toWei("3200000"));
+    await this.usdcToken.mint(eve, "3200000000000");
+    await this.usdtToken.mint(eve, "3200000000000");
     await this.linkToken.mint(carol, toWei("3200000"));
+    await this.usdcToken.mint(carol, "3200000000000");
+    await this.usdtToken.mint(carol, "3200000000000");
     await this.linkToken.mint(sam, toWei("3200000"));
+    await this.usdcToken.mint(sam, "3200000000000");
+    await this.usdtToken.mint(sam, "3200000000000");
     this.timelock = 1;
     this.mockStrategy = await MockStrategy.new();
     this.mockPriceConsumer = await MockPriceConsumer.new();
@@ -56,15 +67,20 @@ contract("DelegatedStaking", function() {
     await this.delegatedStaking.deployed();
     await this.delegatedStaking.addCollateral(this.linkToken.address, 18, false);
     await this.delegatedStaking.addCollateral(this.usdcToken.address, 6, true);
+    await this.delegatedStaking.addCollateral(this.usdtToken.address, 6, true);
     await this.delegatedStaking['updateCollateral(address,bool)'](this.linkToken.address, true);
     await this.delegatedStaking['updateCollateral(address,uint256)'](this.linkToken.address, MaxUint256);
     await this.delegatedStaking['updateCollateral(address,bool)'](this.usdcToken.address, true);
     await this.delegatedStaking['updateCollateral(address,uint256)'](this.usdcToken.address, MaxUint256);
+    await this.delegatedStaking['updateCollateral(address,bool)'](this.usdtToken.address, true);
+    await this.delegatedStaking['updateCollateral(address,uint256)'](this.usdtToken.address, MaxUint256);
     await this.delegatedStaking.addOracle(bob, alice);
     await this.delegatedStaking.setMinProfitSharing(0);
     await this.delegatedStaking.setProfitSharing(bob, 0);
     await this.delegatedStaking.addOracle(david, alice);
     await this.delegatedStaking.setProfitSharing(david, 2500);
+    await this.delegatedStaking.addOracle(sarah, alice);
+    await this.delegatedStaking.setProfitSharing(sarah, 10000);
     this.linkPrice = toWei("25");
     await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, this.linkPrice);
     await this.delegatedStaking.addStrategy(this.mockStrategy.address, this.linkToken.address, this.linkToken.address);
@@ -73,15 +89,19 @@ contract("DelegatedStaking", function() {
 
     const linkCollateral = await this.delegatedStaking.collaterals(this.linkToken.address);
     const usdcCollateral = await this.delegatedStaking.collaterals(this.usdcToken.address);
+    const usdtCollateral = await this.delegatedStaking.collaterals(this.usdtToken.address);
     const davidOracle = await this.delegatedStaking.getUserInfo(david);
     const bobOracle = await this.delegatedStaking.getUserInfo(bob);
     const strategy = await this.delegatedStaking.strategies(this.mockStrategy.address);
     assert.equal(linkCollateral.isSupported, true);
     assert.equal(usdcCollateral.isSupported, true);
+    assert.equal(usdtCollateral.isSupported, true);
     assert.equal(linkCollateral.isEnabled, true);
     assert.equal(usdcCollateral.isEnabled, true);
+    assert.equal(usdtCollateral.isEnabled, true);
     assert.equal(linkCollateral.maxStakeAmount.toString(), MaxUint256);
     assert.equal(usdcCollateral.maxStakeAmount.toString(), MaxUint256);
+    assert.equal(usdtCollateral.maxStakeAmount.toString(), MaxUint256);
     assert.equal(davidOracle.isOracle, true);
     assert.equal(bobOracle.isOracle, true);
     assert.equal(davidOracle.profitSharingBPS, 2500);
@@ -207,9 +227,13 @@ contract("DelegatedStaking", function() {
     beforeEach(async function() {
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: carol });
+      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: sam });
 
       await this.usdcToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
-      await this.usdcToken.approve(this.delegatedStaking.address, MaxUint256, { from: carol });
+      await this.usdcToken.approve(this.delegatedStaking.address, MaxUint256, { from: sam });
+
+      await this.usdtToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
+      await this.usdtToken.approve(this.delegatedStaking.address, MaxUint256, { from: sam });
     });
     it("should stake 0 tokens", async function() {
       const amount = 0;
@@ -305,6 +329,92 @@ contract("DelegatedStaking", function() {
         assert(currentDelegatorStakes[2].toString() > prevDelegatorStakes[2].toString(), "number of delegator shares increases");
         assert(currentDelegation[1].toString() > prevDelegation[1].toString(), "number of total oracle shares increases");
     });
+
+    it("should stake usdt", async function () {
+        const eveAmount = BigNumber.from("700000000");
+        const samAmount = BigNumber.from("300000000");
+        const amount = eveAmount.add(samAmount);
+        const amountWei = toWei(amount.div(1e6).toString());
+        const collateral = this.usdtToken.address;
+        const prevOracleStaking = await this.delegatedStaking.getOracleStaking(sarah, collateral);
+        const prevCollateral = await this.delegatedStaking.collaterals(collateral);
+        const prevDelegation = await this.delegatedStaking.getDelegationInfo(sarah, collateral);
+        const prevEveDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(sarah, eve, collateral);
+        const prevSamDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(sarah, sam, collateral);
+        const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(sarah);
+        await this.delegatedStaking.connect(eveAccount).stake(sarah, collateral, eveAmount);
+        await this.delegatedStaking.connect(samAccount).stake(sarah, collateral, samAmount);
+        const totalUSDAmountAfter = await this.delegatedStaking.getTotalUSDAmount(sarah);
+        const currentOracleStaking = await this.delegatedStaking.getOracleStaking(sarah, collateral);
+        const currentCollateral = await this.delegatedStaking.collaterals(collateral);
+        const currentDelegation = await this.delegatedStaking.getDelegationInfo(sarah, collateral);
+        const currentEveDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(sarah, eve, collateral);
+        const currentSamDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(sarah, sam, collateral);
+        assert.equal(totalUSDAmountBefore.add(amountWei).toString(), totalUSDAmountAfter.toString());
+        assert.equal(
+            prevOracleStaking[0].toString(),
+            currentOracleStaking[0].toString()
+        );
+        assert.equal(
+            prevCollateral.totalLocked.add(toBN(amount)).toString(),
+            currentCollateral.totalLocked.toString()
+        );
+        assert.equal(
+            prevDelegation[0].add(toBN(amount)).toString(),
+            currentDelegation[0].toString()
+        );
+        assert.equal(
+            prevEveDelegatorStakes[1].add(toBN(eveAmount)).toString(),
+            currentEveDelegatorStakes[1].toString()
+        );
+        assert.equal(
+            prevSamDelegatorStakes[1].add(toBN(samAmount)).toString(),
+            currentSamDelegatorStakes[1].toString()
+        );
+        assert(currentEveDelegatorStakes[2].toString() > prevEveDelegatorStakes[2].toString(), "number of delegator shares increases");
+        assert.equal(currentEveDelegatorStakes[2].toString(), eveAmount.toString());
+        assert(currentSamDelegatorStakes[2].toString() > prevSamDelegatorStakes[2].toString(), "number of delegator shares increases");
+        assert.equal(currentSamDelegatorStakes[2].toString(), samAmount.toString());
+        assert(currentDelegation[1].toString() > prevDelegation[1].toString(), "number of total oracle shares increases");
+        assert.equal(currentEveDelegatorStakes[4], 0);
+        assert.equal(currentSamDelegatorStakes[4], 0);
+    });
+    it("credit rewards in case of delegator stake", async function() {
+      const amount = "100000000";
+      const collateral = this.usdtToken.address;
+      await this.usdtToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
+      await this.usdtToken.approve(this.delegatedStaking.address, MaxUint256);
+      const dependsCollateral = this.linkToken.address;
+      const prevAccTokensPerShare = await this.delegatedStaking.getTokensPerShare(sarah, collateral, dependsCollateral);
+      await this.delegatedStaking.distributeRewards(sarah, collateral, amount);
+      const currentAccTokensPerShare = await this.delegatedStaking.getTokensPerShare(sarah, collateral, dependsCollateral);
+      await this.delegatedStaking.connect(eveAccount).stake(sarah, collateral, amount);
+      const currentDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(sarah, eve, collateral);
+      assert.equal(prevAccTokensPerShare[0].toString(), "0");
+      assert.equal(prevAccTokensPerShare[1].toString(), "0");
+      assert.equal(currentAccTokensPerShare[0].toString(), "100000000000000000");
+      assert.equal(currentAccTokensPerShare[1].toString(), "0");
+      assert.equal(currentDelegatorStakes[1].toString(), "870000000");
+      assert.equal(currentDelegatorStakes[2].toString(), "870000000");
+      assert.equal(currentDelegatorStakes[4].toString(), "87000000");
+    });
+    it("does not credit rewards in case of delegator stake passed rewards", async function() {
+      const amount = "100000000";
+      const collateral = this.usdtToken.address;
+      await this.usdtToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
+      await this.usdtToken.approve(this.delegatedStaking.address, MaxUint256);
+      const dependsCollateral = this.linkToken.address;
+      const accTokensPerShare = await this.delegatedStaking.getTokensPerShare(sarah, collateral, dependsCollateral);
+      const prevDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(sarah, eve, collateral);
+      await this.delegatedStaking.connect(eveAccount).stake(sarah, collateral, amount);
+      const currentDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(sarah, eve, collateral);
+      assert.equal(accTokensPerShare[0].toString(), "100000000000000000");
+      assert.equal(accTokensPerShare[1].toString(), "0");
+      assert.equal(currentDelegatorStakes[1].toString(), "970000000");
+      assert.equal(currentDelegatorStakes[2].toString(), "970000000");
+      assert.equal(currentDelegatorStakes[4].toString(), "97000000");
+    });
+
     it("pass in case of collateral staking not exceeded", async function() {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
@@ -357,23 +467,6 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("should increment oracle delegator count if does not exist", async function() {
-      const collateral = this.linkToken.address;
-      const amount = toWei("50");
-      const previousDelegation = await this.delegatedStaking.getDelegationInfo(david, this.linkToken.address);
-      const previousDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, sam, collateral);
-      assert.equal(previousDelegatorStakes[0], false);
-      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: sam });
-      await this.delegatedStaking.connect(samAccount).stake(david, this.linkToken.address, amount);
-      const currentDelegation = await this.delegatedStaking.getDelegationInfo(david, this.linkToken.address);
-      const currentDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, sam, collateral);
-      assert.equal(currentDelegatorStakes[0], true);
-      assert.equal(
-        previousDelegation[2].add(toBN(1)).toString(),
-        currentDelegation[2].toString()
-      );
-    });
-
     it("should not increment oracle delegator count if already exists", async function() {
       const collateral = this.linkToken.address;
       const amount = toWei("10");
@@ -407,6 +500,23 @@ contract("DelegatedStaking", function() {
       assert.equal(
         delegatorStakes[2].toString(),
         amount.toString()
+      );
+    });
+
+    it("should increment oracle delegator count if does not exist", async function() {
+      const collateral = this.linkToken.address;
+      const amount = toWei("50");
+      const previousDelegation = await this.delegatedStaking.getDelegationInfo(bob, this.linkToken.address);
+      const previousDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(bob, sam, collateral);
+      assert.equal(previousDelegatorStakes[0], false);
+      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: sam });
+      await this.delegatedStaking.connect(samAccount).stake(bob, this.linkToken.address, amount);
+      const currentDelegation = await this.delegatedStaking.getDelegationInfo(bob, this.linkToken.address);
+      const currentDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(bob, sam, collateral);
+      assert.equal(currentDelegatorStakes[0], true);
+      assert.equal(
+        previousDelegation[2].add(toBN(1)).toString(),
+        currentDelegation[2].toString()
       );
     });
 
@@ -886,7 +996,6 @@ contract("DelegatedStaking", function() {
     before(async function() {
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
-      await this.delegatedStaking.connect(eveAccount).stake(david, this.linkToken.address, toWei("200"));
       await this.delegatedStaking.connect(eveAccount).stake(bob, this.linkToken.address, toWei("200"));
     });
     it("should pay for oracle who set profit sharing as zero", async function() {
@@ -907,8 +1016,8 @@ contract("DelegatedStaking", function() {
       const dependsCollateral = this.usdcToken.address;
       const amount = toWei("100"), amountForDelegator = toWei("25");
       await this.usdcToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
+      await this.delegatedStaking.connect(eveAccount).stake(david, this.usdcToken.address, "200000000");
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
-      await this.delegatedStaking.connect(eveAccount).stake(david, this.usdcToken.address, toWei("200"));
       const prevOracleStake = await this.delegatedStaking.getOracleStaking(david, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
       const prevDelegation = await this.delegatedStaking.getDelegationInfo(david, collateral);
