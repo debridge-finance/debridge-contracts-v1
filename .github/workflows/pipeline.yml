@@ -81,6 +81,9 @@ jobs:
     - name: Test DefiController
       run: yarn test test/06_DefiController.test.js
 
+    - name: Test AaveController (AaveInteractor)
+      run: yarn test test/AaveController.test.js
+
     - name: Tests coverage
       run: yarn coverage
       continue-on-error: true
