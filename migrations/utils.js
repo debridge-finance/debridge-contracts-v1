@@ -54,7 +54,7 @@ module.exports.getUniswapFactory = async (deployer, network) => {
       uniswapFactory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
       break;
     case "kovan":
-    case "ethereum":    
+    case "ethereum":
     case "kovantest":
       uniswapFactory = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
       break;

@@ -17,20 +17,22 @@ describe("PriceConsumer", function () {
   });
 
   it("non-owner is unable to add priceFeed", async function () {
-    await expectRevert(this.priceConsumer.connect(other).addPriceFeed(other.address, other.address), "Ownable: caller is not the owner");
+    await expectRevert(
+      this.priceConsumer.connect(other).addPriceFeed(other.address, other.address),
+      "Ownable: caller is not the owner"
+    );
   });
 
   describe("using aggregator as pricefeed", function () {
-
     beforeEach(async function () {
       this.MockAggregatorFactory = await ethers.getContractFactory("MockAggregator");
       this.mockAggregator = await this.MockAggregatorFactory.deploy();
-      await this.mockAggregator.setAnswer("123")
+      await this.mockAggregator.setAnswer("123");
       await this.priceConsumer.addPriceFeed(other.address, this.mockAggregator.address);
     });
 
     it("token price is available", async function () {
-        expect(await this.priceConsumer.getPriceOfToken(other.address)).to.be.equal("123");
+      expect(await this.priceConsumer.getPriceOfToken(other.address)).to.be.equal("123");
     });
   });
-})
+});

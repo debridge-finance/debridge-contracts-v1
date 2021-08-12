@@ -1,9 +1,8 @@
 const GovToken = artifacts.require("WrappedAsset");
 const { toWei } = web3.utils;
 
-module.exports = async function(deployer, network, accounts) {
-  if (network == "kovan" || network == "mainnet" || network == "test") 
-  {
+module.exports = async function (deployer, network, accounts) {
+  if (network == "kovan" || network == "mainnet" || network == "test") {
     //   constructor(
     //     string memory _name,
     //     string memory _symbol,

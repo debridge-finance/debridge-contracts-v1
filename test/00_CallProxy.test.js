@@ -15,7 +15,9 @@ describe("CallProxy", function () {
     describe("plain calls", function () {
       it("when receiver is EOA - ETH goes to receiver", async function () {
         const receiverBalanceBefore = await ethers.provider.getBalance(receiver.address);
-        transferResult = await this.proxy.call(reserve.address, receiver.address, 0, { value: 1234876 });
+        transferResult = await this.proxy.call(reserve.address, receiver.address, 0, {
+          value: 1234876,
+        });
         await transferResult.wait();
         const receiverBalanceAfter = await ethers.provider.getBalance(receiver.address);
         expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1234876");
@@ -25,11 +27,15 @@ describe("CallProxy", function () {
       it("when receiver is reverting contract - ETH goes to reserve", async function () {
         // Internal Tx fails but main (External) transaction gets executed anyway
         // Ethers get transerred to reserve address as fallback
-        const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const receiverContractFactory = await ethers.getContractFactory(
+          "MockProxyReceiverAlwaysReverting"
+        );
         const receiverContract = await receiverContractFactory.deploy();
         const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
         const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-        const transferResult = await this.proxy.call(reserve.address, receiverContract.address, 0, { value: 1234876 });
+        const transferResult = await this.proxy.call(reserve.address, receiverContract.address, 0, {
+          value: 1234876,
+        });
         const receiverBalanceAfter = await ethers.provider.getBalance(receiverContract.address);
         const reserveBalanceAfter = await ethers.provider.getBalance(reserve.address);
         expect(reserveBalanceAfter.sub(reserveBalanceBefore)).to.be.equal("1234876");
@@ -45,9 +51,14 @@ describe("CallProxy", function () {
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
           // passing empty calldata to hit receive function
           // https://docs.soliditylang.org/en/v0.8.6/contracts.html?highlight=receive#receive-ether-function
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, "0x", {
-            value: 123487678,
-          });
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            receiverContract.address,
+            "0x",
+            {
+              value: 123487678,
+            }
+          );
           // check internal tx was ok - hit payable receive() function and saved receiver's states
           expect(await receiverContract.lastHit()).to.be.equal("receive");
           expect(await receiverContract.weiReceived()).to.be.equal("123487678");
@@ -62,9 +73,14 @@ describe("CallProxy", function () {
           const receiverContract = await receiverContractFactory.deploy();
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, 0, {
-            value: 123487678,
-          });
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            receiverContract.address,
+            0,
+            {
+              value: 123487678,
+            }
+          );
           // check internal tx was ok - hit payable fallback() function and saved receiver's state
           expect(await receiverContract.lastHit()).to.be.equal("fallback");
           const receiverBalanceAfter = await ethers.provider.getBalance(receiverContract.address);
@@ -79,10 +95,17 @@ describe("CallProxy", function () {
           const receiverContract = await receiverContractFactory.deploy();
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          const callData = receiverContract.interface.encodeFunctionData("setUint256Payable", [12345]);
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, {
-            value: 12348767,
-          });
+          const callData = receiverContract.interface.encodeFunctionData("setUint256Payable", [
+            12345,
+          ]);
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            receiverContract.address,
+            callData,
+            {
+              value: 12348767,
+            }
+          );
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setUint256Payable");
           // check internal tx was ok and uint256 arg passed and saved successfully
@@ -103,9 +126,14 @@ describe("CallProxy", function () {
           const callData = receiverContract.interface.encodeFunctionData("setArrayUint256Payable", [
             [1, 12, 123, 1234, 12345, 123456, 1234567, 12345678, 123456789, 1234567890],
           ]);
-          const transferResult = await this.proxy.call(reserve.address, receiverContract.address, callData, {
-            value: 12348767,
-          });
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            receiverContract.address,
+            callData,
+            {
+              value: 12348767,
+            }
+          );
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setArrayUint256Payable");
           // check internal tx was ok and uint256 arg passed and saved successfully
@@ -131,12 +159,18 @@ describe("CallProxy", function () {
       describe("when receiver is uniswap", function () {
         beforeEach(async function () {
           const WETH9Artifact = await deployments.getArtifact("WETH9");
-          const WETH9Factory = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
+          const WETH9Factory = await ethers.getContractFactory(
+            WETH9Artifact.abi,
+            WETH9Artifact.bytecode
+          );
           this.weth = await WETH9Factory.deploy();
           await this.weth.deployed();
 
           const MockTokenArtifact = await deployments.getArtifact("MockToken");
-          const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+          const MockTokenFactory = await ethers.getContractFactory(
+            MockTokenArtifact.abi,
+            MockTokenArtifact.bytecode
+          );
           this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
           await this.token.deployed();
 
@@ -189,9 +223,14 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
-            value: 1234534567,
-          });
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            this.router.address,
+            callData,
+            {
+              value: 1234534567,
+            }
+          );
           // relaxed check because AMM price impact and Uniswap v2 fee
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.gt("1230000000");
         });
@@ -205,9 +244,14 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
-            value: 1234534567,
-          });
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            this.router.address,
+            callData,
+            {
+              value: 1234534567,
+            }
+          );
           const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
           // Results of failing swap:
           // * Swap had no effect (no ETH spent, no tokens acquired)
@@ -217,7 +261,10 @@ describe("CallProxy", function () {
         });
 
         it("successful swapETHForExactTokens", async function () {
-          const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.weth.address,
+            this.token.address,
+          ]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
             amountOut[1],
@@ -225,9 +272,14 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
-            value: amountOut[0],
-          });
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            this.router.address,
+            callData,
+            {
+              value: amountOut[0],
+            }
+          );
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
         });
 
@@ -240,9 +292,14 @@ describe("CallProxy", function () {
             tokenHolder.address,
             9999999999,
           ]);
-          const transferResult = await this.proxy.call(reserve.address, this.router.address, callData, {
-            value: 1234534567,
-          });
+          const transferResult = await this.proxy.call(
+            reserve.address,
+            this.router.address,
+            callData,
+            {
+              value: 1234534567,
+            }
+          );
           const reserveETHBalanceAfter = await ethers.provider.getBalance(reserve.address);
           // Results of failing swap:
           // * Swap had no effect (no ETH spent, no tokens acquired)
@@ -256,29 +313,46 @@ describe("CallProxy", function () {
     describe("ERC20 calls", function () {
       beforeEach(async function () {
         const MockTokenArtifact = await deployments.getArtifact("MockToken");
-        const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+        const MockTokenFactory = await ethers.getContractFactory(
+          MockTokenArtifact.abi,
+          MockTokenArtifact.bytecode
+        );
         this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
         await this.token.deployed();
         await this.token.mint(this.proxy.address, "8765432");
       });
 
       it("reverts if _token fails", async function () {
-        const BrokenTokenFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const BrokenTokenFactory = await ethers.getContractFactory(
+          "MockProxyReceiverAlwaysReverting"
+        );
         const brokenToken = await BrokenTokenFactory.deploy();
-        await expect(this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0x")).to.be.reverted;
-        await expect(this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0xdeadbeef")).to.be
-          .reverted;
+        await expect(
+          this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0x")
+        ).to.be.reverted;
+        await expect(
+          this.proxy.callERC20(brokenToken.address, reserve.address, receiver.address, "0xdeadbeef")
+        ).to.be.reverted;
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
       });
 
       it("when receiving contract doesn't pull tokens - they transfer to reserve", async function () {
-        const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        const nonPullingReceiverContractFactory = await ethers.getContractFactory(
+          "MockProxyReceiver"
+        );
         const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
         // call the method that doesn't pull approved tokens
-        const callData = nonPullingReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
-        await this.proxy.callERC20(this.token.address, reserve.address, nonPullingReceiver.address, callData);
+        const callData = nonPullingReceiver.interface.encodeFunctionData("setUint256Payable", [
+          12345,
+        ]);
+        await this.proxy.callERC20(
+          this.token.address,
+          reserve.address,
+          nonPullingReceiver.address,
+          callData
+        );
         // check we hit the non-pulling function
         expect(await nonPullingReceiver.lastHit()).to.be.equal("setUint256Payable");
         // token balance stays intact
@@ -289,7 +363,12 @@ describe("CallProxy", function () {
       it("when receiver is EOA - tokens transfer to reserve", async function () {
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
-        transferResult = await this.proxy.callERC20(this.token.address, reserve.address, receiver.address, "0x");
+        transferResult = await this.proxy.callERC20(
+          this.token.address,
+          reserve.address,
+          receiver.address,
+          "0x"
+        );
         transferResult = await this.proxy.callERC20(
           this.token.address,
           reserve.address,
@@ -302,7 +381,8 @@ describe("CallProxy", function () {
 
       it("when receiver is reverting contract - tokens go to reserve", async function () {
         // const callData = MockProxyReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
-        const callData = "0xa85dcaea0000000000000000000000000000000000000000000000000000000000003039";
+        const callData =
+          "0xa85dcaea0000000000000000000000000000000000000000000000000000000000003039";
 
         const alwaysRevertingReceiverContractFactory = await ethers.getContractFactory(
           "MockProxyReceiverAlwaysReverting"
@@ -311,7 +391,12 @@ describe("CallProxy", function () {
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
 
-        await this.proxy.callERC20(this.token.address, reserve.address, alwaysRevertingReceiver.address, callData);
+        await this.proxy.callERC20(
+          this.token.address,
+          reserve.address,
+          alwaysRevertingReceiver.address,
+          callData
+        );
 
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
@@ -367,12 +452,18 @@ describe("CallProxy", function () {
       describe("when receiver is uniswap", function () {
         beforeEach(async function () {
           const WETH9Artifact = await deployments.getArtifact("WETH9");
-          const WETH9Factory = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
+          const WETH9Factory = await ethers.getContractFactory(
+            WETH9Artifact.abi,
+            WETH9Artifact.bytecode
+          );
           this.weth = await WETH9Factory.deploy();
           await this.weth.deployed();
 
           const MockTokenArtifact = await deployments.getArtifact("MockToken");
-          const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+          const MockTokenFactory = await ethers.getContractFactory(
+            MockTokenArtifact.abi,
+            MockTokenArtifact.bytecode
+          );
           this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
           await this.token.deployed();
 
@@ -418,7 +509,10 @@ describe("CallProxy", function () {
         });
         it("swapTokensForExactTokens", async function () {
           await this.weth.transfer(this.proxy.address, 1000);
-          const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.weth.address,
+            this.token.address,
+          ]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactTokens", [
             amountOut[1],
@@ -435,13 +529,18 @@ describe("CallProxy", function () {
           );
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
           expect(await this.weth.balanceOf(this.proxy.address)).to.be.equal(0);
-          expect(await this.weth.balanceOf(reserve.address)).to.be.equal(1000 - parseInt(amountOut[0]));
+          expect(await this.weth.balanceOf(reserve.address)).to.be.equal(
+            1000 - parseInt(amountOut[0])
+          );
         });
 
         it("swapTokensForExactETH", async function () {
           const tokenHolderBalanceBefore = await ethers.provider.getBalance(tokenHolder.address);
           await this.token.transfer(this.proxy.address, 1000);
-          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.token.address,
+            this.weth.address,
+          ]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
             amountOut[1],
@@ -459,13 +558,18 @@ describe("CallProxy", function () {
           const tokenHolderBalanceAfter = await ethers.provider.getBalance(tokenHolder.address);
           expect(tokenHolderBalanceAfter.sub(tokenHolderBalanceBefore)).to.be.equal(amountOut[1]);
           expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
-          expect(await this.token.balanceOf(reserve.address)).to.be.equal(1000 - parseInt(amountOut[0]));
+          expect(await this.token.balanceOf(reserve.address)).to.be.equal(
+            1000 - parseInt(amountOut[0])
+          );
         });
 
         it("swapExactTokensForETH", async function () {
           const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
           await this.token.transfer(this.proxy.address, 1000);
-          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.token.address,
+            this.weth.address,
+          ]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapExactTokensForETH", [
             amountOut[0],
@@ -483,7 +587,9 @@ describe("CallProxy", function () {
           const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
           expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
           expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
-          expect(await this.token.balanceOf(reserve.address)).to.be.equal(1000 - parseInt(amountOut[0]));
+          expect(await this.token.balanceOf(reserve.address)).to.be.equal(
+            1000 - parseInt(amountOut[0])
+          );
         });
       });
     });
@@ -523,7 +629,9 @@ describe("CallProxy", function () {
       it("when receiver is reverting contract", async function () {
         // Internal Tx fails but main (External) transaction gets executed anyway
         // Ethers get transerred to reserve address as fallback
-        const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const receiverContractFactory = await ethers.getContractFactory(
+          "MockProxyReceiverAlwaysReverting"
+        );
         const receiverContract = await receiverContractFactory.deploy();
         const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
         const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
@@ -548,7 +656,9 @@ describe("CallProxy", function () {
           const receiverContract = await receiverContractFactory.deploy();
           const receiverBalanceBefore = await ethers.provider.getBalance(receiverContract.address);
           const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
-          const callData = receiverContract.interface.encodeFunctionData("setUint256Payable", [12345]);
+          const callData = receiverContract.interface.encodeFunctionData("setUint256Payable", [
+            12345,
+          ]);
           const transferResult = await this.ProxyConsumer.transferToken(
             ethers.constants.AddressZero,
             receiverContract.address,
@@ -607,12 +717,18 @@ describe("CallProxy", function () {
         describe("when receiver is uniswap", function () {
           beforeEach(async function () {
             const WETH9Artifact = await deployments.getArtifact("WETH9");
-            const WETH9Factory = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
+            const WETH9Factory = await ethers.getContractFactory(
+              WETH9Artifact.abi,
+              WETH9Artifact.bytecode
+            );
             this.weth = await WETH9Factory.deploy();
             await this.weth.deployed();
 
             const MockTokenArtifact = await deployments.getArtifact("MockToken");
-            const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+            const MockTokenFactory = await ethers.getContractFactory(
+              MockTokenArtifact.abi,
+              MockTokenArtifact.bytecode
+            );
             this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
             await this.token.deployed();
 
@@ -701,7 +817,10 @@ describe("CallProxy", function () {
           });
 
           it("swapETHForExactTokens", async function () {
-            const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
+            const amountOut = await this.router.getAmountsOut(100, [
+              this.weth.address,
+              this.token.address,
+            ]);
             expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
             const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
               amountOut[1],
@@ -720,7 +839,10 @@ describe("CallProxy", function () {
           });
 
           it("reverting swapExactETHForTokens", async function () {
-            const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
+            const amountOut = await this.router.getAmountsOut(100, [
+              this.weth.address,
+              this.token.address,
+            ]);
             const reserveETHBalanceBefore = await ethers.provider.getBalance(reserve.address);
             // amountOutMin increased to enforce swap failure
             const callData = this.router.interface.encodeFunctionData("swapETHForExactTokens", [
@@ -748,29 +870,47 @@ describe("CallProxy", function () {
     });
     describe("ERC20 calls", function () {
       it("reverts if _token fails", async function () {
-        const BrokenTokenFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const BrokenTokenFactory = await ethers.getContractFactory(
+          "MockProxyReceiverAlwaysReverting"
+        );
         const brokenToken = await BrokenTokenFactory.deploy();
         await expect(
-          this.ProxyConsumer.transferToken(brokenToken.address, receiver.address, reserve.address, "0x", {
-            value: 1111,
-          })
+          this.ProxyConsumer.transferToken(
+            brokenToken.address,
+            receiver.address,
+            reserve.address,
+            "0x",
+            {
+              value: 1111,
+            }
+          )
         ).to.be.reverted;
         await expect(
-          this.ProxyConsumer.transferToken(brokenToken.address, receiver.address, reserve.address, "0xdeadbeef", {
-            value: 1111,
-          })
+          this.ProxyConsumer.transferToken(
+            brokenToken.address,
+            receiver.address,
+            reserve.address,
+            "0xdeadbeef",
+            {
+              value: 1111,
+            }
+          )
         ).to.be.reverted;
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
       });
 
       it("when receiving contract doesn't pull tokens - they transfer to reserve", async function () {
         await this.token.mint(this.ProxyConsumer.address, "1111");
-        const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        const nonPullingReceiverContractFactory = await ethers.getContractFactory(
+          "MockProxyReceiver"
+        );
         const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
         // call the method that doesn't pull approved tokens
-        const callData = nonPullingReceiver.interface.encodeFunctionData("setUint256Payable", [12345]);
+        const callData = nonPullingReceiver.interface.encodeFunctionData("setUint256Payable", [
+          12345,
+        ]);
         const transferResultTwo = await this.ProxyConsumer.transferToken(
           this.token.address,
           nonPullingReceiver.address,
@@ -816,16 +956,25 @@ describe("CallProxy", function () {
         const unusableContractFactory = await ethers.getContractFactory("MockProxyReceiver");
         const unusableContract = await unusableContractFactory.deploy();
         // call the method that doesn't pull approved tokens
-        const callData = unusableContract.interface.encodeFunctionData("setUint256Payable", [12345]);
+        const callData = unusableContract.interface.encodeFunctionData("setUint256Payable", [
+          12345,
+        ]);
 
         await this.token.mint(this.ProxyConsumer.address, "1111");
 
-        const nonPullingReceiverContractFactory = await ethers.getContractFactory("MockProxyReceiverAlwaysReverting");
+        const nonPullingReceiverContractFactory = await ethers.getContractFactory(
+          "MockProxyReceiverAlwaysReverting"
+        );
         const nonPullingReceiver = await nonPullingReceiverContractFactory.deploy();
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("0");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
 
-        await this.proxy.callERC20(this.token.address, reserve.address, nonPullingReceiver.address, callData);
+        await this.proxy.callERC20(
+          this.token.address,
+          reserve.address,
+          nonPullingReceiver.address,
+          callData
+        );
         const transferResultTwo = await this.ProxyConsumer.transferToken(
           this.token.address,
           nonPullingReceiver.address,
@@ -918,12 +1067,18 @@ describe("CallProxy", function () {
       describe("when receiver is uniswap", function () {
         beforeEach(async function () {
           const WETH9Artifact = await deployments.getArtifact("WETH9");
-          const WETH9Factory = await ethers.getContractFactory(WETH9Artifact.abi, WETH9Artifact.bytecode);
+          const WETH9Factory = await ethers.getContractFactory(
+            WETH9Artifact.abi,
+            WETH9Artifact.bytecode
+          );
           this.weth = await WETH9Factory.deploy();
           await this.weth.deployed();
 
           const MockTokenArtifact = await deployments.getArtifact("MockToken");
-          const MockTokenFactory = await ethers.getContractFactory(MockTokenArtifact.abi, MockTokenArtifact.bytecode);
+          const MockTokenFactory = await ethers.getContractFactory(
+            MockTokenArtifact.abi,
+            MockTokenArtifact.bytecode
+          );
           this.token = await MockTokenFactory.deploy("TOKEN", "TOKEN", "18");
           await this.token.deployed();
 
@@ -970,7 +1125,10 @@ describe("CallProxy", function () {
 
         it("swapTokensForExactTokens", async function () {
           await this.weth.transfer(this.ProxyConsumer.address, 1000);
-          const amountOut = await this.router.getAmountsOut(100, [this.weth.address, this.token.address]);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.weth.address,
+            this.token.address,
+          ]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactTokens", [
             amountOut[1],
@@ -997,7 +1155,10 @@ describe("CallProxy", function () {
         it("swapTokensForExactETH", async function () {
           const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
           await this.token.transfer(this.ProxyConsumer.address, 1000);
-          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.token.address,
+            this.weth.address,
+          ]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
             amountOut[1],
@@ -1025,7 +1186,10 @@ describe("CallProxy", function () {
         it("swapExactTokensForETH", async function () {
           const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
           await this.token.transfer(this.ProxyConsumer.address, 1000);
-          const amountOut = await this.router.getAmountsOut(100, [this.token.address, this.weth.address]);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.token.address,
+            this.weth.address,
+          ]);
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
           const callData = this.router.interface.encodeFunctionData("swapExactTokensForETH", [
             amountOut[0],
