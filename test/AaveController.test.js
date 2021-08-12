@@ -1,6 +1,8 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { ZERO_ADDRESS } = require("./utils.spec");
+const { BigNumber } = require("ethers");
+
 
 contract("AaveController (AaveInteractor)", function () {
   before(async function () {
@@ -22,9 +24,6 @@ contract("AaveController (AaveInteractor)", function () {
   });
 
   beforeEach(async function () {
-    this.uToken = await this.TokenFactory.deploy("uToken", "uTKN", 18);
-    this.aToken = await this.TokenAFactory.deploy("aToken", "aTKN", 18, this.uToken.address);
-
     this.addressProvider = await this.AddressesProviderFactory.deploy();
     await this.addressProvider.deployed();
 
@@ -35,9 +34,14 @@ contract("AaveController (AaveInteractor)", function () {
 
     this.lendingPool = await this.LendingPoolFactory.deploy();
     await this.lendingPool.deployed();
+
+    this.uToken = await this.TokenFactory.deploy("uToken", "uTKN", 18);
+    this.aToken = await this.TokenAFactory.deploy(this.lendingPool.address, "aToken", "aTKN", 18, this.uToken.address);
+
     await this.lendingPool.initialize(this.addressProvider.address);
     await this.addressProvider.setLendingPool(this.lendingPool.address);
     await this.lendingPool.addReserveAsset(this.uToken.address, this.aToken.address);
+    await this.lendingPool.setCurrentTime(1);
 
     this.aaveController = await this.AaveControllerFactory.deploy(
       this.addressProvider.address,
@@ -64,6 +68,7 @@ contract("AaveController (AaveInteractor)", function () {
     beforeEach(async function () {
       this.depositAmount = 200;
       await this.uToken.mint(this.alice.address, this.depositAmount);
+      // await this.uToken.mint(this.aToken.address, this.depositAmount);  // TODO add rewards tokens to protocol
       await this.uToken.approve(this.aaveController.address, this.depositAmount);
       this.depositTx = await this.aaveController.deposit(this.uToken.address, this.depositAmount);
     });
@@ -87,14 +92,14 @@ contract("AaveController (AaveInteractor)", function () {
 
       await expect(this.depositTx)
         .to.emit(this.aToken, "Mint")
-        .withArgs(this.alice.address, this.depositAmount, 0);
+        .withArgs(this.alice.address, this.depositAmount, BigNumber.from("1000888888888888888888888888"));
     });
 
     it("uToken transferred and aToken paid back", async function () {
       expect(await this.uToken.balanceOf(this.alice.address)).to.equal(0);
       expect(await this.uToken.balanceOf(this.aToken.address)).to.equal(this.depositAmount);
 
-      expect(await this.aToken.balanceOf(this.alice.address)).to.equal(this.depositAmount);
+      expect(await this.aToken.balanceWithYieldOf(this.alice.address)).to.equal(this.depositAmount);
     });
 
     it("has updated reserves", async function () {
@@ -103,7 +108,7 @@ contract("AaveController (AaveInteractor)", function () {
       ).to.equal(this.depositAmount);
     });
 
-    describe("after 25% of tokens withdrawn back", function () {
+    describe("Withdraw 25% of tokens after 0 seconds passed", function () {
       beforeEach(async function () {
         this.withdrawAmount = 50;
         this.withdrawTx = await this.aaveController.withdraw(
@@ -128,7 +133,12 @@ contract("AaveController (AaveInteractor)", function () {
 
         await expect(this.withdrawTx)
           .to.emit(this.aToken, "Burn")
-          .withArgs(this.alice.address, this.alice.address, this.withdrawAmount, 0);
+          .withArgs(
+            this.alice.address,
+            this.alice.address,
+            this.withdrawAmount,
+            BigNumber.from("1000888888888888888888888888")
+            );
       });
 
       it("aToken and uToken balances are correct ", async function () {
@@ -165,7 +175,7 @@ contract("AaveController (AaveInteractor)", function () {
               this.alice.address,
               this.alice.address,
               this.depositAmount - this.withdrawAmount,
-              0
+              BigNumber.from("1000888888888888888888888888")
             );
         });
 
@@ -177,5 +187,23 @@ contract("AaveController (AaveInteractor)", function () {
         });
       });
     });
+
+    /* 
+    TODO make case with withdrawing after some time and user gets rewards 
+    (it requires reward original tokens on pool balance)
+    */
+    
+    describe("Withdraw after 60 days passed", function() {
+      this.beforeEach(async function() {
+        this.lendingPool.increaseCurrentTime(60*24*60*60);
+      });
+
+      it("should has greater aToken Alice's balance", async function() {
+        expect(await this.aToken.balanceWithYieldOf(this.alice.address)).to.equal(233);
+      });
+
+    });
+
+
   });
 });

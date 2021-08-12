@@ -88,8 +88,8 @@ contract AaveInteractor is IStrategy {
     IERC20(_token).safeApprove(lendPool, 0);
     IERC20(_token).safeApprove(lendPool, _amount);
     uint256 maxAmount = IERC20(_token).balanceOf(address(this));
-    uint256 aTokenBalanceBefore = IERC20(aToken(_token)).balanceOf(address(this));
-    uint256 underlyingBalanceBefore = IERC20(_token).balanceOf(msg.sender);
+    uint256 aTokenBalanceBefore = IERC20(_token).balanceOf(address(this));
+    uint256 underlyingBalanceBefore = IERC20(_token).balanceOf(msg.sender);  // TODO refactor to get original token
     uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
       underlying,
       _amount,
@@ -102,14 +102,14 @@ contract AaveInteractor is IStrategy {
       "Didn't withdraw requested amount"
     );
 
-    uint256 aTokensWithdrawn = aTokenBalanceBefore - IERC20(aToken(_token)).balanceOf(address(this));
-    require(aTokensWithdrawn == amountWithdrawn, "withdraw: unexpected aToken withdrawal result");
+    // uint256 aTokensWithdrawn = aTokenBalanceBefore - IERC20(aToken(_token)).balanceOf(address(this));  // TODO fix wrong call aToken(_token), because _token is 'aToken' already
+    // require(aTokensWithdrawn == amountWithdrawn, "withdraw: unexpected aToken withdrawal result");
 
-    uint256 underlyingTokensReturned = IERC20(_token).balanceOf(msg.sender) - underlyingBalanceBefore;
-    underlyingTokensDeposited -= underlyingTokensReturned;
+    // uint256 underlyingTokensReturned = IERC20(_token).balanceOf(msg.sender) - underlyingBalanceBefore;
+    // underlyingTokensDeposited -= underlyingTokensReturned;
 
-    uint256 _body = getUnderlyingByA(amountWithdrawn);
-    uint256 _yield = underlyingTokensReturned - _body;
+    // _body = getUnderlyingByA(amountWithdrawn);
+    // _yield = underlyingTokensReturned - _body;
     // todo: gracefully treat situations when yield is negative. In this case 0 should be returned.
   }
 
