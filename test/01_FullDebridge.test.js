@@ -189,25 +189,19 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should update flash fee if called by the admin", async function () {
-      const flashFeeBefore = await this.debridge.flashFeeBps();
       const newFlashFee = 300;
 
       await this.debridge.updateFlashFee(newFlashFee);
-      const flashFeeAfter = await this.debridge.flashFeeBps();
 
-      assert.notEqual(flashFeeBefore, flashFeeAfter);
-      assert.equal(newFlashFee, flashFeeAfter);
+      expect(await this.debridge.flashFeeBps()).to.equal(newFlashFee);
     });
 
     it("should update amount collectRewardBps if called by the admin", async function () {
-      const collectRewardBpsBefore = await this.debridge.collectRewardBps();
       const newcollectRewardBps = 20;
 
       await this.debridge.updateCollectRewardBps(newcollectRewardBps);
-      const collectRewardBpsAfter = await this.debridge.collectRewardBps();
 
-      assert.notEqual(collectRewardBpsBefore, collectRewardBpsAfter);
-      assert.equal(newcollectRewardBps, collectRewardBpsAfter);
+      expect(await this.debridge.collectRewardBps()).to.equal(newcollectRewardBps);
     });
 
     it("should update address treasury if called by the admin", async function () {
@@ -337,7 +331,6 @@ contract("DeBridgeGate full mode", function () {
       });
     });
 
-    it("should update Asset Fixed Fees if called by the admin");
 
     it("getBalance returns a zero balance eth", async function () {
       expect(await this.debridge.getBalance(ethers.constants.AddressZero)).to.equal(0);
@@ -347,7 +340,7 @@ contract("DeBridgeGate full mode", function () {
       expect(await this.debridge.getBalance(this.mockToken.address)).to.equal(0);
     });
 
-    describe("deploy flash contract", function () {
+    describe("with flash contract", function () {
       let flash;
       let flashFactory;
       before(async function () {
@@ -359,7 +352,7 @@ contract("DeBridgeGate full mode", function () {
         await this.mockToken.mint(this.debridge.address, 1000);
       });
 
-      it("after flash balance on debridge increased", async function () {
+      it("flash increases balances and counters of received funds", async function () {
         const amount = toBN(1000);
         const flashFeeBps = await this.debridge.flashFeeBps();
         const fee = amount.mul(flashFeeBps).div(BPS);
@@ -385,7 +378,7 @@ contract("DeBridgeGate full mode", function () {
         expect(toBN(balanceReceiverBefore).add(amount)).to.equal(toBN(balanceReceiverAfter));
       });
 
-      it("rejected flash if balance on debridge not increase", async function () {
+      it("flash reverts if not profitable", async function () {
         await expect(
           flash.flash(this.debridge.address, this.mockToken.address, alice.address, 1000, true)
         ).to.be.revertedWith("Not paid fee");
