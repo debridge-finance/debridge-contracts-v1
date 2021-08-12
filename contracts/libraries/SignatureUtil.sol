@@ -2,19 +2,10 @@
 pragma solidity ^0.8.2;
 
 library SignatureUtil {
-
     /// @dev Prepares raw msg that was signed by the oracle.
     /// @param _submissionId Submission identifier.
-    function getUnsignedMsg(bytes32 _submissionId)
-        internal pure returns (bytes32)
-    {
-        return
-            keccak256(
-                abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
-                    _submissionId
-                )
-            );
+    function getUnsignedMsg(bytes32 _submissionId) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _submissionId));
     }
 
     /// @dev Splits signature bytes to r,s,v components.

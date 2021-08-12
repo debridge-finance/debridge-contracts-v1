@@ -61,7 +61,6 @@ jobs:
       run: yarn lint:check
       continue-on-error: true
 
-
     - name: Test CallProxy
       run: yarn run hardhat test test/00_CallProxy.test.js
 

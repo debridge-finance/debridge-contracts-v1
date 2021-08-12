@@ -2,7 +2,6 @@
 pragma solidity ^0.8.2;
 
 interface IConfirmationAggregator {
-
     /* ========== STRUCTS ========== */
 
     struct SubmissionInfo {
@@ -46,5 +45,9 @@ interface IConfirmationAggregator {
 
     function deployAsset(bytes32 _debridgeId)
         external
-        returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId);
+        returns (
+            address wrappedAssetAddress,
+            address nativeAddress,
+            uint256 nativeChainId
+        );
 }

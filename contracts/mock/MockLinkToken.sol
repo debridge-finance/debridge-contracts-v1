@@ -13,7 +13,7 @@ contract MockLinkToken is ERC20 {
         string memory _name,
         string memory _symbol,
         uint8 _decimal
-    ) ERC20(_name, _symbol) {
+    ) public ERC20(_name, _symbol) {
         _decimals = _decimal;
     }
 

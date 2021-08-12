@@ -38,5 +38,9 @@ interface ISignatureVerifier {
 
     function deployAsset(bytes32 _debridgeId)
         external
-        returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId);
+        returns (
+            address wrappedAssetAddress,
+            address nativeAddress,
+            uint256 nativeChainId
+        );
 }

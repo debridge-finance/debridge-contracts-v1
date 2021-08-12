@@ -10,11 +10,11 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); // minter role identifier
     bytes32 public DOMAIN_SEPARATOR;
     // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
-    bytes32 public constant PERMIT_TYPEHASH = 
+    bytes32 public constant PERMIT_TYPEHASH =
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public nonces; // transfer's counter
     uint8 internal _decimals;
-    modifier onlyMinter {
+    modifier onlyMinter() {
         require(hasRole(MINTER_ROLE, msg.sender), "onlyMinter: bad role");
         _;
     }
@@ -55,13 +55,13 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
     /// @dev Issues new tokens.
     /// @param _receiver Token's receiver.
     /// @param _amount Amount to be minted.
-    function mint(address _receiver, uint256 _amount) external override onlyMinter() {
+    function mint(address _receiver, uint256 _amount) external override onlyMinter {
         _mint(_receiver, _amount);
     }
 
     /// @dev Destroys existed tokens.
     /// @param _amount Amount to be burnt.
-    function burn(uint256 _amount) external override onlyMinter() {
+    function burn(uint256 _amount) external override onlyMinter {
         _burn(msg.sender, _amount);
     }
 

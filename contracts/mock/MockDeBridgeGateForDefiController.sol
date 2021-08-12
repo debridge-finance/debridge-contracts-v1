@@ -3,14 +3,13 @@ pragma solidity ^0.8.2;
 
 import "../transfers/DeBridgeGate.sol";
 
-contract MockDeBridgeGateForDefiController is DeBridgeGate{
-
+contract MockDeBridgeGateForDefiController is DeBridgeGate {
     function init() external {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         chainId = 1;
     }
 
-    function sendETH() payable external {}
+    function sendETH() external payable {}
 
     function addDebridge(
         address tokenAddress,

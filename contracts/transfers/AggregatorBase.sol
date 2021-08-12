@@ -5,10 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../interfaces/IAggregatorBase.sol";
 
-contract AggregatorBase is Initializable,
-                           AccessControlUpgradeable,
-                           IAggregatorBase {
-
+contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorBase {
     /* ========== STATE VARIABLES ========== */
 
     uint8 public minConfirmations; // minimal required confirmations
@@ -19,11 +16,11 @@ contract AggregatorBase is Initializable,
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyAdmin {
+    modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
-    modifier onlyOracle {
+    modifier onlyOracle() {
         require(getOracleInfo[msg.sender].isValid, "onlyOracle: bad role");
         _;
     }
@@ -32,9 +29,7 @@ contract AggregatorBase is Initializable,
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initializeBase(uint8 _minConfirmations)
-        internal
-    {
+    function initializeBase(uint8 _minConfirmations) internal {
         minConfirmations = _minConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -44,9 +39,7 @@ contract AggregatorBase is Initializable,
     /// @dev Updates oracle's admin address.
     /// @param _oracle Oracle address.
     /// @param _newOracleAdmin New oracle address.
-    function updateOracleAdmin(address _oracle, address _newOracleAdmin)
-        external
-    {
+    function updateOracleAdmin(address _oracle, address _newOracleAdmin) external {
         require(getOracleInfo[_oracle].admin == msg.sender, "only callable by admin");
         getOracleInfo[_oracle].admin = _newOracleAdmin;
         emit UpdateOracleAdmin(_oracle, _newOracleAdmin);
@@ -61,18 +54,21 @@ contract AggregatorBase is Initializable,
         minConfirmations = _minConfirmations;
     }
 
-
     /// @dev Add oracle.
     /// @param _oracle Oracle address.
     /// @param _admin Oracles admin address.
     /// @param _required Without this oracle, the transfer will not be confirmed
-    function addOracle(address _oracle, address _admin, bool _required) external onlyAdmin {
+    function addOracle(
+        address _oracle,
+        address _admin,
+        bool _required
+    ) external onlyAdmin {
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         require(!oracleInfo.exist, "Already exist");
 
         oracleAddresses.push(_oracle);
 
-        if(_required){
+        if (_required) {
             requiredOraclesCount += 1;
         }
 
@@ -81,25 +77,28 @@ contract AggregatorBase is Initializable,
         oracleInfo.required = _required;
         oracleInfo.admin = _admin;
 
-        emit AddOracle(_oracle, _admin,_required);
+        emit AddOracle(_oracle, _admin, _required);
     }
 
     /// @dev Update oracle.
     /// @param _oracle Oracle address.
     /// @param _isValid is valid oracle
     /// @param _required Without this oracle, the transfer will not be confirmed
-    function updateOracle(address _oracle, bool _isValid, bool _required) external onlyAdmin {
-        require(_isValid || !_isValid && !_required, "Need to disable required");
+    function updateOracle(
+        address _oracle,
+        bool _isValid,
+        bool _required
+    ) external onlyAdmin {
+        require(_isValid || (!_isValid && !_required), "Need to disable required");
 
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         require(oracleInfo.exist, "Not exist");
 
         oracleInfo.isValid = _isValid;
 
-        if (oracleInfo.required && !_required){
+        if (oracleInfo.required && !_required) {
             requiredOraclesCount -= 1;
-        }
-        else if (!oracleInfo.required && _required){
+        } else if (!oracleInfo.required && _required) {
             requiredOraclesCount += 1;
         }
         oracleInfo.required = _required;
@@ -125,18 +124,13 @@ contract AggregatorBase is Initializable,
         string memory _symbol,
         uint8 _decimals
     ) public pure returns (bytes32) {
-        return
-            keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
+        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
     }
 
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getDebridgeId(uint256 _chainId, address _tokenAddress)
-        public
-        pure
-        returns (bytes32)
-    {
+    function getDebridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 }

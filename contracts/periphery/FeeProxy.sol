@@ -11,7 +11,7 @@ import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IWETH.sol";
 
-contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
+contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -32,12 +32,12 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyDeBridgeGate {
+    modifier onlyDeBridgeGate() {
         require(address(debridgeGate) == msg.sender, "onlyDeBridgeGate: bad role");
         _;
     }
 
-    modifier onlyAdmin {
+    modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
@@ -48,8 +48,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         IUniswapV2Factory _uniswapFactory,
         IWETH _weth,
         address _treasury
-        )
-    {
+    ) {
         uint256 cid;
         assembly {
             cid := chainid()
@@ -64,23 +63,26 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
 
     /* ========== FUNCTIONS  ========== */
 
-    function setUniswapFactory(IUniswapV2Factory _uniswapFactory) external onlyAdmin() {
+    function setUniswapFactory(IUniswapV2Factory _uniswapFactory) external onlyAdmin {
         uniswapFactory = _uniswapFactory;
     }
 
-    function setDebridgeGate(IDeBridgeGate _debridgeGate) external onlyAdmin() {
+    function setDebridgeGate(IDeBridgeGate _debridgeGate) external onlyAdmin {
         debridgeGate = _debridgeGate;
     }
 
-    function setTreasury(address _treasury) external onlyAdmin() {
+    function setTreasury(address _treasury) external onlyAdmin {
         treasury = _treasury;
     }
 
-    function setDeEthToken(address _deEthToken) external onlyAdmin() {
+    function setDeEthToken(address _deEthToken) external onlyAdmin {
         deEthToken = _deEthToken;
     }
 
-    function setDebridgeGateAddresses(uint256 _chainId, address _debridgeGateAddresses) external onlyAdmin() {
+    function setDebridgeGateAddresses(uint256 _chainId, address _debridgeGateAddresses)
+        external
+        onlyAdmin
+    {
         debridgeGateAddresses[_chainId] = _debridgeGateAddresses;
     }
 
@@ -90,23 +92,24 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     /// @param _nativeFixFee paid native fixed fee by worker
     function transferToTreasury(
         bytes32 _debridgeId,
-        uint256 _nativeFixFee
-    ) external payable override // onlyDeBridgeGate
-    {
-        (address _tokenAddress, uint256 _nativeChain, bool _exist) = debridgeGate.getDebridgeInfo(_debridgeId);
+        uint256 _nativeFixFee // onlyDeBridgeGate
+    ) external payable override {
+        (address _tokenAddress, uint256 _nativeChain, bool _exist) = debridgeGate.getDebridgeInfo(
+            _debridgeId
+        );
         require(_exist, "debridge not exist");
         require(debridgeGateAddresses[_nativeChain] != address(0), "No Debridge gate Addresses");
 
         uint256 amount = _tokenAddress == address(0)
-                ? msg.value - _nativeFixFee
-                : IERC20(_tokenAddress).balanceOf(address(this));
+            ? msg.value - _nativeFixFee
+            : IERC20(_tokenAddress).balanceOf(address(this));
 
         // original token chain is the same as contract chain
         if (chainId == _nativeChain) {
             //If reward is native token (ETH/BNB/HT)
-            if(_tokenAddress == address(0)) {
+            if (_tokenAddress == address(0)) {
                 //If we are in Ethereum chain
-                if(chainId == ETH_CHAINID) {
+                if (chainId == ETH_CHAINID) {
                     //TODO: send 50% reward to slashing contract
                     payable(treasury).transfer(amount);
                 }
@@ -118,40 +121,56 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
                     _swap(address(weth), deEthToken, address(this));
                     uint256 deEthBalance = IERC20(deEthToken).balanceOf(address(this));
                     //transfer deETH to Ethereum
-                    _autoBurnWithTransfer(_debridgeId, deEthToken, deEthBalance, ETH_CHAINID, _nativeFixFee);
+                    _autoBurnWithTransfer(
+                        _debridgeId,
+                        deEthToken,
+                        deEthBalance,
+                        ETH_CHAINID,
+                        _nativeFixFee
+                    );
                 }
             }
             //If reward is token (DBR, LINK, deDBT, deLINK, deETH)
             else {
                 //If token is deETH
-                if(_tokenAddress == deEthToken) {
+                if (_tokenAddress == deEthToken) {
                     //Create transfer to Ehereum netrowk ETH
-                    _autoBurnWithTransfer(_debridgeId, _tokenAddress, amount, _nativeChain, _nativeFixFee);
+                    _autoBurnWithTransfer(
+                        _debridgeId,
+                        _tokenAddress,
+                        amount,
+                        _nativeChain,
+                        _nativeFixFee
+                    );
                 }
                 //For others tokens
                 else {
                     // create swap to weth
                     _swap(_tokenAddress, address(weth), address(this));
 
-                    if(chainId == ETH_CHAINID) {
+                    if (chainId == ETH_CHAINID) {
                         //TODO: send 50% reward to slashing contract
                         weth.withdraw(weth.balanceOf(address(this)));
                         payable(treasury).transfer(address(this).balance);
-                    }
-                    else
-                    {
+                    } else {
                         //create swap from Native token to deETH
                         _swap(address(weth), deEthToken, address(this));
                         //transfer deETH to Ethereum
                         uint256 deEthAmount = IERC20(deEthToken).balanceOf(address(this));
-                        _autoBurnWithTransfer(_debridgeId, deEthToken, deEthAmount, ETH_CHAINID, _nativeFixFee);
+                        _autoBurnWithTransfer(
+                            _debridgeId,
+                            deEthToken,
+                            deEthAmount,
+                            ETH_CHAINID,
+                            _nativeFixFee
+                        );
                     }
                 }
             }
         }
         //create transfer if different chains
         else {
-           _autoBurnWithTransfer(_debridgeId, _tokenAddress, amount, _nativeChain, _nativeFixFee);
+            _autoBurnWithTransfer(_debridgeId, _tokenAddress, amount, _nativeChain, _nativeFixFee);
         }
     }
 
@@ -169,8 +188,8 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         uint256 _nativeFixFee
     ) private {
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
-        debridgeGate.autoBurn{value: _nativeFixFee}
-            (_debridgeId,
+        debridgeGate.autoBurn{value: _nativeFixFee}(
+            _debridgeId,
             debridgeGateAddresses[_nativeChain], //_receiver,
             _amount,
             _nativeChain, //_chainIdTo,
@@ -180,7 +199,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
             0, //_deadline,
             "", //_signature,
             false //_useAssetFee
-            );
+        );
     }
 
     function _swap(
@@ -190,8 +209,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     ) private {
         IERC20 erc20 = IERC20(_fromToken);
         uint256 _amount = erc20.balanceOf(address(this));
-        IUniswapV2Pair uniswapPair =
-            IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
+        IUniswapV2Pair uniswapPair = IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
         erc20.transfer(address(uniswapPair), _amount);
 
         //TODO: old version check toFirst

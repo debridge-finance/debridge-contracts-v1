@@ -2,13 +2,12 @@
 pragma solidity ^0.8.2;
 
 interface IAaveProtocolDataProvider {
-
-  function getReserveTokensAddresses(address asset)
-    external
-    view
-    returns (
-      address aTokenAddress,
-      address stableDebtTokenAddress,
-      address variableDebtTokenAddress
-    );
+    function getReserveTokensAddresses(address asset)
+        external
+        view
+        returns (
+            address aTokenAddress,
+            address stableDebtTokenAddress,
+            address variableDebtTokenAddress
+        );
 }

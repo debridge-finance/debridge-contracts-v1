@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 // MockProxyReceiver receives payable and non-payable calls from CallProxy.sol.
 // Used for positive proxy tests
 contract MockProxyReceiver {
@@ -25,7 +26,11 @@ contract MockProxyReceiver {
         weiReceived = msg.value;
     }
 
-    function setArrayAndPullToken(address _token, uint256 _amount, uint256[] memory _result) external {
+    function setArrayAndPullToken(
+        address _token,
+        uint256 _amount,
+        uint256[] memory _result
+    ) external {
         lastHit = "setArrayAndPullToken";
         resultArray = _result;
         uint256 balanceBefore = IERC20(_token).balanceOf(address(this));
@@ -34,7 +39,11 @@ contract MockProxyReceiver {
         tokensReceived = balanceAfter - balanceBefore;
     }
 
-    function setUint256AndPullToken(address _token, uint256 _amount, uint256 _result) external {
+    function setUint256AndPullToken(
+        address _token,
+        uint256 _amount,
+        uint256 _result
+    ) external {
         lastHit = "setUint256AndPullToken";
         result = _result;
         uint256 balanceBefore = IERC20(_token).balanceOf(address(this));

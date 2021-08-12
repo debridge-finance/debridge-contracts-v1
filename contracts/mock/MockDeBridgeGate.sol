@@ -3,8 +3,8 @@ pragma solidity ^0.8.2;
 
 import "../transfers/DeBridgeGate.sol";
 
-contract MockDeBridgeGate is DeBridgeGate{
-
+// good
+contract MockDeBridgeGate is DeBridgeGate {
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -36,14 +36,13 @@ contract MockDeBridgeGate is DeBridgeGate{
         // _defiController,
         // _treasury);
 
-
         chainId = overrideChainId;
         nativeDebridgeId = getDebridgeId(chainId, address(0));
         _addAsset(nativeDebridgeId, address(0), address(0), chainId);
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
-        
+
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
 

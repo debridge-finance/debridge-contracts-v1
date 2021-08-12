@@ -2,7 +2,6 @@
 pragma solidity ^0.8.2;
 
 interface ISignatureAggregator {
-
     /* ========== STRUCTS ========== */
 
     struct SubmissionInfo {
@@ -30,10 +29,7 @@ interface ISignatureAggregator {
 
     /* ========== FUNCTIONS ========== */
 
-    function submitMany(
-        bytes32[] memory _submissionIds,
-        bytes[] memory _signatures
-    ) external;
+    function submitMany(bytes32[] memory _submissionIds, bytes[] memory _signatures) external;
 
     function submit(bytes32 _submissionId, bytes memory _signature) external;
 

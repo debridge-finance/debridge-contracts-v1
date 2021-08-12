@@ -12,9 +12,9 @@ contract PriceConsumer is IPriceConsumer, Ownable {
      * @dev get Price of Token
      * @param _token address of token
      */
-    function getPriceOfToken(address _token) external override view returns(uint256){
+    function getPriceOfToken(address _token) external view override returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(priceFeeds[_token]);
-        (,int price,,,) = priceFeed.latestRoundData();
+        (, int256 price, , , ) = priceFeed.latestRoundData();
         return price > 0 ? uint256(price) : 0;
     }
 
@@ -23,7 +23,7 @@ contract PriceConsumer is IPriceConsumer, Ownable {
      * @param _token address of token
      * @param _priceFeed address of price feed
      */
-    function addPriceFeed(address _token, address _priceFeed) external onlyOwner(){
+    function addPriceFeed(address _token, address _priceFeed) external onlyOwner {
         priceFeeds[_token] = _priceFeed;
     }
 }

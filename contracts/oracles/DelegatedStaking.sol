@@ -8,8 +8,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IStrategy.sol";
 import "../interfaces/IPriceConsumer.sol";
 
+/// @title DelegatedStaking contract
 contract DelegatedStaking is AccessControl, Initializable {
-
     using SafeERC20 for IERC20;
 
     struct WithdrawalInfo {
@@ -17,7 +17,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         uint256 timelock; // time till the asset is locked
         address receiver; // token receiver
         bool executed; // whether is executed
-        bool paused;    // whether is paused
+        bool paused; // whether is paused
         uint256 pausedTime; // paused timestamp
         address collateral; // collateral identifier
     }
@@ -41,7 +41,8 @@ contract DelegatedStaking is AccessControl, Initializable {
         uint256 shares; // total share of collateral tokens, or totalShares if oracle
     }
 
-    struct UserInfo { // info of validator or delegator
+    struct UserInfo {
+        // info of validator or delegator
         mapping(address => StakeDepositInfo) stake; // amount of stake and shares per collateral
         mapping(address => uint256) accTokensPerShare; // accumulated reward tokens per share
         mapping(address => uint256) passedRewards; // rewards per collateral address, calculated before stake
@@ -51,7 +52,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         uint256 transferCount;
         mapping(uint256 => WithdrawalInfo) withdrawals; // list of withdrawal requests
         mapping(uint256 => TransferInfo) transfers;
-        uint256 profitSharing;  // percentage of profit sharing.
+        uint256 profitSharing; // percentage of profit sharing.
         bool isOracle; // whether is oracles
         mapping(address => DelegatorInfo) delegators;
         mapping(uint256 => address) delegatorAddresses; //delegator list
@@ -104,18 +105,29 @@ contract DelegatedStaking is AccessControl, Initializable {
     event UnstakeResumed(address oracle, uint256 withdrawalId, uint256 timestamp);
     event Liquidated(address oracle, address collateral, uint256 amount);
     event DepositedToStrategy(address oracle, uint256 amount, address strategy, address collateral);
-    event WithdrawnFromStrategy(address oracle, uint256 amount, address strategy, address collateral);
+    event WithdrawnFromStrategy(
+        address oracle,
+        uint256 amount,
+        address strategy,
+        address collateral
+    );
     event EmergencyWithdrawnFromStrategy(uint256 amount, address strategy, address collateral);
-    event RecoveredFromEmergency(address oracle, uint256 amount, address strategy, address collateral);
+    event RecoveredFromEmergency(
+        address oracle,
+        uint256 amount,
+        address strategy,
+        address collateral
+    );
     event RewardsDistributed(address oracle, address collateral, uint256 amount);
     event WithdrawnFunds(address recipient, address collateral, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
 
     /* PUBLIC */
-
-    /// @dev Initializer that initializes the most important configurations.
-    /// @param _timelock Duration of withdrawal timelock.
+    /**
+     * @dev Initializer that initializes the most important configurations.
+     * @param _timelock Duration of withdrawal timelock.
+     **/
     function initialize(uint256 _timelock, IPriceConsumer _priceConsumer) public initializer {
         // Grant the contract deployer the default admin role: it will be able
         // to grant and revoke any roles
@@ -124,26 +136,29 @@ contract DelegatedStaking is AccessControl, Initializable {
         priceConsumer = _priceConsumer;
     }
 
-    /// @dev stack collateral to oracle.
-    /// @param _oracle Oracle address.
-    /// @param _collateral address of collateral
-    /// @param _amount Amount to withdraw.
-    function stake(address _oracle, address _collateral, uint256 _amount) external {
+    /**
+     * @dev stack collateral to oracle.
+     * @param _oracle Oracle address.
+     * @param _collateral address of collateral
+     * @param _amount Amount to withdraw.
+     **/
+    function stake(
+        address _oracle,
+        address _collateral,
+        uint256 _amount
+    ) external {
         UserInfo storage oracle = getUserInfo[_oracle];
         Collateral storage collateral = collaterals[_collateral];
+        require(collateral.isEnabled, "stake: collateral is not enabled");
         require(
-            collateral.isEnabled,
-            "stake: collateral is not enabled"
-        );
-        require(
-            !collateral.isEnabledMaxAmount || 
-            collateral.isEnabledMaxAmount && collateral.totalLocked+_amount <= collateral.maxStakeAmount, 
+            !collateral.isEnabledMaxAmount ||
+                (collateral.isEnabledMaxAmount &&
+                    collateral.totalLocked + _amount <= collateral.maxStakeAmount),
             "stake: amount of collateral staking is limited"
         );
 
         UserInfo storage sender = getUserInfo[msg.sender];
-        if (!sender.isOracle && sender.admin == address(0)) 
-            sender.admin = msg.sender;
+        if (!sender.isOracle && sender.admin == address(0)) sender.admin = msg.sender;
 
         require(
             IERC20(_collateral).transferFrom(msg.sender, address(this), _amount),
@@ -161,14 +176,15 @@ contract DelegatedStaking is AccessControl, Initializable {
                 // add user's pending rewards if delegator already exists
                 for (uint256 i = 0; i < collateralAddresses.length; i++) {
                     address rewardCollateral;
-                    uint256 pending = delegator.stakes[rewardCollateral].shares
-                    * (oracle.accTokensPerShare[rewardCollateral])
-                    - (sender.passedRewards[rewardCollateral]);
+                    uint256 pending = delegator.stakes[rewardCollateral].shares *
+                        (oracle.accTokensPerShare[rewardCollateral]) -
+                        (sender.passedRewards[rewardCollateral]);
                     if (pending != 0) {
-                        sender.passedRewards[rewardCollateral] = delegator.stakes[rewardCollateral].shares
-                            * (oracle.accTokensPerShare[rewardCollateral]);
-                        uint256 pendingShares = (pending*oracle.stake[rewardCollateral].shares) 
-                            / oracle.totalDelegation[rewardCollateral];
+                        sender.passedRewards[rewardCollateral] =
+                            delegator.stakes[rewardCollateral].shares *
+                            (oracle.accTokensPerShare[rewardCollateral]);
+                        uint256 pendingShares = (pending * oracle.stake[rewardCollateral].shares) /
+                            oracle.totalDelegation[rewardCollateral];
                         oracle.totalDelegation[rewardCollateral] += pending;
                         oracle.stake[rewardCollateral].shares += pendingShares;
                         sender.stake[rewardCollateral].stakedAmount += pending;
@@ -182,27 +198,29 @@ contract DelegatedStaking is AccessControl, Initializable {
             delegator.stakes[_collateral].stakedAmount += _amount;
             sender.stake[_collateral].stakedAmount += _amount;
             uint256 shares = oracle.stake[_collateral].shares > 0
-                ? (_amount*oracle.stake[_collateral].shares)/oracle.totalDelegation[_collateral]
+                ? (_amount * oracle.stake[_collateral].shares) / oracle.totalDelegation[_collateral]
                 : _amount;
             oracle.stake[_collateral].shares += shares;
             delegator.stakes[_collateral].shares += shares;
             // recalculate passed rewards with new share amount
-            sender.passedRewards[_collateral] = delegator.stakes[_collateral].shares
-                            * (oracle.accTokensPerShare[_collateral]);
+            sender.passedRewards[_collateral] =
+                delegator.stakes[_collateral].shares *
+                (oracle.accTokensPerShare[_collateral]);
             emit Staked(_oracle, msg.sender, _collateral, _amount);
-        }
-        else {
+        } else {
             require(msg.sender == oracle.admin, "stake: only callable by admin");
             oracle.stake[_collateral].stakedAmount += _amount;
             emit Staked(_oracle, msg.sender, _collateral, _amount);
         }
     }
 
-    /// @dev Withdraws oracle reward.
-    /// @param _oracle Oracle address.
-    /// @param _collateral Index of collateral
-    /// @param _recipient Recepient reward.
-    /// @param _amount Amount to withdraw.
+    /**
+     * @dev Withdraws oracle reward.
+     * @param _oracle Oracle address.
+     * @param _collateral Index of collateral
+     * @param _recipient Recepient reward.
+     * @param _amount Amount to withdraw.
+     **/
     function requestUnstake(
         address _oracle,
         address _collateral,
@@ -214,10 +232,7 @@ contract DelegatedStaking is AccessControl, Initializable {
             return;
         }
         Collateral storage collateral = collaterals[_collateral];
-        require(
-            collateral.isEnabled,
-            "requestUnstake: collateral is not enabled"
-        );
+        require(collateral.isEnabled, "requestUnstake: collateral is not enabled");
         collateral.totalLocked -= _amount;
         UserInfo storage sender = getUserInfo[msg.sender];
         // TODO: this "if" oracle/delegator logic needs to be improved - difficult to test
@@ -225,22 +240,26 @@ contract DelegatedStaking is AccessControl, Initializable {
             DelegatorInfo storage delegator = oracle.delegators[msg.sender];
             require(delegator.exists, "requestUnstake: delegator does not exist");
             require(msg.sender == sender.admin, "requestUnstake: only callable by admin");
-            require(delegator.stakes[_collateral].stakedAmount >= _amount, "requestUnstake: insufficient amount");
+            require(
+                delegator.stakes[_collateral].stakedAmount >= _amount,
+                "requestUnstake: insufficient amount"
+            );
             delegator.stakes[_collateral].stakedAmount -= _amount;
             sender.stake[_collateral].stakedAmount -= _amount;
-            uint256 shares = (_amount*oracle.stake[_collateral].shares)/
+            uint256 shares = (_amount * oracle.stake[_collateral].shares) /
                 oracle.totalDelegation[_collateral];
             // TODO: maybe also change _amount to be shares rather than tokens (as in withdrawFromStrategy)
             // TODO: then credit pending rewards, or withdraw if rewardCollateral == _collateral
             for (uint256 i = 0; i < collateralAddresses.length; i++) {
                 address rewardCollateral = collateralAddresses[i];
-                uint256 rewardAmount = (shares * oracle.accTokensPerShare[rewardCollateral]) 
-                    - sender.passedRewards[rewardCollateral];
+                uint256 rewardAmount = (shares * oracle.accTokensPerShare[rewardCollateral]) -
+                    sender.passedRewards[rewardCollateral];
                 if (rewardAmount != 0) {
-                    sender.passedRewards[rewardCollateral] = delegator.stakes[rewardCollateral].shares
-                            * (oracle.accTokensPerShare[rewardCollateral]);
-                    uint256 rewardShares = (rewardAmount*oracle.stake[rewardCollateral].shares) 
-                        / oracle.totalDelegation[rewardCollateral];
+                    sender.passedRewards[rewardCollateral] =
+                        delegator.stakes[rewardCollateral].shares *
+                        (oracle.accTokensPerShare[rewardCollateral]);
+                    uint256 rewardShares = (rewardAmount * oracle.stake[rewardCollateral].shares) /
+                        oracle.totalDelegation[rewardCollateral];
                     oracle.totalDelegation[rewardCollateral] += rewardAmount;
                     oracle.stake[rewardCollateral].shares += rewardShares;
                     sender.stake[rewardCollateral].stakedAmount += rewardAmount;
@@ -255,8 +274,9 @@ contract DelegatedStaking is AccessControl, Initializable {
             oracle.totalDelegation[_collateral] -= _amount;
 
             // recalculate passed rewards with new share amount
-            sender.passedRewards[_collateral] = delegator.stakes[_collateral].shares
-                * (oracle.accTokensPerShare[_collateral]);
+            sender.passedRewards[_collateral] =
+                delegator.stakes[_collateral].shares *
+                (oracle.accTokensPerShare[_collateral]);
 
             sender.withdrawals[sender.withdrawalCount] = WithdrawalInfo(
                 _amount,
@@ -269,8 +289,7 @@ contract DelegatedStaking is AccessControl, Initializable {
             );
             sender.withdrawalCount++;
             emit UnstakeRequested(msg.sender, _collateral, _recipient, _amount);
-        }
-        else {
+        } else {
             require(msg.sender == oracle.admin, "requestUnstake: only callable by admin");
             require(
                 oracle.stake[_collateral].stakedAmount >= _amount,
@@ -292,25 +311,21 @@ contract DelegatedStaking is AccessControl, Initializable {
         }
     }
 
-    /// @dev Withdraw stake.
-    /// @param _oracle Oracle address.
-    /// @param _withdrawalId Withdrawal identifier.
+    /**
+     * @dev Withdraw stake.
+     * @param _oracle Oracle address.
+     * @param _withdrawalId Withdrawal identifier.
+     **/
     function executeUnstake(address _oracle, uint256 _withdrawalId) external {
         UserInfo storage oracle = getUserInfo[_oracle];
-        require(
-            oracle.admin == msg.sender,
-            "executeUnstake: only callable by admin"
-        );
+        require(oracle.admin == msg.sender, "executeUnstake: only callable by admin");
         require(
             _withdrawalId < oracle.withdrawalCount,
             "executeUnstake: withdrawal does not exist"
         );
         WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
         require(!withdrawal.executed, "executeUnstake: already executed");
-        require(
-            withdrawal.timelock < block.timestamp,
-            "executeUnstake: too early"
-        );
+        require(withdrawal.timelock < block.timestamp, "executeUnstake: too early");
         withdrawal.executed = true;
         require(
             IERC20(withdrawal.collateral).transfer(withdrawal.receiver, withdrawal.amount),
@@ -319,39 +334,49 @@ contract DelegatedStaking is AccessControl, Initializable {
 
         emit UnstakeExecuted(_oracle, _withdrawalId);
     }
+
     /**
      * @dev request to move assets between oracles
      * @param _oracleFrom Address of oracle sender
      * @param _oracleTo Address of oracle receiver
      * @param _collateral address of collateral
      * @param _amount Amount of collateral
-     */
-    function requestTransfer(address _oracleFrom, address _oracleTo, address _collateral, uint256 _amount) external {
+     **/
+    function requestTransfer(
+        address _oracleFrom,
+        address _oracleTo,
+        address _collateral,
+        uint256 _amount
+    ) external {
         require(_amount > 0, "requestTransfer: cannot transfer 0 amount");
         UserInfo storage oracleFrom = getUserInfo[_oracleFrom];
         Collateral memory collateral = collaterals[_collateral];
-        require(
-            collateral.isEnabled,
-            "requestTransfer: collateral is not enabled"
-        );
+        require(collateral.isEnabled, "requestTransfer: collateral is not enabled");
         UserInfo storage sender = getUserInfo[msg.sender];
         DelegatorInfo storage delegator = oracleFrom.delegators[msg.sender];
         require(sender.isOracle == false, "requestTransfer: callable by delegator");
-        require(oracleFrom.totalDelegation[_collateral] >= _amount, "transferAssets: Insufficient amount");
-        require(delegator.stakes[_collateral].stakedAmount >= _amount, "transferAssets: Insufficient amount for delegator");
-        uint256 sharesFrom = (_amount*oracleFrom.stake[_collateral].shares)/
+        require(
+            oracleFrom.totalDelegation[_collateral] >= _amount,
+            "transferAssets: Insufficient amount"
+        );
+        require(
+            delegator.stakes[_collateral].stakedAmount >= _amount,
+            "transferAssets: Insufficient amount for delegator"
+        );
+        uint256 sharesFrom = (_amount * oracleFrom.stake[_collateral].shares) /
             oracleFrom.totalDelegation[_collateral];
         // TODO: maybe change _amount to be shares here too
         // TODO: claim delegator share of oracleFrom rewards - duplicated in requestUnstake so pull out to function
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             address rewardCollateral = collateralAddresses[i];
-            uint256 rewardAmount = (sharesFrom * oracleFrom.accTokensPerShare[rewardCollateral]) 
-                - sender.passedRewards[rewardCollateral];
+            uint256 rewardAmount = (sharesFrom * oracleFrom.accTokensPerShare[rewardCollateral]) -
+                sender.passedRewards[rewardCollateral];
             if (rewardAmount != 0) {
-                sender.passedRewards[rewardCollateral] = delegator.stakes[rewardCollateral].shares
-                    * (oracleFrom.accTokensPerShare[rewardCollateral]);
-                uint256 rewardShares = (rewardAmount*oracleFrom.stake[rewardCollateral].shares) 
-                    / oracleFrom.totalDelegation[rewardCollateral];
+                sender.passedRewards[rewardCollateral] =
+                    delegator.stakes[rewardCollateral].shares *
+                    (oracleFrom.accTokensPerShare[rewardCollateral]);
+                uint256 rewardShares = (rewardAmount * oracleFrom.stake[rewardCollateral].shares) /
+                    oracleFrom.totalDelegation[rewardCollateral];
                 oracleFrom.stake[rewardCollateral].shares += rewardShares;
                 oracleFrom.totalDelegation[rewardCollateral] += rewardAmount;
                 sender.stake[rewardCollateral].stakedAmount += rewardAmount;
@@ -368,9 +393,10 @@ contract DelegatedStaking is AccessControl, Initializable {
         delegator.stakes[_collateral].stakedAmount -= _amount;
 
         // recalculate passed rewards with new share amount
-        sender.passedRewards[_collateral] = delegator.stakes[_collateral].shares
-            * (oracleFrom.accTokensPerShare[_collateral]);
-        
+        sender.passedRewards[_collateral] =
+            delegator.stakes[_collateral].shares *
+            (oracleFrom.accTokensPerShare[_collateral]);
+
         sender.transfers[sender.transferCount] = TransferInfo(
             _amount,
             block.timestamp + timelockForDelegate,
@@ -379,39 +405,37 @@ contract DelegatedStaking is AccessControl, Initializable {
             false,
             _collateral
         );
-        sender.transferCount ++;
+        sender.transferCount++;
         emit TransferRequested(msg.sender, sender.transferCount - 1);
     }
 
     /**
      * @dev Execute transfer request
      * @param _transferId Identifier of transfer
-     */
+     **/
     function executeTransfer(uint256 _transferId) external {
         UserInfo storage sender = getUserInfo[msg.sender];
 
+        require(sender.isOracle == false, "executeTransfer: callable by delegator");
         require(
-            sender.isOracle == false,
-            "executeTransfer: callable by delegator"
+            sender.transferCount > _transferId,
+            "executeTransfer: transfer request does not exist"
         );
-        require(sender.transferCount > _transferId, "executeTransfer: transfer request does not exist");
         TransferInfo storage transfer = sender.transfers[_transferId];
         require(!transfer.executed, "executeTransfer: already executed");
-        require(
-            transfer.timelock < block.timestamp,
-            "executeTransfer: too early"
-        );
+        require(transfer.timelock < block.timestamp, "executeTransfer: too early");
         transfer.executed = true;
         UserInfo storage oracleTo = getUserInfo[transfer.oracleTo];
         DelegatorInfo storage delegator = oracleTo.delegators[msg.sender];
         oracleTo.totalDelegation[transfer.collateral] += transfer.amount;
         uint256 sharesTo = oracleTo.stake[transfer.collateral].shares > 0
-            ? (transfer.amount*oracleTo.stake[transfer.collateral].shares)/
+            ? (transfer.amount * oracleTo.stake[transfer.collateral].shares) /
                 oracleTo.totalDelegation[transfer.collateral]
             : transfer.amount;
         // recalculate passed rewards with new share amount
-        sender.passedRewards[transfer.collateral] = delegator.stakes[transfer.collateral].shares
-            * (oracleTo.accTokensPerShare[transfer.collateral]);
+        sender.passedRewards[transfer.collateral] =
+            delegator.stakes[transfer.collateral].shares *
+            (oracleTo.accTokensPerShare[transfer.collateral]);
         sender.stake[transfer.collateral].stakedAmount += transfer.amount;
         sender.stake[transfer.collateral].shares += sharesTo;
         delegator.stakes[transfer.collateral].stakedAmount += transfer.amount;
@@ -423,54 +447,67 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Get price per share
      * @param _strategy Address of strategy
      * @param _token Address of token
-     */
-    function getPricePerFullShare(address _strategy, address _token) 
-    external 
-    view 
-    returns (uint256) 
+     **/
+    function getPricePerFullShare(address _strategy, address _token)
+        external
+        view
+        returns (uint256)
     {
         Strategy memory strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
-        require(strategy.isEnabled, "depositgetPricePerFullShareToStrategy: strategy is not enabled");
+        require(
+            strategy.isEnabled,
+            "depositgetPricePerFullShareToStrategy: strategy is not enabled"
+        );
         require(strategy.totalShares > 0, "getPricePerFullShare: strategy has no shares");
-        uint256 totalStrategyTokenReserves = strategyController.updateReserves(address(this), _token);
-        return totalStrategyTokenReserves/strategy.totalShares;
+        uint256 totalStrategyTokenReserves = strategyController.updateReserves(
+            address(this),
+            _token
+        );
+        return totalStrategyTokenReserves / strategy.totalShares;
     }
 
     /**
      * @dev Get price per oracle share
      * @param _oracle Address of oracle
      * @param _token Address of token
-     */
-    function getPricePerFullOracleShare(address _oracle, address _token) 
-    external 
-    view 
-    returns (uint256) 
+     **/
+    function getPricePerFullOracleShare(address _oracle, address _token)
+        external
+        view
+        returns (uint256)
     {
         UserInfo storage oracle = getUserInfo[_oracle];
         require(oracle.isOracle, "getPricePerFullOracleShare: address is not oracle");
-        require(oracle.stake[_token].shares > 0, "getPricePerFullOracleShare: oracle has no shares");
-        return oracle.totalDelegation[_token]/oracle.stake[_token].shares;
+        require(
+            oracle.stake[_token].shares > 0,
+            "getPricePerFullOracleShare: oracle has no shares"
+        );
+        return oracle.totalDelegation[_token] / oracle.stake[_token].shares;
     }
 
     /**
      * @dev Get USD amount of oracle collateral
      * @param _oracle Address of oracle
      * @param _collateral Address of collateral
-     */
-    function getPoolUSDAmount(address _oracle, address _collateral) internal view returns(uint256) {
+     **/
+    function getPoolUSDAmount(address _oracle, address _collateral)
+        internal
+        view
+        returns (uint256)
+    {
         uint256 collateralPrice;
         if (collaterals[_collateral].isUSDStable)
-            collateralPrice = 10 ** (18 - collaterals[_collateral].decimals);
+            collateralPrice = 10**(18 - collaterals[_collateral].decimals);
         else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
-        return getUserInfo[_oracle].totalDelegation[_collateral]*collateralPrice;
+        return getUserInfo[_oracle].totalDelegation[_collateral] * collateralPrice;
     }
 
     /**
      * @dev Get total USD amount of oracle collateral
      * @param _oracle Address of oracle
-     */
-    function getTotalUSDAmount(address _oracle) internal view returns(uint256) {
+     **/
+    function getTotalUSDAmount(address _oracle) internal view returns (uint256) {
         uint256 totalUSDAmount = 0;
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             totalUSDAmount += getPoolUSDAmount(_oracle, collateralAddresses[i]);
@@ -483,29 +520,46 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _oracle address of oracle
      * @param _amount Amount to be staked
      * @param _strategy strategy to stake into.
-     */
-    function depositToStrategy(address _oracle, uint256 _amount, address _strategy) external {
+     **/
+    function depositToStrategy(
+        address _oracle,
+        uint256 _amount,
+        address _strategy
+    ) external {
         UserInfo storage oracle = getUserInfo[_oracle];
         require(msg.sender == oracle.admin, "depositToStrategy: only callable by admin");
         Strategy storage strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isEnabled, "depositToStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
-        require(oracle.stake[strategy.stakeToken].stakedAmount >= _amount, 
-            "depositToStrategy: Insufficient fund");
+        require(
+            oracle.stake[strategy.stakeToken].stakedAmount >= _amount,
+            "depositToStrategy: Insufficient fund"
+        );
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
         oracle.stake[strategy.stakeToken].stakedAmount -= _amount;
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        strategy.totalReserves = strategyController.updateReserves(
+            address(this),
+            strategy.strategyToken
+        );
         strategyController.deposit(strategy.stakeToken, _amount);
-        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 afterBalance = strategyController.updateReserves(
+            address(this),
+            strategy.strategyToken
+        );
         uint256 receivedAmount = afterBalance - strategy.totalReserves;
         uint256 shares = strategy.totalShares > 0
-            ? (receivedAmount*strategy.totalShares)/strategy.totalReserves
+            ? (receivedAmount * strategy.totalShares) / strategy.totalReserves
             : receivedAmount;
         strategy.totalShares += shares;
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
-        StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
+        strategy.totalReserves = strategyController.updateReserves(
+            address(this),
+            strategy.strategyToken
+        );
+        StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][
+            strategy.stakeToken
+        ];
         depositInfo.stakedAmount += _amount;
         depositInfo.shares += shares;
         stakeCollateral.totalLocked -= _amount;
@@ -514,8 +568,12 @@ contract DelegatedStaking is AccessControl, Initializable {
 
     /**
      * @dev Earn from the strategy
-     */
-    function withdrawFromStrategy(address _oracle, uint256 _amount, address _strategy) external {
+     **/
+    function withdrawFromStrategy(
+        address _oracle,
+        uint256 _amount,
+        address _strategy
+    ) external {
         Strategy storage strategy = strategies[_strategy];
         require(strategy.isEnabled, "withdrawFromStrategy: strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
@@ -524,33 +582,42 @@ contract DelegatedStaking is AccessControl, Initializable {
         DelegatorInfo storage delegator = oracle.delegators[msg.sender];
         uint256 delegatorCollateral;
         bool isDelegator;
-        uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+        uint256 beforeBalance = strategyController.updateReserves(
+            address(this),
+            strategy.stakeToken
+        );
         StrategyDepositInfo storage depositInfo;
         if (oracle.isOracle) {
-            require (msg.sender == oracle.admin, "withdrawFromStrategy: only callable by admin");
+            require(msg.sender == oracle.admin, "withdrawFromStrategy: only callable by admin");
             depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
-        }
-        else {
+        } else {
             require(delegator.exists, "withdrawFromStrategy: delegator does not exist");
             isDelegator = true;
             depositInfo = sender.strategyStake[_strategy][strategy.stakeToken];
-            delegatorCollateral = _amount * beforeBalance / strategy.totalShares;
+            delegatorCollateral = (_amount * beforeBalance) / strategy.totalShares;
         }
-        require(depositInfo.shares >= _amount, 
-                "withdrawFromStrategy: Insufficient share");
-        { // scope to avoid stack too deep errors
-        uint256 strategyTokenAmount = (_amount*strategy.totalReserves)/strategy.totalShares; // block scope
-        depositInfo.shares -= _amount;
-        strategy.totalShares -= _amount;
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
-        strategyController.withdraw(strategy.strategyToken, strategyTokenAmount);
+        require(depositInfo.shares >= _amount, "withdrawFromStrategy: Insufficient share");
+        {
+            // scope to avoid stack too deep errors
+            uint256 strategyTokenAmount = (_amount * strategy.totalReserves) / strategy.totalShares; // block scope
+            depositInfo.shares -= _amount;
+            strategy.totalShares -= _amount;
+            strategy.totalReserves = strategyController.updateReserves(
+                address(this),
+                strategy.strategyToken
+            );
+            strategyController.withdraw(strategy.strategyToken, strategyTokenAmount);
         }
-        uint256 receivedAmount = strategyController.updateReserves(address(this), strategy.stakeToken) - beforeBalance;
+        uint256 receivedAmount = strategyController.updateReserves(
+            address(this),
+            strategy.stakeToken
+        ) - beforeBalance;
         depositInfo.stakedAmount -= receivedAmount;
         collaterals[strategy.stakeToken].totalLocked += receivedAmount;
         if (isDelegator) {
             sender.stake[strategy.stakeToken].stakedAmount += receivedAmount;
-            uint256 shares = ((receivedAmount - delegatorCollateral)*oracle.stake[strategy.stakeToken].shares)/
+            uint256 shares = ((receivedAmount - delegatorCollateral) *
+                oracle.stake[strategy.stakeToken].shares) /
                 oracle.totalDelegation[strategy.stakeToken];
             sender.stake[strategy.stakeToken].shares += shares;
             delegator.stakes[strategy.stakeToken].stakedAmount += receivedAmount;
@@ -558,25 +625,27 @@ contract DelegatedStaking is AccessControl, Initializable {
             oracle.totalDelegation[strategy.stakeToken] += receivedAmount - delegatorCollateral;
             oracle.stake[strategy.stakeToken].shares += shares;
             emit WithdrawnFromStrategy(msg.sender, receivedAmount, _strategy, strategy.stakeToken);
-        }
-        else emit WithdrawnFromStrategy(_oracle, receivedAmount, _strategy, strategy.stakeToken);
+        } else emit WithdrawnFromStrategy(_oracle, receivedAmount, _strategy, strategy.stakeToken);
     }
 
     /**
      * @dev Withdraws all funds from the strategy.
      * @param _strategy Strategy to withdraw from.
-     */
-    function emergencyWithdrawFromStrategy(address _strategy) 
-        external 
-        onlyAdmin()
-    {
+     **/
+    function emergencyWithdrawFromStrategy(address _strategy) external onlyAdmin {
         Strategy storage strategy = strategies[_strategy];
         IStrategy strategyController = IStrategy(_strategy);
         require(strategy.isEnabled, "emergencyWithdrawFromStrategy: strategy is not enabled");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
-        uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+        uint256 beforeBalance = strategyController.updateReserves(
+            address(this),
+            strategy.stakeToken
+        );
         strategyController.withdrawAll(strategy.strategyToken);
-        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+        uint256 afterBalance = strategyController.updateReserves(
+            address(this),
+            strategy.stakeToken
+        );
         uint256 receivedAmount = afterBalance - beforeBalance;
         stakeCollateral.totalLocked += receivedAmount;
         strategy.totalReserves = receivedAmount;
@@ -590,10 +659,12 @@ contract DelegatedStaking is AccessControl, Initializable {
         require(!strategy.isEnabled, "recoverFromEmergency: strategy is still enabled");
         require(strategy.isRecoverable, "recoverFromEmergency: strategy funds are not recoverable");
         Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
-        for (uint256 i=0; i<_oracles.length; i++) {
+        for (uint256 i = 0; i < _oracles.length; i++) {
             UserInfo storage oracle = getUserInfo[_oracles[i]];
-            StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][strategy.stakeToken];
-            uint256 amount = strategy.totalReserves*(depositInfo.shares/strategy.totalShares);
+            StrategyDepositInfo storage depositInfo = oracle.strategyStake[_strategy][
+                strategy.stakeToken
+            ];
+            uint256 amount = strategy.totalReserves * (depositInfo.shares / strategy.totalShares);
             strategy.totalShares -= depositInfo.shares;
             depositInfo.shares = 0;
             depositInfo.stakedAmount = 0;
@@ -607,7 +678,7 @@ contract DelegatedStaking is AccessControl, Initializable {
     /**
      * @dev set percentage of profit sharing
      * @param _profitSharing percentage of profit sharing
-     */
+     **/
     function setProfitSharing(address _oracle, uint256 _profitSharing) external {
         UserInfo storage oracle = getUserInfo[_oracle];
         require(msg.sender == oracle.admin, "setProfitPercentage: only callable by admin");
@@ -616,24 +687,28 @@ contract DelegatedStaking is AccessControl, Initializable {
 
     /* ADMIN */
 
-    /// @dev Change withdrawal timelock.
-    /// @param _newTimelock New timelock.
-    function setTimelock(uint256 _newTimelock) external onlyAdmin() {
+    /**
+     * @dev Change withdrawal timelock.
+     * @param _newTimelock New timelock.
+     **/
+    function setTimelock(uint256 _newTimelock) external onlyAdmin {
         timelock = _newTimelock;
     }
 
     /**
      * @dev Change timelock for delegate
      * @param _newTimelock new timelock for delegate
-     */
-    function setTimelockForTransfer(uint256 _newTimelock) external onlyAdmin() {
+     **/
+    function setTimelockForTransfer(uint256 _newTimelock) external onlyAdmin {
         timelockForDelegate = _newTimelock;
     }
 
-    /// @dev Add new oracle.
-    /// @param _oracle Oracle address.
-    /// @param _admin Admin address.
-    function addOracle(address _oracle, address _admin) external onlyAdmin() {
+    /**
+     * @dev Add new oracle.
+     * @param _oracle Oracle address.
+     * @param _admin Admin address.
+     **/
+    function addOracle(address _oracle, address _admin) external onlyAdmin {
         getUserInfo[_oracle].admin = _admin;
         getUserInfo[_oracle].isOracle = true;
     }
@@ -641,10 +716,14 @@ contract DelegatedStaking is AccessControl, Initializable {
     /**
      * @dev Add a new collateral
      * @param _token Address of token
-     */
-    function addCollateral(address _token, uint8 _decimals, bool _isUSDStable) external onlyAdmin() {
+     **/
+    function addCollateral(
+        address _token,
+        uint8 _decimals,
+        bool _isUSDStable
+    ) external onlyAdmin {
         Collateral storage collateral = collaterals[_token];
-        if (!collateral.isSupported){
+        if (!collateral.isSupported) {
             collateral.isSupported = true;
             collateral.isEnabled = true;
             collateral.isUSDStable = _isUSDStable;
@@ -657,9 +736,13 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Add a new strategy
      * @param _strategy address to strategy
      * @param _stakeToken collateralId of stakeToken
-     * @param _rewardToken collateralId of rewardToken 
-     */
-    function addStrategy(address _strategy, address _stakeToken, address _rewardToken) external onlyAdmin() {
+     * @param _rewardToken collateralId of rewardToken
+     **/
+    function addStrategy(
+        address _strategy,
+        address _stakeToken,
+        address _rewardToken
+    ) external onlyAdmin {
         Strategy storage strategy = strategies[_strategy];
         require(!strategy.isSupported, "addStrategy: already exists");
         strategy.stakeToken = _stakeToken;
@@ -673,8 +756,8 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev enable collateral
      * @param _collateral address of collateral
      * @param _isEnabled bool of enable
-     */
-    function updateCollateral(address _collateral, bool _isEnabled) external onlyAdmin() {
+     **/
+    function updateCollateral(address _collateral, bool _isEnabled) external onlyAdmin {
         collaterals[_collateral].isEnabled = _isEnabled;
     }
 
@@ -683,8 +766,12 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _collateral address of collateral
      * @param _isEnabledMaxAmount bool of enable
      * @param _amount max amount
-     */
-    function updateCollateral(address _collateral, bool _isEnabledMaxAmount, uint256 _amount) external onlyAdmin() {
+     **/
+    function updateCollateral(
+        address _collateral,
+        bool _isEnabledMaxAmount,
+        uint256 _amount
+    ) external onlyAdmin {
         collaterals[_collateral].isEnabledMaxAmount = _isEnabledMaxAmount;
         collaterals[_collateral].maxStakeAmount = _amount;
     }
@@ -693,22 +780,19 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev enable strategy
      * @param _strategy address of strategy
      * @param _isEnabled bool of enable
-     */
-    function updateStrategy(address _strategy, bool _isEnabled) external onlyAdmin() {
+     **/
+    function updateStrategy(address _strategy, bool _isEnabled) external onlyAdmin {
         strategies[_strategy].isEnabled = _isEnabled;
     }
 
-    /// @dev Cancel unstake.
-    /// @param _oracle Oracle address.
-    /// @param _withdrawalId Withdrawal identifier.
-    function cancelUnstake(address _oracle, uint256 _withdrawalId)
-        external
-    {
+    /**
+     * @dev Cancel unstake.
+     * @param _oracle Oracle address.
+     * @param _withdrawalId Withdrawal identifier.
+     **/
+    function cancelUnstake(address _oracle, uint256 _withdrawalId) external {
         UserInfo storage oracle = getUserInfo[_oracle];
-        require(
-            oracle.admin == msg.sender,
-            "executeUnstake: only callable by admin"
-        );
+        require(oracle.admin == msg.sender, "executeUnstake: only callable by admin");
         WithdrawalInfo storage withdrawal = oracle.withdrawals[_withdrawalId];
         require(!withdrawal.executed, "cancelUnstake: already executed");
         Collateral storage collateral = collaterals[withdrawal.collateral];
@@ -718,13 +802,22 @@ contract DelegatedStaking is AccessControl, Initializable {
         emit UnstakeCancelled(_oracle, _withdrawalId);
     }
 
-    /// @dev Withdraws confiscated tokens.
-    /// @param _oracle Oracle address.
-    /// @param _collateral Index of collateral
-    /// @param _amount Amount to withdraw.
-    function liquidate(address _oracle, address _collateral, uint256 _amount) external onlyAdmin() {
+    /**
+     * @dev Withdraws confiscated tokens.
+     * @param _oracle Oracle address.
+     * @param _collateral Index of collateral
+     * @param _amount Amount to withdraw.
+     **/
+    function liquidate(
+        address _oracle,
+        address _collateral,
+        uint256 _amount
+    ) external onlyAdmin {
         UserInfo storage oracle = getUserInfo[_oracle];
-        require(oracle.stake[_collateral].stakedAmount >= _amount, "liquidate: insufficient balance");
+        require(
+            oracle.stake[_collateral].stakedAmount >= _amount,
+            "liquidate: insufficient balance"
+        );
         Collateral storage collateral = collaterals[_collateral];
         oracle.stake[_collateral].stakedAmount -= _amount;
         collateral.confiscatedFunds += _amount;
@@ -732,13 +825,16 @@ contract DelegatedStaking is AccessControl, Initializable {
         emit Liquidated(_oracle, _collateral, _amount);
     }
 
-    /// @dev Withdraws confiscated tokens.
-    /// @param _recipient Recepient reward.
-    /// @param _amount Amount to withdraw.
-    function withdrawFunds(address _recipient, address _collateral, uint256 _amount)
-        external
-        onlyAdmin()
-    {
+    /**
+     * @dev Withdraws confiscated tokens.
+     * @param _recipient Recepient reward.
+     * @param _amount Amount to withdraw.
+     **/
+    function withdrawFunds(
+        address _recipient,
+        address _collateral,
+        uint256 _amount
+    ) external onlyAdmin {
         Collateral storage collateral = collaterals[_collateral];
         require(
             uint256(collateral.confiscatedFunds) >= _amount,
@@ -755,11 +851,11 @@ contract DelegatedStaking is AccessControl, Initializable {
     /**
      * @dev Pause unstaking request.
      * @param _oracle address of oracle
-     */
-    function pauseUnstake(address _oracle) external onlyAdmin() {
+     **/
+    function pauseUnstake(address _oracle) external onlyAdmin {
         UserInfo storage oracle = getUserInfo[_oracle];
         uint256 i;
-        for (i = 0; i < oracle.withdrawalCount; i ++) {
+        for (i = 0; i < oracle.withdrawalCount; i++) {
             WithdrawalInfo storage withdrawal = oracle.withdrawals[i];
             if (withdrawal.paused == false && withdrawal.executed == false) {
                 withdrawal.paused = true;
@@ -772,11 +868,11 @@ contract DelegatedStaking is AccessControl, Initializable {
     /**
      * @dev Resume unstaking request.
      * @param _oracle address of oracle
-     */
-    function resumeUnstake(address _oracle) external onlyAdmin() {
+     **/
+    function resumeUnstake(address _oracle) external onlyAdmin {
         UserInfo storage oracle = getUserInfo[_oracle];
         uint256 i;
-        for (i = 0; i < oracle.withdrawalCount; i ++) {
+        for (i = 0; i < oracle.withdrawalCount; i++) {
             WithdrawalInfo storage withdrawal = oracle.withdrawals[i];
             if (withdrawal.paused == true && withdrawal.executed == false) {
                 withdrawal.paused = false;
@@ -789,8 +885,8 @@ contract DelegatedStaking is AccessControl, Initializable {
     /**
      * @dev Set Price Consumer
      * @param _priceConsumer address of price consumer
-     */
-    function setPriceConsumer(IPriceConsumer _priceConsumer) external onlyAdmin() {
+     **/
+    function setPriceConsumer(IPriceConsumer _priceConsumer) external onlyAdmin {
         priceConsumer = _priceConsumer;
     }
 
@@ -799,27 +895,28 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _oracle address of oracle
      * @param _collateral address of collateral
      * @param _amount amount of token
-     */
-    function distributeRewards(address _oracle, address _collateral, uint256 _amount) external {
+     **/
+    function distributeRewards(
+        address _oracle,
+        address _collateral,
+        uint256 _amount
+    ) external {
         Collateral storage collateral = collaterals[_collateral];
-        require(
-            collateral.isEnabled, 
-            "distributeRewards: collateral is not enabled"
-        );
+        require(collateral.isEnabled, "distributeRewards: collateral is not enabled");
         require(
             IERC20(_collateral).transferFrom(msg.sender, address(this), _amount),
             "distributeRewards: transfer failed"
         );
         collateral.totalLocked += _amount;
         UserInfo storage oracle = getUserInfo[_oracle];
-        uint256 delegatorsAmount = _amount * oracle.profitSharing / 100;
+        uint256 delegatorsAmount = (_amount * oracle.profitSharing) / 100;
         oracle.stake[_collateral].stakedAmount += _amount - delegatorsAmount;
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            uint256 accTokens = delegatorsAmount * 
-                getPoolUSDAmount(_oracle, collateralAddresses[i]) / 
-                getTotalUSDAmount(_oracle);
-            oracle.accTokensPerShare[collateralAddresses[i]] += 
-                accTokens/oracle.stake[collateralAddresses[i]].shares;
+            uint256 accTokens = (delegatorsAmount *
+                getPoolUSDAmount(_oracle, collateralAddresses[i])) / getTotalUSDAmount(_oracle);
+            oracle.accTokensPerShare[collateralAddresses[i]] +=
+                accTokens /
+                oracle.stake[collateralAddresses[i]].shares;
             if (address(collateralAddresses[i]) == _collateral) {
                 // TODO: maybe don't increment here, wait until claimed in stake/unstake/requestTransfer
                 // oracle.totalDelegation[_collateral] += delegatorsAmount;
@@ -828,9 +925,11 @@ contract DelegatedStaking is AccessControl, Initializable {
         emit RewardsDistributed(_oracle, _collateral, _amount);
     }
 
-    /// @dev Get withdrawal request.
-    /// @param _oracle Oracle address.
-    /// @param _withdrawalId Withdrawal identifier.
+    /**
+     * @dev Get withdrawal request.
+     * @param _oracle Oracle address.
+     * @param _withdrawalId Withdrawal identifier.
+     **/
     function getWithdrawalRequest(address _oracle, uint256 _withdrawalId)
         public
         view
@@ -843,8 +942,8 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Get transfer request
      * @param _oracle Oracle address
      * @param _transferId Transfer identifier
-     */
-    function getTransferRequest(address _oracle, uint256 _transferId) 
+     **/
+    function getTransferRequest(address _oracle, uint256 _transferId)
         public
         view
         returns (TransferInfo memory)
@@ -852,11 +951,11 @@ contract DelegatedStaking is AccessControl, Initializable {
         return getUserInfo[_oracle].transfers[_transferId];
     }
 
-    /** 
+    /**
      * @dev get stake property of oracle
      * @param _oracle address of oracle
      * @param _collateral Address of collateral
-     */
+     **/
     function getOracleStaking(address _oracle, address _collateral) public view returns (uint256) {
         return getUserInfo[_oracle].stake[_collateral].stakedAmount;
     }
@@ -866,8 +965,12 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _oracle address of oracle
      * @param _delegator address of delegator
      * @param _collateral Address of collateral
-     */
-    function getDelegatorStakes(address _oracle, address _delegator, address _collateral) public view returns(uint256) {
+     **/
+    function getDelegatorStakes(
+        address _oracle,
+        address _delegator,
+        address _collateral
+    ) public view returns (uint256) {
         return getUserInfo[_oracle].delegators[_delegator].stakes[_collateral].stakedAmount;
     }
 
@@ -876,12 +979,12 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _oracle address of oracle
      * @param _delegator address of delegator
      * @param _collateral Address of collateral
-     */
-    function getDelegatorShares(address _oracle, address _delegator, address _collateral) 
-        public 
-        view 
-        returns(uint256) 
-    {
+     **/
+    function getDelegatorShares(
+        address _oracle,
+        address _delegator,
+        address _collateral
+    ) public view returns (uint256) {
         return getUserInfo[_oracle].delegators[_delegator].stakes[_collateral].shares;
     }
 
@@ -889,12 +992,16 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Get total delegation to oracle
      * @param _oracle Address of oracle
      * @param _collateral Address of collateral
-     */
-    function getTotalDelegation(address _oracle, address _collateral) public view returns(uint256) {
+     **/
+    function getTotalDelegation(address _oracle, address _collateral)
+        public
+        view
+        returns (uint256)
+    {
         return getUserInfo[_oracle].totalDelegation[_collateral];
     }
 
-    function min(uint256 a, uint256 b) internal pure returns(uint256) {
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
         return a < b ? a : b;
     }
 

@@ -7,7 +7,6 @@ import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
-
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
 
@@ -23,7 +22,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
-
 
     /* ========== CONSTRUCTOR  ========== */
 
@@ -73,19 +71,22 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
-            if(getOracleInfo[oracle].isValid) {
+            if (getOracleInfo[oracle].isValid) {
                 require(!debridgeInfo.hasVerified[oracle], "deployAsset: submitted already");
                 debridgeInfo.hasVerified[oracle] = true;
                 emit DeployConfirmed(deployId, oracle);
                 confirmations += 1;
-                if(getOracleInfo[oracle].required) {
+                if (getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
             }
         }
 
         require(confirmations >= minConfirmations, "not confirmed");
-        require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles");
+        require(
+            currentRequiredOraclesCount == requiredOraclesCount,
+            "Not confirmed by required oracles"
+        );
 
         debridgeInfo.confirmations = confirmations;
         confirmedDeployInfo[debridgeId] = deployId;
@@ -97,7 +98,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
-        external override
+        external
+        override
         returns (uint8 _confirmations, bool _blockConfirmationPassed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
@@ -109,23 +111,28 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
-            if(getOracleInfo[oracle].isValid) {
+            if (getOracleInfo[oracle].isValid) {
                 require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
                 confirmations += 1;
                 submissionInfo.hasVerified[oracle] = true;
                 emit Confirmed(_submissionId, oracle);
-                if(getOracleInfo[oracle].required) {
+                if (getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
             }
         }
 
-        require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles" );
+        require(
+            currentRequiredOraclesCount == requiredOraclesCount,
+            "Not confirmed by required oracles"
+        );
 
         submissionInfo.confirmations = confirmations;
 
         if (confirmations >= minConfirmations) {
-            BlockConfirmationsInfo storage _blockConfirmationsInfo = getConfirmationsPerBlock[block.number];
+            BlockConfirmationsInfo storage _blockConfirmationsInfo = getConfirmationsPerBlock[
+                block.number
+            ];
             if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
                 _blockConfirmationsInfo.count += 1;
                 _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
@@ -152,8 +159,14 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
-            external override
-            returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId){
+        external
+        override
+        returns (
+            address wrappedAssetAddress,
+            address nativeAddress,
+            uint256 nativeChainId
+        )
+    {
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
 
