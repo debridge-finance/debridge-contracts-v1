@@ -222,7 +222,109 @@ describe("DefiController", function () {
           });
         });
 
+        describe("then add bad strategy for native token", function () {
+          beforeEach(async function () {
+            await this.defiController.addStrategy(
+              this.badStrategyNativeToken.address,
+              false,
+              true,
+              false,
+              ZERO_ADDRESS,
+              ZERO_ADDRESS,
+              ZERO_ADDRESS,
+              0,
+              0,
+              0,
+            );
+          });
 
+          describe("mint send native eth on debridge & reward on strategy", function () {
+            beforeEach(async function () {
+              await this.debridge.sendETH({ value: totalSupplyAmount });
+              await this.badStrategyNativeToken.sendETH({value:badRewardAmount});
+            });
+
+            it("balance native eth debridge increased", async function () {
+              expect(await ethers.provider.getBalance(this.debridge.address)).to.be.equal(
+                totalSupplyAmount
+              );
+            });
+
+            it("check funds were deposited to strategy");
+            // todo: since DeFi protocols have different interfaces, these tests should be written per strategy
+
+            it("depositToStrategy reverts if called by wrong role", async function () {
+              await expect(
+                this.defiController
+                  .connect(worker)
+                  .depositToStrategy(amount, this.badStrategyNativeToken.address)
+              ).to.be.revertedWith("defiController: bad role");
+            });
+
+            describe("add bridges & connect deBridgeGate", function () {
+              const chainId = 1;
+              const maxAmount = 0;
+              const collectedFees = 0;
+              const balance = 1000;
+              const lockedInStrategies = 0;
+              const minReservesBps = 10;
+              const chainFee = 0;
+              const exist = false;
+
+              beforeEach(async function () {
+                await this.debridge.init();
+                await this.debridge.addDebridge(
+                  ZERO_ADDRESS,
+                  chainId,
+                  maxAmount,
+                  collectedFees,
+                  balance,
+                  lockedInStrategies,
+                  minReservesBps,
+                  chainFee,
+                  exist
+                );
+                await this.debridge.setDefiController(this.defiController.address);
+              });
+              describe("after deposited native token to bad strategy", function () {
+                beforeEach(async function () {
+                  await expect(
+                    this.defiController
+                      .connect(worker)
+                      .depositToStrategy(amount, this.badStrategyNativeToken.address)
+                  ).to.be.reverted;
+
+                  // Error: Transaction reverted: function selector was not recognized and there's no fallback nor receive function
+                  // Reason: DefiController can't accept ether
+                  // Decision: receive() external payable {  }
+
+                  // Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
+                  // Reason: DefiController does not have an implementation for accepting a native token
+                  // Decision: Add branching to the ERC20 and native token
+
+                  //await this.defiController.connect(worker).depositToStrategy(amount, this.strategyNativeToken.address)
+                  // todo: assert token.balanceOf(this.debridge) == 0
+                  // todo: assert token.balanceOf(this.strategy) == amount
+                });
+
+                it("native tokens transferred to bad strategy");
+
+                describe("after withdrawn from bad strategy", function () {
+                  beforeEach(async function () {
+                    await expect(
+                      this.defiController
+                        .connect(worker)
+                        .withdrawFromStrategy(amount, this.badStrategyNativeToken.address)
+                    ).to.be.reverted;
+                    //Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
+                  });
+
+                  it("tokens transferred from strategy back to deBridgeGate");
+                });
+              });
+            });
+          });
+        });
 
         describe("then add strategy for stake token", function () {
           const name = "Stake Token";
@@ -331,7 +433,112 @@ describe("DefiController", function () {
           });
         });
 
+        describe("then add bad strategy for stake token", function () {
+          const name = "Stake Token";
+          const symbol = "STK";
+          const decimal = 18;
 
+          beforeEach(async function () {
+            this.stakeToken = await this.MockTokenFactory.deploy(name, symbol, decimal);
+            await this.defiController.addStrategy(
+              this.badStrategyStakeToken.address,
+              false,
+              true,
+              false,
+              this.stakeToken.address,
+              this.stakeToken.address,
+              ZERO_ADDRESS,
+              0,
+              0,
+              0,
+            );
+          });
+
+          describe("mint stakeToken on debridge & reward on bad strategy", function () {
+            beforeEach(async function () {
+              await this.stakeToken.mint(this.debridge.address, totalSupplyAmount);
+              await this.stakeToken.mint(this.badStrategyStakeToken.address, badRewardAmount);
+            });
+
+            it("balanceOf stake token debridge increased", async function () {
+              expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                totalSupplyAmount
+              );
+            });
+
+            it("check funds were deposited to strategy");
+            // todo: since DeFi protocols have different interfaces, these tests should be written per strategy
+
+            it("depositToStrategy reverts if called by wrong role", async function () {
+              await expect(
+                this.defiController
+                  .connect(worker)
+                  .depositToStrategy(amount, this.badStrategyStakeToken.address)
+              ).to.be.revertedWith("defiController: bad role");
+            });
+
+            describe("add bridges & connect deBridgeGate", function () {
+              const chainId = 1;
+              const maxAmount = 0;
+              const collectedFees = 0;
+              const balance = 1000;
+              const lockedInStrategies = 0;
+              const minReservesBps = 10;
+              const chainFee = 0;
+              const exist = false;
+
+              beforeEach(async function () {
+                await this.debridge.init();
+                await this.debridge.addDebridge(
+                  this.stakeToken.address,
+                  chainId,
+                  maxAmount,
+                  collectedFees,
+                  balance,
+                  lockedInStrategies,
+                  minReservesBps,
+                  chainFee,
+                  exist
+                );
+                await this.debridge.setDefiController(this.defiController.address);
+              });
+              describe("after deposited stake token to bad strategy", function () {
+                beforeEach(async function () {
+                  await this.defiController
+                    .connect(worker)
+                    .depositToStrategy(amount, this.badStrategyStakeToken.address);
+                  // todo: assert token.balanceOf(this.debridge) == 0
+                  // todo: assert token.balanceOf(this.strategy) == amount
+                });
+
+                // they should be transferred to the strategy, but it is mocked up and its function does not pull tokens
+                // and they remain on DefiController
+                it("tokens transferred to strategy", async function(){
+                  expect(await this.stakeToken.balanceOf(this.badStrategyStakeToken.address)).to.be.equal(amount+badRewardAmount);
+                })
+                it("the number of tokens owned by the bridge decreases", async function () {
+                  expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                    totalSupplyAmount - amount
+                  );
+                });
+
+                describe("after withdrawn from strategy", function () {
+                  beforeEach(async function () {
+                    await this.defiController
+                      .connect(worker)
+                      .withdrawFromStrategy(amount, this.badStrategyStakeToken.address);
+                  });
+
+                  it("tokens transferred from strategy back to deBridgeGate", async function () {
+                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                      totalSupplyAmount+badRewardAmount-rewardAmount
+                    );
+                  });
+                });
+              });
+            });
+          });
+        });
       });
 
       describe("After worker removal", function () {
