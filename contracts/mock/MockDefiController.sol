@@ -13,7 +13,8 @@ contract MockDefiController is DefiController {
         address strategyToken,
         address rewardToken,
         uint256 totalShares,
-        uint256 totalReserves
+        uint256 totalReserves,
+        uint256 lockedDepositBody
     ) external {
         strategies[strategy] = Strategy(
             isSupported,
@@ -23,7 +24,8 @@ contract MockDefiController is DefiController {
             strategyToken,
             rewardToken,
             totalShares,
-            totalReserves
+            totalReserves,
+            lockedDepositBody
         );
     }
 }

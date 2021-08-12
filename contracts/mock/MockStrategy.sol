@@ -8,7 +8,7 @@ contract MockStrategy is IStrategy {
         
     }
 
-    function withdraw(address _token, uint256 _amount) external override {
+    function withdraw(address _token, uint256 _amount) public override returns(uint256 _yield, uint256 _body){
         
     }
 

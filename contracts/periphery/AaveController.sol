@@ -75,9 +75,6 @@ contract AaveInteractor is IStrategy {
     underlyingTokensDeposited += underlyingBalanceBefore - IERC20(_token).balanceOf(address(this));
   }
 
-  function withdrawAll(address _token) external override {
-    withdraw(_token, type(uint256).max);
-  }
 
   /**
    * @dev withdraw tokens from Aave Lending pool
@@ -85,7 +82,7 @@ contract AaveInteractor is IStrategy {
    * @return _yield yield amount in underlying tokens
    **/
   // todo: add reentrancy guard
-  function withdraw(address _token, uint256 _amount) public override returns (uint256 _body, uint256 _yield) {
+  function withdraw(address _token, uint256 _amount) override public returns (uint256 _body, uint256 _yield) {
     address underlying = aTokenToUnderlying[_token];
     address lendPool = lendingPool();
     IERC20(_token).safeApprove(lendPool, 0);
@@ -114,6 +111,10 @@ contract AaveInteractor is IStrategy {
     uint256 _body = getUnderlyingByA(amountWithdrawn);
     uint256 _yield = underlyingTokensReturned - _body;
     // todo: gracefully treat situations when yield is negative. In this case 0 should be returned.
+  }
+
+    function withdrawAll(address _token) external override {
+    withdraw(_token, type(uint256).max);
   }
 
   /**

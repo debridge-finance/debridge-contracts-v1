@@ -738,7 +738,6 @@ contract DeBridgeGate is Initializable,
     ///       Discarded it for simplicity.
     function returnYield(address _tokenAddress, uint256 _amount)
         external
-        override
         onlyDefiController()
     {
         require(_tokenAddress != address(0), "withdrawYieldToTreasury: token address required");

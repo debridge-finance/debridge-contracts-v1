@@ -109,7 +109,8 @@ describe("DefiController", function () {
               ZERO_ADDRESS,
               ZERO_ADDRESS,
               0,
-              0
+              0,
+              0,
             );
             await this.defiController.addStrategy(
               this.strategyStakeToken.address,
@@ -120,7 +121,8 @@ describe("DefiController", function () {
               ZERO_ADDRESS,
               ZERO_ADDRESS,
               0,
-              0
+              0,
+              0,
             );
           });
 
