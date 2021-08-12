@@ -6,12 +6,15 @@ const { ZERO_ADDRESS, DEFAULT_ADMIN_ROLE, WORKER_ROLE } = require("./utils.spec"
 describe("DefiController", function () {
   const amount = 100;
   const totalSupplyAmount = amount * 2;
+  const rewardAmount=1;
+  const badRewardAmount=rewardAmount+amount/2
   before(async function () {
     [admin, worker, other] = await ethers.getSigners();
     this.DefiControllerFactory = await ethers.getContractFactory("MockDefiController");
     this.DeBridgeFactory = await ethers.getContractFactory("MockDeBridgeGateForDefiController");
     this.MockTokenFactory = await ethers.getContractFactory("MockToken");
-    this.MockStrategyFactory = await ethers.getContractFactory("MockStrategy");
+    this.StrategyFactory = await ethers.getContractFactory("MockStrategy");
+    this.BadStrategyFactory = await ethers.getContractFactory("BadMockStrategy");
   });
 
   beforeEach(async function () {
@@ -64,8 +67,10 @@ describe("DefiController", function () {
 
       describe("with strategy (inactive)", function () {
         beforeEach(async function () {
-          this.strategyNativeToken = await this.MockStrategyFactory.deploy(this.defiController.address);
-          this.strategyStakeToken = await this.MockStrategyFactory.deploy(this.defiController.address);
+          this.strategyNativeToken = await this.StrategyFactory.deploy(this.defiController.address);
+          this.strategyStakeToken = await this.StrategyFactory.deploy(this.defiController.address);
+          this.badStrategyNativeToken = await this.BadStrategyFactory.deploy(this.defiController.address);
+          this.badStrategyStakeToken = await this.BadStrategyFactory.deploy(this.defiController.address);
         });
         it("depositToStrategy reverts", async function () {
           await expect(
@@ -77,6 +82,16 @@ describe("DefiController", function () {
             this.defiController
               .connect(worker)
               .depositToStrategy(amount, this.strategyNativeToken.address)
+          ).to.be.revertedWith("strategy is not enabled");
+          await expect(
+            this.defiController
+              .connect(worker)
+              .depositToStrategy(amount, this.badStrategyNativeToken.address)
+          ).to.be.revertedWith("strategy is not enabled");
+          await expect(
+            this.defiController
+              .connect(worker)
+              .depositToStrategy(amount, this.badStrategyStakeToken.address)
           ).to.be.revertedWith("strategy is not enabled");
         });
 
@@ -91,15 +106,20 @@ describe("DefiController", function () {
               .connect(worker)
               .withdrawFromStrategy(amount, this.strategyNativeToken.address)
           ).to.be.revertedWith("strategy is not enabled");
+          await expect(
+            this.defiController
+              .connect(worker)
+              .withdrawFromStrategy(amount, this.badStrategyNativeToken.address)
+          ).to.be.revertedWith("strategy is not enabled");
+          await expect(
+            this.defiController
+              .connect(worker)
+              .withdrawFromStrategy(amount, this.badStrategyStakeToken.address)
+          ).to.be.revertedWith("strategy is not enabled");
         });
 
-        describe("then add stakeToken and native strategies", function () {
-          const name = "Stake Token";
-          const symbol = "STK";
-          const decimal = 18;
-
+        describe("then add strategy for native token", function () {
           beforeEach(async function () {
-            this.stakeToken = await this.MockTokenFactory.deploy(name, symbol, decimal);
             await this.defiController.addStrategy(
               this.strategyNativeToken.address,
               false,
@@ -112,34 +132,15 @@ describe("DefiController", function () {
               0,
               0,
             );
-            await this.defiController.addStrategy(
-              this.strategyStakeToken.address,
-              false,
-              true,
-              false,
-              this.stakeToken.address,
-              this.stakeToken.address,
-              ZERO_ADDRESS,
-              0,
-              0,
-              0,
-            );
           });
 
-          describe("mint stakeToken and send native eth on debridge & reward on strategy", function () {
-            let rewardAmount;
+          describe("mint send native eth on debridge & reward on strategy", function () {
             beforeEach(async function () {
-              await this.stakeToken.mint(this.debridge.address, totalSupplyAmount);
               await this.debridge.sendETH({ value: totalSupplyAmount });
-              rewardAmount=1;
-              await this.stakeToken.mint(this.strategyStakeToken.address, rewardAmount);
               await this.strategyNativeToken.sendETH({value:rewardAmount});
             });
 
-            it("balanceOf debridge increased", async function () {
-              expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                totalSupplyAmount
-              );
+            it("balance native eth debridge increased", async function () {
               expect(await ethers.provider.getBalance(this.debridge.address)).to.be.equal(
                 totalSupplyAmount
               );
@@ -149,11 +150,6 @@ describe("DefiController", function () {
             // todo: since DeFi protocols have different interfaces, these tests should be written per strategy
 
             it("depositToStrategy reverts if called by wrong role", async function () {
-              await expect(
-                this.defiController
-                  .connect(worker)
-                  .depositToStrategy(amount, this.strategyStakeToken.address)
-              ).to.be.revertedWith("defiController: bad role");
               await expect(
                 this.defiController
                   .connect(worker)
@@ -173,18 +169,6 @@ describe("DefiController", function () {
 
               beforeEach(async function () {
                 await this.debridge.init();
-                await this.debridge.addDebridge(
-                  this.stakeToken.address,
-                  chainId,
-                  maxAmount,
-                  collectedFees,
-                  balance,
-                  lockedInStrategies,
-                  minReservesBps,
-                  chainFee,
-                  exist
-                );
-
                 await this.debridge.addDebridge(
                   ZERO_ADDRESS,
                   chainId,
@@ -234,7 +218,81 @@ describe("DefiController", function () {
                   it("tokens transferred from strategy back to deBridgeGate");
                 });
               });
+            });
+          });
+        });
 
+
+
+        describe("then add strategy for stake token", function () {
+          const name = "Stake Token";
+          const symbol = "STK";
+          const decimal = 18;
+
+          beforeEach(async function () {
+            this.stakeToken = await this.MockTokenFactory.deploy(name, symbol, decimal);
+            await this.defiController.addStrategy(
+              this.strategyStakeToken.address,
+              false,
+              true,
+              false,
+              this.stakeToken.address,
+              this.stakeToken.address,
+              ZERO_ADDRESS,
+              0,
+              0,
+              0,
+            );
+          });
+
+          describe("mint stakeToken on debridge & reward on strategy", function () {
+            beforeEach(async function () {
+              await this.stakeToken.mint(this.debridge.address, totalSupplyAmount);
+              await this.stakeToken.mint(this.strategyStakeToken.address, rewardAmount);
+            });
+
+            it("balanceOf stake token debridge increased", async function () {
+              expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                totalSupplyAmount
+              );
+            });
+
+            it("check funds were deposited to strategy");
+            // todo: since DeFi protocols have different interfaces, these tests should be written per strategy
+
+            it("depositToStrategy reverts if called by wrong role", async function () {
+              await expect(
+                this.defiController
+                  .connect(worker)
+                  .depositToStrategy(amount, this.strategyStakeToken.address)
+              ).to.be.revertedWith("defiController: bad role");
+            });
+
+            describe("add bridges & connect deBridgeGate", function () {
+              const chainId = 1;
+              const maxAmount = 0;
+              const collectedFees = 0;
+              const balance = 1000;
+              const lockedInStrategies = 0;
+              const minReservesBps = 10;
+              const chainFee = 0;
+              const exist = false;
+
+              beforeEach(async function () {
+                await this.debridge.init();
+                await this.debridge.addDebridge(
+                  this.stakeToken.address,
+                  chainId,
+                  maxAmount,
+                  collectedFees,
+                  balance,
+                  lockedInStrategies,
+                  minReservesBps,
+                  chainFee,
+                  exist
+                );
+                await this.debridge.setDefiController(this.defiController.address);
+              });
               describe("after deposited stake token to strategy", function () {
                 beforeEach(async function () {
                   await this.defiController
@@ -272,6 +330,8 @@ describe("DefiController", function () {
             });
           });
         });
+
+
       });
 
       describe("After worker removal", function () {
