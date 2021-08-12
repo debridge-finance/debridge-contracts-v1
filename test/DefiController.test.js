@@ -64,8 +64,8 @@ describe("DefiController", function () {
 
       describe("with strategy (inactive)", function () {
         beforeEach(async function () {
-          this.strategyNativeToken = await this.MockStrategyFactory.deploy();
-          this.strategyStakeToken = await this.MockStrategyFactory.deploy();
+          this.strategyNativeToken = await this.MockStrategyFactory.deploy(this.defiController.address);
+          this.strategyStakeToken = await this.MockStrategyFactory.deploy(this.defiController.address);
         });
         it("depositToStrategy reverts", async function () {
           await expect(
@@ -118,7 +118,7 @@ describe("DefiController", function () {
               true,
               false,
               this.stakeToken.address,
-              ZERO_ADDRESS,
+              this.stakeToken.address,
               ZERO_ADDRESS,
               0,
               0,
@@ -126,10 +126,14 @@ describe("DefiController", function () {
             );
           });
 
-          describe("mint stakeToken and send native eth on debridge", function () {
+          describe("mint stakeToken and send native eth on debridge & reward on strategy", function () {
+            let rewardAmount;
             beforeEach(async function () {
               await this.stakeToken.mint(this.debridge.address, totalSupplyAmount);
               await this.debridge.sendETH({ value: totalSupplyAmount });
+              rewardAmount=1;
+              await this.stakeToken.mint(this.strategyStakeToken.address, rewardAmount);
+              await this.strategyNativeToken.sendETH({value:rewardAmount});
             });
 
             it("balanceOf debridge increased", async function () {
@@ -242,9 +246,9 @@ describe("DefiController", function () {
 
                 // they should be transferred to the strategy, but it is mocked up and its function does not pull tokens
                 // and they remain on DefiController
-                it("tokens transferred to strategy");
-                // todo: expect(await this.stakeToken.balanceOf(this.strategy)).to.be.equal(amount);
-
+                it("tokens transferred to strategy", async function(){
+                  expect(await this.stakeToken.balanceOf(this.strategyStakeToken.address)).to.be.equal(amount+rewardAmount);
+                })
                 it("the number of tokens owned by the bridge decreases", async function () {
                   expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
                     totalSupplyAmount - amount
