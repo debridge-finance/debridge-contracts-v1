@@ -5,7 +5,7 @@ module.exports = {
         files: "*.sol",
         options: {
           bracketSpacing: false,
-          printWidth: 145,
+          printWidth: 100,
           tabWidth: 4,
           useTabs: false,
           singleQuote: false,
@@ -15,7 +15,7 @@ module.exports = {
       {
         files: "*.js",
         options: {
-          printWidth: 145,
+          printWidth: 100,
           trailingComma: "es5",
         },
       },

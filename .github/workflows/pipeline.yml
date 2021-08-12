@@ -57,8 +57,10 @@ jobs:
         steps.cache-yarn-cache.outputs.cache-hit != 'true' ||
         steps.cache-node-modules.outputs.cache-hit != 'true'
 
-    - name: Lint (Hardhat-Solhint)
-      run: yarn run hardhat check
+    - name: Lint (prettier)
+      run: yarn lint:check
+      continue-on-error: true
+
 
     - name: Test CallProxy
       run: yarn run hardhat test test/00_CallProxy.test.js
