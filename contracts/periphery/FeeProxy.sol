@@ -192,7 +192,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         uint256 _amount = erc20.balanceOf(address(this));
         IUniswapV2Pair uniswapPair =
             IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
-        erc20.transfer(address(uniswapPair), _amount);
+        erc20.safeTransfer(address(uniswapPair), _amount);
 
         //TODO: old version check toFirst
         // bool toFirst = _toToken < _fromToken;
