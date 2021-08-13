@@ -99,7 +99,7 @@ contract("AaveController (AaveInteractor)", function () {
       expect(await this.uToken.balanceOf(this.alice.address)).to.equal(0);
       expect(await this.uToken.balanceOf(this.aToken.address)).to.equal(this.depositAmount);
 
-      expect(await this.aToken.balanceWithYieldOf(this.alice.address)).to.equal(this.depositAmount);
+      expect(await this.aToken.balanceOf(this.alice.address)).to.equal(this.depositAmount);
     });
 
     it("has updated reserves", async function () {
@@ -112,7 +112,7 @@ contract("AaveController (AaveInteractor)", function () {
       beforeEach(async function () {
         this.withdrawAmount = 50;
         this.withdrawTx = await this.aaveController.withdraw(
-          this.aToken.address,
+          this.uToken.address,
           this.withdrawAmount
         );
       });
@@ -152,7 +152,7 @@ contract("AaveController (AaveInteractor)", function () {
 
       describe("after all remaining aTokens withdrawn", function () {
         beforeEach(async function () {
-          this.withdrawAllTx = await this.aaveController.withdrawAll(this.aToken.address);
+          this.withdrawAllTx = await this.aaveController.withdrawAll(this.uToken.address);
         });
 
         it("events emitted", async function () {
@@ -193,17 +193,31 @@ contract("AaveController (AaveInteractor)", function () {
     (it requires reward original tokens on pool balance)
     */
     
-    describe("Withdraw after 60 days passed", function() {
-      this.beforeEach(async function() {
-        this.lendingPool.increaseCurrentTime(60*24*60*60);
+    describe("After 60 days passed", function() {
+      beforeEach(async function() {
+        await this.lendingPool.increaseCurrentTime(60*24*60*60);
       });
-
       it("should has greater aToken Alice's balance", async function() {
-        expect(await this.aToken.balanceWithYieldOf(this.alice.address)).to.equal(233);
+        expect(await this.aToken.balanceOf(this.alice.address)).to.equal(233);
       });
 
+      describe("Withdraw 25% of depo", function() {
+        beforeEach(async function() {
+          this.withdrawAmount = 50;
+          this.withdrawTx = await this.aaveController.withdraw(
+            this.uToken.address,
+            this.withdrawAmount
+          );
+        });
+
+        it("should has updated balances of utoken and aToken", async function() {
+          expect(await this.uToken.balanceOf(this.alice.address)).to.equal(this.withdrawAmount);
+          this.withrawnAmount = Number((50 * 233 / 200).toFixed(0));
+          expect(await this.aToken.balanceOf(this.alice.address)).to.equal(233 - this.withrawnAmount);
+
+        });
+
+      });
     });
-
-
   });
 });

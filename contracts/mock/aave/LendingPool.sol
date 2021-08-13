@@ -95,7 +95,7 @@ contract LendingPool {
 
         address aToken = reserve.aTokenAddress;
 
-        uint256 userBalance = MockAToken(aToken).balanceWithYieldOf(to);
+        uint256 userBalance = MockAToken(aToken).balanceOf(to);
         uint256 amountToWithdraw = amount;
 
         if (amount == type(uint256).max) {

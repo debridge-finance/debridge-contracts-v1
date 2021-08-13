@@ -32,6 +32,8 @@ contract MockAToken is ERC20 {
         UNDERLYING_ASSET_ADDRESS = uderlyingAssetAddress;
     }
 
+    // NOTE: it's mocked implementation of mint method
+    // in original mint amount could be scaled, depends of lendingPool.liquidityIndex
     function mint(
         address user,
         uint256 amount,
@@ -66,10 +68,11 @@ contract MockAToken is ERC20 {
     function decimals() public view override returns (uint8) {
         return _decimals;
     }
-
-    function balanceWithYieldOf(address user)
+    // TODO 
+    function balanceOf(address user)
     public
     view
+    override
     returns (uint256)
     {
         uint256 userBalance = _balances[user];
