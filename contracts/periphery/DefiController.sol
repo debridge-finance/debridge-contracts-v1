@@ -112,8 +112,8 @@ contract DefiController is Initializable, AccessControlUpgradeable {
     }
 
     function transferLostTokens(
-        address _receiver,
         address _strategy,
+        address _receiver,
         uint256 _amount
     ) external onlyAdmin {
         Strategy storage strategy = strategies[_strategy];

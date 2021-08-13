@@ -321,6 +321,8 @@ describe("DefiController", function () {
                   });
 
                   it("tokens transferred from strategy back to deBridgeGate");
+                  it("admin can transferLostTokens");
+                  it("should reject transferLostTokens if called by the non-admin");
                 });
 
                 describe("after withdrawAll from bad strategy", function () {
@@ -335,6 +337,8 @@ describe("DefiController", function () {
 
                   it("tokens transferred from strategy back to deBridgeGate");
                   it("lost tokens remain on DefiController");
+                  it("admin can transferLostTokens");
+                  it("should reject transferLostTokens if called by the non-admin");
                 });
               });
             });
@@ -559,6 +563,27 @@ describe("DefiController", function () {
                       badRewardAmount-rewardAmount
                     );  
                   });
+
+                  it("admin can transferLostTokens", async function(){
+                    const lostTokens=badRewardAmount-rewardAmount
+                    const balanceBefore=await this.stakeToken.balanceOf(other.address)
+                    const lostTokensBefore=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
+
+                    await this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens);
+
+                    const balanceAfter=await this.stakeToken.balanceOf(other.address)
+                    const lostTokensAfter=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
+
+                    expect(balanceAfter.sub(balanceBefore)).to.equal(lostTokens)
+                    expect(lostTokensBefore.sub(lostTokensAfter)).to.equal(lostTokens)
+                  })
+                  it("should reject transferLostTokens if called by the non-admin", async function(){
+                    await expect(this.defiController.connect(other).transferLostTokens(this.badStrategyStakeToken.address,other.address,100)).to.be.revertedWith('onlyAdmin: bad role')
+                  })
+                  it("should reject transferLostTokens if amount greater lost tokens", async function(){
+                    const lostTokens=badRewardAmount-rewardAmount
+                    await expect(this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens*2)).to.be.revertedWith('amount is greater than lostTokens')
+                  })
                 });
 
                 describe("after withdraw from bad strategy", function () {
@@ -581,6 +606,26 @@ describe("DefiController", function () {
                       badRewardAmount-rewardAmount
                     );  
                   });
+                  it("admin can transferLostTokens", async function(){
+                    const lostTokens=badRewardAmount-rewardAmount
+                    const balanceBefore=await this.stakeToken.balanceOf(other.address)
+                    const lostTokensBefore=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
+
+                    await this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens);
+
+                    const balanceAfter=await this.stakeToken.balanceOf(other.address)
+                    const lostTokensAfter=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
+
+                    expect(balanceAfter.sub(balanceBefore)).to.equal(lostTokens)
+                    expect(lostTokensBefore.sub(lostTokensAfter)).to.equal(lostTokens)
+                  })
+                  it("should reject transferLostTokens if called by the non-admin", async function(){
+                    await expect(this.defiController.connect(other).transferLostTokens(this.badStrategyStakeToken.address,other.address,100)).to.be.revertedWith('onlyAdmin: bad role')
+                  })
+                  it("should reject transferLostTokens if amount greater lost tokens", async function(){
+                    const lostTokens=badRewardAmount-rewardAmount
+                    await expect(this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens*2)).to.be.revertedWith('amount is greater than lostTokens')
+                  })
                 });
               });
             });
