@@ -96,7 +96,7 @@ contract DefiController is Initializable, AccessControlUpgradeable {
         // Return deposit body and yield to DeBridgeGate
         // todo: treat situations when _body and/or _yield are 0. Simplified these checks for PoC.
         deBridgeGate.returnReserves(strategy.stakeToken, _body);
-        //deBridgeGate.returnYield(strategy.stakeToken, _yield);
+        IERC20(strategy.stakeToken).safeTransfer(deBridgeGate.getTreasury(), _yield);
     }
 
     function addDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {

@@ -195,6 +195,8 @@ interface IDeBridgeGate {
         view
         returns (address _tokenAddress, uint256 _chainId, bool _exist);
 
+    function getTreasury() external view returns(address _treasury);
+
     /* ========== EVENTS ========== */
 
     event Sent(

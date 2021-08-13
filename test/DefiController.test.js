@@ -6,10 +6,10 @@ const { ZERO_ADDRESS, DEFAULT_ADMIN_ROLE, WORKER_ROLE } = require("./utils.spec"
 describe("DefiController", function () {
   const amount = 100;
   const totalSupplyAmount = amount * 2;
-  const rewardAmount=1;
-  const badRewardAmount=rewardAmount+amount/2
+  const rewardAmount = 1;
+  const badRewardAmount = rewardAmount + amount / 2;
   before(async function () {
-    [admin, worker, other] = await ethers.getSigners();
+    [admin, worker, other, treasury] = await ethers.getSigners();
     this.DefiControllerFactory = await ethers.getContractFactory("MockDefiController");
     this.DeBridgeFactory = await ethers.getContractFactory("MockDeBridgeGateForDefiController");
     this.MockTokenFactory = await ethers.getContractFactory("MockToken");
@@ -69,8 +69,12 @@ describe("DefiController", function () {
         beforeEach(async function () {
           this.strategyNativeToken = await this.StrategyFactory.deploy(this.defiController.address);
           this.strategyStakeToken = await this.StrategyFactory.deploy(this.defiController.address);
-          this.badStrategyNativeToken = await this.BadStrategyFactory.deploy(this.defiController.address);
-          this.badStrategyStakeToken = await this.BadStrategyFactory.deploy(this.defiController.address);
+          this.badStrategyNativeToken = await this.BadStrategyFactory.deploy(
+            this.defiController.address
+          );
+          this.badStrategyStakeToken = await this.BadStrategyFactory.deploy(
+            this.defiController.address
+          );
         });
         it("depositToStrategy reverts", async function () {
           await expect(
@@ -124,14 +128,14 @@ describe("DefiController", function () {
               this.strategyNativeToken.address,
               true,
               ZERO_ADDRESS,
-              0,
+              0
             );
           });
 
           describe("mint send native eth on debridge & reward on strategy", function () {
             beforeEach(async function () {
               await this.debridge.sendETH({ value: totalSupplyAmount });
-              await this.strategyNativeToken.sendETH({value:rewardAmount});
+              await this.strategyNativeToken.sendETH({ value: rewardAmount });
             });
 
             it("balance native eth debridge increased", async function () {
@@ -235,14 +239,14 @@ describe("DefiController", function () {
               this.badStrategyNativeToken.address,
               true,
               ZERO_ADDRESS,
-              0,
+              0
             );
           });
 
           describe("mint send native eth on debridge & reward on strategy", function () {
             beforeEach(async function () {
               await this.debridge.sendETH({ value: totalSupplyAmount });
-              await this.badStrategyNativeToken.sendETH({value:badRewardAmount});
+              await this.badStrategyNativeToken.sendETH({ value: badRewardAmount });
             });
 
             it("balance native eth debridge increased", async function () {
@@ -356,7 +360,7 @@ describe("DefiController", function () {
               this.strategyStakeToken.address,
               true,
               this.stakeToken.address,
-              0,
+              0
             );
           });
 
@@ -419,40 +423,56 @@ describe("DefiController", function () {
 
                 // they should be transferred to the strategy, but it is mocked up and its function does not pull tokens
                 // and they remain on DefiController
-                it("tokens transferred to strategy", async function(){
-                  expect(await this.stakeToken.balanceOf(this.strategyStakeToken.address)).to.be.equal(amount+rewardAmount);
-                })
+                it("tokens transferred to strategy", async function () {
+                  expect(
+                    await this.stakeToken.balanceOf(this.strategyStakeToken.address)
+                  ).to.be.equal(amount + rewardAmount);
+                });
                 it("the number of tokens owned by the bridge decreases", async function () {
                   expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
                     totalSupplyAmount - amount
                   );
                 });
-
-                describe("after withdrawAll from strategy", function () {
+                describe("after setting treasure in DeBridgeGate", function () {
                   beforeEach(async function () {
-                    await this.defiController
-                      .connect(worker)
-                      .withdrawAllFromStrategy(this.strategyStakeToken.address);
+                    await this.debridge.updateTreasury(treasury.address);
+                  });
+                  describe("after withdrawAll from strategy", function () {
+                    beforeEach(async function () {
+                      await this.defiController
+                        .connect(worker)
+                        .withdrawAllFromStrategy(this.strategyStakeToken.address);
+                    });
+
+                    it("tokens transferred from strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
+                    it("rewardtokens transferred from strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
                   });
 
-                  it("tokens transferred from strategy back to deBridgeGate", async function () {
-                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                      totalSupplyAmount
-                    );
-                  });
-                });
+                  describe("after withdraw from strategy", function () {
+                    beforeEach(async function () {
+                      await this.defiController
+                        .connect(worker)
+                        .withdrawFromStrategy(amount, this.strategyStakeToken.address);
+                    });
 
-                describe("after withdraw from strategy", function () {
-                  beforeEach(async function () {
-                    await this.defiController
-                      .connect(worker)
-                      .withdrawFromStrategy(amount, this.strategyStakeToken.address);
-                  });
-
-                  it("tokens transferred from strategy back to deBridgeGate", async function () {
-                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                      totalSupplyAmount
-                    );
+                    it("tokens transferred from strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
+                    it("rewardtokens transferred from strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
                   });
                 });
               });
@@ -471,7 +491,7 @@ describe("DefiController", function () {
               this.badStrategyStakeToken.address,
               true,
               this.stakeToken.address,
-              0,
+              0
             );
           });
 
@@ -534,98 +554,160 @@ describe("DefiController", function () {
 
                 // they should be transferred to the strategy, but it is mocked up and its function does not pull tokens
                 // and they remain on DefiController
-                it("tokens transferred to strategy", async function(){
-                  expect(await this.stakeToken.balanceOf(this.badStrategyStakeToken.address)).to.be.equal(amount+badRewardAmount);
-                })
+                it("tokens transferred to strategy", async function () {
+                  expect(
+                    await this.stakeToken.balanceOf(this.badStrategyStakeToken.address)
+                  ).to.be.equal(amount + badRewardAmount);
+                });
                 it("the number of tokens owned by the bridge decreases", async function () {
                   expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
                     totalSupplyAmount - amount
                   );
                 });
-
-                describe("after withdrawAll from strategy", function () {
+                describe("after setting treasure in DeBridgeGate", function () {
                   beforeEach(async function () {
-                    await this.defiController
-                      .connect(worker)
-                      .withdrawAllFromStrategy(this.badStrategyStakeToken.address);
+                    await this.debridge.updateTreasury(treasury.address);
+                  });
+                  describe("after withdrawAll from strategy", function () {
+                    beforeEach(async function () {
+                      await this.defiController
+                        .connect(worker)
+                        .withdrawAllFromStrategy(this.badStrategyStakeToken.address);
+                    });
+
+                    it("tokens transferred from bad strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
+                    it("rewardtokens transferred from strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
+                    it("lost tokens remain on DefiController", async function () {
+                      expect(
+                        await this.stakeToken.balanceOf(this.defiController.address)
+                      ).to.be.equal(badRewardAmount - rewardAmount);
+                      expect(
+                        (await this.defiController.strategies(this.badStrategyStakeToken.address))
+                          .lostTokens
+                      ).to.be.equal(badRewardAmount - rewardAmount);
+                    });
+
+                    it("admin can transferLostTokens", async function () {
+                      const lostTokens = badRewardAmount - rewardAmount;
+                      const balanceBefore = await this.stakeToken.balanceOf(other.address);
+                      const lostTokensBefore = (
+                        await this.defiController.strategies(this.badStrategyStakeToken.address)
+                      ).lostTokens;
+
+                      await this.defiController.transferLostTokens(
+                        this.badStrategyStakeToken.address,
+                        other.address,
+                        lostTokens
+                      );
+
+                      const balanceAfter = await this.stakeToken.balanceOf(other.address);
+                      const lostTokensAfter = (
+                        await this.defiController.strategies(this.badStrategyStakeToken.address)
+                      ).lostTokens;
+
+                      expect(balanceAfter.sub(balanceBefore)).to.equal(lostTokens);
+                      expect(lostTokensBefore.sub(lostTokensAfter)).to.equal(lostTokens);
+                    });
+                    it("should reject transferLostTokens if called by the non-admin", async function () {
+                      await expect(
+                        this.defiController
+                          .connect(other)
+                          .transferLostTokens(
+                            this.badStrategyStakeToken.address,
+                            other.address,
+                            100
+                          )
+                      ).to.be.revertedWith("onlyAdmin: bad role");
+                    });
+                    it("should reject transferLostTokens if amount greater lost tokens", async function () {
+                      const lostTokens = badRewardAmount - rewardAmount;
+                      await expect(
+                        this.defiController.transferLostTokens(
+                          this.badStrategyStakeToken.address,
+                          other.address,
+                          lostTokens * 2
+                        )
+                      ).to.be.revertedWith("amount is greater than lostTokens");
+                    });
                   });
 
-                  it("tokens transferred from bad strategy back to deBridgeGate", async function () {
-                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                      totalSupplyAmount
-                    );  
+                  describe("after withdraw from bad strategy", function () {
+                    beforeEach(async function () {
+                      await this.defiController
+                        .connect(worker)
+                        .withdrawFromStrategy(amount, this.badStrategyStakeToken.address);
+                    });
+
+                    it("tokens transferred from strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
+                    it("rewardtokens transferred from strategy back to deBridgeGate", async function () {
+                      expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                        totalSupplyAmount
+                      );
+                    });
+                    it("lost tokens remain on DefiController", async function () {
+                      expect(
+                        await this.stakeToken.balanceOf(this.defiController.address)
+                      ).to.be.equal(badRewardAmount - rewardAmount);
+                      expect(
+                        (await this.defiController.strategies(this.badStrategyStakeToken.address))
+                          .lostTokens
+                      ).to.be.equal(badRewardAmount - rewardAmount);
+                    });
+                    it("admin can transferLostTokens", async function () {
+                      const lostTokens = badRewardAmount - rewardAmount;
+                      const balanceBefore = await this.stakeToken.balanceOf(other.address);
+                      const lostTokensBefore = (
+                        await this.defiController.strategies(this.badStrategyStakeToken.address)
+                      ).lostTokens;
+
+                      await this.defiController.transferLostTokens(
+                        this.badStrategyStakeToken.address,
+                        other.address,
+                        lostTokens
+                      );
+
+                      const balanceAfter = await this.stakeToken.balanceOf(other.address);
+                      const lostTokensAfter = (
+                        await this.defiController.strategies(this.badStrategyStakeToken.address)
+                      ).lostTokens;
+
+                      expect(balanceAfter.sub(balanceBefore)).to.equal(lostTokens);
+                      expect(lostTokensBefore.sub(lostTokensAfter)).to.equal(lostTokens);
+                    });
+                    it("should reject transferLostTokens if called by the non-admin", async function () {
+                      await expect(
+                        this.defiController
+                          .connect(other)
+                          .transferLostTokens(
+                            this.badStrategyStakeToken.address,
+                            other.address,
+                            100
+                          )
+                      ).to.be.revertedWith("onlyAdmin: bad role");
+                    });
+                    it("should reject transferLostTokens if amount greater lost tokens", async function () {
+                      const lostTokens = badRewardAmount - rewardAmount;
+                      await expect(
+                        this.defiController.transferLostTokens(
+                          this.badStrategyStakeToken.address,
+                          other.address,
+                          lostTokens * 2
+                        )
+                      ).to.be.revertedWith("amount is greater than lostTokens");
+                    });
                   });
-                  it("lost tokens remain on DefiController", async function () {
-                    expect(await this.stakeToken.balanceOf(this.defiController.address)).to.be.equal(
-                      badRewardAmount
-                    );  
-                    expect((await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens).to.be.equal(
-                      badRewardAmount-rewardAmount
-                    );  
-                  });
-
-                  it("admin can transferLostTokens", async function(){
-                    const lostTokens=badRewardAmount-rewardAmount
-                    const balanceBefore=await this.stakeToken.balanceOf(other.address)
-                    const lostTokensBefore=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
-
-                    await this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens);
-
-                    const balanceAfter=await this.stakeToken.balanceOf(other.address)
-                    const lostTokensAfter=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
-
-                    expect(balanceAfter.sub(balanceBefore)).to.equal(lostTokens)
-                    expect(lostTokensBefore.sub(lostTokensAfter)).to.equal(lostTokens)
-                  })
-                  it("should reject transferLostTokens if called by the non-admin", async function(){
-                    await expect(this.defiController.connect(other).transferLostTokens(this.badStrategyStakeToken.address,other.address,100)).to.be.revertedWith('onlyAdmin: bad role')
-                  })
-                  it("should reject transferLostTokens if amount greater lost tokens", async function(){
-                    const lostTokens=badRewardAmount-rewardAmount
-                    await expect(this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens*2)).to.be.revertedWith('amount is greater than lostTokens')
-                  })
-                });
-
-                describe("after withdraw from bad strategy", function () {
-                  beforeEach(async function () {
-                    await this.defiController
-                      .connect(worker)
-                      .withdrawFromStrategy(amount, this.badStrategyStakeToken.address);
-                  });
-
-                  it("tokens transferred from strategy back to deBridgeGate", async function () {
-                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                      totalSupplyAmount
-                    );  
-                  });
-                  it("lost tokens remain on DefiController", async function () {
-                    expect(await this.stakeToken.balanceOf(this.defiController.address)).to.be.equal(
-                      badRewardAmount
-                    );  
-                    expect((await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens).to.be.equal(
-                      badRewardAmount-rewardAmount
-                    );  
-                  });
-                  it("admin can transferLostTokens", async function(){
-                    const lostTokens=badRewardAmount-rewardAmount
-                    const balanceBefore=await this.stakeToken.balanceOf(other.address)
-                    const lostTokensBefore=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
-
-                    await this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens);
-
-                    const balanceAfter=await this.stakeToken.balanceOf(other.address)
-                    const lostTokensAfter=(await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens
-
-                    expect(balanceAfter.sub(balanceBefore)).to.equal(lostTokens)
-                    expect(lostTokensBefore.sub(lostTokensAfter)).to.equal(lostTokens)
-                  })
-                  it("should reject transferLostTokens if called by the non-admin", async function(){
-                    await expect(this.defiController.connect(other).transferLostTokens(this.badStrategyStakeToken.address,other.address,100)).to.be.revertedWith('onlyAdmin: bad role')
-                  })
-                  it("should reject transferLostTokens if amount greater lost tokens", async function(){
-                    const lostTokens=badRewardAmount-rewardAmount
-                    await expect(this.defiController.transferLostTokens(this.badStrategyStakeToken.address,other.address,lostTokens*2)).to.be.revertedWith('amount is greater than lostTokens')
-                  })
                 });
               });
             });

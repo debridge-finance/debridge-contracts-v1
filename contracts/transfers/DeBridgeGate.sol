@@ -1180,4 +1180,8 @@ contract DeBridgeGate is Initializable,
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         return (debridge.tokenAddress, debridge.chainId, debridge.exist);
     }
+
+    function getTreasury() external view override returns(address _treasury){
+        _treasury=treasury;
+    }
 }
