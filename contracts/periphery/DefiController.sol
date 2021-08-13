@@ -58,13 +58,12 @@ contract DefiController is Initializable,
         public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         // deBridgeGate = _deBridgeGate;
-        // TODO: fix DefiController tests   
-        // TODO: what if in some cases strategyToken balance != stake token balance?
     }
 
     function depositToStrategy(uint256 _amount, address _strategy) internal {
         Strategy memory strategy = strategies[_strategy];
-        require(strategy.isEnabled, "strategy is not enabled");
+        // already checked in rebalanceStrategy
+        // require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
 
         // Check that strategy will use only allowed % of all avaliable for DefiController reserves
@@ -84,7 +83,8 @@ contract DefiController is Initializable,
 
     function withdrawFromStrategy(uint256 _amount, address _strategy) internal {
         Strategy memory strategy = strategies[_strategy];
-        require(strategy.isEnabled, " strategy is not enabled");
+        // already checked in rebalanceStrategy
+        // require(strategy.isEnabled, " strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
 
         // Withdraw tokens from strategy
@@ -100,23 +100,40 @@ contract DefiController is Initializable,
 
     function rebalanceStrategy(address _strategy) external onlyWorker whenNotPaused returns (bool) {
         Strategy memory strategy = strategies[_strategy];
-        // require(strategy.isEnabled, "strategy is not enabled");
+        require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
 
         // avaliableReserves = 100%
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
-        // current strategy reserves in bps
         uint256 currentReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
-        uint256 currentReservesBps = currentReserves * BPS_DENOMINATOR / avaliableReserves;
 
+        // no reserves avaliable for stake token
+        if (avaliableReserves == 0) {
+            // prevent division by zero
+            if (currentReserves > 0) {
+                // debridge.minReservesBps was changed to 100%
+                withdrawFromStrategy(currentReserves, _strategy);
+                return true;
+            }
+            return false;
+        }
+
+        // strategy not allowed to use gate's reserves
+        if (strategy.maxReservesBps == 0) {
+            if (currentReserves > 0) {
+                // withdraw all current reserves from strategy
+                withdrawFromStrategy(currentReserves, _strategy);
+                return true;
+            }
+            return false;
+        }
+
+        // current strategy reserves in bps
+        uint256 currentReservesBps = currentReserves * BPS_DENOMINATOR / avaliableReserves;
         // calculate optimal value of strategy reserves in bps:
-        uint256 optimalReservesBps = strategy.maxReservesBps == 0 ? 0
-            : strategy.maxReservesBps - STRATEGY_RESERVES_DELTA_BPS / 2;
-        if (optimalReservesBps == 0) {
-            // maxReservesBps is zero, withdraw all current reserves from strategy
-            withdrawFromStrategy(currentReserves, _strategy);
-            return true;
-        } else if (currentReservesBps > strategy.maxReservesBps) {
+        uint256 optimalReservesBps = strategy.maxReservesBps - STRATEGY_RESERVES_DELTA_BPS / 2;
+
+        if (currentReservesBps > strategy.maxReservesBps) {
             // strategy reserves are more than allowed value, withdraw some to keep optimal balance
             uint256 amount = (currentReservesBps - optimalReservesBps) * avaliableReserves / BPS_DENOMINATOR;
             withdrawFromStrategy(amount, _strategy);
@@ -129,16 +146,6 @@ contract DefiController is Initializable,
         }
         return false;
     }
-
-    // TODO
-    // function isStrategyUnbalanced(address _strategy) external view returns (bool) {
-    //     Strategy memory strategy = strategies[_strategy];
-    //     if (strategy.isSupported) {
-
-    //     }
-    //     return false;
-    // }
-
 
     /* ========== ADMIN ========== */
 
