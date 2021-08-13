@@ -22,16 +22,16 @@ describe("DefiController", function () {
     expect(await this.defiController.hasRole(DEFAULT_ADMIN_ROLE, admin.address)).to.be.equal(true);
   });
 
-  it("only admin can addDeBridgeGate", async function () {
+  it("only admin can setDeBridgeGate", async function () {
     await expect(
-      this.defiController.connect(other).addDeBridgeGate(other.address)
+      this.defiController.connect(other).setDeBridgeGate(other.address)
     ).to.be.revertedWith("onlyAdmin: bad role");
   });
 
   describe("with debridgeGate", function () {
     beforeEach(async function () {
       this.debridge = await this.DeBridgeFactory.deploy();
-      await this.defiController.addDeBridgeGate(this.debridge.address);
+      await this.defiController.setDeBridgeGate(this.debridge.address);
     });
 
     it("deBridgeGate is correct", async function () {

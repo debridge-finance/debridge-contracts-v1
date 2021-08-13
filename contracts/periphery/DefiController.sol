@@ -25,14 +25,14 @@ contract DefiController is Initializable,
         address strategyToken;
         // address rewardToken;
         // uint256 totalShares;
-        uint256 totalReserves;
+        // uint256 totalReserves;
     }
 
 
     /* ========== STATE VARIABLES ========== */
 
     uint256 public constant BPS_DENOMINATOR = 10000;
-    uint256 public constant DELTA_BPS = 200; // 2%
+    uint256 public constant STRATEGY_RESERVES_DELTA_BPS = 200; // 2%
     bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to submit the data
 
     mapping(address => Strategy) public strategies;
@@ -52,69 +52,115 @@ contract DefiController is Initializable,
 
     /* ========== CONSTRUCTOR  ========== */
 
-
     function initialize()//IDeBridgeGate _deBridgeGate)
         public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         // deBridgeGate = _deBridgeGate;
-        // TODO: require that Strategy.maxReservesBps > DELTA_BPS
+        // TODO: pausable for workers
+        // TODO: fix DefiController tests
+        // TODO: what if in some cases strategyToken balance != stake token balance?
     }
 
-    function depositToStrategy(uint256 _amount, address _strategy) public onlyWorker{
+    function addStrategy(
+        address _strategy,
+        bool _isSupported,
+        bool _isEnabled,
+        uint16 _maxReservesBps,
+        address _stakeToken,
+        address _strategyToken
+    ) external onlyAdmin {
+
+        require(maxReservesBps == 0 ||
+            (maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR > maxReservesBps),
+            "invalid maxReservesBps");
         Strategy storage strategy = strategies[_strategy];
+        require(!strategy.isSupported, "strategy already exists");
+        strategy.isSupported = true;
+        strategy.isEnabled = _isEnabled;
+        strategy.maxReservesBps = _maxReservesBps;
+        strategy.stakeToken = _stakeToken;
+        strategy.strategyToken = _strategyToken;
+    }
+
+
+    function depositToStrategy(uint256 _amount, address _strategy) internal {
+        Strategy memory strategy = strategies[_strategy];
         require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
 
-        // check that strategy uses only maxReservesBps from all avaliable for DefiController reserves
+        // Check that strategy will use only allowed % of all avaliable for DefiController reserves
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
         uint256 maxStrategyReserves = avaliableReserves * strategy.maxReservesBps / BPS_DENOMINATOR;
-        require(strategy.totalReserves + _amount < maxStrategyReserves, "");
+        uint256 currentReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        require(currentReserves + _amount < maxStrategyReserves, "");
 
         // Get tokens from Gate
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
 
+        // Deposit tokens to strategy
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
         strategyController.deposit(strategy.stakeToken, _amount);
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
     }
 
-
-    function withdrawFromStrategy(uint256 _amount, address _strategy) public onlyWorker{
-        Strategy storage strategy = strategies[_strategy];
-        require(strategy.isEnabled, "strategy is not enabled");
+    function withdrawFromStrategy(uint256 _amount, address _strategy) internal {
+        Strategy memory strategy = strategies[_strategy];
+        require(strategy.isEnabled, " strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
+
+        // Withdraw tokens from strategy
         strategyController.withdraw(strategy.strategyToken, _amount);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _amount);
+
         // TODO: get rewards from strategy
+
         // Return tokens to Gate
         deBridgeGate.returnReserves(strategy.stakeToken, _amount);
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
     }
 
-    function optimizeStrategyReserves(address _strategy) external onlyWorker {
-        Strategy storage strategy = strategies[_strategy];
-        require(strategy.isEnabled, "strategy is not enabled");
+    function rebalanceStrategy(address _strategy) external onlyWorker returns (bool) {
+        Strategy memory strategy = strategies[_strategy];
+        // require(strategy.isEnabled, "strategy is not enabled");
+        IStrategy strategyController = IStrategy(_strategy);
 
         // avaliableReserves = 100%
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
         // current strategy reserves in bps
-        uint256 reservesBps =  strategy.totalReserves * BPS_DENOMINATOR / avaliableReserves;
-        // optimal strategy reserves in bps - move from maxReservesBps to half of DELTA_BPS
-        uint256 optimalReservesBps = strategy.maxReservesBps - DELTA_BPS / 2;
-        if (reservesBps > strategy.maxReservesBps) {
-            // calculate optimal amount for withdraw
-            uint256 amount = (reservesBps - optimalReservesBps) * avaliableReserves / BPS_DENOMINATOR;
+        uint256 currentReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 currentReservesBps = currentReserves * BPS_DENOMINATOR / avaliableReserves;
+
+        // calculate optimal value of strategy reserves in bps:
+        uint256 optimalReservesBps = strategy.maxReservesBps == 0 ? 0
+            : strategy.maxReservesBps - STRATEGY_RESERVES_DELTA_BPS / 2;
+        if (optimalReservesBps == 0) {
+            // maxReservesBps is zero, withdraw all current reserves from strategy
+            withdrawFromStrategy(currentReserves, _strategy);
+            return true;
+        } else if (currentReservesBps > strategy.maxReservesBps) {
+            // strategy reserves are more than allowed value, withdraw some to keep optimal balance
+            uint256 amount = (currentReservesBps - optimalReservesBps) * avaliableReserves / BPS_DENOMINATOR;
             withdrawFromStrategy(amount, _strategy);
-        } else if (reservesBps + DELTA_BPS < strategy.maxReservesBps) {
-            // calculate optimal amount for deposit
-            uint256 amount = (optimalReservesBps - reservesBps) * avaliableReserves / BPS_DENOMINATOR;
+            return true;
+        } else if (currentReservesBps + STRATEGY_RESERVES_DELTA_BPS < strategy.maxReservesBps) {
+            // strategy reserves are less than optimal value, deposit some to keep optimal balance
+            uint256 amount = (optimalReservesBps - currentReservesBps) * avaliableReserves / BPS_DENOMINATOR;
             depositToStrategy(amount, _strategy);
+            return true;
         }
+        return false;
     }
 
-    function addDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
+    // TODO
+    // function isStrategyUnbalanced(address _strategy) external view returns (bool) {
+    //     Strategy memory strategy = strategies[_strategy];
+    //     if (strategy.isSupported) {
+
+    //     }
+    //     return false;
+    // }
+
+    function setDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
         deBridgeGate = _deBridgeGate;
     }
 
