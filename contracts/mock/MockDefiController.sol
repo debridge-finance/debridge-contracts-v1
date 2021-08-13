@@ -25,6 +25,7 @@ contract MockDefiController is DefiController {
         // address rewardToken;
         // uint256 totalShares;
         //uint256 totalReserves;
-        lockedDepositBody);
+        lockedDepositBody,
+        0);
     }
 }

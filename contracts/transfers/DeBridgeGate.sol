@@ -717,15 +717,9 @@ contract DeBridgeGate is Initializable,
                 address(this),
                 _amount
             );
-            debridge.lockedInStrategies -=
-                _amount > debridge.lockedInStrategies
-                ? debridge.lockedInStrategies
-                : _amount;
+            debridge.lockedInStrategies -= _amount;
         } else {
-            debridge.lockedInStrategies -=
-                msg.value > debridge.lockedInStrategies
-                ? debridge.lockedInStrategies
-                : msg.value;
+            debridge.lockedInStrategies -= msg.value;
         }
     }
 

@@ -11,9 +11,7 @@ import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IStrategy.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract DefiController is Initializable,
-                           AccessControlUpgradeable {
-
+contract DefiController is Initializable, AccessControlUpgradeable {
     using SafeERC20 for IERC20;
 
     struct Strategy {
@@ -26,8 +24,8 @@ contract DefiController is Initializable,
         // uint256 totalShares;
         //uint256 totalReserves;
         uint256 lockedDepositBody;
+        uint256 lostTokens;
     }
-
 
     /* ========== STATE VARIABLES ========== */
 
@@ -36,28 +34,30 @@ contract DefiController is Initializable,
 
     mapping(address => Strategy) public strategies;
 
-     /* ========== MODIFIERS ========== */
+    /* ========== MODIFIERS ========== */
 
-    modifier onlyWorker {
+    modifier onlyWorker() {
         require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
         _;
     }
 
-    modifier onlyAdmin {
+    modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
 
     /* ========== CONSTRUCTOR  ========== */
 
-
-    function initialize()//IDeBridgeGate _deBridgeGate)
-        public initializer {
+    function initialize()
+        public
+        //IDeBridgeGate _deBridgeGate)
+        initializer
+    {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         // deBridgeGate = _deBridgeGate;
     }
 
-    function depositToStrategy(uint256 _amount, address _strategy) external onlyWorker{
+    function depositToStrategy(uint256 _amount, address _strategy) external onlyWorker {
         Strategy storage strategy = strategies[_strategy];
         require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
@@ -70,22 +70,27 @@ contract DefiController is Initializable,
         strategyController.deposit(strategy.stakeToken, _amount);
     }
 
-
-    function withdrawFromStrategy(uint256 _amount, address _strategy) external onlyWorker{
-        _withdraw(_amount,_strategy);
+    function withdrawFromStrategy(uint256 _amount, address _strategy) external onlyWorker {
+        _withdraw(_amount, _strategy);
     }
 
-    function withdrawAllFromStrategy(address _strategy) external onlyWorker{
-        _withdraw(strategies[_strategy].lockedDepositBody,_strategy);
+    function withdrawAllFromStrategy(address _strategy) external onlyWorker {
+        _withdraw(strategies[_strategy].lockedDepositBody, _strategy);
     }
 
     function _withdraw(uint256 _amount, address _strategy) internal {
         Strategy storage strategy = strategies[_strategy];
         require(strategy.isEnabled, "strategy is not enabled");
         require(strategy.lockedDepositBody >= _amount, "amount is greater than the total number of tokens deposited");
+
         IStrategy strategyController = IStrategy(_strategy);
         (uint256 _yield, uint256 _body) = strategyController.withdraw(strategy.stakeToken, _amount);
-        strategy.lockedDepositBody -= strategy.lockedDepositBody > _body ? _body : strategy.lockedDepositBody;
+
+        if (_body > strategy.lockedDepositBody) {
+            strategy.lostTokens = _body - strategy.lockedDepositBody;
+            _body = strategy.lockedDepositBody;
+        }
+        strategy.lockedDepositBody -= _body;
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _body);
         // Return deposit body and yield to DeBridgeGate
@@ -104,5 +109,16 @@ contract DefiController is Initializable,
 
     function removeWorker(address _worker) external onlyAdmin {
         revokeRole(WORKER_ROLE, _worker);
+    }
+
+    function transferLostTokens(
+        address _receiver,
+        address _strategy,
+        uint256 _amount
+    ) external onlyAdmin {
+        Strategy storage strategy = strategies[_strategy];
+        require(strategy.lostTokens >= _amount, "amount is greater than lostTokens");
+        strategy.lostTokens -= _amount;
+        IERC20(strategy.stakeToken).safeTransfer(_receiver, _amount);
     }
 }

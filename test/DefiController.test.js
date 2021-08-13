@@ -507,8 +507,16 @@ describe("DefiController", function () {
 
                   it("tokens transferred from strategy back to deBridgeGate", async function () {
                     expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                      totalSupplyAmount+badRewardAmount-rewardAmount
-                    );
+                      totalSupplyAmount
+                    );  
+                  });
+                  it("lost tokens remain on DefiController", async function () {
+                    expect(await this.stakeToken.balanceOf(this.defiController.address)).to.be.equal(
+                      badRewardAmount
+                    );  
+                    expect((await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens).to.be.equal(
+                      badRewardAmount-rewardAmount
+                    );  
                   });
                 });
               });
