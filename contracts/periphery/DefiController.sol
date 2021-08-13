@@ -63,15 +63,14 @@ contract DefiController is Initializable,
 
     function addStrategy(
         address _strategy,
-        bool _isSupported,
         bool _isEnabled,
         uint16 _maxReservesBps,
         address _stakeToken,
         address _strategyToken
     ) external onlyAdmin {
 
-        require(maxReservesBps == 0 ||
-            (maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR > maxReservesBps),
+        require(_maxReservesBps == 0 ||
+            (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR > _maxReservesBps),
             "invalid maxReservesBps");
         Strategy storage strategy = strategies[_strategy];
         require(!strategy.isSupported, "strategy already exists");
