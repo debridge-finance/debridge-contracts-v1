@@ -6,26 +6,25 @@ import "../periphery/DefiController.sol";
 contract MockDefiController is DefiController {
     function addStrategy(
         address strategy,
-        bool isSupported,
+        // bool isSupported,
         bool isEnabled,
-        bool isRecoverable,
+        // bool isRecoverable,
         address stakeToken,
-        address strategyToken,
-        address rewardToken,
-        uint256 totalShares,
-        uint256 totalReserves,
+        // address strategyToken,
+        // address rewardToken,
+        // uint256 totalShares,
+        // uint256 totalReserves,
         uint256 lockedDepositBody
     ) external {
         strategies[strategy] = Strategy(
-            isSupported,
-            isEnabled,
-            isRecoverable,
-            stakeToken,
-            strategyToken,
-            rewardToken,
-            totalShares,
-            totalReserves,
-            lockedDepositBody
-        );
+        //bool isSupported;
+        isEnabled,
+        // bool isRecoverable;
+        stakeToken,
+        // address strategyToken;
+        // address rewardToken;
+        // uint256 totalShares;
+        //uint256 totalReserves;
+        lockedDepositBody);
     }
 }

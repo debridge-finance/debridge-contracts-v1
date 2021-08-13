@@ -122,14 +122,8 @@ describe("DefiController", function () {
           beforeEach(async function () {
             await this.defiController.addStrategy(
               this.strategyNativeToken.address,
-              false,
               true,
-              false,
               ZERO_ADDRESS,
-              ZERO_ADDRESS,
-              ZERO_ADDRESS,
-              0,
-              0,
               0,
             );
           });
@@ -226,14 +220,8 @@ describe("DefiController", function () {
           beforeEach(async function () {
             await this.defiController.addStrategy(
               this.badStrategyNativeToken.address,
-              false,
               true,
-              false,
               ZERO_ADDRESS,
-              ZERO_ADDRESS,
-              ZERO_ADDRESS,
-              0,
-              0,
               0,
             );
           });
@@ -335,14 +323,8 @@ describe("DefiController", function () {
             this.stakeToken = await this.MockTokenFactory.deploy(name, symbol, decimal);
             await this.defiController.addStrategy(
               this.strategyStakeToken.address,
-              false,
               true,
-              false,
               this.stakeToken.address,
-              this.stakeToken.address,
-              ZERO_ADDRESS,
-              0,
-              0,
               0,
             );
           });
@@ -442,14 +424,8 @@ describe("DefiController", function () {
             this.stakeToken = await this.MockTokenFactory.deploy(name, symbol, decimal);
             await this.defiController.addStrategy(
               this.badStrategyStakeToken.address,
-              false,
               true,
-              false,
               this.stakeToken.address,
-              this.stakeToken.address,
-              ZERO_ADDRESS,
-              0,
-              0,
               0,
             );
           });
