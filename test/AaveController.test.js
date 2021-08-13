@@ -189,7 +189,7 @@ contract("AaveController (AaveInteractor)", function () {
     });
 
     /* 
-    TODO make case with withdrawing after some time and user gets rewards 
+    TODO make case with withdrawing all uTokens after 60days and user gets rewards 
     (it requires reward original tokens on pool balance)
     */
     
@@ -201,22 +201,44 @@ contract("AaveController (AaveInteractor)", function () {
         expect(await this.aToken.balanceOf(this.alice.address)).to.equal(233);
       });
 
-      describe("Withdraw 25% of depo", function() {
+      describe("Withdraw 25% of depo (200 uTokens)", function() {
         beforeEach(async function() {
           this.withdrawAmount = 50;
-          this.withdrawTx = await this.aaveController.withdraw(
+          this.withdrawnedAmount = Number((50 * 233 / 200).toFixed(0));
+          this.withdrawTx60d = await this.aaveController.withdraw(
             this.uToken.address,
             this.withdrawAmount
           );
         });
 
-        it("should has updated balances of utoken and aToken", async function() {
-          expect(await this.uToken.balanceOf(this.alice.address)).to.equal(this.withdrawAmount);
-          this.withrawnAmount = Number((50 * 233 / 200).toFixed(0));
-          expect(await this.aToken.balanceOf(this.alice.address)).to.equal(233 - this.withrawnAmount);
+        it("should emits proper events on withdrawTx", async function() {
+          await expect(this.withdrawTx60d)
+            .to.emit(this.lendingPool, "Withdraw")
+            .withArgs(
+              this.uToken.address,
+              this.alice.address,
+              this.alice.address,
+              this.withdrawAmount
+            );
 
+          await expect(this.withdrawTx60d)
+            .to.emit(this.aToken, "Transfer")
+            .withArgs(this.alice.address, ZERO_ADDRESS, this.withdrawAmount);
+
+          await expect(this.withdrawTx60d)
+            .to.emit(this.aToken, "Burn")
+            .withArgs(
+              this.alice.address,
+              this.alice.address,
+              this.withdrawAmount,
+              BigNumber.from("1000888888888888888888888888")
+              );
         });
 
+        it("should has updated balances of utoken and aToken", async function() {
+          expect(await this.uToken.balanceOf(this.alice.address)).to.equal(this.withdrawAmount);
+          expect(await this.aToken.balanceOf(this.alice.address)).to.equal(233 - this.withdrawnedAmount);
+        });
       });
     });
   });

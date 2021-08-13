@@ -8,7 +8,6 @@ import "../interfaces/ILendingPoolAddressesProvider.sol";
 import "../interfaces/IAaveProtocolDataProvider.sol";
 import "../interfaces/IStrategy.sol";
 import "./DefiController.sol";
-import "hardhat/console.sol";
 
 contract AaveInteractor is IStrategy {
     
@@ -17,11 +16,7 @@ contract AaveInteractor is IStrategy {
   address public lendingPoolProvider;
   address public protocolDataProvider;
   mapping(address => address) aTokenToUnderlying;
-  // total amount of underlying tokens locked in the strategy (yield not included)
-  uint256 public underlyingTokensDeposited;
-  // total amount of aTokens received for deposited underlying tokens
-  uint256 public aTokensReceived;
-  
+
   // Collected yield in underlying tokens
   // gets calculated and increased on withdraw.
   // todo: should be transferred to treasury
@@ -65,16 +60,12 @@ contract AaveInteractor is IStrategy {
     IERC20(_token).transferFrom(msg.sender, address(this), _amount);
     IERC20(_token).safeApprove(lendPool, 0);
     IERC20(_token).safeApprove(lendPool, _amount);
-    uint256 aTokenBalanceBefore = IERC20(aToken(_token)).balanceOf(address(this));
-    uint256 underlyingBalanceBefore = IERC20(_token).balanceOf(address(this));
     ILendingPool(lendPool).deposit(
       _token,
       _amount,
       msg.sender,
       0 // referral code
     );
-    aTokensReceived += IERC20(aToken(_token)).balanceOf(address(this)) - aTokenBalanceBefore;
-    underlyingTokensDeposited += underlyingBalanceBefore - IERC20(_token).balanceOf(address(this));
   }
 
 
@@ -96,7 +87,7 @@ contract AaveInteractor is IStrategy {
 
     uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
       _token,
-      _amount, //amountToWithdraw,
+      _amount,
       msg.sender
     );
     require(
@@ -106,38 +97,13 @@ contract AaveInteractor is IStrategy {
     );
     
     uint256 aTokensWithdrawn = aTokenBalanceBefore - IERC20(_aToken).balanceOf(msg.sender);
-    // require(aTokensWithdrawn == amountWithdrawn, "withdraw: unexpected aToken withdrawal result"); // TODO deprecated
-    underlyingTokensDeposited -= amountWithdrawn;
     _yield = aTokensWithdrawn - amountWithdrawn;
-
     underlyingTokensYield += _yield;
-
     return (amountWithdrawn, _yield);
     // todo: gracefully treat situations when yield is negative. In this case 0 should be returned.
   }
 
     function withdrawAll(address _token) external override {
     withdraw(_token, type(uint256).max);
-  }
-
-  /**
-   * @dev Returns the `amount` of a overlying tokens by underlying token amount.
-   * The calculation based on the average rate for all underlying asset deposits.
-   * @param _amount amount of underlying asset
-   * @return The amount of A-tokens
-   **/
-  function getAByUnderlying(uint256 _amount) public view returns (uint256) {
-    return ( _amount * aTokensReceived / underlyingTokensDeposited );
-  }
-
-
-  /**
-   * @dev Returns the `amount` of underlying tokens by a token amount.
-   * The calculation based on the average rate for all underlying asset deposits.
-   * @param _amount amount of a tokens
-   * @return The amount of underlying tokens
-   **/
-  function getUnderlyingByA(uint256 _amount) public view returns (uint256) {
-    return ( _amount * underlyingTokensDeposited / aTokensReceived );
   }
 }

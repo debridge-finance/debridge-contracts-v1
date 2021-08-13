@@ -55,9 +55,12 @@ contract MockAToken is ERC20 {
         uint256 amount,
         uint256 index
     ) external {
+        uint256 amountScaled = amount.rayDiv(index);
+        require(amountScaled != 0, "CT_INVALID_BURN_AMOUNT");
+
         uint256 oldAccountBalance = _balances[user];
         _balances[user] = oldAccountBalance - amount;
-        _burn(user, amount);
+        _burn(user, amountScaled);
 
         IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
@@ -68,7 +71,7 @@ contract MockAToken is ERC20 {
     function decimals() public view override returns (uint8) {
         return _decimals;
     }
-    // TODO 
+
     function balanceOf(address user)
     public
     view
