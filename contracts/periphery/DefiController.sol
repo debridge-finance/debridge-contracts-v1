@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IDeBridgeGate.sol";
@@ -12,7 +13,8 @@ import "../interfaces/IStrategy.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract DefiController is Initializable,
-                           AccessControlUpgradeable {
+                           AccessControlUpgradeable,
+                           PausableUpgradeable {
 
     using SafeERC20 for IERC20;
 
@@ -56,31 +58,9 @@ contract DefiController is Initializable,
         public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         // deBridgeGate = _deBridgeGate;
-        // TODO: pausable for workers
         // TODO: fix DefiController tests
         // TODO: what if in some cases strategyToken balance != stake token balance?
     }
-
-    function addStrategy(
-        address _strategy,
-        bool _isEnabled,
-        uint16 _maxReservesBps,
-        address _stakeToken,
-        address _strategyToken
-    ) external onlyAdmin {
-
-        require(_maxReservesBps == 0 ||
-            (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR > _maxReservesBps),
-            "invalid maxReservesBps");
-        Strategy storage strategy = strategies[_strategy];
-        require(!strategy.isSupported, "strategy already exists");
-        strategy.isSupported = true;
-        strategy.isEnabled = _isEnabled;
-        strategy.maxReservesBps = _maxReservesBps;
-        strategy.stakeToken = _stakeToken;
-        strategy.strategyToken = _strategyToken;
-    }
-
 
     function depositToStrategy(uint256 _amount, address _strategy) internal {
         Strategy memory strategy = strategies[_strategy];
@@ -118,7 +98,7 @@ contract DefiController is Initializable,
         deBridgeGate.returnReserves(strategy.stakeToken, _amount);
     }
 
-    function rebalanceStrategy(address _strategy) external onlyWorker returns (bool) {
+    function rebalanceStrategy(address _strategy) external onlyWorker whenNotPaused returns (bool) {
         Strategy memory strategy = strategies[_strategy];
         // require(strategy.isEnabled, "strategy is not enabled");
         IStrategy strategyController = IStrategy(_strategy);
@@ -159,6 +139,31 @@ contract DefiController is Initializable,
     //     return false;
     // }
 
+
+    /* ========== ADMIN ========== */
+
+
+    /// @dev add new strategy
+    function addStrategy(
+        address _strategy,
+        bool _isEnabled,
+        uint16 _maxReservesBps,
+        address _stakeToken,
+        address _strategyToken
+    ) external onlyAdmin {
+
+        require(_maxReservesBps == 0 ||
+            (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR > _maxReservesBps),
+            "invalid maxReservesBps");
+        Strategy storage strategy = strategies[_strategy];
+        require(!strategy.isSupported, "strategy already exists");
+        strategy.isSupported = true;
+        strategy.isEnabled = _isEnabled;
+        strategy.maxReservesBps = _maxReservesBps;
+        strategy.stakeToken = _stakeToken;
+        strategy.strategyToken = _strategyToken;
+    }
+
     function setDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
         deBridgeGate = _deBridgeGate;
     }
@@ -170,4 +175,15 @@ contract DefiController is Initializable,
     function removeWorker(address _worker) external onlyAdmin {
         revokeRole(WORKER_ROLE, _worker);
     }
+
+    /// @dev Disable strategies rebalancing for workers
+    function pause() external onlyAdmin whenNotPaused {
+        _pause();
+    }
+
+    /// @dev Allow strategies rebalancing for workers
+    function unpause() external onlyAdmin whenPaused {
+        _unpause();
+    }
+
 }
