@@ -17,14 +17,14 @@ contract DefiController is Initializable,
     using SafeERC20 for IERC20;
 
     struct Strategy {
-        bool isSupported;
+        //bool isSupported;
         bool isEnabled;
-        bool isRecoverable;
+        // bool isRecoverable;
         address stakeToken;
-        address strategyToken;
-        address rewardToken;
-        uint256 totalShares;
-        uint256 totalReserves;
+        // address strategyToken;
+        // address rewardToken;
+        // uint256 totalShares;
+        //uint256 totalReserves;
         uint256 lockedDepositBody;
     }
 
@@ -74,9 +74,10 @@ contract DefiController is Initializable,
     function withdrawFromStrategy(uint256 _amount, address _strategy) external onlyWorker{
         Strategy storage strategy = strategies[_strategy];
         require(strategy.isEnabled, "strategy is not enabled");
+        require(strategy.lockedDepositBody >= _amount, "amount is greater than the total number of tokens deposited");
         IStrategy strategyController = IStrategy(_strategy);
-        strategy.lockedDepositBody -= _amount;
-        (uint256 _yield, uint256 _body) = strategyController.withdraw(strategy.strategyToken, _amount);
+        (uint256 _yield, uint256 _body) = strategyController.withdraw(strategy.stakeToken, _amount);
+        strategy.lockedDepositBody -= _body;
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _body);
         // Return deposit body and yield to DeBridgeGate
