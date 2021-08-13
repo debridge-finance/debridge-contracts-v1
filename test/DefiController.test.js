@@ -38,16 +38,10 @@ describe("DefiController", function () {
       expect(this.debridge.address).to.be.equal(await this.defiController.deBridgeGate());
     });
 
-    it("non-worker can't depositToStrategy", async function () {
-      await expect(this.defiController.depositToStrategy(amount, ZERO_ADDRESS)).to.be.revertedWith(
+    it("non-worker can't rebalanceStrategy", async function () {
+      await expect(this.defiController.rebalanceStrategy(ZERO_ADDRESS)).to.be.revertedWith(
         "onlyWorker: bad role"
       );
-    });
-
-    it("non-worker can't withdrawFromStrategy", async function () {
-      await expect(
-        this.defiController.withdrawFromStrategy(amount, ZERO_ADDRESS)
-      ).to.be.revertedWith("onlyWorker: bad role");
     });
 
     describe("with worker added", function () {
@@ -67,29 +61,20 @@ describe("DefiController", function () {
           this.strategyNativeToken = await this.MockStrategyFactory.deploy();
           this.strategyStakeToken = await this.MockStrategyFactory.deploy();
         });
-        it("depositToStrategy reverts", async function () {
+
+        it("rebalanceStrategy reverts", async function () {
           await expect(
             this.defiController
               .connect(worker)
-              .depositToStrategy(amount, this.strategyStakeToken.address)
-          ).to.be.revertedWith("strategy is not enabled");
-          await expect(
-            this.defiController
-              .connect(worker)
-              .depositToStrategy(amount, this.strategyNativeToken.address)
+              .rebalanceStrategy(this.strategyNativeToken.address)
           ).to.be.revertedWith("strategy is not enabled");
         });
 
-        it("withdrawFromStrategy reverts", async function () {
+        it("rebalanceStrategy reverts", async function () {
           await expect(
             this.defiController
               .connect(worker)
-              .withdrawFromStrategy(amount, this.strategyStakeToken.address)
-          ).to.be.revertedWith("strategy is not enabled");
-          await expect(
-            this.defiController
-              .connect(worker)
-              .withdrawFromStrategy(amount, this.strategyNativeToken.address)
+              .rebalanceStrategy(this.strategyStakeToken.address)
           ).to.be.revertedWith("strategy is not enabled");
         });
 
@@ -142,16 +127,16 @@ describe("DefiController", function () {
             it("check funds were deposited to strategy");
             // todo: since DeFi protocols have different interfaces, these tests should be written per strategy
 
-            it("depositToStrategy reverts if called by wrong role", async function () {
+            it("rebalanceStrategy reverts if called by wrong role", async function () {
               await expect(
                 this.defiController
                   .connect(worker)
-                  .depositToStrategy(amount, this.strategyStakeToken.address)
+                  .rebalanceStrategy(amount, this.strategyStakeToken.address)
               ).to.be.revertedWith("defiController: bad role");
               await expect(
                 this.defiController
                   .connect(worker)
-                  .depositToStrategy(amount, this.strategyNativeToken.address)
+                  .rebalanceStrategy (amount, this.strategyNativeToken.address)
               ).to.be.revertedWith("defiController: bad role");
             });
 
