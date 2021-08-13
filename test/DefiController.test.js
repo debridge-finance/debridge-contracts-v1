@@ -199,7 +199,20 @@ describe("DefiController", function () {
 
                 it("native tokens transferred to strategy");
 
-                describe("after withdrawn from strategy", function () {
+                describe("after withdraw from strategy", function () {
+                  beforeEach(async function () {
+                    await expect(
+                      this.defiController
+                        .connect(worker)
+                        .withdrawFromStrategy(amount, this.strategyNativeToken.address)
+                    ).to.be.reverted;
+                    //Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
+                  });
+
+                  it("tokens transferred from strategy back to deBridgeGate");
+                });
+
+                describe("after withdrawAll from strategy", function () {
                   beforeEach(async function () {
                     await expect(
                       this.defiController
@@ -297,7 +310,7 @@ describe("DefiController", function () {
 
                 it("native tokens transferred to bad strategy");
 
-                describe("after withdrawn from bad strategy", function () {
+                describe("after withdraw from bad strategy", function () {
                   beforeEach(async function () {
                     await expect(
                       this.defiController
@@ -308,6 +321,20 @@ describe("DefiController", function () {
                   });
 
                   it("tokens transferred from strategy back to deBridgeGate");
+                });
+
+                describe("after withdrawAll from bad strategy", function () {
+                  beforeEach(async function () {
+                    await expect(
+                      this.defiController
+                        .connect(worker)
+                        .withdrawFromStrategy(amount, this.badStrategyNativeToken.address)
+                    ).to.be.reverted;
+                    //Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
+                  });
+
+                  it("tokens transferred from strategy back to deBridgeGate");
+                  it("lost tokens remain on DefiController");
                 });
               });
             });
@@ -397,7 +424,21 @@ describe("DefiController", function () {
                   );
                 });
 
-                describe("after withdrawn from strategy", function () {
+                describe("after withdrawAll from strategy", function () {
+                  beforeEach(async function () {
+                    await this.defiController
+                      .connect(worker)
+                      .withdrawAllFromStrategy(this.strategyStakeToken.address);
+                  });
+
+                  it("tokens transferred from strategy back to deBridgeGate", async function () {
+                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                      totalSupplyAmount
+                    );
+                  });
+                });
+
+                describe("after withdraw from strategy", function () {
                   beforeEach(async function () {
                     await this.defiController
                       .connect(worker)
@@ -498,7 +539,29 @@ describe("DefiController", function () {
                   );
                 });
 
-                describe("after withdrawn from strategy", function () {
+                describe("after withdrawAll from strategy", function () {
+                  beforeEach(async function () {
+                    await this.defiController
+                      .connect(worker)
+                      .withdrawAllFromStrategy(this.badStrategyStakeToken.address);
+                  });
+
+                  it("tokens transferred from bad strategy back to deBridgeGate", async function () {
+                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+                      totalSupplyAmount
+                    );  
+                  });
+                  it("lost tokens remain on DefiController", async function () {
+                    expect(await this.stakeToken.balanceOf(this.defiController.address)).to.be.equal(
+                      badRewardAmount
+                    );  
+                    expect((await this.defiController.strategies(this.badStrategyStakeToken.address)).lostTokens).to.be.equal(
+                      badRewardAmount-rewardAmount
+                    );  
+                  });
+                });
+
+                describe("after withdraw from bad strategy", function () {
                   beforeEach(async function () {
                     await this.defiController
                       .connect(worker)
