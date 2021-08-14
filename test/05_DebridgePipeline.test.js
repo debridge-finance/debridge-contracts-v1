@@ -77,37 +77,15 @@ contract("DeBridgeGate real pipeline mode",  function() {
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
-    this.initialOracles = [
-      // {
-      //   address: alice,
-      //   admin: alice,
-      // },
-      {
-          account: bobAccount,
-          address: bob,
-          admin: carol
-      },
-      {
-          account: carolAccount,
-          address: carol,
-          admin: eve,
-      },
-      {
-          account: eveAccount,
-          address: eve,
-          admin: carol,
-      },
-      {
-          account: feiAccount,
-          address: fei,
-          admin: eve,
-      },
-      {
-          account: devidAccount,
-          address: devid,
-          admin: carol,
-      },
-    ];
+    this.initialOracles = [];
+
+    for(let i=1; i<this.signers.length; i++){
+      this.initialOracles.push({
+          account: this.signers[i],
+          address: this.signers[i].address,
+          admin: alice
+      })
+    }
 
     //-------Deploy mock tokens contracts
     this.cakeToken = await MockToken.new("PancakeSwap Token", "Cake", 18, {
@@ -1180,6 +1158,34 @@ for (let i = 0; i <= 2; i++) {
       );
     })
 
+    it("should reject when exist dublicate signatures", async function() {
+      const debridgeId = nativeETHDebridgeId;
+      const receiver = this.nativeSubmission.args.receiver;
+      const amount = this.nativeSubmission.args.amount;
+      const nonce = this.nativeSubmission.args.nonce;
+      let signaturesWithDublicate = [];
+      for (i = 0; i < this.nativeSignatures.length; i++) {
+        signaturesWithDublicate.push(this.nativeSignatures[i]);
+      }
+      signaturesWithDublicate.push(this.nativeSignatures[3]);
+
+      //console.log("signatures count: " + signaturesWithDublicate.length);
+
+      await expectRevert(this.debridgeETH.claim(
+        debridgeId,
+        bscChainId,
+        receiver,
+        amount,
+        nonce,
+        signaturesWithDublicate,
+        {
+          from: alice,
+        }
+      ),
+      "duplicate signatures");
+    });
+
+
     it("should claim native token when the submission is approved", async function() {
       const debridgeId = nativeETHDebridgeId;
       const debridgeInfo = await this.debridgeETH.getDebridge(debridgeId);
@@ -1187,6 +1193,7 @@ for (let i = 0; i <= 2; i++) {
       const balance = toBN(await web3.eth.getBalance(receiver));
       const amount = this.nativeSubmission.args.amount;
       const nonce = this.nativeSubmission.args.nonce;
+      //console.log("signatures count: " + this.nativeSignatures.length);
       await this.debridgeETH.claim(
         debridgeId,
         bscChainId,
