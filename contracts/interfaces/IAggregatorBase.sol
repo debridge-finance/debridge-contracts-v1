@@ -12,11 +12,6 @@ interface IAggregatorBase {
         address admin; // current oracle admin
     }
 
-    struct BlockConfirmationsInfo {
-        uint8 count; // count of submissions in block
-        bool requireExtraCheck; // exceed confirmation count for all submissions in block
-        mapping(bytes32 => bool) isConfirmed; // submission => was confirmed
-    }
 
     /* ========== EVENTS ========== */
 

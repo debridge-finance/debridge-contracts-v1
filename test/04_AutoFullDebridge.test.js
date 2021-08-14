@@ -27,7 +27,7 @@ contract("DeBridgeGate full with auto", function () {
   const claimFee = toBN(toWei("0"));
   const data = "0x";
 
-  before(async function() {    
+  before(async function() {
     this.signers = await ethers.getSigners()
     aliceAccount=this.signers[0]
     bobAccount=this.signers[1]
@@ -41,7 +41,7 @@ contract("DeBridgeGate full with auto", function () {
     eve=eveAccount.address
     fei=feiAccount.address
     devid=devidAccount.address
-    
+
     reserveAddress = devid
     const Debridge = await ethers.getContractFactory("DeBridgeGate",alice);
     const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator",alice);
@@ -50,7 +50,7 @@ contract("DeBridgeGate full with auto", function () {
     const UniswapV2Factory = await ethers.getContractFactory(UniswapV2.abi,UniswapV2.bytecode, alice );
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
-    
+
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
@@ -136,7 +136,7 @@ contract("DeBridgeGate full with auto", function () {
     const isSupported = true;
     const supportedChainIds = [42, 56];
     this.weth = await WETH9Factory.deploy();
-    
+
     //   function initialize(
     //     uint256 _excessConfirmations,
     //     address _signatureVerifier,
@@ -148,7 +148,7 @@ contract("DeBridgeGate full with auto", function () {
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
     //     address _treasury
-    // ) 
+    // )
 
     this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
@@ -305,7 +305,7 @@ contract("DeBridgeGate full with auto", function () {
         //     string memory _symbol,
         //     uint8 _decimals
         // )
-      // let deployId = await this.confirmationAggregator.getDeployId(debridgeId, name, symbol, decimals) 
+      // let deployId = await this.confirmationAggregator.getDeployId(debridgeId, name, symbol, decimals)
       // //function deployAsset(bytes32 _deployId)
       // await this.debridge.checkAndDeployAsset(debridgeId, {
       //   from: this.initialOracles[0].address,
@@ -438,7 +438,7 @@ contract("DeBridgeGate full with auto", function () {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.autoSend(tokenAddress, receiver, amount, chainIdTo, 
+        this.debridge.autoSend(tokenAddress, receiver, amount, chainIdTo,
           reserveAddress,
           claimFee,
           data,
@@ -461,7 +461,7 @@ contract("DeBridgeGate full with auto", function () {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.autoSend(tokenAddress, receiver, amount, chainIdTo, 
+        this.debridge.autoSend(tokenAddress, receiver, amount, chainIdTo,
           reserveAddress,
           claimFee,
           data,
@@ -538,7 +538,7 @@ contract("DeBridgeGate full with auto", function () {
 
       let submissionInfo = await this.confirmationAggregator.getSubmissionInfo(submission);
       let submissionConfirmations = await this.confirmationAggregator.getSubmissionConfirmations(submission);
-     
+
       assert.equal(1, submissionInfo.confirmations);
       assert.equal(true, submissionConfirmations[0]);
       assert.equal(1, submissionConfirmations[1]);
@@ -640,7 +640,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "mint: already used"
+        "submit: already used"
       );
     });
   });
@@ -918,7 +918,7 @@ contract("DeBridgeGate full with auto", function () {
           data, {
           from: alice,
         }),
-        "claim: already used"
+        "submit: already used"
       );
     });
   });

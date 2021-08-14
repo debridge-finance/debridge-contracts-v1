@@ -4,11 +4,6 @@ pragma solidity ^0.8.2;
 interface ISignatureVerifier {
     /* ========== STRUCTS ========== */
 
-    struct SubmissionInfo {
-        uint256 block; // confirmation block
-        uint8 confirmations; // received confirmations count
-        mapping(address => bool) hasVerified; // verifier => has already voted
-    }
 
     struct DebridgeDeployInfo {
         uint256 chainId; //native chainId
@@ -17,7 +12,6 @@ interface ISignatureVerifier {
         uint8 confirmations; // received confirmations count
         string name;
         string symbol;
-        mapping(address => bool) hasVerified; // verifier => has already voted
     }
 
     /* ========== EVENTS ========== */
