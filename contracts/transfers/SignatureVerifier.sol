@@ -13,23 +13,31 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== STATE VARIABLES ========== */
 
-    uint8 public confirmationThreshold; // required confirmations per block before extra check enabled
+    uint8 public confirmationThreshold; // required confirmations per block after extra check enabled
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
+
+    uint40 public submissionsInBlock; //submissions count in current block
+    uint40 public currentBlock; //Current block
+
     address public wrappedAssetAdmin; // admin for any deployed wrapped asset
     address public debridgeAddress; // Debridge gate address
 
-    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
     mapping(bytes32 => bytes32) public confirmedDeployInfo; // debridge Id => deploy Id
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
-    mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // submission id => submission info
 
+    /* ========== MODIFIERS ========== */
+
+    modifier onlyGate {
+        require(msg.sender== debridgeAddress, "onlyGate: bad role");
+        _;
+    }
 
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
+    /// @param _confirmationThreshold Confirmations per block after extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
         uint8 _minConfirmations,
@@ -69,13 +77,15 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
         uint8 confirmations = debridgeInfo.confirmations;
-
+        address[] memory validators = new address[](_signatures.length);
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
-                require(!debridgeInfo.hasVerified[oracle], "deployAsset: submitted already");
-                debridgeInfo.hasVerified[oracle] = true;
+                for (uint256 k = 0; k < i; k++) {
+                    require(validators[k] != oracle, "deployAsset: submitted already");
+                }
+                validators[i] = oracle;
                 emit DeployConfirmed(deployId, oracle);
                 confirmations += 1;
                 if(getOracleInfo[oracle].required) {
@@ -89,30 +99,31 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
         debridgeInfo.confirmations = confirmations;
         confirmedDeployInfo[debridgeId] = deployId;
-
-        //TODO: add deployAsset
     }
 
     /// @dev Confirms the mint request.
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
     function submit(bytes32 _submissionId, bytes[] memory _signatures)
-        external override
+        external  override
+        onlyGate
         returns (uint8 _confirmations, bool _blockConfirmationPassed)
     {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         // Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
-        uint8 confirmations = submissionInfo.confirmations;
-
+        uint8 confirmations;
+        address[] memory validators = new address[](_signatures.length);
         for (uint256 i = 0; i < _signatures.length; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
             address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
-                require(!submissionInfo.hasVerified[oracle], "submit: submitted already");
+                for (uint256 k = 0; k < i; k++) {
+                    require(validators[k] != oracle, "duplicate signatures");
+                }
+                validators[i] = oracle;
+
                 confirmations += 1;
-                submissionInfo.hasVerified[oracle] = true;
                 emit Confirmed(_submissionId, oracle);
                 if(getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
@@ -122,18 +133,14 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
         require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles" );
 
-        submissionInfo.confirmations = confirmations;
-
         if (confirmations >= minConfirmations) {
-            BlockConfirmationsInfo storage _blockConfirmationsInfo = getConfirmationsPerBlock[block.number];
-            if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
-                _blockConfirmationsInfo.count += 1;
-                _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
-                if (_blockConfirmationsInfo.count >= confirmationThreshold) {
-                    _blockConfirmationsInfo.requireExtraCheck = true;
-                }
+            if(currentBlock == uint40(block.number)){
+                submissionsInBlock += 1;
             }
-            submissionInfo.block = block.number;
+            else {
+                currentBlock = uint40(block.number);
+                submissionsInBlock = 1;
+            }
             emit SubmissionApproved(_submissionId);
         }
 
@@ -141,7 +148,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             confirmations,
             confirmations >=
                 (
-                    (getConfirmationsPerBlock[block.number].requireExtraCheck)
+                    submissionsInBlock > confirmationThreshold
                         ? excessConfirmations
                         : minConfirmations
                 )
@@ -153,16 +160,14 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
             external override
+            onlyGate
             returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId){
-        require(debridgeAddress == msg.sender, "deployAsset: bad role");
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
-
         require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
-        //TODO: can be removed, we already checked in confirmedDeployInfo
-        require(debridgeInfo.confirmations >= minConfirmations, "deployAsset: not confirmed");
+
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
         WrappedAsset wrappedAsset = new WrappedAsset(

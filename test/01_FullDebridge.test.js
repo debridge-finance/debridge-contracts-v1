@@ -649,7 +649,7 @@ contract("DeBridgeGate full mode", function () {
                       this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
                         from: alice.address,
                       }),
-                      "mint: blocked submission"
+                      "blocked submission"
                     );
                   });
 
@@ -700,7 +700,7 @@ contract("DeBridgeGate full mode", function () {
                         this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
                           from: alice.address,
                         }),
-                        "mint: already used"
+                        "submit: already used"
                       );
                     });
                     for (let i = 0; i <= 2; i++) {
@@ -1007,7 +1007,7 @@ contract("DeBridgeGate full mode", function () {
                     this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, [], {
                       from: alice.address,
                     }),
-                    "claim: blocked submission"
+                    "blocked submission"
                   );
                 });
 
@@ -1245,7 +1245,7 @@ contract("DeBridgeGate full mode", function () {
                         this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, [], {
                           from: alice.address,
                         }),
-                        "claim: already used"
+                        "submit: already used"
                       );
                     });
                   });

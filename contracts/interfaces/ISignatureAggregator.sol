@@ -6,7 +6,6 @@ interface ISignatureAggregator {
     /* ========== STRUCTS ========== */
 
     struct SubmissionInfo {
-        uint256 block; // confirmation block
         uint8 confirmations; // received confirmations count
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted

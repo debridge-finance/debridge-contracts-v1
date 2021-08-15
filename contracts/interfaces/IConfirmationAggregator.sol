@@ -6,7 +6,6 @@ interface IConfirmationAggregator {
     /* ========== STRUCTS ========== */
 
     struct SubmissionInfo {
-        uint256 block; // confirmation block
         uint8 confirmations; // received confirmations count
         uint8 requiredConfirmations; // required oracles (DSRM) received confirmations count
         bool isConfirmed; // is confirmed submission (user can claim)

@@ -81,7 +81,7 @@ contract("DeBridgeGate light mode", function() {
       alice,
       ZERO_ADDRESS
     ]);
-    
+
     await this.confirmationAggregator.deployed();
     //   function initialize(
     //     uint256 _minConfirmations,
@@ -140,7 +140,7 @@ contract("DeBridgeGate light mode", function() {
       from: alice,
     });
 
-    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);    
+    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     this.callProxy = await CallProxy.new({
       from: alice,
     });
@@ -161,7 +161,7 @@ contract("DeBridgeGate light mode", function() {
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
     //     address _treasury
-    // ) 
+    // )
 
     this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
@@ -247,7 +247,7 @@ contract("DeBridgeGate light mode", function() {
       //     string memory _symbol,
       //     uint8 _decimals,
       //     bytes[] memory _signatures
-      // ) 
+      // )
       const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
       //console.log('debridgeId '+debridgeId);
       const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
@@ -261,7 +261,7 @@ contract("DeBridgeGate light mode", function() {
       }
       await this.signatureVerifier.connect(this.initialOracles[0].account)
           .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
-      
+
       ////   function getDeployId(
       ////     bytes32 _debridgeId,
       ////     string memory _name,
@@ -620,8 +620,7 @@ contract("DeBridgeGate light mode", function() {
         this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
           from: alice,
         }),
-        "submit: submitted already"
-        //"mint: already used"
+        "submit: already used"
       );
     });
   });
@@ -931,8 +930,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        //"claim: already used"
-        "submit: submitted already"
+        "submit: already used"
       );
     });
   });

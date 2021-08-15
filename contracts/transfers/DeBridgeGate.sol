@@ -46,7 +46,7 @@ contract DeBridgeGate is Initializable,
     uint16 public flashFeeBps; // fee in basis points (1/10000)
     uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
     uint256 nonce; //outgoing submissions count
-    
+
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
@@ -60,7 +60,7 @@ contract DeBridgeGate is Initializable,
     IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
 
-    
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyWorker {
@@ -623,7 +623,7 @@ contract DeBridgeGate is Initializable,
     /// @dev donate fees (called by proxy)
     /// @param _debridgeId Asset identifier.
     /// @param _amount amount for transfer.
-    function donateFees(bytes32 _debridgeId, uint256 _amount) 
+    function donateFees(bytes32 _debridgeId, uint256 _amount)
         external nonReentrant
     {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
@@ -639,15 +639,15 @@ contract DeBridgeGate is Initializable,
         );
         // Received real amount
         _amount = token.balanceOf(address(this)) - balanceBefore;
-        
+
         debridge.donatedFees += _amount;
         emit ReceivedTransferFee(_debridgeId, _amount);
     }
-    
+
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
-    function withdrawFee(bytes32 _debridgeId) external payable 
-        nonReentrant 
+    function withdrawFee(bytes32 _debridgeId) external payable
+        nonReentrant
         onlyWorker
     {
         // need to pay fee when call burn/send
@@ -664,7 +664,7 @@ contract DeBridgeGate is Initializable,
         uint256 rewardAmount = amount * collectRewardBps / BPS_DENOMINATOR;
         amount -= rewardAmount;
         uint256 ethAmount = msg.value;
-        
+
         if (debridge.tokenAddress == address(0)) {
             ethAmount += amount;
             if(rewardAmount > 0) {
@@ -979,8 +979,8 @@ contract DeBridgeGate is Initializable,
         uint256 _executionFee,
         bytes memory _data
     ) internal {
-        require(!isSubmissionUsed[_submissionId], "mint: already used");
-        require(!isBlockedSubmission[_submissionId], "mint: blocked submission");
+        require(!isSubmissionUsed[_submissionId], "submit: already used");
+        require(!isBlockedSubmission[_submissionId], "blocked submission");
 
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.exist, "mint: debridge not exist");
@@ -1026,8 +1026,8 @@ contract DeBridgeGate is Initializable,
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId == chainId, "claim: wrong target chain");
-        require(!isSubmissionUsed[_submissionId], "claim: already used");
-        require(!isBlockedSubmission[_submissionId], "claim: blocked submission");
+        require(!isSubmissionUsed[_submissionId], "submit: already used");
+        require(!isBlockedSubmission[_submissionId], "blocked submission");
 
         isSubmissionUsed[_submissionId] = true;
         debridge.balance -= _amount;
