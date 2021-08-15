@@ -722,9 +722,11 @@ contract("DeBridgeGate full mode", function () {
                         let tokenAddress;
                         beforeEach(async function () {
                           tokenAddress = this.mockToken.address;
-                          await this.debridge.updateFeeDiscount(bob.address, discount);
+                          await this.debridge.updateFeeDiscount(bob.address, discount, discount);
                           const discountFromContract = await this.debridge.feeDiscount(bob.address);
-                          expect(discount).to.equal(discountFromContract);
+                          expect(discount).to.equal(discountFromContract.discountTransferBps);
+                          expect(discount).to.equal(discountFromContract.discountFixBps);
+
                         });
 
                         it("should burning when the amount is suficient", async function () {
@@ -1067,9 +1069,10 @@ contract("DeBridgeGate full mode", function () {
 
                   beforeEach(async function () {
                     let discount = 0;
-                    await this.debridge.updateFeeDiscount(alice.address, discount);
+                    await this.debridge.updateFeeDiscount(alice.address, discount, discount);
                     const discountFromContract = await this.debridge.feeDiscount(alice.address);
-                    expect(discount).to.equal(discountFromContract);
+                    expect(discount).to.equal(discountFromContract.discountTransferBps);
+                    expect(discount).to.equal(discountFromContract.discountFixBps);
 
                     const tokenAddress = ZERO_ADDRESS;
                     const chainId = await this.debridge.chainId();
@@ -1270,9 +1273,10 @@ contract("DeBridgeGate full mode", function () {
               }
               context(`Test send method. discount: discount ${(discount * 100) / BPS}%`, () => {
                 beforeEach(async function () {
-                  await this.debridge.updateFeeDiscount(alice.address, discount);
+                  await this.debridge.updateFeeDiscount(alice.address, discount, discount);
                   const discountFromContract = await this.debridge.feeDiscount(alice.address);
-                  expect(discount).to.equal(discountFromContract);
+                  expect(discount).to.equal(discountFromContract.discountTransferBps);
+                  expect(discount).to.equal(discountFromContract.discountFixBps);
                 });
 
                 it("should send native tokens from the current chain", async function () {

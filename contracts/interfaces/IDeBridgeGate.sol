@@ -35,6 +35,11 @@ interface IDeBridgeGate {
         uint16 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
     }
 
+    struct DiscountInfo {
+        uint16 discountFixBps; // fix discount in BPS
+        uint16 discountTransferBps; // transfer % discount in BPS
+    }
+
     /* ========== FUNCTIONS ========== */
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
