@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IStrategy.sol";
 import "../interfaces/IPriceConsumer.sol";
+import "hardhat/console.sol";
 
 library DelegatedStakingHelper {
 
@@ -135,7 +136,7 @@ library DelegatedStakingHelper {
     }
 }
 
-contract DelegatedStaking is AccessControl, Initializable {
+contract DelegatedStakingV2 is AccessControl, Initializable {
 
     using SafeERC20 for IERC20;
 
@@ -220,6 +221,7 @@ contract DelegatedStaking is AccessControl, Initializable {
     mapping(address => mapping(address => Strategy)) public strategies;
     address[] public strategyAddresses;
     IPriceConsumer public priceConsumer;
+    uint256 mockVal;
 
     /* Events */
     event Staked(address oracle, address user, address collateral, uint256 amount);

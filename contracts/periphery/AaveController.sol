@@ -28,7 +28,7 @@ contract AaveController is IStrategy {
     return ILendingPoolAddressesProvider(lendingPoolProvider).getLendingPool();
   }
 
-  function aToken(address _token) public view returns (address) {
+  function strategyToken(address _token) public view override returns (address) {
     (address newATokenAddress,,) =
       IAaveProtocolDataProvider(protocolDataProvider).getReserveTokensAddresses(_token);
     return newATokenAddress;
@@ -62,23 +62,32 @@ contract AaveController is IStrategy {
   }
 
   function withdraw(address _token, uint256 _amount) public override {
-    address underlying = IAToken(_token).UNDERLYING_ASSET_ADDRESS();
     address lendPool = lendingPool();
+    address aToken = strategyToken(_token);
     IERC20(_token).safeApprove(lendPool, 0);
     IERC20(_token).safeApprove(lendPool, _amount);
-    uint256 maxAmount = IERC20(_token).balanceOf(address(this));
+    uint256 maxAmount = IERC20(aToken).balanceOf(msg.sender);
+
+    uint256 userBalance = IERC20(aToken).balanceOf(msg.sender);
+    uint256 amountToWithdraw = _amount;
+
+    if (_amount == type(uint256).max || _amount > userBalance) {
+      amountToWithdraw = userBalance;
+    }
+
+    IERC20(aToken).transferFrom(msg.sender, address(this), amountToWithdraw);
 
     uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
-      underlying,
-      _amount,
+      _token,
+      amountToWithdraw,
       msg.sender
     );
 
-    _collectProtocolToken(_token, _amount/maxAmount);
+    _collectProtocolToken(aToken, amountToWithdraw/maxAmount);
 
     require(
       amountWithdrawn == _amount ||
-      (_amount == type(uint256).max && maxAmount == IERC20(underlying).balanceOf(address(this))),
+      (_amount == type(uint256).max && maxAmount == IERC20(_token).balanceOf(address(this))),
       "Didn't withdraw requested amount"
     );
   }

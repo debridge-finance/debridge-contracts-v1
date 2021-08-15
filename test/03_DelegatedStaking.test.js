@@ -5,13 +5,12 @@ const { BigNumber } = require("ethers");
 const { MaxUint256 } = require("@ethersproject/constants");
 const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 const { assert } = require("chai");
-const { deployments, upgrades } = require('hardhat');
-const DelegatedStaking = artifacts.require("DelegatedStaking");
+const { upgrades, artifacts, ethers } = require('hardhat');
+const ether = require("@openzeppelin/test-helpers/src/ether");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const MockStrategy = artifacts.require('MockStrategy');
 const MockPriceConsumer = artifacts.require('MockPriceConsumer');
-const { toWei, fromWei } = web3.utils;
+const { toWei } = web3.utils;
 
 function toBN(number) {
   return BigNumber.from(number.toString());
@@ -38,11 +37,48 @@ contract("DelegatedStaking", function() {
     eve = eveAccount.address;
     david = davidAccount.address;
     sam = samAccount.address;
+
+    this.TokenAFactory = await ethers.getContractFactory("MockAToken");
+
+    this.AaveProtocolDataProviderFactory = await ethers.getContractFactory("AaveProtocolDataProvider");
+    this.LendingPoolFactory = await ethers.getContractFactory("LendingPool");
+    this.IncentivesControllerFactory = await ethers.getContractFactory("IncentivesController");
+    this.AddressesProviderFactory = await ethers.getContractFactory("LendingPoolAddressesProvider");
+    this.MockAaveControllerFactory = await ethers.getContractFactory("MockAaveController");
     
+    this.addressProvider = await this.AddressesProviderFactory.deploy();
+    await this.addressProvider.deployed();
+
+    this.dataProvider = await this.AaveProtocolDataProviderFactory.deploy(
+      this.addressProvider.address
+    );
+    await this.dataProvider.deployed();
+
+    this.lendingPool = await this.LendingPoolFactory.deploy();
+    await this.lendingPool.deployed();
+
+    this.stkAAVEToken = await MockToken.new("Staked AAVE Token", "stkAAVE", 18);
+    this.incentivesController = await this.IncentivesControllerFactory.deploy(this.stkAAVEToken.address);
+    await this.incentivesController.deployed();
+
     this.linkToken = await MockLinkToken.new("Link Token", "dLINK", 18);
     this.usdcToken = await MockToken.new("USDC Token", "dUSDC", 6);
     this.usdtToken = await MockToken.new("USDT Token", "dUSDT", 6);
-    this.bdrToken = await MockToken.new("deBridge Token", "DBR", 18);
+    this.dbrToken = await MockToken.new("deBridge Token", "DBR", 18);
+    this.aLinkToken = await this.TokenAFactory.deploy(
+      this.lendingPool.address,
+      this.incentivesController.address,
+      "aLink Token",
+      "aLINK",
+      18,
+      this.linkToken.address
+    );
+
+    await this.lendingPool.initialize(this.addressProvider.address);
+    await this.addressProvider.setLendingPool(this.lendingPool.address);
+    await this.lendingPool.addReserveAsset(this.linkToken.address, this.aLinkToken.address);
+    await this.lendingPool.setCurrentTime(1);
+
     await this.linkToken.mint(alice, toWei("3200000"));
     await this.usdcToken.mint(alice, "3200000000000");
     await this.usdtToken.mint(alice, "3200000000000");
@@ -56,8 +92,16 @@ contract("DelegatedStaking", function() {
     await this.linkToken.mint(sam, toWei("3200000"));
     await this.usdcToken.mint(sam, "3200000000000");
     await this.usdtToken.mint(sam, "3200000000000");
+
+    await this.linkToken.mint(this.lendingPool.address, toWei("3200000"));
+
+    this.mockAaveController = await this.MockAaveControllerFactory.deploy(
+      this.addressProvider.address,
+      this.dataProvider.address
+    );
+    await this.mockAaveController.deployed();
+
     this.timelock = 1;
-    this.mockStrategy = await MockStrategy.new();
     this.mockPriceConsumer = await MockPriceConsumer.new();
     this.DelegatedStaking = await ethers.getContractFactory("DelegatedStaking");
     this.delegatedStaking = await upgrades.deployProxy(this.DelegatedStaking, [
@@ -65,6 +109,7 @@ contract("DelegatedStaking", function() {
         this.mockPriceConsumer.address
     ]);
     await this.delegatedStaking.deployed();
+
     await this.delegatedStaking.addCollateral(this.linkToken.address, 18, false);
     await this.delegatedStaking.addCollateral(this.usdcToken.address, 6, true);
     await this.delegatedStaking.addCollateral(this.usdtToken.address, 6, true);
@@ -83,7 +128,7 @@ contract("DelegatedStaking", function() {
     await this.delegatedStaking.setProfitSharing(sarah, 10000);
     this.linkPrice = toWei("25");
     await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, this.linkPrice);
-    await this.delegatedStaking.addStrategy(this.mockStrategy.address, this.linkToken.address, this.linkToken.address);
+    await this.delegatedStaking.addStrategy(this.mockAaveController.address, this.linkToken.address, this.linkToken.address);
     this.timelock = 2
     await this.delegatedStaking.setTimelock(this.timelock);
 
@@ -100,7 +145,7 @@ contract("DelegatedStaking", function() {
     const usdtCollateral = await this.delegatedStaking.collaterals(this.usdtToken.address);
     const davidOracle = await this.delegatedStaking.getUserInfo(david);
     const bobOracle = await this.delegatedStaking.getUserInfo(bob);
-    const strategy = await this.delegatedStaking.strategies(this.mockStrategy.address);
+    const strategy = await this.delegatedStaking.getStrategy(this.mockAaveController.address, this.linkToken.address);
     assert.equal(linkCollateral.isSupported, true);
     assert.equal(usdcCollateral.isSupported, true);
     assert.equal(usdtCollateral.isSupported, true);
@@ -1080,36 +1125,38 @@ contract("DelegatedStaking", function() {
   context("Test deposit to strategy", async () => {
     it("should fail if strategy not enabled", async function() {
       const amount = toWei("10");
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.updateStrategy(strategy, false);
+      const collateral = this.linkToken.address
+      const strategy = this.mockAaveController.address;
+      await this.delegatedStaking.updateStrategy(strategy, collateral, false);
       await expectRevert(
-        this.delegatedStaking.depositToStrategy(bob, amount, strategy), 
+        this.delegatedStaking.depositToStrategy(bob, amount, strategy, collateral), 
         "strategy disabled"
       );
-      await this.delegatedStaking.updateStrategy(strategy, true);
+      await this.delegatedStaking.updateStrategy(strategy, collateral, true);
     });
     it("should fail if delegator !exist", async function() {
       const amount = toWei("10");
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       await expectRevert(
-        this.delegatedStaking.connect(bobAccount).depositToStrategy(eve, amount, strategy), 
+        this.delegatedStaking.connect(bobAccount).depositToStrategy(eve, amount, strategy, this.linkToken.address), 
         "delegator !exist"
       );
     });
-    it("should update balances after deposit", async function() { // TODO failing due to mock update reserves
-      const amount = toWei("100");
+    it("should update balances after deposit to aave", async function() {
+      const stakeAmount = toWei("100");
+      const amount = toWei("10");
       const collateral = this.linkToken.address;
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
-      await this.delegatedStaking.stake(david, collateral, amount);
-      const prevOracleStake = await this.delegatedStaking.getOracleStaking(david, collateral);
-      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
-      const prevDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](david, strategy, collateral);
+      await this.delegatedStaking.stake(bob, collateral, stakeAmount);
+      const prevOracleStake = await this.delegatedStaking.getOracleStaking(bob, collateral);
+      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
+      const prevDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](bob, strategy, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      await this.delegatedStaking.depositToStrategy(david, toWei("10"), strategy);
-      const currentOracleStake = await this.delegatedStaking.getOracleStaking(david, collateral);
-      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
-      const currentDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](david, strategy, collateral);
+      await this.delegatedStaking.depositToStrategy(bob, amount, strategy, collateral);
+      const currentOracleStake = await this.delegatedStaking.getOracleStaking(bob, collateral);
+      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
+      const currentDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](bob, strategy, collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
 
       assert.equal(
@@ -1139,62 +1186,60 @@ contract("DelegatedStaking", function() {
     });
     it("should fail when deposit insufficient fund", async function() {
       const amount = toWei("320000");
-      const strategy = this.mockStrategy.address;
-      await expectRevert(this.delegatedStaking.depositToStrategy(bob, amount, strategy), "bad amount");
+      const strategy = this.mockAaveController.address;
+      await expectRevert(this.delegatedStaking.depositToStrategy(bob, amount, strategy, this.linkToken.address), "bad amount");
     });
   });
 
   context("Test withdraw from strategy", async () => {
     before(async function() {
+      const collateral = this.linkToken.address;
       const amount = toWei("200");
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
-      await this.delegatedStaking.stake(david, this.linkToken.address, amount);
-      await this.delegatedStaking.connect(eveAccount).stake(david, this.linkToken.address, amount);
-      await this.delegatedStaking.connect(eveAccount).stake(bob, this.linkToken.address, amount);
-      await this.delegatedStaking.depositToStrategy(david, toWei("100"), strategy);
-      await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("100"), strategy);
-    })
-    it("should fail if not called by admin", async function() {
-      const amount = toWei("10");
-      const strategy = this.mockStrategy.address;
-      await expectRevert(
-        this.delegatedStaking.connect(bobAccount).withdrawFromStrategy(bob, amount, strategy), 
-        "only admin"
-      );
+      await this.delegatedStaking.stake(david, collateral, amount);
+      await this.delegatedStaking.stake(bob, collateral, toWei("100"));
+      await this.delegatedStaking.connect(eveAccount).stake(david, collateral, amount);
+      await this.delegatedStaking.connect(eveAccount).stake(bob, collateral, amount);
+      await this.delegatedStaking.depositToStrategy(david, toWei("10"), strategy, collateral);
+      await this.delegatedStaking.depositToStrategy(bob, toWei("10"), strategy, collateral);
+      await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("10"), strategy, collateral);
+      await this.lendingPool.increaseCurrentTime(60*24*60*60);
     });
     it("should fail if strategy not enabled", async function() {
       const amount = toWei("10");
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.updateStrategy(strategy, false);
+      const collateral = this.linkToken.address;
+      const strategy = this.mockAaveController.address;
+      await this.delegatedStaking.updateStrategy(strategy, collateral, false);
       await expectRevert(
-        this.delegatedStaking.withdrawFromStrategy(bob, amount, strategy), 
+        this.delegatedStaking.withdrawFromStrategy(bob, amount, strategy, collateral), 
         "strategy disabled"
       );
-      await this.delegatedStaking.updateStrategy(strategy, true);
+      await this.delegatedStaking.updateStrategy(strategy, collateral, true);
     });
     it("should fail if delegator !exist", async function() {
       const amount = toWei("10");
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       await expectRevert(
-        this.delegatedStaking.connect(bobAccount).withdrawFromStrategy(eve, amount, strategy), 
+        this.delegatedStaking.withdrawFromStrategy(eve, amount, strategy, this.linkToken.address), 
         "delegator !exist"
       );
     });
     it("should fail when withdraw insufficient share", async function() {
       const amount = toWei("320000");
-      const strategy = this.mockStrategy.address;
-      await expectRevert(this.delegatedStaking.withdrawFromStrategy(bob, amount, strategy), "no shares");
+      const strategy = this.mockAaveController.address;
+      await expectRevert(this.delegatedStaking.withdrawFromStrategy(bob, amount, strategy, this.linkToken.address), "bad amount");
     });
     it("should decrement strategy and deposit info after withdraw", async function() {
       const collateral = this.linkToken.address;
-      const strategy = this.mockStrategy.address;
-      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
-      const prevDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](bob, strategy, collateral);
-      await this.delegatedStaking.withdrawFromStrategy(bob, 10, strategy);
-      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
-      const currentDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](bob, strategy, collateral);
+      const amount = toWei("100");
+      const strategy = this.mockAaveController.address;
+      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
+      const prevDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](david, strategy, collateral);
+      await this.delegatedStaking.withdrawFromStrategy(david, toWei("2"), strategy, collateral);
+      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
+      const currentDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](david, strategy, collateral);
       assert(
         prevStrategyStakes[0].sub(toBN(amount)).toString(),
         currentStrategyStakes[0].toString()
@@ -1209,25 +1254,21 @@ contract("DelegatedStaking", function() {
         currentDepositInfo[0].toString()
       );
       assert(
-        prevDepositInfo[1].toString() >
-        currentDepositInfo[1].toString(),
+        prevDepositInfo[1].toString() - currentDepositInfo[1].toString() > 0,
         "shares decrease"
       );
     });
     it("should increase staking after oracle withdraw", async function() {
       const collateral = this.linkToken.address;
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
 
-      const prevOracleStake = await this.delegatedStaking.getOracleStaking(bob, collateral);
+      const prevOracleStake = await this.delegatedStaking.getOracleStaking(david, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      const prevRewards = await this.delegatedStaking.getRewards(bob, collateral);
-      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
-      await this.delegatedStaking.stake(bob, collateral, toWei("1000"));
-      await this.delegatedStaking.depositToStrategy(bob, toWei("100"), strategy);
-      await this.delegatedStaking.withdrawFromStrategy(bob, toWei("10"), strategy);
+      const prevRewards = await this.delegatedStaking.getRewards(david, collateral);
+      await this.delegatedStaking.withdrawFromStrategy(david, toWei("2"), strategy, collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const currentOracleStake = await this.delegatedStaking.getOracleStaking(bob, collateral);
-      const currentRewards = await this.delegatedStaking.getRewards(bob, collateral);
+      const currentOracleStake = await this.delegatedStaking.getOracleStaking(david, collateral);
+      const currentRewards = await this.delegatedStaking.getRewards(david, collateral);
       
       assert(
         prevOracleStake[0].toString() <
@@ -1241,122 +1282,176 @@ contract("DelegatedStaking", function() {
         prevOracleStake[1].toString() >
         currentOracleStake[1].toString()
       );
-      assert.equal(
-        prevCollateral.totalLocked.add(toBN(amount)).toString(),
+      assert(
+        prevCollateral.totalLocked.toString() <
         currentCollateral.totalLocked.toString()
       );
 
     });
     it("should increase stakes after delegator withdraw", async function() {
       const collateral = this.linkToken.address;
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       const prevDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral);
-      const prevDelegation = await this.delegatedStaking.getDelegationInfo(bob, collateral);
-      await this.delegatedStaking.withdrawFromStrategy(bob, toWei("10"), strategy);
+      const prevDelegation = await this.delegatedStaking.getDelegationInfo(david, collateral);
+      await this.delegatedStaking.connect(eveAccount).withdrawFromStrategy(david, toWei("2"), strategy, collateral);
       const currentDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral);
-      const currentDelegation = await this.delegatedStaking.getDelegationInfo(bob, collateral);
+      const currentDelegation = await this.delegatedStaking.getDelegationInfo(david, collateral);
       
-      assert(prevDelegation[0].toString() <= currentDelegation[0].toString());
-      assert(prevDelegatorStakes[1].toString() <= currentDelegatorStakes[1].toString());
-      assert(prevDelegatorStakes[2].toString() <= currentDelegatorStakes[2].toString());
-      assert(prevDelegation[1].toString() <= prevDelegation[1].toString());
+      assert(prevDelegation[0].toString() < currentDelegation[0].toString());
+      assert(prevDelegatorStakes[1].toString() < currentDelegatorStakes[1].toString());
+      assert(prevDelegatorStakes[2].toString() < currentDelegatorStakes[2].toString());
+      assert(prevDelegation[1].toString() < currentDelegation[1].toString());
     });
     it("should increment reward balances", async function() {
       const collateral = this.linkToken.address;
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       const prevRewards = await this.delegatedStaking.getRewards(bob, collateral);
-      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
-      await this.delegatedStaking.withdrawFromStrategy(bob, toWei("10"), strategy);
+      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
+      await this.delegatedStaking.withdrawFromStrategy(bob, toWei("2"), strategy, collateral);
       const currentRewards = await this.delegatedStaking.getRewards(bob, collateral);
-      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
+      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
       
-      assert(prevRewards[0].toString() <= currentRewards[0].toString());
-      assert(prevRewards[1].toString() <= currentRewards[1].toString());
-      assert(prevRewards[2].toString() <= currentRewards[2].toString());
-      assert(prevStrategyStakes[2].toString() <= currentStrategyStakes[2].toString());
+      assert(prevRewards[0].toString() < currentRewards[0].toString());
+      assert(prevRewards[1].toString() < currentRewards[1].toString());
+      assert(prevRewards[2].toString() < currentRewards[2].toString());
+      assert(prevStrategyStakes[1].toString() > currentStrategyStakes[1].toString());
     });
   });
 
-  context("Test emergency withdraw from strategy", async () => {
+  context("Test emergency withdraw from strategy", async function() {
+    beforeEach(async function() {
+      const collateral = this.linkToken.address;
+      const amount = toWei("200");
+      const strategy = this.mockAaveController.address;
+      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
+      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
+      await this.delegatedStaking.stake(david, collateral, amount);
+      await this.delegatedStaking.stake(bob, collateral, toWei("100"));
+      await this.delegatedStaking.connect(eveAccount).stake(david, collateral, amount);
+      await this.delegatedStaking.connect(eveAccount).stake(bob, collateral, amount);
+      await this.delegatedStaking.depositToStrategy(david, toWei("100"), strategy, collateral);
+      await this.delegatedStaking.depositToStrategy(bob, toWei("100"), strategy, collateral);
+      await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("100"), strategy, collateral);
+      await this.lendingPool.increaseCurrentTime(60*24*60*60);
+    });
     it("should fail if not called by contract admin", async function() {
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       await expectRevert(
-        this.delegatedStaking.connect(bobAccount).emergencyWithdrawFromStrategy(strategy), 
+        this.delegatedStaking.connect(bobAccount).emergencyWithdrawFromStrategy(strategy, this.linkToken.address), 
         "onlyAdmin"
       );
     });
     it("should fail if strategy not enabled", async function() {
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.updateStrategy(strategy, false);
+      const strategy = this.mockAaveController.address;
+      const collateral = this.linkToken.address;
+      await this.delegatedStaking.updateStrategy(strategy, collateral, false);
       await expectRevert(
-        this.delegatedStaking.emergencyWithdrawFromStrategy(strategy), 
+        this.delegatedStaking.emergencyWithdrawFromStrategy(strategy, collateral), 
         "strategy disabled"
       );
-      await this.delegatedStaking.updateStrategy(strategy, true);
+      await this.delegatedStaking.updateStrategy(strategy, collateral, true);
     });
     it("should disable strategy and set recoverable", async function() {
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy);
-      assert.equal(strategy.isEnabled, false);
-      assert.equal(strategy.recoverable, true);
-    });
-    it("should increase collateral reserves", async function() {
+      const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
-      const strategy = this.mockStrategy.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
-      await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy);
+      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
+      await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy, collateral);
+      const strategyAfter = await this.delegatedStaking.getStrategy(strategy, collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
+      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
+      assert.equal(strategyAfter.isEnabled, false);
+      assert.equal(strategyAfter.isRecoverable, true);
       assert(
         prevCollateral.totalLocked.toString() <
         currentCollateral.totalLocked.toString()
       );
       assert(
-        prevStrategyStakes[0].toString() <
+        prevStrategyStakes[0].toString() <=
         currentStrategyStakes[0].toString()
       );
+    await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
   });
 
   context("Test recover from emergency", async () => {
-    before(async function() {
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy);
-    });
-    it("should succeed if called by non contract admin", async function() {
-      const strategy = this.mockStrategy.address;
-      const txReceipt = await this.delegatedStaking.connect(samAccount).recoverFromEmergency(strategy, [david, bob]);
-      expectEvent(txReceipt, 'RecoveredFromEmergency', { oracle: david, amount: 0, strategy: strategy, collateral: collateral });
-      expectEvent(txReceipt, 'RecoveredFromEmergency', { oracle: bob, amount: 0, strategy: strategy, collateral: collateral });
+    beforeEach(async function() {
+      const collateral = this.linkToken.address;
+      const amount = toWei("200");
+      const strategy = this.mockAaveController.address;
+      await this.delegatedStaking.updateStrategy(strategy, collateral, false);
+      await this.delegatedStaking.updateStrategyRecoverable(strategy, collateral, true);
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
+      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
+      await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
+      await this.delegatedStaking.stake(david, collateral, amount);
+      await this.delegatedStaking.stake(bob, collateral, toWei("100"));
+      await this.delegatedStaking.connect(eveAccount).stake(david, collateral, amount);
+      await this.delegatedStaking.connect(eveAccount).stake(bob, collateral, amount);
+      await this.delegatedStaking.depositToStrategy(david, toWei("100"), strategy, collateral);
+      await this.delegatedStaking.depositToStrategy(bob, toWei("100"), strategy, collateral);
+      await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("100"), strategy, collateral);
+      await this.lendingPool.increaseCurrentTime(60*24*60*60);
+      await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy, collateral);
     });
     it("should fail if strategy enabled", async function() {
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.updateStrategy(strategy, true);
+      const strategy = this.mockAaveController.address;
+      const collateral = this.linkToken.address;
+      await this.delegatedStaking.updateStrategy(strategy, collateral, true);
       await expectRevert(
-        this.delegatedStaking.recoverFromEmergency(strategy, [david, bob]), 
+        this.delegatedStaking.recoverFromEmergency(strategy, collateral, [david, bob]), 
         "strategy enabled"
       );
     });
     it("should fail if funds not recoverable", async function() {
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.updateStrategy(strategy, false);
+      const strategy = this.mockAaveController.address;
+      const collateral = this.linkToken.address;
+      await this.delegatedStaking.updateStrategy(strategy, collateral, false);
+      await this.delegatedStaking.updateStrategyRecoverable(strategy, collateral, false);
       await expectRevert(
-        this.delegatedStaking.recoverFromEmergency(strategy, [david, bob]), 
-        "revert not recoverable"
+        this.delegatedStaking.recoverFromEmergency(strategy, collateral, [david, bob]), 
+        "not recoverable"
       );
+      await this.delegatedStaking.updateStrategyRecoverable(strategy, collateral, true);
     });
-    beforeEach(async function() {
-      const strategy = this.mockStrategy.address;
-      await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy);
+    it("should succeed if called by non contract admin", async function() {
+      const strategy = this.mockAaveController.address;
+      const collateral = this.linkToken.address;
+      const txReceipt = await this.delegatedStaking.connect(samAccount).recoverFromEmergency(strategy, this.linkToken.address, [david, bob]);
+
+      await expect(txReceipt)
+        .to.emit(this.delegatedStaking, "RecoveredFromEmergency")
+        .withArgs(
+          david,
+          toBN(150000000000000000000),
+          this.mockAaveController.address,
+          this.linkToken.address
+        );
+      await expect(txReceipt)
+        .to.emit(this.delegatedStaking, "RecoveredFromEmergency")
+        .withArgs(
+          eve,
+          toBN(75000000000000000000),
+          this.mockAaveController.address,
+          this.linkToken.address
+        );
+      await expect(txReceipt)
+        .to.emit(this.delegatedStaking, "RecoveredFromEmergency")
+        .withArgs(
+          bob,
+          toBN(75000000000000000000),
+          this.mockAaveController.address,
+          this.linkToken.address
+        );
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
     it("should decrease strategy shares and reserves", async function() {
       const collateral = this.linkToken.address;
-      const strategy = this.mockStrategy.address;
-      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
+      const strategy = this.mockAaveController.address;
+      const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
       const prevDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](bob, strategy, collateral);
-      await this.delegatedStaking.recoverFromEmergency(strategy, [david, bob]);
-      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy);
+      await this.delegatedStaking.recoverFromEmergency(strategy, collateral, [david, bob]);
+      const currentStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
       const currentDepositInfo = await this.delegatedStaking['getStrategyDepositInfo(address,address,address)'](bob, strategy, collateral);
       assert(
         prevStrategyStakes[0].toString() >
@@ -1376,36 +1471,40 @@ contract("DelegatedStaking", function() {
         currentDepositInfo[1].toString(),
         "shares decrease"
       );
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
     it("should reset oracle locked", async function() {
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       const prevOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral);
       assert.notEqual(prevOracleStaking[1].toString(), 0);
-      await this.delegatedStaking.recoverFromEmergency(strategy, [david, bob]);
+      await this.delegatedStaking.recoverFromEmergency(strategy, collateral, [david, bob]);
       const currentOracleStaking = await this.delegatedStaking.getOracleStaking(david, collateral);
       assert.equal(currentOracleStaking[1].toString(), 0);
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
     it("should reset delegator locked", async function() {
-      const strategy = this.mockStrategy.address;
+      const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       const prevDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral);
       assert.notEqual(prevDelegatorStakes[3].toString(), 0);
-      await this.delegatedStaking.recoverFromEmergency(strategy, [david, bob]);
+      await this.delegatedStaking.recoverFromEmergency(strategy, collateral, [david, bob]);
       const currentDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral);
       assert.equal(currentDelegatorStakes[3].toString(), 0);
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
   });
 
-  context('upgrades', () => {
-    it('works', async () => {
+  context('Test upgrades', function() {
+    it('should succeed upgrading to v2', async function() {
       const DelegatedStakingInitParams = require("../assets/delegatedStakingInitParams")["development"];
       const DelegatedStaking = await ethers.getContractFactory("DelegatedStaking");
       const DelegatedStakingV2 = await ethers.getContractFactory("DelegatedStakingV2");
+      const collateral = this.linkToken.address;
       const instance = await upgrades.deployProxy(DelegatedStaking, 
       [
         DelegatedStakingInitParams.timelock, 
-        this.linkToken.address
+        collateral
       ]);
       const upgraded = await upgrades.upgradeProxy(instance.address, DelegatedStakingV2);
       const timelock = await upgraded.timelock();

@@ -27,7 +27,7 @@ contract YearnController is IStrategy {
     }
   }
 
-  function yToken(address _token) public view returns (address) {
+  function strategyToken(address _token) public view override returns (address) {
     return underlyingToYToken[_token];
   }
 
@@ -42,7 +42,7 @@ contract YearnController is IStrategy {
 
   function deposit(address _token, uint256 _amount) external override {
     IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-    address YToken = yToken(_token);
+    address YToken = strategyToken(_token);
     IERC20(_token).safeApprove(YToken, 0);
     IERC20(_token).safeApprove(YToken, _amount);
     IYToken(YToken).deposit(_amount);

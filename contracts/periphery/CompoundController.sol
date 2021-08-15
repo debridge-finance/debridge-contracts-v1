@@ -26,7 +26,7 @@ contract CompoundController is IStrategy {
     }
   }
 
-  function cToken(address _token) public view returns (address) {
+  function strategyToken(address _token) public view override returns (address) {
     address CToken = underlyingToCToken[_token];
     require(ICToken(CToken).isCToken(), "cToken: underlying does not map to cToken");
     return CToken;
@@ -43,7 +43,7 @@ contract CompoundController is IStrategy {
 
   function deposit(address _token, uint256 _amount) external override {
     IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-    address CToken = cToken(_token);
+    address CToken = strategyToken(_token);
     IERC20(_token).safeApprove(CToken, 0);
     IERC20(_token).safeApprove(CToken, _amount);
     uint256 mintResult = ICToken(CToken).mint(_amount);
