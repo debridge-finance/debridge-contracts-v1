@@ -104,6 +104,38 @@ describe("DefiController", function () {
             );
           });
 
+          it("check correct values in strategy", async function () {
+            const strategyFromContract = await this.defiController.strategies(this.strategyNativeToken.address);
+            expect(true).to.be.equal(strategyFromContract.isSupported);
+            expect(true).to.be.equal(strategyFromContract.isEnabled);
+            expect(nativeTokenStrategyMaxReservesBps).to.be.equal(strategyFromContract.maxReservesBps);
+            //TODO: check for non ZERO_ADDRESS
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.stakeToken);
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.strategyToken);
+          });
+
+          it("only admin can update strategy", async function () {
+            await expect(
+              this.defiController.connect(other).updateStrategy(this.strategyNativeToken.address, false, 0)
+            ).to.be.revertedWith("onlyAdmin: bad role");
+          });
+
+          it("should update strategy by admin", async function () {
+            await this.defiController.updateStrategy(
+              this.strategyNativeToken.address,
+              false,
+              10
+            );
+
+            const strategyFromContract = await this.defiController.strategies(this.strategyNativeToken.address);
+            expect(true).to.be.equal(strategyFromContract.isSupported);
+            expect(false).to.be.equal(strategyFromContract.isEnabled);
+            expect(10).to.be.equal(strategyFromContract.maxReservesBps);
+            //TODO: check for non ZERO_ADDRESS
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.stakeToken);
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.strategyToken);
+          });
+
           describe("mint stakeToken and send native eth on debridge", function () {
             beforeEach(async function () {
               await this.stakeToken.mint(this.debridge.address, totalSupplyAmount);

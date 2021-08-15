@@ -40,7 +40,23 @@ contract DefiController is Initializable,
     mapping(address => Strategy) public strategies;
     IDeBridgeGate public deBridgeGate;
 
-     /* ========== MODIFIERS ========== */
+    /* ========== EVENTS ========== */
+
+    event AddStrategy(
+        address strategy,
+        bool isEnabled,
+        uint16 maxReservesBps,
+        address stakeToken,
+        address strategyToken
+    );
+
+    event UpdateStrategy(
+        address strategy,
+        bool isEnabled,
+        uint16 maxReservesBps
+    );
+
+    /* ========== MODIFIERS ========== */
 
     modifier onlyWorker {
         require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
@@ -169,6 +185,29 @@ contract DefiController is Initializable,
         strategy.maxReservesBps = _maxReservesBps;
         strategy.stakeToken = _stakeToken;
         strategy.strategyToken = _strategyToken;
+
+        emit AddStrategy(
+            _strategy,
+            _isEnabled,
+            _maxReservesBps,
+            _stakeToken,
+            _strategyToken);
+    }
+
+    function updateStrategy(
+        address _strategy,
+        bool _isEnabled,
+        uint16 _maxReservesBps
+    ) external onlyAdmin {
+        Strategy storage strategy = strategies[_strategy];
+        require(strategy.isSupported, "strategy not found");
+        strategy.isEnabled = _isEnabled;
+        strategy.maxReservesBps = _maxReservesBps;
+
+        emit UpdateStrategy(
+            _strategy,
+            _isEnabled,
+            _maxReservesBps);
     }
 
     function setDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
