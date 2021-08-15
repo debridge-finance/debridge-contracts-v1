@@ -178,6 +178,9 @@ interface IDeBridgeGate {
         bytes memory _data
     ) external;
 
+    function getDefiAvaliableReserves(address _tokenAddress)
+        external view returns (uint256);
+
     /// @dev Request the assets to be used in defi protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to request.
@@ -189,7 +192,7 @@ interface IDeBridgeGate {
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
         external payable;
-    
+
     function getDebridgeInfo(bytes32 _debridgeId)
         external
         view

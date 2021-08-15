@@ -679,6 +679,13 @@ contract DeBridgeGate is Initializable,
         feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value);
     }
 
+    function getDefiAvaliableReserves(address _tokenAddress)
+        external override view returns (uint256)
+    {
+        DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
+        return debridge.balance * (BPS_DENOMINATOR - debridge.minReservesBps) / BPS_DENOMINATOR;
+    }
+
     /// @dev Request the assets to be used in defi protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to request.
