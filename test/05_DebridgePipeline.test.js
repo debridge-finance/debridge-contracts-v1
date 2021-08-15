@@ -582,9 +582,10 @@ contract("DeBridgeGate real pipeline mode",  function() {
     }
     context(`Test send method from ETH to BSC. discount: ${discount*100/BPS}%`, () => {
       it(`set discount ${discount*100/BPS}% fee for customer alice`, async function() {
-        await this.debridgeETH.updateFeeDiscount(alice, discount);
+        await this.debridgeETH.updateFeeDiscount(alice, discount, discount);
         const discountFromContract =  await this.debridgeETH.feeDiscount(alice);
-        assert.equal(discount, discountFromContract);
+        expect(discount).to.equal(discountFromContract.discountTransferBps);
+        expect(discount).to.equal(discountFromContract.discountFixBps);
       });
 
       it("should send native tokens", async function() {
@@ -1011,9 +1012,10 @@ for (let i = 0; i <= 2; i++) {
     });
 
     it(`set discount ${discount*100/BPS}% fee for customer bob`, async function() {
-      await this.debridgeBSC.updateFeeDiscount(bob, discount);
+      await this.debridgeBSC.updateFeeDiscount(bob, discount, discount);
       const discountFromContract =  await this.debridgeBSC.feeDiscount(bob);
-      assert.equal(discount, discountFromContract);
+      expect(discount).to.equal(discountFromContract.discountTransferBps);
+      expect(discount).to.equal(discountFromContract.discountFixBps);
     });
 
     it("should burning (deETH, deLink) when the amount is suficient", async function() {
@@ -1681,7 +1683,7 @@ for (let i = 0; i <= 2; i++) {
     // });
 
     it("should withdraw fee of ERC20 token (BSC network, deLink) if it is called by the worker", async function() {
-      await this.debridgeBSC.updateFeeDiscount(this.feeProxyBSC.address, 10000);
+      await this.debridgeBSC.updateFeeDiscount(this.feeProxyBSC.address, 10000, 10000);
 
       const debridgeInfo = await this.debridgeBSC.getDebridge(this.linkDebridgeId);
       const balance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
@@ -1748,7 +1750,7 @@ for (let i = 0; i <= 2; i++) {
     });
 
     it("should withdraw fee of ERC20 token (HECO network, deCake) if it is called by the worker", async function() {
-      await this.debridgeHECO.updateFeeDiscount(this.feeProxyHECO.address, 10000);
+      await this.debridgeHECO.updateFeeDiscount(this.feeProxyHECO.address, 10000, 10000);
 
       const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
 
@@ -1833,7 +1835,7 @@ for (let i = 0; i <= 2; i++) {
 
 
     it("should withdraw fee of ERC20 token (ETH network, Link) if it is called by the worker", async function() {
-      await this.debridgeETH.updateFeeDiscount(this.feeProxyETH.address, 10000);
+      await this.debridgeETH.updateFeeDiscount(this.feeProxyETH.address, 10000, 10000);
 
       const debridgeInfo = await this.debridgeETH.getDebridge(this.linkDebridgeId);
       const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));

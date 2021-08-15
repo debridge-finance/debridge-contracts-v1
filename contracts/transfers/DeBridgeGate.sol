@@ -52,7 +52,7 @@ contract DeBridgeGate is Initializable,
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
-    mapping(address => uint256) public feeDiscount; //fee discount for address
+    mapping(address => DiscountInfo) public feeDiscount; //fee discount for address
 
     mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
 
@@ -776,11 +776,15 @@ contract DeBridgeGate is Initializable,
 
     /// @dev Update discount.
     /// @param _address customer address
-    /// @param _discountBps discount
-    function updateFeeDiscount(address _address, uint256 _discountBps) external onlyAdmin() {
+    /// @param _discountFixBps  fix discount in BPS
+    /// @param _discountTransferBps transfer % discount in BPS
+    function updateFeeDiscount(address _address, uint16 _discountFixBps, uint16 _discountTransferBps)
+        external onlyAdmin() {
         //save contract size
         // require(_discountBps <= BPS_DENOMINATOR, "Wrong discount");
-        feeDiscount[_address] = _discountBps;
+        DiscountInfo storage dicountInfo = feeDiscount[_address];
+        dicountInfo.discountFixBps = _discountFixBps;
+        dicountInfo.discountTransferBps = _discountTransferBps;
     }
 
     function updateTreasury(address _address) external onlyAdmin() {
@@ -876,6 +880,7 @@ contract DeBridgeGate is Initializable,
             // Received real amount
             _amount = token.balanceOf(address(this)) - balanceBefore;
         }
+        DiscountInfo memory dicountInfo = feeDiscount[msg.sender];
         if (_useAssetFee || debridge.tokenAddress == address(0)) {
             uint256 fixedFee = debridge.tokenAddress == address(0)
                 ? chainSupportInfo.fixedNativeFee
@@ -883,8 +888,8 @@ contract DeBridgeGate is Initializable,
             require(fixedFee != 0, "send: fixed fee is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
-            if (feeDiscount[msg.sender] > 0) {
-                transferFee = transferFee - transferFee * feeDiscount[msg.sender] / BPS_DENOMINATOR;
+            if (dicountInfo.discountTransferBps > 0) {
+                transferFee = transferFee - transferFee * dicountInfo.discountTransferBps / BPS_DENOMINATOR;
             }
             require(_amount >= transferFee, "send: amount not cover fees");
             debridge.collectedFees += transferFee;
@@ -892,15 +897,15 @@ contract DeBridgeGate is Initializable,
         } else {
             {
                 uint256 transferFee = (_amount*chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
-                if (feeDiscount[msg.sender] > 0) {
-                    transferFee = transferFee - transferFee * feeDiscount[msg.sender] / BPS_DENOMINATOR;
+                if (dicountInfo.discountTransferBps > 0) {
+                    transferFee = transferFee - transferFee * dicountInfo.discountTransferBps / BPS_DENOMINATOR;
                 }
                 require(_amount >= transferFee, "send: amount not cover fees");
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
             }
             require(msg.value >= chainSupportInfo.fixedNativeFee
-                - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR,
+                - chainSupportInfo.fixedNativeFee * dicountInfo.discountFixBps / BPS_DENOMINATOR,
                 "send: amount not cover fees");
 
             getDebridge[nativeDebridgeId].collectedFees += msg.value;
@@ -940,29 +945,30 @@ contract DeBridgeGate is Initializable,
             );
         }
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
+        DiscountInfo memory dicountInfo = feeDiscount[msg.sender];
         if (_useAssetFee) {
             uint256 fixedFee = debridge.getChainFee[_chainIdTo];
             require(fixedFee != 0, "send: fixed fee is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
-            if (feeDiscount[msg.sender] > 0) {
-                transferFee = transferFee - transferFee * feeDiscount[msg.sender] / BPS_DENOMINATOR;
+            if (dicountInfo.discountTransferBps > 0) {
+                transferFee = transferFee - transferFee * dicountInfo.discountTransferBps / BPS_DENOMINATOR;
             }
             require(_amount >= transferFee, "send: amount not cover fees");
             debridge.collectedFees += transferFee;
             _amount -= transferFee;
         } else {
             {
-                uint256 transferFee = (_amount*chainSupportInfo.transferFeeBps)/BPS_DENOMINATOR;
-                if (feeDiscount[msg.sender] > 0) {
-                    transferFee = transferFee - transferFee * feeDiscount[msg.sender] / BPS_DENOMINATOR;
+                uint256 transferFee = (_amount * chainSupportInfo.transferFeeBps)/BPS_DENOMINATOR;
+                if (dicountInfo.discountTransferBps > 0) {
+                    transferFee = transferFee - transferFee * dicountInfo.discountTransferBps / BPS_DENOMINATOR;
                 }
                 require(_amount >= transferFee, "send: amount not cover fees");
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
             }
             require(msg.value >= chainSupportInfo.fixedNativeFee
-                - chainSupportInfo.fixedNativeFee * feeDiscount[msg.sender] / BPS_DENOMINATOR,
+                - chainSupportInfo.fixedNativeFee * dicountInfo.discountFixBps / BPS_DENOMINATOR,
                 "send: amount not cover fees");
             getDebridge[nativeDebridgeId].collectedFees += msg.value;
         }
