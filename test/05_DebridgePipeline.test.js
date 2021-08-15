@@ -912,6 +912,10 @@ contract("DeBridgeGate real pipeline mode",  function() {
       );
       assert.equal(balance.add(this.nativeSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
+
+      const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
+      assert.equal(ethChainId.toString(), nativeTokenInfo.chainId.toString());
+      assert.equal(ZERO_ADDRESS, nativeTokenInfo.nativeAddress.toString());
     });
 
     it("should mint (deLink) when the submission is approved ", async function() {
@@ -954,6 +958,10 @@ contract("DeBridgeGate real pipeline mode",  function() {
       );
       assert.equal(balance.add(this.linkSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
+
+      const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
+      assert.equal(ethChainId.toString(), nativeTokenInfo.chainId.toString());
+      assert.equal(this.linkToken.address, nativeTokenInfo.nativeAddress.toString());
     });
 
     it("should reject minting with unconfirmed submission", async function() {
