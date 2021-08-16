@@ -215,14 +215,14 @@ contract("DeBridgeGate light mode", function() {
     it("should reject setting Verifier if called by the non-admin", async function() {
       await expectRevert(
         this.debridge.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function() {
       await expectRevert(
         this.debridge.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
   });
@@ -620,7 +620,7 @@ contract("DeBridgeGate light mode", function() {
         this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
           from: alice,
         }),
-        "submit: already used"
+        "submission already used"
       );
     });
   });
@@ -703,7 +703,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "burn: native asset"
+        "wrong chain"
       );
     });
 
@@ -928,7 +928,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "submit: already used"
+        "submission already used"
       );
     });
   });

@@ -850,7 +850,7 @@ contract DeBridgeGate is Initializable,
         if (!debridge.exist) {
             _addAsset(_debridgeId, _tokenAddress, _tokenAddress, chainId);
         }
-        require(debridge.chainId == chainId, "send: not native chain");
+        require(debridge.chainId == chainId, "wrong chain");
         require(getChainSupport[_chainIdTo].isSupported, "wrong targed chain");
         require(_amount <= debridge.maxAmount, "amount too high");
         if (debridge.tokenAddress == address(0)) {
@@ -885,7 +885,7 @@ contract DeBridgeGate is Initializable,
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
-        require(debridge.chainId != chainId, "burn: native asset");
+        require(debridge.chainId != chainId, "wrong chain");
         require(chainSupportInfo.isSupported, "wrong targed chain");
         require(_amount <= debridge.maxAmount, "amount too high");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
@@ -958,9 +958,9 @@ contract DeBridgeGate is Initializable,
         _markAsUsed(_submissionId);
 
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.exist, "mint: debridge not exist");
+        require(debridge.exist, "debridge not exist");
 
-        require(debridge.chainId != chainId, "mint: is native chain");
+        require(debridge.chainId != chainId, "wrong chain");
         if (_executionFee > 0) {
             IWrappedAsset(debridge.tokenAddress).mint(
                 msg.sender,
@@ -999,7 +999,7 @@ contract DeBridgeGate is Initializable,
         bytes memory _data
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId == chainId, "claim: wrong target chain");
+        require(debridge.chainId == chainId, "wrong chain");
         _markAsUsed(_submissionId);
 
         debridge.balance -= _amount;
@@ -1041,7 +1041,7 @@ contract DeBridgeGate is Initializable,
     /// @dev Mark submission as used.
     /// @param _submissionId Submission identifier.
     function _markAsUsed(bytes32 _submissionId) internal {
-        require(!isSubmissionUsed[_submissionId], "submit: already used");
+        require(!isSubmissionUsed[_submissionId], "submission already used");
         require(!isBlockedSubmission[_submissionId], "blocked submission");
         isSubmissionUsed[_submissionId] = true;
     }

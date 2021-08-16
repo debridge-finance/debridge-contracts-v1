@@ -427,21 +427,21 @@ contract("DeBridgeGate real pipeline mode",  function() {
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setAggregator(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function() {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function() {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
@@ -997,7 +997,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
             from: alice,
           }
         ),
-        "submit: already used"
+        "submission already used"
       );
     });
   });
@@ -1107,7 +1107,7 @@ for (let i = 0; i <= 2; i++) {
             from: alice,
           }
         ),
-        "burn: native asset"
+        "wrong chain"
       );
     });
   });
@@ -1273,7 +1273,7 @@ for (let i = 0; i <= 2; i++) {
 
       await expectRevert(
         this.debridgeETH.claim(debridgeId, bscChainId, receiver, amount, nonce, this.linkSignatures, { from: alice, }),
-        "submit: already used"
+        "submission already used"
       );
     });
   });
@@ -1878,7 +1878,7 @@ for (let i = 0; i <= 2; i++) {
     it("should reject withdrawing fee by non-worker", async function() {
       await expectRevert(
         this.debridgeBSC.connect(bobAccount).withdrawFee(this.linkDebridgeId),
-        "onlyWorker: bad role"
+        "bad role"
       );
     });
 
