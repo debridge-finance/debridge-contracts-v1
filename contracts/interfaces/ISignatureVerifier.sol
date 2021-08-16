@@ -21,9 +21,8 @@ interface ISignatureVerifier {
 
     /* ========== FUNCTIONS ========== */
 
-    function submit(bytes32 _submissionId, bytes memory _signatures)
-        external
-        returns (uint8 _confirmations, bool _blockConfirmationPassed);
+    function submit(bytes32 _submissionId, bytes memory _signatures, uint8 _excessConfirmations)
+        external;
 
     function getWrappedAssetAddress(bytes32 _debridgeId)
         external

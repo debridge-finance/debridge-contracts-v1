@@ -792,13 +792,19 @@ contract DeBridgeGate is Initializable,
      function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId,
                                   uint256 _amount, bytes memory _signatures)
         internal {
-        (uint8 confirmations, bool confirmed) =
-                _signatures.length > 0
-                ? ISignatureVerifier(signatureVerifier).submit(_submissionId, _signatures)
-                : IConfirmationAggregator(confirmationAggregator).getSubmissionConfirmations(_submissionId);
-        require(confirmed, "not confirmed");
-        if (_amount >= getAmountThreshold[_debridgeId]) {
-            require(confirmations >= excessConfirmations, "amount not confirmed");
+        if (_signatures.length > 0) {
+            // inside check is confirmed
+            ISignatureVerifier(signatureVerifier).submit(_submissionId, _signatures,
+                _amount >= getAmountThreshold[_debridgeId] ? excessConfirmations : 0);
+        }
+        else {
+            (uint8 confirmations, bool confirmed)
+                = IConfirmationAggregator(confirmationAggregator).getSubmissionConfirmations(_submissionId);
+
+            require(confirmed, "not confirmed");
+            if (_amount >= getAmountThreshold[_debridgeId]) {
+                require(confirmations >= excessConfirmations, "amount not confirmed");
+            }
         }
     }
 

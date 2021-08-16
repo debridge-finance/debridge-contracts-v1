@@ -73,7 +73,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
 
     this.amountThreshols = toWei("1000");
-    this.minConfirmations = 2;
+    this.minConfirmations = 5;
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
@@ -1178,8 +1178,9 @@ for (let i = 0; i <= 2; i++) {
       const amount = this.nativeSubmission.args.amount;
       const nonce = this.nativeSubmission.args.nonce;
       //Add duplicate signatures
-      let signaturesWithDublicate = this.nativeSignatures;
-      signaturesWithDublicate += this.nativeSignatures.substring(132, 262);
+      let signaturesWithDublicate =  "0x"
+              + this.nativeSignatures.substring(132, 262)
+              + this.nativeSignatures.substring(2, this.nativeSignatures.length);
 
       //console.log("signatures count: " + signaturesWithDublicate.length);
 
@@ -1264,7 +1265,7 @@ for (let i = 0; i <= 2; i++) {
       const wrongNonce = 999;
       await expectRevert(
         this.debridgeETH.claim(debridgeId, bscChainId, receiver, amount, wrongNonce, this.linkSignatures, { from: alice, }),
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
       );
     });
 

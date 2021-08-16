@@ -313,7 +313,7 @@ contract("DeBridgeGate light mode", function() {
           this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
           from: alice,
         }),
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
       );
     });
 
@@ -607,7 +607,7 @@ contract("DeBridgeGate light mode", function() {
           from: alice,
         }),
         // "not confirmed"
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
       );
     });
 
@@ -822,7 +822,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
       );
     });
 
@@ -910,7 +910,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
         // "not confirmed"
       );
     });
