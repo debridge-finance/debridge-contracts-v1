@@ -174,7 +174,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures
+        bytes memory _signatures
     ) external override whenNotPaused() {
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
@@ -252,7 +252,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures
+        bytes memory _signatures
     ) external override whenNotPaused() {
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
@@ -353,7 +353,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures,
+        bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
@@ -459,7 +459,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures,
+        bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
@@ -790,7 +790,7 @@ contract DeBridgeGate is Initializable,
     }
 
      function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId,
-                                  uint256 _amount, bytes[] memory _signatures)
+                                  uint256 _amount, bytes memory _signatures)
         internal {
         (uint8 confirmations, bool confirmed) =
                 _signatures.length > 0

@@ -60,7 +60,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         string memory _name,
         string memory _symbol,
         uint8 _decimals,
-        bytes[] memory _signatures
+        bytes memory _signatures
     ) external {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
@@ -77,9 +77,11 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
         uint8 confirmations = debridgeInfo.confirmations;
-        address[] memory validators = new address[](_signatures.length);
-        for (uint256 i = 0; i < _signatures.length; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
+
+        uint signaturesCount = _countSignatures(_signatures);
+        address[] memory validators = new address[](signaturesCount);
+        for (uint i = 0; i < signaturesCount; i++) {
+            (bytes32 r, bytes32 s, uint8 v) = _parseSignature(_signatures, i);
             address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
@@ -104,7 +106,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @dev Confirms the mint request.
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
-    function submit(bytes32 _submissionId, bytes[] memory _signatures)
+    function submit(bytes32 _submissionId, bytes memory _signatures)
         external  override
         onlyGate
         returns (uint8 _confirmations, bool _blockConfirmationPassed)
@@ -113,9 +115,10 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
         uint8 confirmations;
-        address[] memory validators = new address[](_signatures.length);
-        for (uint256 i = 0; i < _signatures.length; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = _signatures[i].splitSignature();
+        uint signaturesCount = _countSignatures(_signatures);
+        address[] memory validators = new address[](signaturesCount);
+        for (uint i = 0; i < signaturesCount; i++) {
+            (bytes32 r, bytes32 s, uint8 v) = _parseSignature(_signatures, i);
             address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
@@ -194,5 +197,26 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _debridgeAddress Debridge address.
     function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
         debridgeAddress = _debridgeAddress;
+    }
+
+    /* ========== INTERNAL ========== */
+
+    function _parseSignature(bytes memory _signatures, uint _pos)
+             pure internal returns (bytes32 r, bytes32 s, uint8 v)
+    {
+        uint offset = _pos * 65;
+        assembly {
+            r := mload(add(_signatures, add(32, offset)))
+            s := mload(add(_signatures, add(64, offset)))
+            v := and(mload(add(_signatures, add(65, offset))), 0xff)
+        }
+
+        if (v < 27) v += 27;
+        require(v == 27 || v == 28, "Incorrect v");
+    }
+
+    function _countSignatures(bytes memory _signatures) pure internal returns (uint)
+    {
+        return _signatures.length % 65 == 0 ? _signatures.length / 65 : 0;
     }
 }

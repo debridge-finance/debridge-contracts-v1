@@ -66,7 +66,7 @@ interface IDeBridgeGate {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures
+        bytes memory _signatures
     ) external;
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -96,7 +96,7 @@ interface IDeBridgeGate {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures
+        bytes memory _signatures
     ) external;
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
@@ -132,7 +132,7 @@ interface IDeBridgeGate {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures,
+        bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
@@ -170,7 +170,7 @@ interface IDeBridgeGate {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures,
+        bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data

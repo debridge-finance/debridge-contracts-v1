@@ -21,7 +21,7 @@ interface ISignatureVerifier {
 
     /* ========== FUNCTIONS ========== */
 
-    function submit(bytes32 _submissionId, bytes[] memory _signatures)
+    function submit(bytes32 _submissionId, bytes memory _signatures)
         external
         returns (uint8 _confirmations, bool _blockConfirmationPassed);
 
