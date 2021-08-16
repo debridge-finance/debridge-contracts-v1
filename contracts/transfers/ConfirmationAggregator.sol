@@ -18,7 +18,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
-    
+
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
 
@@ -58,7 +58,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Confirms the transfer request.
     function confirmNewAsset(
-        address _tokenAddress,
+        bytes memory _tokenAddress,
         uint256 _chainId,
         string memory _name,
         string memory _symbol,
@@ -114,7 +114,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
 
             if(submissionInfo.requiredConfirmations >= requiredOraclesCount
-                && !submissionInfo.isConfirmed 
+                && !submissionInfo.isConfirmed
                 && (!requireExtraCheck
                     || requireExtraCheck
                         && submissionInfo.confirmations >= excessConfirmations)) {
@@ -131,7 +131,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
             external override
-            returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId){
+            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId){
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
 
         bytes32 deployId = confirmedDeployInfo[_debridgeId];

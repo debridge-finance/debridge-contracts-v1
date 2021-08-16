@@ -30,7 +30,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     /// @dev Confirms the transfer request.
     function confirmNewAsset(
-        address _tokenAddress,
+        bytes memory _tokenAddress,
         uint256 _chainId,
         string memory _name,
         string memory _symbol,

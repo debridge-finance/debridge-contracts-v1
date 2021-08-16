@@ -7,7 +7,7 @@ interface ISignatureVerifier {
 
     struct DebridgeDeployInfo {
         uint256 chainId; //native chainId
-        address nativeAddress; //native token address
+        bytes nativeAddress; //native token address
         uint8 decimals;
         uint8 confirmations; // received confirmations count
         string name;
@@ -32,5 +32,5 @@ interface ISignatureVerifier {
 
     function deployAsset(bytes32 _debridgeId)
         external
-        returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId);
+        returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId);
 }

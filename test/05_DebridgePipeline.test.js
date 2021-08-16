@@ -113,7 +113,6 @@ contract("DeBridgeGate real pipeline mode",  function() {
       // this.linkToken.address,
       this.uniswapFactoryETH.address,
       this.wethETH.address,
-      treasury,
       {
         from: alice,
       }
@@ -123,7 +122,6 @@ contract("DeBridgeGate real pipeline mode",  function() {
       // this.linkToken.address,
       this.uniswapFactoryBSC.address,
       this.wethBSC.address,
-      treasury,
       {
         from: alice,
       }
@@ -133,7 +131,6 @@ contract("DeBridgeGate real pipeline mode",  function() {
       // this.linkToken.address,
       this.uniswapFactoryHECO.address,
       this.wethHECO.address,
-      treasury,
       {
         from: alice,
       }
@@ -328,6 +325,12 @@ contract("DeBridgeGate real pipeline mode",  function() {
       assert.equal(this.feeProxyETH.address, await this.debridgeETH.feeProxy());
       assert.equal(this.feeProxyBSC.address, await this.debridgeBSC.feeProxy());
       assert.equal(this.feeProxyHECO.address, await this.debridgeHECO.feeProxy());
+
+
+      assert.equal(treasury, await this.debridgeETH.treasury());
+      assert.equal(treasury, await this.debridgeBSC.treasury());
+      assert.equal(treasury, await this.debridgeHECO.treasury());
+
 
       assert.equal(this.defiControllerETH.address, await this.debridgeETH.defiController());
       assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());
@@ -963,7 +966,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
 
       const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
       assert.equal(ethChainId.toString(), nativeTokenInfo.chainId.toString());
-      assert.equal(this.linkToken.address, nativeTokenInfo.nativeAddress.toString());
+      assert.equal(this.linkToken.address.toLowerCase(), nativeTokenInfo.nativeAddress.toString());
     });
 
     it("should reject minting with unconfirmed submission", async function() {
@@ -1637,22 +1640,34 @@ for (let i = 0; i <= 2; i++) {
     });
 
     it("FeeProxy should set DebridgeGateAddresses it is called by the admin", async function() {
-      assert.equal(ZERO_ADDRESS, await this.feeProxyETH.debridgeGateAddresses(bscChainId));
-      assert.equal(ZERO_ADDRESS, await this.feeProxyBSC.debridgeGateAddresses(ethChainId));
+      assert.equal(null, await this.feeProxyETH.debridgeGateAddresses(bscChainId));
+      assert.equal(null, await this.feeProxyBSC.debridgeGateAddresses(ethChainId));
 
       await this.feeProxyETH.setDebridgeGateAddresses(bscChainId, this.debridgeBSC.address.toString());
       await this.feeProxyETH.setDebridgeGateAddresses(ethChainId, this.debridgeETH.address.toString());
+      await this.feeProxyETH.setTreasury(ethChainId, treasury);
+      await this.feeProxyETH.setTreasury(bscChainId, treasury);
+      await this.feeProxyETH.setTreasury(hecoChainId, treasury);
+      assert.equal(this.debridgeBSC.address.toLowerCase(), await this.feeProxyETH.debridgeGateAddresses(bscChainId));
+      assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(ethChainId));
+      assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(bscChainId));
+      assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(hecoChainId));
 
-      assert.equal( this.debridgeBSC.address.toString(), await this.feeProxyETH.debridgeGateAddresses(bscChainId));
       await this.feeProxyBSC.setDebridgeGateAddresses(ethChainId, this.debridgeETH.address.toString());
-      assert.equal(this.debridgeETH.address.toString(), await this.feeProxyBSC.debridgeGateAddresses(ethChainId));
+      await this.feeProxyBSC.setTreasury(ethChainId, treasury);
+      await this.feeProxyBSC.setTreasury(bscChainId, treasury);
+      await this.feeProxyBSC.setTreasury(hecoChainId, treasury);
+      assert.equal(this.debridgeETH.address.toLowerCase(), await this.feeProxyBSC.debridgeGateAddresses(ethChainId));
 
 
 
       await this.feeProxyHECO.setDebridgeGateAddresses(bscChainId, this.debridgeBSC.address.toString());
-      assert.equal( this.debridgeBSC.address.toString(), await this.feeProxyHECO.debridgeGateAddresses(bscChainId));
+      assert.equal( this.debridgeBSC.address.toLowerCase(), await this.feeProxyHECO.debridgeGateAddresses(bscChainId));
       await this.feeProxyHECO.setDebridgeGateAddresses(ethChainId, this.debridgeETH.address.toString());
-      assert.equal(this.debridgeETH.address.toString(), await this.feeProxyHECO.debridgeGateAddresses(ethChainId));
+      await this.feeProxyHECO.setTreasury(ethChainId, treasury);
+      await this.feeProxyHECO.setTreasury(bscChainId, treasury);
+      await this.feeProxyHECO.setTreasury(hecoChainId, treasury);
+      assert.equal(this.debridgeETH.address.toLowerCase(), await this.feeProxyHECO.debridgeGateAddresses(ethChainId));
 
     });
 

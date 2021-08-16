@@ -108,7 +108,7 @@ contract DeBridgeGate is Initializable,
         }
         chainId = cid;
         nativeDebridgeId = getDebridgeId(chainId, address(0));
-        _addAsset(nativeDebridgeId, address(0), address(0), chainId);
+        _addAsset(nativeDebridgeId, address(0), abi.encodePacked(address(0)), chainId);
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
@@ -138,7 +138,7 @@ contract DeBridgeGate is Initializable,
     /// @param _chainIdTo Chain id of the target chain.
     function send(
         address _tokenAddress,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
         bool _useAssetFee
@@ -151,7 +151,7 @@ contract DeBridgeGate is Initializable,
             _chainIdTo,
             _useAssetFee
         );
-        bytes32 sentId = getSubmisionId(
+        bytes32 sentId = getbSubmisionId(
             debridgeId,
             chainId,
             _chainIdTo,
@@ -213,7 +213,7 @@ contract DeBridgeGate is Initializable,
     /// @param _chainIdTo Chain id of the target chain.
     function burn(
         bytes32 _debridgeId,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
         uint256 _deadline,
@@ -228,7 +228,7 @@ contract DeBridgeGate is Initializable,
             _signature,
             _useAssetFee
         );
-        bytes32 burntId = getSubmisionId(
+        bytes32 burntId = getbSubmisionId(
             _debridgeId,
             chainId,
             _chainIdTo,
@@ -293,10 +293,10 @@ contract DeBridgeGate is Initializable,
     /// @param _data Chain id of the target chain.
     function autoSend(
         address _tokenAddress,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        address _fallbackAddress,
+        bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
         bool _useAssetFee
@@ -313,7 +313,7 @@ contract DeBridgeGate is Initializable,
         //Commented out: contract-size limit
         // require(_amount >= _executionFee, "autoSend: proposed fee too high");
         _amount -= _executionFee;
-        bytes32 sentId = getAutoSubmisionId(
+        bytes32 sentId = getbAutoSubmisionId(
             debridgeId,
             chainId,
             _chainIdTo,
@@ -401,10 +401,10 @@ contract DeBridgeGate is Initializable,
     /// @param _data Chain id of the target chain.
     function autoBurn(
         bytes32 _debridgeId,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        address _fallbackAddress,
+        bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
         uint256 _deadline,
@@ -423,7 +423,7 @@ contract DeBridgeGate is Initializable,
         //Commented out: contract-size limit
         // require(_amount >= _executionFee, "autoBurn: proposed fee too high");
         _amount -= _executionFee;
-        bytes32 burntId = getAutoSubmisionId(
+        bytes32 burntId = getbAutoSubmisionId(
             _debridgeId,
             chainId,
             _chainIdTo,
@@ -782,7 +782,7 @@ contract DeBridgeGate is Initializable,
 
     function _checkAndDeployAsset(bytes32 debridgeId, address aggregatorAddress) internal {
         if(!getDebridge[debridgeId].exist){
-            (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId) =
+            (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId) =
                     IConfirmationAggregator(aggregatorAddress).deployAsset(debridgeId);
             require(wrappedAssetAddress != address(0), "mint: wrapped asset not exist");
             _addAsset(debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
@@ -808,7 +808,7 @@ contract DeBridgeGate is Initializable,
     /// @param _tokenAddress Address of the asset on the current chain.
     /// @param _nativeAddress Address of the asset on the native chain.
     /// @param _chainId Current chain id.
-    function _addAsset(bytes32 _debridgeId, address _tokenAddress, address _nativeAddress, uint256 _chainId) internal {
+    function _addAsset(bytes32 _debridgeId, address _tokenAddress, bytes memory _nativeAddress, uint256 _chainId) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
@@ -848,7 +848,7 @@ contract DeBridgeGate is Initializable,
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) {
-            _addAsset(_debridgeId, _tokenAddress, _tokenAddress, chainId);
+            _addAsset(_debridgeId, _tokenAddress, abi.encodePacked(_tokenAddress), chainId);
         }
         require(debridge.chainId == chainId, "wrong chain");
         require(getChainSupport[_chainIdTo].isSupported, "wrong targed chain");
@@ -1104,6 +1104,27 @@ contract DeBridgeGate is Initializable,
             );
     }
 
+    function getbSubmisionId(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        uint256 _chainIdTo,
+        uint256 _amount,
+        bytes memory _receiver,
+        uint256 _nonce
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _debridgeId,
+                    _chainIdFrom,
+                    _chainIdTo,
+                    _amount,
+                    _receiver,
+                    _nonce
+                )
+            );
+    }
+
     /// @dev Calculate submission id for auto claimable transfer.
     /// @param _debridgeId Asset identifier.
     /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
@@ -1122,6 +1143,33 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _nonce,
         address _fallbackAddress,
+        uint256 _executionFee,
+        bytes memory _data
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    _debridgeId,
+                    _chainIdFrom,
+                    _chainIdTo,
+                    _amount,
+                    _receiver,
+                    _nonce,
+                    _fallbackAddress,
+                    _executionFee,
+                    _data
+                )
+            );
+    }
+
+    function getbAutoSubmisionId(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        uint256 _chainIdTo,
+        uint256 _amount,
+        bytes memory _receiver,
+        uint256 _nonce,
+        bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
     ) public pure returns (bytes32) {

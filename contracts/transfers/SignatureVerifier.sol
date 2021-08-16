@@ -55,7 +55,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev Confirms the transfer request.
     function confirmNewAsset(
-        address _tokenAddress,
+        bytes memory _tokenAddress,
         uint256 _chainId,
         string memory _name,
         string memory _symbol,
@@ -164,7 +164,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     function deployAsset(bytes32 _debridgeId)
             external override
             onlyGate
-            returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId){
+            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId){
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         require(deployId != "", "deployAsset: not found deployId");
 

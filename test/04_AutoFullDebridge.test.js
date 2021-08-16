@@ -122,7 +122,6 @@ contract("DeBridgeGate full with auto", function () {
     this.feeProxy = await FeeProxy.new(
       this.linkToken.address,
       this.uniswapFactory.address,
-      devid,
       {
         from: alice,
       }
