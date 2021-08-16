@@ -7,7 +7,7 @@ interface IDeBridgeGate {
 
     struct TokenInfo {
         uint256 chainId;
-        address nativeAddress;
+        bytes nativeAddress;
     }
 
     struct DebridgeInfo {
@@ -49,7 +49,7 @@ interface IDeBridgeGate {
     /// @param _chainIdTo Chain id of the target chain.
     function send(
         address _tokenAddress,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
         bool _useAssetFee
@@ -76,7 +76,7 @@ interface IDeBridgeGate {
     /// @param _chainIdTo Chain id of the target chain.
     function burn(
         bytes32 _debridgeId,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
         uint256 _deadline,
@@ -109,10 +109,10 @@ interface IDeBridgeGate {
     /// @param _data Chain id of the target chain.
     function autoSend(
         address _tokenAddress,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        address _fallbackAddress,
+        bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
         bool _useAssetFee
@@ -148,10 +148,10 @@ interface IDeBridgeGate {
     /// @param _data Chain id of the target chain.
     function autoBurn(
         bytes32 _debridgeId,
-        address _receiver,
+        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        address _fallbackAddress,
+        bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
         uint256 _deadline,
@@ -209,7 +209,7 @@ interface IDeBridgeGate {
         bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
-        address receiver,
+        bytes receiver,
         uint256 nonce,
         uint256 chainIdTo
     ); // emited once the native tokens are locked to be sent to the other chain
@@ -217,11 +217,11 @@ interface IDeBridgeGate {
         bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
-        address receiver,
+        bytes receiver,
         uint256 nonce,
         uint256 chainIdTo,
         uint256 claimFee,
-        address fallbackAddress,
+        bytes fallbackAddress,
         bytes data
     ); // emited once the native tokens are locked to be sent to the other chain
     event Minted(
@@ -234,7 +234,7 @@ interface IDeBridgeGate {
         bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
-        address receiver,
+        bytes receiver,
         uint256 nonce,
         uint256 chainIdTo
     ); // emited once the wrapped tokens are sent to the contract
@@ -242,11 +242,11 @@ interface IDeBridgeGate {
         bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
-        address receiver,
+        bytes receiver,
         uint256 nonce,
         uint256 chainIdTo,
         uint256 claimFee,
-        address fallbackAddress,
+        bytes fallbackAddress,
         bytes data
     ); // emited once the wrapped tokens are sent to the contract
     event Claimed(

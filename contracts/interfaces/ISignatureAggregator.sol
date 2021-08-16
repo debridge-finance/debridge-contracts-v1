@@ -12,7 +12,7 @@ interface ISignatureAggregator {
     }
     struct DebridgeDeployInfo {
         uint256 chainId; //native chainId
-        address nativeAddress; //native token address
+        bytes nativeAddress; //native token address
         uint8 decimals;
         uint8 confirmations; // received confirmations count
         bool approved;

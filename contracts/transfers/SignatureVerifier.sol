@@ -55,7 +55,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev Confirms the transfer request.
     function confirmNewAsset(
-        address _tokenAddress,
+        bytes memory _tokenAddress,
         uint256 _chainId,
         string memory _name,
         string memory _symbol,
@@ -97,7 +97,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         }
 
         require(confirmations >= minConfirmations, "not confirmed");
-        require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles");
+        require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
 
         debridgeInfo.confirmations = confirmations;
         confirmedDeployInfo[debridgeId] = deployId;
@@ -106,11 +106,12 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @dev Confirms the mint request.
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
-    function submit(bytes32 _submissionId, bytes memory _signatures)
+    function submit(bytes32 _submissionId, bytes memory _signatures, uint8 _excessConfirmations)
         external  override
         onlyGate
-        returns (uint8 _confirmations, bool _blockConfirmationPassed)
     {
+        //Need confirmation to confirm submission
+        uint8 needConfirmations = _excessConfirmations > minConfirmations ? _excessConfirmations : minConfirmations;
         // Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
@@ -131,10 +132,14 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
                 if(getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
+                if(confirmations >= needConfirmations
+                    && currentRequiredOraclesCount >= requiredOraclesCount) {
+                    break;
+                }
             }
         }
 
-        require(currentRequiredOraclesCount == requiredOraclesCount, "Not confirmed by required oracles" );
+        require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
 
         if (confirmations >= minConfirmations) {
             if(currentBlock == uint40(block.number)){
@@ -147,15 +152,11 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             emit SubmissionApproved(_submissionId);
         }
 
-        return (
-            confirmations,
-            confirmations >=
-                (
-                    submissionsInBlock > confirmationThreshold
-                        ? excessConfirmations
-                        : minConfirmations
-                )
-        );
+        if(submissionsInBlock > confirmationThreshold) {
+            require(confirmations >= excessConfirmations, "not confirmed" );
+        }
+
+        require(confirmations >= needConfirmations, "not confirmed" );
     }
 
     /* ========== deployAsset ========== */
@@ -164,7 +165,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     function deployAsset(bytes32 _debridgeId)
             external override
             onlyGate
-            returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId){
+            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId){
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         require(deployId != "", "deployAsset: not found deployId");
 
@@ -197,6 +198,19 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _debridgeAddress Debridge address.
     function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
         debridgeAddress = _debridgeAddress;
+    }
+
+     /* ========== VIEW ========== */
+
+    /// @dev Check is valid signature
+    /// @param _submissionId Submission identifier.
+    /// @param _signature signature by oracle.
+    function isValidSignature(bytes32 _submissionId, bytes memory _signature)
+        external view returns (bool)
+    {
+        (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
+        address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
+        return getOracleInfo[oracle].isValid;
     }
 
     /* ========== INTERNAL ========== */
