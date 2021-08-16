@@ -474,7 +474,7 @@ contract("DeBridgeGate light mode", function() {
           value: amount,
           from: alice,
         }),
-        "send: wrong targed chain"
+        "wrong targed chain"
       );
     });
   });

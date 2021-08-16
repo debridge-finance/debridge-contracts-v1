@@ -414,14 +414,15 @@ contract("DeBridgeGate real pipeline mode",  function() {
       assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());
     });
 
-    it("should set weth if called by the admin", async function() {
-      let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
-      await this.debridgeETH.setWeth(testAddress);
-      assert.equal(testAddress, await this.debridgeETH.weth());
-      //restore back
-      await this.debridgeETH.setWeth(this.wethETH.address);
-      assert.equal(this.wethETH.address, await this.debridgeETH.weth());
-    });
+    // setWeth removed from contract
+    // it("should set weth if called by the admin", async function() {
+    //   let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
+    //   await this.debridgeETH.setWeth(testAddress);
+    //   assert.equal(testAddress, await this.debridgeETH.weth());
+    //   //restore back
+    //   await this.debridgeETH.setWeth(this.wethETH.address);
+    //   assert.equal(this.wethETH.address, await this.debridgeETH.weth());
+    // });
 
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
@@ -444,12 +445,13 @@ contract("DeBridgeGate real pipeline mode",  function() {
       );
     });
 
-    it("should reject setting weth if called by the non-admin", async function() {
-      await expectRevert(
-        this.debridgeETH.connect(bobAccount).setWeth(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
-      );
-    });
+    // setWeth removed from contract
+    // it("should reject setting weth if called by the non-admin", async function() {
+    //   await expectRevert(
+    //     this.debridgeETH.connect(bobAccount).setWeth(ZERO_ADDRESS),
+    //     "onlyAdmin: bad role"
+    //   );
+    // });
   });
 
   context("Test managing assets", () => {
@@ -719,7 +721,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
             value: amount,
             from: alice,
           }),
-          "send: wrong targed chain"
+          "wrong targed chain"
         );
       });
     });
@@ -1886,7 +1888,7 @@ for (let i = 0; i <= 2; i++) {
       const fakeDebridgeId = await this.debridgeBSC.getDebridgeId(999, "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c");
       await expectRevert(
         this.debridgeBSC.connect(workerAccount).withdrawFee(fakeDebridgeId),
-        "Zero collected fees"
+        "debridge not exist"
       );
     });
   });

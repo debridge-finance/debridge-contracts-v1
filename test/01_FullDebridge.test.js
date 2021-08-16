@@ -35,6 +35,8 @@ contract("DeBridgeGate full mode", function () {
     other = this.signers[6];
     treasury = this.signers[7];
 
+    const WETH9 = await deployments.getArtifact("WETH9");
+    this.WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice);
     this.DeBridgeGate = await ethers.getContractFactory("DeBridgeGate", alice);
   });
 
@@ -42,6 +44,10 @@ contract("DeBridgeGate full mode", function () {
     this.callProxy = await CallProxy.new({
       from: alice.address,
     });
+
+    //-------Deploy weth contracts
+    this.weth = await this.WETH9Factory.deploy();
+
     this.debridge = await upgrades.deployProxy(this.DeBridgeGate, [
       excessConfirmations,
       ZERO_ADDRESS,
@@ -60,7 +66,7 @@ contract("DeBridgeGate full mode", function () {
           isSupported,
         },
       ],
-      ZERO_ADDRESS,
+      this.weth.address,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       devid.address,
@@ -71,15 +77,10 @@ contract("DeBridgeGate full mode", function () {
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice.address);
   });
 
-  it("should set weth if called by the admin", async function () {
-    // const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice.address );
-    // this.weth = await WETH9Factory.deploy();
-    const weth = other.address;
-    await this.debridge.setWeth(weth, {
-      from: alice.address,
-    });
-    const newWeth = await this.debridge.weth();
-    expect(weth).to.equal(newWeth);
+  it("Check init params", async function () {
+    expect(this.weth.address).to.equal(await this.debridge.weth());
+    expect(devid.address).to.equal(await this.debridge.treasury());
+    expect(excessConfirmations.toString()).to.equal((await this.debridge.excessConfirmations()).toString());
   });
 
   it("should update excessConfirmations if called by the admin", async function () {
@@ -235,9 +236,9 @@ contract("DeBridgeGate full mode", function () {
       );
     });
 
-    it("should reject setting weth if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).setWeth(ZERO_ADDRESS), "onlyAdmin: bad role");
-    });
+    // it("should reject setting weth if called by the non-admin", async function () {
+    //   await expectRevert(this.debridge.connect(bob).setWeth(ZERO_ADDRESS), "onlyAdmin: bad role");
+    // });
 
     it("should reject setting flash fee if called by the non-admin", async function () {
       await expectRevert(this.debridge.connect(bob).updateFlashFee(300), "onlyAdmin: bad role");
@@ -1412,7 +1413,7 @@ contract("DeBridgeGate full mode", function () {
                       value: amount,
                       from: alice.address,
                     }),
-                    "send: amount too high"
+                    "amount too high"
                   );
                 });
 
@@ -1444,7 +1445,7 @@ contract("DeBridgeGate full mode", function () {
                       value: amount,
                       from: alice.address,
                     }),
-                    "send: wrong targed chain"
+                    "wrong targed chain"
                   );
                 });
 
