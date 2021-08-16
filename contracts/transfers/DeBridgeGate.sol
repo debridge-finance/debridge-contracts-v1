@@ -64,22 +64,22 @@ contract DeBridgeGate is Initializable,
     /* ========== MODIFIERS ========== */
 
     modifier onlyWorker {
-        require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
+        require(hasRole(WORKER_ROLE, msg.sender), "bad role");
         _;
     }
 
     modifier onlyDefiController {
-        require(address(defiController) == msg.sender, "defiController: bad role");
+        require(address(defiController) == msg.sender, "bad role");
         _;
     }
 
     modifier onlyAdmin {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "bad role");
         _;
     }
 
     modifier onlyGovMonitoring {
-        require(hasRole(GOVMONITORING_ROLE, msg.sender), "onlyGovMonitoring: bad role");
+        require(hasRole(GOVMONITORING_ROLE, msg.sender), "bad role");
         _;
     }
 
