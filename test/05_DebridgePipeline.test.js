@@ -414,42 +414,44 @@ contract("DeBridgeGate real pipeline mode",  function() {
       assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());
     });
 
-    it("should set weth if called by the admin", async function() {
-      let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
-      await this.debridgeETH.setWeth(testAddress);
-      assert.equal(testAddress, await this.debridgeETH.weth());
-      //restore back
-      await this.debridgeETH.setWeth(this.wethETH.address);
-      assert.equal(this.wethETH.address, await this.debridgeETH.weth());
-    });
+    // setWeth removed from contract
+    // it("should set weth if called by the admin", async function() {
+    //   let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
+    //   await this.debridgeETH.setWeth(testAddress);
+    //   assert.equal(testAddress, await this.debridgeETH.weth());
+    //   //restore back
+    //   await this.debridgeETH.setWeth(this.wethETH.address);
+    //   assert.equal(this.wethETH.address, await this.debridgeETH.weth());
+    // });
 
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setAggregator(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function() {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function() {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
-    it("should reject setting weth if called by the non-admin", async function() {
-      await expectRevert(
-        this.debridgeETH.connect(bobAccount).setWeth(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
-      );
-    });
+    // setWeth removed from contract
+    // it("should reject setting weth if called by the non-admin", async function() {
+    //   await expectRevert(
+    //     this.debridgeETH.connect(bobAccount).setWeth(ZERO_ADDRESS),
+    //     "onlyAdmin: bad role"
+    //   );
+    // });
   });
 
   context("Test managing assets", () => {
@@ -719,7 +721,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
             value: amount,
             from: alice,
           }),
-          "send: wrong targed chain"
+          "wrong targed chain"
         );
       });
     });
@@ -995,7 +997,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
             from: alice,
           }
         ),
-        "submit: already used"
+        "submission already used"
       );
     });
   });
@@ -1105,7 +1107,7 @@ for (let i = 0; i <= 2; i++) {
             from: alice,
           }
         ),
-        "burn: native asset"
+        "wrong chain"
       );
     });
   });
@@ -1119,18 +1121,17 @@ for (let i = 0; i <= 2; i++) {
       this.linkSubmission = burnEvents.find((x) => {return x.args.debridgeId == this.linkDebridgeId});
       this.linkSubmissionId = this.linkSubmission.args.submissionId;
 
-      this.nativeSignatures = [];
+      this.nativeSignatures = "0x";
       for (let oracleKey of oracleKeys) {
-        this.nativeSignatures.push(
-          (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKey)).signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKey)).signature;
+        //HACK remove first 0x
+        this.nativeSignatures += currentSignature.substring(2, currentSignature.length);
       }
 
-      this.linkSignatures = [];
+      this.linkSignatures = "0x";
       for (let oracleKey of oracleKeys) {
-        this.linkSignatures.push(
-          (await bscWeb3.eth.accounts.sign(this.linkSubmissionId, oracleKey)).signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(this.linkSubmissionId, oracleKey)).signature;
+        this.linkSignatures += currentSignature.substring(2, currentSignature.length);
       }
     });
 
@@ -1173,11 +1174,9 @@ for (let i = 0; i <= 2; i++) {
       const receiver = this.nativeSubmission.args.receiver;
       const amount = this.nativeSubmission.args.amount;
       const nonce = this.nativeSubmission.args.nonce;
-      let signaturesWithDublicate = [];
-      for (i = 0; i < this.nativeSignatures.length; i++) {
-        signaturesWithDublicate.push(this.nativeSignatures[i]);
-      }
-      signaturesWithDublicate.push(this.nativeSignatures[3]);
+      //Add duplicate signatures
+      let signaturesWithDublicate = this.nativeSignatures;
+      signaturesWithDublicate += this.nativeSignatures.substring(132, 262);
 
       //console.log("signatures count: " + signaturesWithDublicate.length);
 
@@ -1274,7 +1273,7 @@ for (let i = 0; i <= 2; i++) {
 
       await expectRevert(
         this.debridgeETH.claim(debridgeId, bscChainId, receiver, amount, nonce, this.linkSignatures, { from: alice, }),
-        "submit: already used"
+        "submission already used"
       );
     });
   });
@@ -1725,13 +1724,14 @@ for (let i = 0; i <= 2; i++) {
     });
 
     it("should auto claim fee transaction (burn event deLink from BSC to ETH)", async function() {
-      let signatures = [];
+      let signatures = "0x";
       let currentBurnEvent = this.burnEventDeLink;
       let chainFrom = bscChainId;
+
       for (let oracleKey of oracleKeys) {
-        signatures.push(
-          (await bscWeb3.eth.accounts.sign(currentBurnEvent.args.submissionId, oracleKey)).signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(currentBurnEvent.args.submissionId, oracleKey)).signature;
+         //HACK remove first 0x
+        signatures +=currentSignature.substring(2, currentSignature.length);
       }
 
       let sendTx = await this.debridgeETH.autoClaim(
@@ -1878,7 +1878,7 @@ for (let i = 0; i <= 2; i++) {
     it("should reject withdrawing fee by non-worker", async function() {
       await expectRevert(
         this.debridgeBSC.connect(bobAccount).withdrawFee(this.linkDebridgeId),
-        "onlyWorker: bad role"
+        "bad role"
       );
     });
 
@@ -1886,7 +1886,7 @@ for (let i = 0; i <= 2; i++) {
       const fakeDebridgeId = await this.debridgeBSC.getDebridgeId(999, "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c");
       await expectRevert(
         this.debridgeBSC.connect(workerAccount).withdrawFee(fakeDebridgeId),
-        "Zero collected fees"
+        "debridge not exist"
       );
     });
   });

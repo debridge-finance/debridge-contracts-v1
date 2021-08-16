@@ -64,22 +64,22 @@ contract DeBridgeGate is Initializable,
     /* ========== MODIFIERS ========== */
 
     modifier onlyWorker {
-        require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
+        require(hasRole(WORKER_ROLE, msg.sender), "bad role");
         _;
     }
 
     modifier onlyDefiController {
-        require(address(defiController) == msg.sender, "defiController: bad role");
+        require(address(defiController) == msg.sender, "bad role");
         _;
     }
 
     modifier onlyAdmin {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "bad role");
         _;
     }
 
     modifier onlyGovMonitoring {
-        require(hasRole(GOVMONITORING_ROLE, msg.sender), "onlyGovMonitoring: bad role");
+        require(hasRole(GOVMONITORING_ROLE, msg.sender), "bad role");
         _;
     }
 
@@ -174,7 +174,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures
+        bytes memory _signatures
     ) external override whenNotPaused() {
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
@@ -252,7 +252,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures
+        bytes memory _signatures
     ) external override whenNotPaused() {
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
@@ -353,7 +353,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures,
+        bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
@@ -459,7 +459,7 @@ contract DeBridgeGate is Initializable,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes[] calldata _signatures,
+        bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
@@ -653,12 +653,12 @@ contract DeBridgeGate is Initializable,
         // need to pay fee when call burn/send
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         //Don't needed
-        // require(debridge.exist, "debridge not exist");
+        require(debridge.exist, "debridge not exist");
 
         //Amount for transfer to treasure
         uint256 amount = debridge.collectedFees + debridge.donatedFees - debridge.withdrawnFees;
         //save contract size
-        require(amount > 0, "Zero collected fees");
+        // require(amount > 0, "Zero collected fees");
         debridge.withdrawnFees += amount;
         //Reward amount for user
         uint256 rewardAmount = amount * collectRewardBps / BPS_DENOMINATOR;
@@ -679,12 +679,6 @@ contract DeBridgeGate is Initializable,
         feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value);
     }
 
-    function getDefiAvaliableReserves(address _tokenAddress)
-        external override view returns (uint256)
-    {
-        DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
-        return debridge.balance * (BPS_DENOMINATOR - debridge.minReservesBps) / BPS_DENOMINATOR;
-    }
 
     /// @dev Request the assets to be used in defi protocol.
     /// @param _tokenAddress Asset address.
@@ -742,13 +736,6 @@ contract DeBridgeGate is Initializable,
         feeProxy = _feeProxy;
     }
 
-    /// @dev Set wrapped native asset address.
-    /// @param _weth Weth address.
-    function setWeth(IWETH _weth) external onlyAdmin() {
-        weth = _weth;
-    }
-
-
     function blockSubmission(bytes32[] memory _submissionIds, bool isBlocked) external onlyAdmin() {
         for (uint256 i = 0; i < _submissionIds.length; i++) {
             isBlockedSubmission[_submissionIds[i]] = isBlocked;
@@ -803,7 +790,7 @@ contract DeBridgeGate is Initializable,
     }
 
      function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId,
-                                  uint256 _amount, bytes[] memory _signatures)
+                                  uint256 _amount, bytes memory _signatures)
         internal {
         (uint8 confirmations, bool confirmed) =
                 _signatures.length > 0
@@ -863,9 +850,9 @@ contract DeBridgeGate is Initializable,
         if (!debridge.exist) {
             _addAsset(_debridgeId, _tokenAddress, _tokenAddress, chainId);
         }
-        require(debridge.chainId == chainId, "send: not native chain");
-        require(getChainSupport[_chainIdTo].isSupported, "send: wrong targed chain");
-        require(_amount <= debridge.maxAmount, "send: amount too high");
+        require(debridge.chainId == chainId, "wrong chain");
+        require(getChainSupport[_chainIdTo].isSupported, "wrong targed chain");
+        require(_amount <= debridge.maxAmount, "amount too high");
         if (debridge.tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");
          } else {
@@ -898,9 +885,9 @@ contract DeBridgeGate is Initializable,
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
-        require(debridge.chainId != chainId, "burn: native asset");
-        require(chainSupportInfo.isSupported, "burn: wrong targed chain");
-        require(_amount <= debridge.maxAmount, "burn: amount too high");
+        require(debridge.chainId != chainId, "wrong chain");
+        require(chainSupportInfo.isSupported, "wrong targed chain");
+        require(_amount <= debridge.maxAmount, "amount too high");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         if (_signature.length > 0) {
             (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
@@ -928,24 +915,24 @@ contract DeBridgeGate is Initializable,
             uint256 fixedFee = debridge.tokenAddress == address(0)
                 ? chainSupportInfo.fixedNativeFee
                 : debridge.getChainFee[_chainIdTo];
-            require(fixedFee != 0, "send: fixed fee is not supported");
+            require(fixedFee != 0, "fixed fee is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
             transferFee = transferFee - transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
-            require(_amount >= transferFee, "send: amount not cover fees");
+            require(_amount >= transferFee, "amount not cover fees");
             debridge.collectedFees += transferFee;
             _amount -= transferFee;
         } else {
             {
                 uint256 transferFee = (_amount*chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
                 transferFee = transferFee - transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
-                require(_amount >= transferFee, "send: amount not cover fees");
+                require(_amount >= transferFee, "amount not cover fees");
                 debridge.collectedFees += transferFee;
                 _amount -= transferFee;
             }
             require(msg.value >= chainSupportInfo.fixedNativeFee
                 - chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR,
-                "send: amount not cover fees");
+                "amount not cover fees");
 
             getDebridge[nativeDebridgeId].collectedFees += msg.value;
         }
@@ -968,14 +955,12 @@ contract DeBridgeGate is Initializable,
         uint256 _executionFee,
         bytes memory _data
     ) internal {
-        require(!isSubmissionUsed[_submissionId], "submit: already used");
-        require(!isBlockedSubmission[_submissionId], "blocked submission");
+        _markAsUsed(_submissionId);
 
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.exist, "mint: debridge not exist");
+        require(debridge.exist, "debridge not exist");
 
-        isSubmissionUsed[_submissionId] = true;
-        require(debridge.chainId != chainId, "mint: is native chain");
+        require(debridge.chainId != chainId, "wrong chain");
         if (_executionFee > 0) {
             IWrappedAsset(debridge.tokenAddress).mint(
                 msg.sender,
@@ -1014,11 +999,9 @@ contract DeBridgeGate is Initializable,
         bytes memory _data
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId == chainId, "claim: wrong target chain");
-        require(!isSubmissionUsed[_submissionId], "submit: already used");
-        require(!isBlockedSubmission[_submissionId], "blocked submission");
+        require(debridge.chainId == chainId, "wrong chain");
+        _markAsUsed(_submissionId);
 
-        isSubmissionUsed[_submissionId] = true;
         debridge.balance -= _amount;
         if (debridge.tokenAddress == address(0)) {
             if (_executionFee > 0) {
@@ -1055,6 +1038,14 @@ contract DeBridgeGate is Initializable,
         emit Claimed(_submissionId, _amount, _receiver, _debridgeId);
     }
 
+    /// @dev Mark submission as used.
+    /// @param _submissionId Submission identifier.
+    function _markAsUsed(bytes32 _submissionId) internal {
+        require(!isSubmissionUsed[_submissionId], "submission already used");
+        require(!isBlockedSubmission[_submissionId], "blocked submission");
+        isSubmissionUsed[_submissionId] = true;
+    }
+
     /* VIEW */
 
     /// @dev Get the balance.
@@ -1065,6 +1056,13 @@ contract DeBridgeGate is Initializable,
         } else {
             return IERC20(_tokenAddress).balanceOf(address(this));
         }
+    }
+
+    function getDefiAvaliableReserves(address _tokenAddress)
+        external override view returns (uint256)
+    {
+        DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
+        return debridge.balance * (BPS_DENOMINATOR - debridge.minReservesBps) / BPS_DENOMINATOR;
     }
 
     /// @dev Calculates asset identifier.

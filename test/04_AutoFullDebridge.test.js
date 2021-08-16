@@ -208,42 +208,42 @@ contract("DeBridgeGate full with auto", function () {
       assert.equal(defiController, newDefiController);
     });
 
-    it("should set weth if called by the admin", async function() {
-      const weth = this.weth.address;
-      await this.debridge.setWeth(weth, {
-        from: alice,
-      });
-      const newWeth = await this.debridge.weth();
-      assert.equal(weth, newWeth);
-    });
+    // it("should set weth if called by the admin", async function() {
+    //   const weth = this.weth.address;
+    //   await this.debridge.setWeth(weth, {
+    //     from: alice,
+    //   });
+    //   const newWeth = await this.debridge.weth();
+    //   assert.equal(weth, newWeth);
+    // });
 
     it("should reject setting aggregator if called by the non-admin", async function() {
       await expectRevert(
         this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function() {
       await expectRevert(
         this.debridge.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function() {
       await expectRevert(
         this.debridge.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
-    it("should reject setting weth if called by the non-admin", async function() {
-      await expectRevert(
-        this.debridge.connect(bobAccount).setWeth(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
-      );
-    });
+    // it("should reject setting weth if called by the non-admin", async function() {
+    //   await expectRevert(
+    //     this.debridge.connect(bobAccount).setWeth(ZERO_ADDRESS),
+    //     "onlyAdmin: bad role"
+    //   );
+    // });
   });
 
   context("Test managing assets", () => {
@@ -469,7 +469,7 @@ contract("DeBridgeGate full with auto", function () {
           value: amount,
           from: alice,
         }),
-        "send: wrong targed chain"
+        "wrong targed chain"
       );
     });
   });
@@ -640,7 +640,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "submit: already used"
+        "submission already used"
       );
     });
   });
@@ -730,7 +730,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "burn: native asset"
+        "wrong chain"
       );
     });
   });
@@ -918,7 +918,7 @@ contract("DeBridgeGate full with auto", function () {
           data, {
           from: alice,
         }),
-        "submit: already used"
+        "submission already used"
       );
     });
   });
