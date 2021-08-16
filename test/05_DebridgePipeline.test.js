@@ -1138,6 +1138,19 @@ for (let i = 0; i <= 2; i++) {
       }
     });
 
+    it("check view method is valid signature", async function() {
+      assert.equal(
+        await this.signatureVerifierETH.isValidSignature(this.nativeSubmissionId,
+          (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKeys[0])).signature),
+        true
+      );
+      assert.equal(
+        await this.signatureVerifierETH.isValidSignature(this.linkSubmissionId,
+          (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKeys[0])).signature),
+        false
+      );
+    });
+
     it("should reject when the submission is blocked", async function() {
       await this.debridgeETH.blockSubmission([this.nativeSubmissionId], true, {
         from: alice,

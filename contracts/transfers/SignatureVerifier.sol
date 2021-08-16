@@ -200,6 +200,19 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         debridgeAddress = _debridgeAddress;
     }
 
+     /* ========== VIEW ========== */
+
+    /// @dev Check is valid signature
+    /// @param _submissionId Submission identifier.
+    /// @param _signature signature by oracle.
+    function isValidSignature(bytes32 _submissionId, bytes memory _signature)
+        external view returns (bool)
+    {
+        (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
+        address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
+        return getOracleInfo[oracle].isValid;
+    }
+
     /* ========== INTERNAL ========== */
 
     function _parseSignature(bytes memory _signatures, uint _pos)
