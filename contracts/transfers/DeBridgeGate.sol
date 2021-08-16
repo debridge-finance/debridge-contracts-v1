@@ -955,13 +955,11 @@ contract DeBridgeGate is Initializable,
         uint256 _executionFee,
         bytes memory _data
     ) internal {
-        require(!isSubmissionUsed[_submissionId], "submit: already used");
-        require(!isBlockedSubmission[_submissionId], "blocked submission");
+        _markAsUsed(_submissionId);
 
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.exist, "mint: debridge not exist");
 
-        isSubmissionUsed[_submissionId] = true;
         require(debridge.chainId != chainId, "mint: is native chain");
         if (_executionFee > 0) {
             IWrappedAsset(debridge.tokenAddress).mint(
@@ -1002,10 +1000,8 @@ contract DeBridgeGate is Initializable,
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.chainId == chainId, "claim: wrong target chain");
-        require(!isSubmissionUsed[_submissionId], "submit: already used");
-        require(!isBlockedSubmission[_submissionId], "blocked submission");
+        _markAsUsed(_submissionId);
 
-        isSubmissionUsed[_submissionId] = true;
         debridge.balance -= _amount;
         if (debridge.tokenAddress == address(0)) {
             if (_executionFee > 0) {
@@ -1040,6 +1036,14 @@ contract DeBridgeGate is Initializable,
             }
         }
         emit Claimed(_submissionId, _amount, _receiver, _debridgeId);
+    }
+
+    /// @dev Mark submission as used.
+    /// @param _submissionId Submission identifier.
+    function _markAsUsed(bytes32 _submissionId) internal {
+        require(!isSubmissionUsed[_submissionId], "submit: already used");
+        require(!isBlockedSubmission[_submissionId], "blocked submission");
+        isSubmissionUsed[_submissionId] = true;
     }
 
     /* VIEW */
