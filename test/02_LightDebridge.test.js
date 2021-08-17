@@ -130,13 +130,13 @@ contract("DeBridgeGate light mode", function() {
       },
   ];
     for (let oracle of this.initialOracles) {
-      await this.signatureVerifier.addOracle(oracle.address, oracle.address, false, {
+      await this.signatureVerifier.addOracles([oracle.address], [oracle.address], [false], {
         from: alice,
       });
     }
 
     //Alice is required oracle
-    await this.signatureVerifier.addOracle(alice, alice, true, {
+    await this.signatureVerifier.addOracles([alice], [alice], [true], {
       from: alice,
     });
 

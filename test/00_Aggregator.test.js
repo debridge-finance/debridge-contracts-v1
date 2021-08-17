@@ -55,8 +55,9 @@ contract("ConfirmationAggregator", function() {
       },
     ];
     await this.aggregator.deployed();
+
     for (let oracle of this.initialOracles) {
-      await this.aggregator.connect(aliceAccount).addOracle(oracle.address, oracle.admin, false);
+      await this.aggregator.connect(aliceAccount).addOracles([oracle.address], [oracle.admin], [false]);
     }
   });
 
@@ -93,7 +94,7 @@ contract("ConfirmationAggregator", function() {
 
     it("should add new oracle if called by the admin", async function() {
       let isRequired = true;
-      await this.aggregator.connect(aliceAccount).addOracle(devid, eve, isRequired);
+      await this.aggregator.connect(aliceAccount).addOracles([devid], [eve], [isRequired]);
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
       //oracleInfo is admin address of oracle
       assert.equal(oracleInfo.exist, true);
@@ -153,7 +154,7 @@ contract("ConfirmationAggregator", function() {
 
     it("should reject adding the new oracle if called by the non-admin", async function() {
       await expectRevert(
-        this.aggregator.connect(bobAccount).addOracle(devid, eve, false),
+        this.aggregator.connect(bobAccount).addOracles([devid], [eve], [false]),
         "onlyAdmin: bad role"
       );
     });
@@ -187,7 +188,7 @@ contract("ConfirmationAggregator", function() {
     it("should submit burnt identifier by the oracle", async function() {
       const submission =
         "0x80584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-     
+
       await this.aggregator.connect(bobAccount).submit(submission);
       const burntInfo = await this.aggregator.getSubmissionInfo(submission);
       assert.equal(burntInfo.confirmations, 1);
@@ -196,9 +197,9 @@ contract("ConfirmationAggregator", function() {
     it("should submit mint identifier by the second oracle", async function() {
       const submission =
         "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-     
+
       await this.aggregator.connect(aliceAccount).submit(submission);
-      const mintInfo = await this.aggregator.getSubmissionInfo(submission);     
+      const mintInfo = await this.aggregator.getSubmissionInfo(submission);
       assert.equal(mintInfo.confirmations, 2);
     });
 
@@ -213,7 +214,7 @@ contract("ConfirmationAggregator", function() {
     it("should submit mint identifier by the extra oracle", async function() {
       const submission =
         "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-        
+
       await this.aggregator.connect(eveAccount).submit(submission);
       const mintInfo = await this.aggregator.getSubmissionInfo(submission);
       assert.equal(mintInfo.confirmations, 3);

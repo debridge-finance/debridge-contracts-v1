@@ -114,7 +114,7 @@ contract("DeBridgeGate full with auto", function () {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, false, {
+      await this.confirmationAggregator.addOracles([oracle.address], [oracle.admin], [false], {
         from: alice,
       });
     }

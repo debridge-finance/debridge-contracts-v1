@@ -8,6 +8,16 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 module.exports = async function(deployer, network, accounts) {
   // if (network == "test") return;
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
+
+  let oracleAddresses =[];
+  let oracleAdmins = [];
+  let required = [];
+  for (let oracle of debridgeInitParams.oracles) {
+    oracleAddresses.push(oracle.address);
+    oracleAdmins.push(oracle.admin);
+    required.push(false);
+  }
+
   if (debridgeInitParams.type == "full") {
 
     //   constructor(
@@ -30,7 +40,7 @@ module.exports = async function(deployer, network, accounts) {
     );
 
     //TODO: deploy Light Aggregator in arbitrum
-    // constructor(uint256 _minConfirmations) 
+    // constructor(uint256 _minConfirmations)
     await deployProxy(
       SignatureAggregator,
       [
@@ -42,11 +52,11 @@ module.exports = async function(deployer, network, accounts) {
     let signatureAggregatorInstance = await SignatureAggregator.deployed();
     console.log("ConfirmationAggregator: " + aggregatorInstance.address);
     console.log("SignatureAggregator: " + SignatureAggregator.address);
-    for (let oracle of debridgeInitParams.oracles) {
-      await aggregatorInstance.addOracle(oracle.address, oracle.admin, false);
-      await signatureAggregatorInstance.addOracle(oracle.address, oracle.admin, false);
-      console.log("addOracle: " + oracle.address);
-    }
+
+    await aggregatorInstance.addOracles(oracleAddresses, oracleAdmins, required);
+    await signatureAggregatorInstance.addOracles(oracleAddresses, oracleAdmins, required);
+    console.log("addOracle: " + oracleAddresses);
+
   } else {
 
   //   constructor(
@@ -69,9 +79,8 @@ module.exports = async function(deployer, network, accounts) {
     );
     let aggregatorInstance = await SignatureVerifier.deployed();
     console.log("SignatureVerifier: " + aggregatorInstance.address);
-    for (let oracle of debridgeInitParams.oracles) {
-      await aggregatorInstance.addOracle(oracle.address, oracle.address, false);
-      console.log("addOracle: " + oracle.address);
-    }
+
+    await aggregatorInstance.addOracles(oracleAddresses, oracleAdmins, required);
+    console.log("addOracle: " + oracleAddresses);
   }
 };
