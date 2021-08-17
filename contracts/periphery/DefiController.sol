@@ -56,6 +56,16 @@ contract DefiController is Initializable,
         uint16 maxReservesBps
     );
 
+    event DepositToStrategy(
+        address strategy,
+        uint256 amount
+    );
+
+    event WithdrawFromStrategy(
+        address strategy,
+        uint256 amount
+    );
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyWorker {
@@ -95,6 +105,8 @@ contract DefiController is Initializable,
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
         strategyController.deposit(strategy.stakeToken, _amount);
+
+        emit DepositToStrategy(_strategy, _amount);
     }
 
     function withdrawFromStrategy(uint256 _amount, address _strategy) internal {
@@ -112,6 +124,8 @@ contract DefiController is Initializable,
 
         // Return tokens to Gate
         deBridgeGate.returnReserves(strategy.stakeToken, _amount);
+
+        emit WithdrawFromStrategy(_strategy, _amount);
     }
 
     function rebalanceStrategy(address _strategy) external onlyWorker whenNotPaused returns (bool) {
