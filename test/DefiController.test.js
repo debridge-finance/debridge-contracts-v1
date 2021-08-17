@@ -63,7 +63,7 @@ describe("DefiController", function () {
           this.strategyStakeToken = await this.MockStrategyFactory.deploy();
         });
 
-        it("rebalanceStrategy reverts", async function () {
+        it("rebalanceStrategy for native token reverts if it's not enabled", async function () {
           await expect(
             this.defiController
               .connect(worker)
@@ -71,7 +71,7 @@ describe("DefiController", function () {
           ).to.be.revertedWith("strategy is not enabled");
         });
 
-        it("rebalanceStrategy reverts", async function () {
+        it("rebalanceStrategy for stake token reverts if it's not enabled", async function () {
           await expect(
             this.defiController
               .connect(worker)
@@ -219,18 +219,18 @@ describe("DefiController", function () {
             it("check funds were deposited to strategy");
             // todo: since DeFi protocols have different interfaces, these tests should be written per strategy
 
-            // it("rebalanceStrategy reverts if called by wrong role", async function () {
-            //   await expect(
-            //     this.defiController
-            //       .connect(worker)
-            //       .rebalanceStrategy(this.strategyStakeToken.address)
-            //   ).to.be.revertedWith("defiController: bad role");
-            //   await expect(
-            //     this.defiController
-            //       .connect(worker)
-            //       .rebalanceStrategy (this.strategyNativeToken.address)
-            //   ).to.be.revertedWith("defiController: bad role");
-            // });
+            it("rebalanceStrategy reverts if called by wrong role", async function () {
+              await expect(
+                this.defiController
+                  .connect(other)
+                  .rebalanceStrategy(this.strategyStakeToken.address)
+              ).to.be.revertedWith("onlyWorker: bad role");
+              await expect(
+                this.defiController
+                  .connect(other)
+                  .rebalanceStrategy (this.strategyNativeToken.address)
+              ).to.be.revertedWith("onlyWorker: bad role");
+            });
 
             describe("add bridges & connect deBridgeGate", function () {
               const chainId = 1;
@@ -269,6 +269,116 @@ describe("DefiController", function () {
                 );
                 await this.debridge.setDefiController(this.defiController.address);
               });
+
+              it("rebalanceStrategy should return false if there is no avaliable reserves and strategy doesn't have reserves", async function() {
+                const token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
+                const strategyToken = await this.MockTokenFactory.deploy("Strategy Token", "STEST", 18);
+                const strategy = await this.MockStrategyFactory.deploy();
+
+                await this.defiController.addStrategy(
+                  strategy.address,
+                  true,
+                  5000,
+                  token.address,
+                  strategyToken.address,
+                );
+
+                // add debridge with zero balance
+                await this.debridge.addDebridge(
+                  token.address,
+                  chainId,
+                  maxAmount,
+                  0,
+                  0,
+                  0,
+                  minReservesBps,
+                  chainFee,
+                  true
+                );
+
+                // avaliableReserves == 0
+                expect(
+                  await this.debridge
+                    .getDefiAvaliableReserves(token.address)
+                ).to.be.equal(0);
+
+                // currentReserves == 0
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(0);
+
+                // test rebalanceStrategy
+                await expect(
+                  this.defiController
+                    .connect(worker)
+                    .rebalanceStrategy(strategy.address)
+                ).to.not.emit(this.defiController, 'WithdrawFromStrategy');
+
+                // still currentReserves == 0
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(0);
+              });
+
+              it("rebalanceStrategy should return false if maxReservesBps equals to zero and strategy doesn't have reserves", async function() {
+                const token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
+                const strategyToken = await this.MockTokenFactory.deploy("Strategy Token", "STEST", 18);
+                const strategy = await this.MockStrategyFactory.deploy();
+
+                // add strategy with maxReservesBps = 0
+                await this.defiController.addStrategy(
+                  strategy.address,
+                  true,
+                  0,
+                  token.address,
+                  strategyToken.address,
+                );
+
+                // add debridge with non zero balance
+                await this.debridge.addDebridge(
+                  token.address,
+                  chainId,
+                  maxAmount,
+                  0,
+                  1000,
+                  0,
+                  minReservesBps,
+                  chainFee,
+                  true
+                );
+
+                // avaliableReserves > 0
+                expect(
+                  await this.debridge
+                    .getDefiAvaliableReserves(token.address)
+                ).to.be.not.equal(0);
+
+                // currentReserves == 0
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(0);
+
+                // test rebalanceStrategy
+                await expect(
+                  this.defiController
+                    .connect(worker)
+                    .rebalanceStrategy(strategy.address)
+                ).to.not.emit(this.defiController, 'WithdrawFromStrategy');
+
+                // still currentReserves == 0
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(0);
+              });
+
               // describe("after deposited native token to strategy", function () {
               //   beforeEach(async function () {
               //     await expect(
@@ -364,6 +474,19 @@ describe("DefiController", function () {
               worker.address
             )
           ).to.be.equal(false);
+        });
+
+        it("rebalanceStrategy reverts if called by worker after it's role was revoked", async function () {
+          await expect(
+            this.defiController
+              .connect(worker)
+              .rebalanceStrategy(ZERO_ADDRESS)
+          ).to.be.revertedWith("onlyWorker: bad role");
+          await expect(
+            this.defiController
+              .connect(worker)
+              .rebalanceStrategy(ZERO_ADDRESS)
+          ).to.be.revertedWith("onlyWorker: bad role");
         });
       });
     });
