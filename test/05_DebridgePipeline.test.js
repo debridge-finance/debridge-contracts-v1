@@ -1591,7 +1591,7 @@ for (let i = 0; i <= 2; i++) {
         this.wethETH.address,
       );
 
-      console.log("ETHPoolAddres_LINK_ETH "+ ETHPoolAddres_LINK_ETH);
+      // console.log("ETHPoolAddres_LINK_ETH "+ ETHPoolAddres_LINK_ETH);
 
       const BSCPool_DeETH_BNB = await IUniswapV2Pair.at(BSCPoolAddres_DeETH_BNB);
       const BSCPool_DeLINK_BNB = await IUniswapV2Pair.at(BSCPoolAddres_DeLINK_BNB);
@@ -1845,7 +1845,6 @@ for (let i = 0; i <= 2; i++) {
       let receipt = await sendTx.wait();
 
       let ReceivedTransferFee = receipt.events?.find((x) => {return x.event == "ReceivedTransferFee"});
-      //TODO: need to fix gate balance the same
       // console.log(receipt.events);
       // console.log(ReceivedTransferFee);
       // console.log("amount " + ReceivedTransferFee.args.amount.toString());
@@ -1861,13 +1860,21 @@ for (let i = 0; i <= 2; i++) {
 
       // console.log("Proxy balance  "+(await this.cakeToken.balanceOf(this.callProxy.address)).toString());
       // console.log("Proxy fee balance  "+(await this.cakeToken.balanceOf(this.feeProxyBSC.address)).toString());
-      assert.equal(
-        balance.add(currentBurnEvent.args.amount).toString(),
-        newBalance.toString());
+
+      //Balnce cake on debridgeGate will be the same, Cake only transfered to CallProxy and back to collected fee
+      assert.equal(balance.toString(), newBalance.toString());
 
       assert.equal(
-        debridgeInfo.collectedFees.add(currentBurnEvent.args.amount).toString(),
+        debridgeInfo.donatedFees.add(currentBurnEvent.args.amount).toString(),
+        newDebridgeInfo.donatedFees.toString());
+
+      assert.equal(
+        debridgeInfo.collectedFees.toString(),
         newDebridgeInfo.collectedFees.toString());
+
+      assert.equal(
+        debridgeInfo.withdrawnFees.toString(),
+        newDebridgeInfo.withdrawnFees.toString());
     });
 
 
