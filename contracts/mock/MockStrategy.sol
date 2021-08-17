@@ -17,15 +17,15 @@ contract MockStrategy is IStrategy {
     }
 
     function deposit(address _token, uint256 _amount) external override {
-        
+        balance += _amount;
     }
 
     function withdraw(address _token, uint256 _amount) external override {
-        
+        balance -= _amount;
     }
 
     function withdrawAll(address token) external override {
-
+        balance = 0;
     }
 
     function updateReserves(address account, address token) 
@@ -34,9 +34,6 @@ contract MockStrategy is IStrategy {
         override 
         returns(uint256) 
     {
-    // uint256 reserves = IERC20(_token).balanceOf(_account);
-    // address incentivesController = IAToken(_token).getIncentivesController();
-    // uint256 reserves = IAaveIncentivesController(incentivesController).getUserAssetData(_account, _token);
         return balance;
     }
 }
