@@ -104,6 +104,71 @@ describe("DefiController", function () {
             );
           });
 
+          it("only admin can adding strategy", async function() {
+            await expect(
+              this.defiController
+                .connect(worker)
+                .addStrategy(
+                  this.strategyStakeToken.address,
+                  true,
+                  0,
+                  this.stakeToken.address,
+                  ZERO_ADDRESS,
+                )
+            ).to.be.revertedWith("onlyAdmin: bad role");
+
+            await expect(
+              this.defiController
+                .connect(other)
+                .addStrategy(
+                  this.strategyNativeToken.address,
+                  true,
+                  0,
+                  ZERO_ADDRESS,
+                  ZERO_ADDRESS,
+                )
+            ).to.be.revertedWith("onlyAdmin: bad role");
+          })
+
+          it("should revert adding strategy if it's already exists", async function() {
+            await expect(
+              this.defiController.addStrategy(
+                this.strategyStakeToken.address,
+                true,
+                stakeTokenStrategyMaxReservesBps,
+                this.stakeToken.address,
+                ZERO_ADDRESS,
+              )
+            ).to.be.revertedWith("strategy already exists");
+          })
+
+          it("should revert adding strategy with invalid maxReservesBps", async function() {
+            const token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
+            const strategy = await this.MockStrategyFactory.deploy();
+
+            const BPS_DENOMINATOR = await this.defiController.BPS_DENOMINATOR();
+            const STRATEGY_RESERVES_DELTA_BPS = await this.defiController.STRATEGY_RESERVES_DELTA_BPS();
+            await expect(
+              this.defiController.addStrategy(
+                strategy.address,
+                true,
+                STRATEGY_RESERVES_DELTA_BPS.div(2),
+                token.address,
+                ZERO_ADDRESS,
+              )
+            ).to.be.revertedWith("invalid maxReservesBps");
+
+            await expect(
+              this.defiController.addStrategy(
+                strategy.address,
+                true,
+                BPS_DENOMINATOR,
+                token.address,
+                ZERO_ADDRESS,
+              )
+            ).to.be.revertedWith("invalid maxReservesBps");
+          })
+
           it("check correct values in strategy", async function () {
             const strategyFromContract = await this.defiController.strategies(this.strategyNativeToken.address);
             expect(true).to.be.equal(strategyFromContract.isSupported);
