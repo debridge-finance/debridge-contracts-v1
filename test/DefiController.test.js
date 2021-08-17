@@ -242,39 +242,41 @@ describe("DefiController", function () {
               const chainFee = 0;
               const exist = false;
 
-              beforeEach(async function () {
-                await this.debridge.init();
-                await this.debridge.addDebridge(
-                  this.stakeToken.address,
-                  chainId,
-                  maxAmount,
-                  collectedFees,
-                  balance,
-                  lockedInStrategies,
-                  minReservesBps,
-                  chainFee,
-                  exist
-                );
+              let token, strategyToken, strategy;
 
-                await this.debridge.addDebridge(
-                  ZERO_ADDRESS,
-                  chainId,
-                  maxAmount,
-                  collectedFees,
-                  balance,
-                  lockedInStrategies,
-                  minReservesBps,
-                  chainFee,
-                  exist
-                );
+              beforeEach(async function () {
+                token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
+                strategyToken = await this.MockTokenFactory.deploy("Strategy Token", "STEST", 18);
+                strategy = await this.MockStrategyFactory.deploy();
+
+                await this.debridge.init();
+                // await this.debridge.addDebridge(
+                //   this.stakeToken.address,
+                //   chainId,
+                //   maxAmount,
+                //   collectedFees,
+                //   balance,
+                //   lockedInStrategies,
+                //   minReservesBps,
+                //   chainFee,
+                //   exist
+                // );
+
+                // await this.debridge.addDebridge(
+                //   ZERO_ADDRESS,
+                //   chainId,
+                //   maxAmount,
+                //   collectedFees,
+                //   balance,
+                //   lockedInStrategies,
+                //   minReservesBps,
+                //   chainFee,
+                //   exist
+                // );
                 await this.debridge.setDefiController(this.defiController.address);
               });
 
-              it("rebalanceStrategy should return false if there is no avaliable reserves and strategy doesn't have reserves", async function() {
-                const token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
-                const strategyToken = await this.MockTokenFactory.deploy("Strategy Token", "STEST", 18);
-                const strategy = await this.MockStrategyFactory.deploy();
-
+              it("rebalanceStrategy should do nothing if there is no avaliable reserves and strategy doesn't have reserves", async function() {
                 await this.defiController.addStrategy(
                   strategy.address,
                   true,
@@ -324,11 +326,7 @@ describe("DefiController", function () {
                 ).to.be.equal(0);
               });
 
-              it("rebalanceStrategy should return false if maxReservesBps equals to zero and strategy doesn't have reserves", async function() {
-                const token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
-                const strategyToken = await this.MockTokenFactory.deploy("Strategy Token", "STEST", 18);
-                const strategy = await this.MockStrategyFactory.deploy();
-
+              it("rebalanceStrategy should do nothing if maxReservesBps equals to zero and strategy doesn't have reserves", async function() {
                 // add strategy with maxReservesBps = 0
                 await this.defiController.addStrategy(
                   strategy.address,
@@ -379,77 +377,129 @@ describe("DefiController", function () {
                 ).to.be.equal(0);
               });
 
-              // describe("after deposited native token to strategy", function () {
-              //   beforeEach(async function () {
-              //     await expect(
-              //       this.defiController
-              //         .connect(worker)
-              //         .depositToStrategy(amount, this.strategyNativeToken.address)
-              //     ).to.be.reverted;
+              it("rebalanceStrategy should withdraw all if maxReservesBps equals to zero and strategy have reserves", async function() {
+                // add strategy with maxReservesBps = 0
+                await this.defiController.addStrategy(
+                  strategy.address,
+                  true,
+                  0,
+                  token.address,
+                  strategyToken.address,
+                );
 
-              //     // Error: Transaction reverted: function selector was not recognized and there's no fallback nor receive function
-              //     // Reason: DefiController can't accept ether
-              //     // Decision: receive() external payable {  }
+                // add debridge with non zero balance
+                await this.debridge.addDebridge(
+                  token.address,
+                  chainId,
+                  maxAmount,
+                  0,
+                  balance,
+                  0,
+                  minReservesBps,
+                  chainFee,
+                  true
+                );
 
-              //     // Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
-              //     // Reason: DefiController does not have an implementation for accepting a native token
-              //     // Decision: Add branching to the ERC20 and native token
+                // avaliableReserves > 0
+                expect(
+                  await this.debridge
+                    .getDefiAvaliableReserves(token.address)
+                ).to.be.not.equal(0);
 
-              //     //await this.defiController.connect(worker).depositToStrategy(amount, this.strategyNativeToken.address)
-              //     // todo: assert token.balanceOf(this.debridge) == 0
-              //     // todo: assert token.balanceOf(this.strategy) == amount
-              //   });
+                // currentReserves > 0
+                const currentReserves = 4000;
+                await token.mint(this.defiController.address, currentReserves);
+                const tx = await strategy.deposit(token.address, currentReserves);
+                await tx.wait();
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(currentReserves);
 
-              //   it("native tokens transferred to strategy");
+                // test rebalanceStrategy
+                await expect(
+                  this.defiController
+                    .connect(worker)
+                    .rebalanceStrategy(strategy.address)
+                ).to.emit(this.defiController, 'WithdrawFromStrategy')
+                  .withArgs(strategy.address, currentReserves);
 
-              //   describe("after withdrawn from strategy", function () {
-              //     beforeEach(async function () {
-              //       await expect(
-              //         this.defiController
-              //           .connect(worker)
-              //           .withdrawFromStrategy(amount, this.strategyNativeToken.address)
-              //       ).to.be.reverted;
-              //       //Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
-              //     });
+                // currentReserves == 0
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(0);
+              });
 
-              //     it("tokens transferred from strategy back to deBridgeGate");
-              //   });
-              // });
+              it("rebalanceStrategy should withdraw all if avaliableReserves equals to zero and strategy have reserves", async function() {
+                // add strategy with maxReservesBps = 0
+                await this.defiController.addStrategy(
+                  strategy.address,
+                  true,
+                  5000,
+                  token.address,
+                  strategyToken.address,
+                );
 
-              // describe("after deposited stake token to strategy", function () {
-              //   beforeEach(async function () {
-              //     await this.defiController
-              //       .connect(worker)
-              //       .depositToStrategy(amount, this.strategyStakeToken.address);
-              //     // todo: assert token.balanceOf(this.debridge) == 0
-              //     // todo: assert token.balanceOf(this.strategy) == amount
-              //   });
+                // add debridge with minReservesBps = 100%
+                await this.debridge.addDebridge(
+                  token.address,
+                  chainId,
+                  maxAmount,
+                  0,
+                  balance,
+                  0,
+                  10000,
+                  chainFee,
+                  true
+                );
 
-              //   // they should be transferred to the strategy, but it is mocked up and its function does not pull tokens
-              //   // and they remain on DefiController
-              //   it("tokens transferred to strategy");
-              //   // todo: expect(await this.stakeToken.balanceOf(this.strategy)).to.be.equal(amount);
+                // avaliableReserves == 0
+                expect(
+                  await this.debridge
+                    .getDefiAvaliableReserves(token.address)
+                ).to.be.equal(0);
 
-              //   it("the number of tokens owned by the bridge decreases", async function () {
-              //     expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-              //       totalSupplyAmount - amount
-              //     );
-              //   });
+                // currentReserves > 0
+                const currentReserves = 4000;
+                await token.mint(this.defiController.address, currentReserves);
+                const tx = await strategy.deposit(token.address, currentReserves);
+                await tx.wait();
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(currentReserves);
 
-              //   describe("after withdrawn from strategy", function () {
-              //     beforeEach(async function () {
-              //       await this.defiController
-              //         .connect(worker)
-              //         .withdrawFromStrategy(amount, this.strategyStakeToken.address);
-              //     });
+                // test rebalanceStrategy
+                await expect(
+                  this.defiController
+                    .connect(worker)
+                    .rebalanceStrategy(strategy.address)
+                ).to.emit(this.defiController, 'WithdrawFromStrategy')
+                  .withArgs(strategy.address, currentReserves);
 
-              //     it("tokens transferred from strategy back to deBridgeGate", async function () {
-              //       expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-              //         totalSupplyAmount
-              //       );
-              //     });
-              //   });
-              // });
+                // currentReserves == 0
+                expect(
+                  await strategy.updateReserves(
+                    this.defiController.address,
+                    strategyToken.address)
+                ).to.be.equal(0);
+              });
+
+              it("rebalanceStrategy should do nothing if strategy reserves are optimal", async function() {
+                // TODO
+              });
+
+              it("rebalanceStrategy should deposit if strategy reserves are less than optimal", async function() {
+                // TODO
+              });
+
+              it("rebalanceStrategy should withdraw if strategy reserves are more than optimal", async function() {
+                // TODO
+              });
             });
           });
         });

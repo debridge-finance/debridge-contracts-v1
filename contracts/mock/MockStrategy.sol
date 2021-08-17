@@ -11,11 +11,6 @@ contract MockStrategy is IStrategy {
         balance = 0;
     }
 
-    function setBalance(uint256 new_balance) external
-    {
-        balance = new_balance;
-    }
-
     function deposit(address _token, uint256 _amount) external override {
         balance += _amount;
     }
@@ -28,11 +23,11 @@ contract MockStrategy is IStrategy {
         balance = 0;
     }
 
-    function updateReserves(address account, address token) 
-        external 
-        view 
-        override 
-        returns(uint256) 
+    function updateReserves(address account, address token)
+        external
+        view
+        override
+        returns(uint256)
     {
         return balance;
     }
