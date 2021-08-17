@@ -75,6 +75,9 @@ jobs:
     - name: Test DeBridge Full Auto
       run: yarn test test/04_AutoFullDebridge.test.js
 
+    - name: Test DeBridge real transfer pipeline
+      run: yarn test test/05_DebridgePipeline.test.js
+      
     - name: Test PriceConsumer
       run: yarn test test/06_PriceConsumer.test.js
 
