@@ -352,6 +352,14 @@ describe("DefiController", function () {
                     strategyToken.address)
                 ).to.be.equal(0);
 
+                expect(
+                  await this.defiController
+                    .connect(worker)
+                    .isStrategyUnbalanced(strategy.address)
+                ).to.be.eql(
+                  [ethers.BigNumber.from(0), false]
+                )
+
                 // test rebalanceStrategy
                 await expect(
                   this.defiController
@@ -403,6 +411,14 @@ describe("DefiController", function () {
                     this.defiController.address,
                     strategyToken.address)
                 ).to.be.equal(0);
+
+                expect(
+                  await this.defiController
+                    .connect(worker)
+                    .isStrategyUnbalanced(strategy.address)
+                ).to.be.eql(
+                  [ethers.BigNumber.from(0), false]
+                )
 
                 // test rebalanceStrategy
                 await expect(
@@ -456,6 +472,14 @@ describe("DefiController", function () {
                     strategyToken.address)
                 ).to.be.equal(0);
 
+                expect(
+                  await this.defiController
+                    .connect(worker)
+                    .isStrategyUnbalanced(strategy.address)
+                ).to.be.eql(
+                  [ethers.BigNumber.from(0), false]
+                )
+
                 // test rebalanceStrategy
                 await expect(
                   this.defiController
@@ -486,6 +510,14 @@ describe("DefiController", function () {
                     .mul(stakeTokenStrategyMaxReservesBps - this.STRATEGY_RESERVES_DELTA_BPS / 2)
                     .div(this.BPS_DENOMINATOR);
 
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [strategyStakeTokenOptimalReserves, true]
+                  )
+
                   await expect(
                     this.defiController
                       .connect(worker)
@@ -503,6 +535,14 @@ describe("DefiController", function () {
                 })
 
                 it("rebalanceStrategy should do nothing if strategy reserves are optimal", async function() {
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [ethers.BigNumber.from(0), false]
+                  )
+
                   await expect(
                     this.defiController
                       .connect(worker)
@@ -523,6 +563,15 @@ describe("DefiController", function () {
                   const newStrategyStakeTokenOptimalReserves = stakeTokenAvaliableReserves
                     .mul(newStakeTokenStrategyMaxReservesBps - this.STRATEGY_RESERVES_DELTA_BPS / 2)
                     .div(this.BPS_DENOMINATOR);
+                  const delta = strategyStakeTokenOptimalReserves.sub(newStrategyStakeTokenOptimalReserves);
+
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [delta, false]
+                  )
 
                   await expect(
                     this.defiController
@@ -531,7 +580,7 @@ describe("DefiController", function () {
                   ).to.emit(this.defiController, 'WithdrawFromStrategy')
                     .withArgs(
                       this.strategyStakeToken.address,
-                      strategyStakeTokenOptimalReserves.sub(newStrategyStakeTokenOptimalReserves));
+                      delta);
 
                   expect(
                     await this.strategyStakeToken.updateReserves(
@@ -552,6 +601,15 @@ describe("DefiController", function () {
                   const newStrategyStakeTokenOptimalReserves = stakeTokenAvaliableReserves
                     .mul(newStakeTokenStrategyMaxReservesBps - this.STRATEGY_RESERVES_DELTA_BPS / 2)
                     .div(this.BPS_DENOMINATOR);
+                  const delta = newStrategyStakeTokenOptimalReserves.sub(strategyStakeTokenOptimalReserves);
+
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [delta, true]
+                  )
 
                   await expect(
                     this.defiController
@@ -560,7 +618,7 @@ describe("DefiController", function () {
                   ).to.emit(this.defiController, 'DepositToStrategy')
                     .withArgs(
                       this.strategyStakeToken.address,
-                      newStrategyStakeTokenOptimalReserves.sub(strategyStakeTokenOptimalReserves));
+                      delta);
 
                   expect(
                     await this.strategyStakeToken.updateReserves(
@@ -576,6 +634,14 @@ describe("DefiController", function () {
                     true,
                     0
                   );
+
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [strategyStakeTokenOptimalReserves, false]
+                  )
 
                   // rebalance strategy
                   await expect(
@@ -605,6 +671,14 @@ describe("DefiController", function () {
                     0
                   );
 
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [strategyStakeTokenOptimalReserves, false]
+                  )
+
                   // rebalance strategy
                   await expect(
                     this.defiController
@@ -623,13 +697,21 @@ describe("DefiController", function () {
                   ).to.be.equal(0);
                 });
 
-                it("rebalanceStrategy should withdraw all if strategy disabled and has reserves", async function() {
+                it("rebalanceStrategy should withdraw all if strategy disabled and it has reserves", async function() {
                   // disable strategy
                   await this.defiController.updateStrategy(
                     this.strategyStakeToken.address,
                     false,
                     stakeTokenStrategyMaxReservesBps
                   );
+
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [strategyStakeTokenOptimalReserves, false]
+                  )
 
                   // rebalance strategy
                   await expect(
