@@ -191,7 +191,7 @@ contract("DeBridgeGate light mode", function() {
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
-    this.nativeDebridgeId = await this.debridge.nativeDebridgeId();
+    this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
   });
 
   context("Test setting configurations by different users", () => {

@@ -431,7 +431,7 @@ contract("DeBridgeGate full mode", function () {
             await this.confirmationAggregator.deployed();
 
             await this.confirmationAggregator.setDebridgeAddress(this.debridge.address);
-            this.nativeDebridgeId = await this.debridge.nativeDebridgeId();
+            this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
             await this.debridge.setAggregator(this.confirmationAggregator.address);
           });
 
