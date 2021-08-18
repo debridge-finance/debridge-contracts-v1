@@ -341,31 +341,37 @@ contract("DeBridgeGate real pipeline mode",  function() {
       assert.equal(this.wethHECO.address, await this.debridgeHECO.weth());
     });
     it("Initialize oracles", async function() {
+      let oracleAddresses =[];
+      let oracleAdmins = [];
+      let required = [];
       for (let oracle of this.initialOracles) {
-        await this.confirmationAggregatorBSC.addOracle(oracle.address, oracle.admin, false, {
-          from: alice,
-        });
-        await this.confirmationAggregatorHECO.addOracle(oracle.address, oracle.admin, false, {
-          from: alice,
-        });
-      }
-      //Alice is required oracle
-      await this.confirmationAggregatorBSC.addOracle(alice, alice, true, {
-        from: alice,
-      });
-      await this.confirmationAggregatorHECO.addOracle(alice, alice, true, {
-        from: alice,
-      });
-
-
-      for (let oracle of this.initialOracles) {
-        await this.signatureVerifierETH.addOracle(oracle.address, oracle.address, false, {
-          from: alice,
-        });
+        oracleAddresses.push(oracle.address);
+        oracleAdmins.push(oracle.admin);
+        required.push(false);
       }
 
+      await this.confirmationAggregatorBSC.addOracles(oracleAddresses, oracleAdmins, required, {
+        from: alice,
+      });
+      await this.confirmationAggregatorHECO.addOracles(oracleAddresses, oracleAdmins, required, {
+        from: alice,
+      });
+
       //Alice is required oracle
-      await this.signatureVerifierETH.addOracle(alice, alice, true, {
+      await this.confirmationAggregatorBSC.addOracles([alice], [alice], [true], {
+        from: alice,
+      });
+      await this.confirmationAggregatorHECO.addOracles([alice], [alice], [true], {
+        from: alice,
+      });
+
+
+      await this.signatureVerifierETH.addOracles(oracleAddresses, oracleAdmins, required, {
+        from: alice,
+      });
+
+      //Alice is required oracle
+      await this.signatureVerifierETH.addOracles([alice], [alice], [true], {
         from: alice,
       });
 

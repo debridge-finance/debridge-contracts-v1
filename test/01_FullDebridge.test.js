@@ -476,13 +476,13 @@ contract("DeBridgeGate full mode", function () {
                 },
               ];
               for (let oracle of this.initialOracles) {
-                await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, false, {
+                await this.confirmationAggregator.addOracles([oracle.address], [oracle.admin], [false], {
                   from: alice.address,
                 });
               }
 
               //Alice is required oracle
-              await this.confirmationAggregator.addOracle(alice.address, alice.address, true, {
+              await this.confirmationAggregator.addOracles([alice.address], [alice.address], [true], {
                 from: alice.address,
               });
             });

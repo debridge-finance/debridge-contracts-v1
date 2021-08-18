@@ -63,25 +63,29 @@ contract AggregatorBase is Initializable,
 
 
     /// @dev Add oracle.
-    /// @param _oracle Oracle address.
-    /// @param _admin Oracles admin address.
+    /// @param _oracles Oracles addresses.
+    /// @param _admins Oracles admin addresses.
     /// @param _required Without this oracle, the transfer will not be confirmed
-    function addOracle(address _oracle, address _admin, bool _required) external onlyAdmin {
-        OracleInfo storage oracleInfo = getOracleInfo[_oracle];
-        require(!oracleInfo.exist, "Already exist");
+    function addOracles(address[] memory _oracles, address[] memory _admins, bool[] memory _required)
+        external onlyAdmin
+    {
+        for (uint i = 0; i < _oracles.length; i++) {
+            OracleInfo storage oracleInfo = getOracleInfo[_oracles[i]];
+            require(!oracleInfo.exist, "Already exist");
 
-        oracleAddresses.push(_oracle);
+            oracleAddresses.push(_oracles[i]);
 
-        if(_required){
-            requiredOraclesCount += 1;
+            if(_required[i]){
+                requiredOraclesCount += 1;
+            }
+
+            oracleInfo.exist = true;
+            oracleInfo.isValid = true;
+            oracleInfo.required = _required[i];
+            oracleInfo.admin = _admins[i];
+
+            emit AddOracle(_oracles[i], _admins[i], _required[i]);
         }
-
-        oracleInfo.exist = true;
-        oracleInfo.isValid = true;
-        oracleInfo.required = _required;
-        oracleInfo.admin = _admin;
-
-        emit AddOracle(_oracle, _admin,_required);
     }
 
     /// @dev Update oracle.
