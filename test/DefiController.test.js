@@ -551,6 +551,40 @@ describe("DefiController", function () {
                     .and.not.emit(this.defiController, 'WithdrawFromStrategy');
                 });
 
+                it("rebalanceStrategy should do nothing if strategy reserves in STRATEGY_RESERVES_DELTA_BPS", async function() {
+
+                  const newStakeTokenStrategyMaxReservesBps = stakeTokenStrategyMaxReservesBps - 1;
+                  await this.defiController.updateStrategy(
+                    this.strategyStakeToken.address,
+                    true,
+                    newStakeTokenStrategyMaxReservesBps
+                  );
+
+                  const newStrategyStakeTokenOptimalReserves = stakeTokenAvaliableReserves
+                    .mul(newStakeTokenStrategyMaxReservesBps - this.STRATEGY_RESERVES_DELTA_BPS / 2)
+                    .div(this.BPS_DENOMINATOR);
+                  const delta = strategyStakeTokenOptimalReserves.sub(newStrategyStakeTokenOptimalReserves);
+
+                  expect(
+                    delta.lt(this.STRATEGY_RESERVES_DELTA_BPS)
+                  ).to.be.equal(true);
+
+                  expect(
+                    await this.defiController
+                      .connect(worker)
+                      .isStrategyUnbalanced(this.strategyStakeToken.address)
+                  ).to.be.eql(
+                    [ethers.BigNumber.from(0), false]
+                  )
+
+                  await expect(
+                    this.defiController
+                      .connect(worker)
+                      .rebalanceStrategy(this.strategyStakeToken.address)
+                  ).to.not.emit(this.defiController, 'DepositToStrategy')
+                    .and.not.emit(this.defiController, 'WithdrawFromStrategy');
+                });
+
                 it("rebalanceStrategy should deposit if strategy reserves are less than optimal", async function() {
                   // divide stakeTokenStrategyMaxReservesBps by 4 and rebalance strategy again
                   const newStakeTokenStrategyMaxReservesBps = stakeTokenStrategyMaxReservesBps / 4;
