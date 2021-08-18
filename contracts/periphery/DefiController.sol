@@ -234,7 +234,7 @@ contract DefiController is Initializable,
         uint16 _maxReservesBps
     ) external onlyAdmin {
         Strategy storage strategy = strategies[_strategy];
-        require(strategy.exists, "strategy not found");
+        require(strategy.exists, "strategy doesn't exist");
 
         if (strategy.isEnabled) {
             tokenTotalReservesBps[strategy.stakeToken] -= strategy.maxReservesBps;
