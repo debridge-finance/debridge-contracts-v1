@@ -81,7 +81,7 @@ contract("DeBridgeGate light mode", function() {
       alice,
       ZERO_ADDRESS
     ]);
-    
+
     await this.confirmationAggregator.deployed();
     //   function initialize(
     //     uint256 _minConfirmations,
@@ -140,7 +140,7 @@ contract("DeBridgeGate light mode", function() {
       from: alice,
     });
 
-    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);    
+    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     this.callProxy = await CallProxy.new({
       from: alice,
     });
@@ -161,7 +161,7 @@ contract("DeBridgeGate light mode", function() {
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
     //     address _treasury
-    // ) 
+    // )
 
     this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
@@ -215,14 +215,14 @@ contract("DeBridgeGate light mode", function() {
     it("should reject setting Verifier if called by the non-admin", async function() {
       await expectRevert(
         this.debridge.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function() {
       await expectRevert(
         this.debridge.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "onlyAdmin: bad role"
+        "bad role"
       );
     });
   });
@@ -247,21 +247,21 @@ contract("DeBridgeGate light mode", function() {
       //     string memory _symbol,
       //     uint8 _decimals,
       //     bytes[] memory _signatures
-      // ) 
+      // )
       const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
       //console.log('debridgeId '+debridgeId);
       const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
 
-      let signatures = [];
+      let signatures = "0x";
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        signatures.push(
-          (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
+        //HACK remove first 0x
+        signatures += currentSignature.substring(2, currentSignature.length);
       }
       await this.signatureVerifier.connect(this.initialOracles[0].account)
           .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
-      
+
       ////   function getDeployId(
       ////     bytes32 _debridgeId,
       ////     string memory _name,
@@ -300,20 +300,20 @@ contract("DeBridgeGate light mode", function() {
       //console.log('debridgeId '+debridgeId);
       const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
 
-      let signatures = [];
+      let signatures = "0x";
       //start from 1 (skipped alice)
       for (let i = 1; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        signatures.push(
-          (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
+        //HACK remove first 0x
+        signatures += currentSignature.substring(2, currentSignature.length);
       }
 
       await expectRevert(
           this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
           from: alice,
         }),
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
       );
     });
 
@@ -328,13 +328,13 @@ contract("DeBridgeGate light mode", function() {
       //console.log('debridgeId '+debridgeId);
       const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
 
-      let signatures = [];
+      let signatures = "0x";
       // count of oracles = this.minConfirmations - 1
       for (let i = 0; i < this.minConfirmations - 1; i++) {
         const oracleKey = oracleKeys[i];
-        signatures.push(
-          (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
+        //HACK remove first 0x
+        signatures += currentSignature.substring(2, currentSignature.length);
       }
 
       await expectRevert(
@@ -474,7 +474,7 @@ contract("DeBridgeGate light mode", function() {
           value: amount,
           from: alice,
         }),
-        "send: wrong targed chain"
+        "wrong targed chain"
       );
     });
   });
@@ -501,12 +501,12 @@ contract("DeBridgeGate light mode", function() {
         receiver,
         nonce
       );
-      this.signatures = [];
+      this.signatures = "0x";
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        this.signatures.push(
-          (await bscWeb3.eth.accounts.sign(submission, oracleKey)).signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(submission, oracleKey)).signature;
+        //HACK remove first 0x
+        this.signatures += currentSignature.substring(2, currentSignature.length);
       }
     });
 
@@ -607,7 +607,7 @@ contract("DeBridgeGate light mode", function() {
           from: alice,
         }),
         // "not confirmed"
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
       );
     });
 
@@ -620,8 +620,7 @@ contract("DeBridgeGate light mode", function() {
         this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
           from: alice,
         }),
-        "submit: submitted already"
-        //"mint: already used"
+        "submission already used"
       );
     });
   });
@@ -704,7 +703,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "burn: native asset"
+        "wrong chain"
       );
     });
 
@@ -778,13 +777,12 @@ contract("DeBridgeGate light mode", function() {
         receiver,
         nonce
       );
-      this.ethSignatures = [];
+      this.ethSignatures = "0x";
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        this.ethSignatures.push(
-          (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
-            .signature
-        );
+        let _currentSignature = (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey)).signature;
+        //HACK remove first 0x
+        this.ethSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       const erc20Submission = await this.debridge.getSubmisionId(
         erc20DebridgeId,
@@ -794,24 +792,23 @@ contract("DeBridgeGate light mode", function() {
         receiver,
         nonce
       );
-      this.erc20Signatures = [];
+
+      this.erc20Signatures = "0x";
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        this.erc20Signatures.push(
-          (await bscWeb3.eth.accounts.sign(erc20Submission, oracleKey))
-            .signature
-        );
+        let currentSignature = (await bscWeb3.eth.accounts.sign(erc20Submission, oracleKey)).signature;
+        //HACK remove first 0x
+        this.erc20Signatures += currentSignature.substring(2, currentSignature.length);
       }
     });
 
     it("should reject native token without DSRM confirmation", async function() {
-      let currentSignatures = [];
+      currentSignatures = "0x";
       for (let i = 1; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
-        currentSignatures.push(
-          (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
-            .signature
-        );
+        let _currentSignature = (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey)).signature;
+        //HACK remove first 0x
+        currentSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       await expectRevert(
         this.debridge.claim(
@@ -825,7 +822,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
       );
     });
 
@@ -913,7 +910,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        "Not confirmed by required oracles"
+        "not confirmed by req oracles"
         // "not confirmed"
       );
     });
@@ -931,8 +928,7 @@ contract("DeBridgeGate light mode", function() {
             from: alice,
           }
         ),
-        //"claim: already used"
-        "submit: submitted already"
+        "submission already used"
       );
     });
   });

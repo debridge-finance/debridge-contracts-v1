@@ -9,7 +9,7 @@ import "../interfaces/IAaveProtocolDataProvider.sol";
 import "../interfaces/IStrategy.sol";
 
 contract AaveInteractor is IStrategy {
-    
+
   using SafeERC20 for IERC20;
 
   address public lendingPoolProvider;
@@ -34,11 +34,11 @@ contract AaveInteractor is IStrategy {
     return newATokenAddress;
   }
 
-  function updateReserves(address _account, address _token) 
-    external 
-    view 
-    override 
-    returns (uint256) 
+  function updateReserves(address _account, address _token)
+    external
+    view
+    override
+    returns (uint256)
   {
     uint256 reserves = IERC20(_token).balanceOf(_account);
     // address incentivesController = IAToken(_token).getIncentivesController();
@@ -49,7 +49,7 @@ contract AaveInteractor is IStrategy {
   function deposit(address _token, uint256 _amount) external override {
     aTokenToUnderlying[aToken(_token)] = _token;
     address lendPool = lendingPool();
-    IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+    IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
     IERC20(_token).safeApprove(lendPool, 0);
     IERC20(_token).safeApprove(lendPool, _amount);
 

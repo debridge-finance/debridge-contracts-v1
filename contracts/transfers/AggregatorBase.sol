@@ -132,7 +132,7 @@ contract AggregatorBase is Initializable,
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getDebridgeId(uint256 _chainId, address _tokenAddress)
+    function getDebridgeId(uint256 _chainId, bytes memory _tokenAddress)
         public
         pure
         returns (bytes32)

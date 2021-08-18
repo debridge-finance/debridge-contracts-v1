@@ -6,6 +6,7 @@ const { ZERO_ADDRESS, DEFAULT_ADMIN_ROLE, WORKER_ROLE } = require("./utils.spec"
 describe("DefiController", function () {
   const amount = 100;
   const totalSupplyAmount = amount * 2;
+  let admin, worker, other;
   before(async function () {
     [admin, worker, other] = await ethers.getSigners();
     this.DefiControllerFactory = await ethers.getContractFactory("MockDefiController");
@@ -22,32 +23,26 @@ describe("DefiController", function () {
     expect(await this.defiController.hasRole(DEFAULT_ADMIN_ROLE, admin.address)).to.be.equal(true);
   });
 
-  it("only admin can addDeBridgeGate", async function () {
+  it("only admin can setDeBridgeGate", async function () {
     await expect(
-      this.defiController.connect(other).addDeBridgeGate(other.address)
+      this.defiController.connect(other).setDeBridgeGate(other.address)
     ).to.be.revertedWith("onlyAdmin: bad role");
   });
 
   describe("with debridgeGate", function () {
     beforeEach(async function () {
       this.debridge = await this.DeBridgeFactory.deploy();
-      await this.defiController.addDeBridgeGate(this.debridge.address);
+      await this.defiController.setDeBridgeGate(this.debridge.address);
     });
 
     it("deBridgeGate is correct", async function () {
       expect(this.debridge.address).to.be.equal(await this.defiController.deBridgeGate());
     });
 
-    it("non-worker can't depositToStrategy", async function () {
-      await expect(this.defiController.depositToStrategy(amount, ZERO_ADDRESS)).to.be.revertedWith(
+    it("non-worker can't rebalanceStrategy", async function () {
+      await expect(this.defiController.rebalanceStrategy(ZERO_ADDRESS)).to.be.revertedWith(
         "onlyWorker: bad role"
       );
-    });
-
-    it("non-worker can't withdrawFromStrategy", async function () {
-      await expect(
-        this.defiController.withdrawFromStrategy(amount, ZERO_ADDRESS)
-      ).to.be.revertedWith("onlyWorker: bad role");
     });
 
     describe("with worker added", function () {
@@ -67,29 +62,20 @@ describe("DefiController", function () {
           this.strategyNativeToken = await this.MockStrategyFactory.deploy();
           this.strategyStakeToken = await this.MockStrategyFactory.deploy();
         });
-        it("depositToStrategy reverts", async function () {
+
+        it("rebalanceStrategy reverts", async function () {
           await expect(
             this.defiController
               .connect(worker)
-              .depositToStrategy(amount, this.strategyStakeToken.address)
-          ).to.be.revertedWith("strategy is not enabled");
-          await expect(
-            this.defiController
-              .connect(worker)
-              .depositToStrategy(amount, this.strategyNativeToken.address)
+              .rebalanceStrategy(this.strategyNativeToken.address)
           ).to.be.revertedWith("strategy is not enabled");
         });
 
-        it("withdrawFromStrategy reverts", async function () {
+        it("rebalanceStrategy reverts", async function () {
           await expect(
             this.defiController
               .connect(worker)
-              .withdrawFromStrategy(amount, this.strategyStakeToken.address)
-          ).to.be.revertedWith("strategy is not enabled");
-          await expect(
-            this.defiController
-              .connect(worker)
-              .withdrawFromStrategy(amount, this.strategyNativeToken.address)
+              .rebalanceStrategy(this.strategyStakeToken.address)
           ).to.be.revertedWith("strategy is not enabled");
         });
 
@@ -97,31 +83,57 @@ describe("DefiController", function () {
           const name = "Stake Token";
           const symbol = "STK";
           const decimal = 18;
+          const nativeTokenStrategyMaxReservesBps = 7000; // 70%
+          const stakeTokenStrategyMaxReservesBps = 3000; // 30%
 
           beforeEach(async function () {
             this.stakeToken = await this.MockTokenFactory.deploy(name, symbol, decimal);
             await this.defiController.addStrategy(
               this.strategyNativeToken.address,
-              false,
               true,
-              false,
+              nativeTokenStrategyMaxReservesBps,
               ZERO_ADDRESS,
               ZERO_ADDRESS,
-              ZERO_ADDRESS,
-              0,
-              0
             );
             await this.defiController.addStrategy(
               this.strategyStakeToken.address,
-              false,
               true,
-              false,
+              stakeTokenStrategyMaxReservesBps,
               this.stakeToken.address,
               ZERO_ADDRESS,
-              ZERO_ADDRESS,
-              0,
-              0
             );
+          });
+
+          it("check correct values in strategy", async function () {
+            const strategyFromContract = await this.defiController.strategies(this.strategyNativeToken.address);
+            expect(true).to.be.equal(strategyFromContract.isSupported);
+            expect(true).to.be.equal(strategyFromContract.isEnabled);
+            expect(nativeTokenStrategyMaxReservesBps).to.be.equal(strategyFromContract.maxReservesBps);
+            //TODO: check for non ZERO_ADDRESS
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.stakeToken);
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.strategyToken);
+          });
+
+          it("only admin can update strategy", async function () {
+            await expect(
+              this.defiController.connect(other).updateStrategy(this.strategyNativeToken.address, false, 0)
+            ).to.be.revertedWith("onlyAdmin: bad role");
+          });
+
+          it("should update strategy by admin", async function () {
+            await this.defiController.updateStrategy(
+              this.strategyNativeToken.address,
+              false,
+              10
+            );
+
+            const strategyFromContract = await this.defiController.strategies(this.strategyNativeToken.address);
+            expect(true).to.be.equal(strategyFromContract.isSupported);
+            expect(false).to.be.equal(strategyFromContract.isEnabled);
+            expect(10).to.be.equal(strategyFromContract.maxReservesBps);
+            //TODO: check for non ZERO_ADDRESS
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.stakeToken);
+            expect(ZERO_ADDRESS).to.be.equal(strategyFromContract.strategyToken);
           });
 
           describe("mint stakeToken and send native eth on debridge", function () {
@@ -142,18 +154,18 @@ describe("DefiController", function () {
             it("check funds were deposited to strategy");
             // todo: since DeFi protocols have different interfaces, these tests should be written per strategy
 
-            it("depositToStrategy reverts if called by wrong role", async function () {
-              await expect(
-                this.defiController
-                  .connect(worker)
-                  .depositToStrategy(amount, this.strategyStakeToken.address)
-              ).to.be.revertedWith("defiController: bad role");
-              await expect(
-                this.defiController
-                  .connect(worker)
-                  .depositToStrategy(amount, this.strategyNativeToken.address)
-              ).to.be.revertedWith("defiController: bad role");
-            });
+            // it("rebalanceStrategy reverts if called by wrong role", async function () {
+            //   await expect(
+            //     this.defiController
+            //       .connect(worker)
+            //       .rebalanceStrategy(this.strategyStakeToken.address)
+            //   ).to.be.revertedWith("defiController: bad role");
+            //   await expect(
+            //     this.defiController
+            //       .connect(worker)
+            //       .rebalanceStrategy (this.strategyNativeToken.address)
+            //   ).to.be.revertedWith("defiController: bad role");
+            // });
 
             describe("add bridges & connect deBridgeGate", function () {
               const chainId = 1;
@@ -192,77 +204,77 @@ describe("DefiController", function () {
                 );
                 await this.debridge.setDefiController(this.defiController.address);
               });
-              describe("after deposited native token to strategy", function () {
-                beforeEach(async function () {
-                  await expect(
-                    this.defiController
-                      .connect(worker)
-                      .depositToStrategy(amount, this.strategyNativeToken.address)
-                  ).to.be.reverted;
+              // describe("after deposited native token to strategy", function () {
+              //   beforeEach(async function () {
+              //     await expect(
+              //       this.defiController
+              //         .connect(worker)
+              //         .depositToStrategy(amount, this.strategyNativeToken.address)
+              //     ).to.be.reverted;
 
-                  // Error: Transaction reverted: function selector was not recognized and there's no fallback nor receive function
-                  // Reason: DefiController can't accept ether
-                  // Decision: receive() external payable {  }
+              //     // Error: Transaction reverted: function selector was not recognized and there's no fallback nor receive function
+              //     // Reason: DefiController can't accept ether
+              //     // Decision: receive() external payable {  }
 
-                  // Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
-                  // Reason: DefiController does not have an implementation for accepting a native token
-                  // Decision: Add branching to the ERC20 and native token
+              //     // Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
+              //     // Reason: DefiController does not have an implementation for accepting a native token
+              //     // Decision: Add branching to the ERC20 and native token
 
-                  //await this.defiController.connect(worker).depositToStrategy(amount, this.strategyNativeToken.address)
-                  // todo: assert token.balanceOf(this.debridge) == 0
-                  // todo: assert token.balanceOf(this.strategy) == amount
-                });
+              //     //await this.defiController.connect(worker).depositToStrategy(amount, this.strategyNativeToken.address)
+              //     // todo: assert token.balanceOf(this.debridge) == 0
+              //     // todo: assert token.balanceOf(this.strategy) == amount
+              //   });
 
-                it("native tokens transferred to strategy");
+              //   it("native tokens transferred to strategy");
 
-                describe("after withdrawn from strategy", function () {
-                  beforeEach(async function () {
-                    await expect(
-                      this.defiController
-                        .connect(worker)
-                        .withdrawFromStrategy(amount, this.strategyNativeToken.address)
-                    ).to.be.reverted;
-                    //Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
-                  });
+              //   describe("after withdrawn from strategy", function () {
+              //     beforeEach(async function () {
+              //       await expect(
+              //         this.defiController
+              //           .connect(worker)
+              //           .withdrawFromStrategy(amount, this.strategyNativeToken.address)
+              //       ).to.be.reverted;
+              //       //Error: VM Exception while processing transaction: reverted with reason string 'Address: call to non-contract'
+              //     });
 
-                  it("tokens transferred from strategy back to deBridgeGate");
-                });
-              });
+              //     it("tokens transferred from strategy back to deBridgeGate");
+              //   });
+              // });
 
-              describe("after deposited stake token to strategy", function () {
-                beforeEach(async function () {
-                  await this.defiController
-                    .connect(worker)
-                    .depositToStrategy(amount, this.strategyStakeToken.address);
-                  // todo: assert token.balanceOf(this.debridge) == 0
-                  // todo: assert token.balanceOf(this.strategy) == amount
-                });
+              // describe("after deposited stake token to strategy", function () {
+              //   beforeEach(async function () {
+              //     await this.defiController
+              //       .connect(worker)
+              //       .depositToStrategy(amount, this.strategyStakeToken.address);
+              //     // todo: assert token.balanceOf(this.debridge) == 0
+              //     // todo: assert token.balanceOf(this.strategy) == amount
+              //   });
 
-                // they should be transferred to the strategy, but it is mocked up and its function does not pull tokens
-                // and they remain on DefiController
-                it("tokens transferred to strategy");
-                // todo: expect(await this.stakeToken.balanceOf(this.strategy)).to.be.equal(amount);
+              //   // they should be transferred to the strategy, but it is mocked up and its function does not pull tokens
+              //   // and they remain on DefiController
+              //   it("tokens transferred to strategy");
+              //   // todo: expect(await this.stakeToken.balanceOf(this.strategy)).to.be.equal(amount);
 
-                it("the number of tokens owned by the bridge decreases", async function () {
-                  expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                    totalSupplyAmount - amount
-                  );
-                });
+              //   it("the number of tokens owned by the bridge decreases", async function () {
+              //     expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+              //       totalSupplyAmount - amount
+              //     );
+              //   });
 
-                describe("after withdrawn from strategy", function () {
-                  beforeEach(async function () {
-                    await this.defiController
-                      .connect(worker)
-                      .withdrawFromStrategy(amount, this.strategyStakeToken.address);
-                  });
+              //   describe("after withdrawn from strategy", function () {
+              //     beforeEach(async function () {
+              //       await this.defiController
+              //         .connect(worker)
+              //         .withdrawFromStrategy(amount, this.strategyStakeToken.address);
+              //     });
 
-                  it("tokens transferred from strategy back to deBridgeGate", async function () {
-                    expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
-                      totalSupplyAmount
-                    );
-                  });
-                });
-              });
+              //     it("tokens transferred from strategy back to deBridgeGate", async function () {
+              //       expect(await this.stakeToken.balanceOf(this.debridge.address)).to.be.equal(
+              //         totalSupplyAmount
+              //       );
+              //     });
+              //   });
+              // });
             });
           });
         });

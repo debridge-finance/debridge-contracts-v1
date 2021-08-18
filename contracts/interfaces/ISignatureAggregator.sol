@@ -6,14 +6,13 @@ interface ISignatureAggregator {
     /* ========== STRUCTS ========== */
 
     struct SubmissionInfo {
-        uint256 block; // confirmation block
         uint8 confirmations; // received confirmations count
         bytes[] signatures;
         mapping(address => bool) hasVerified; // verifier => has already voted
     }
     struct DebridgeDeployInfo {
         uint256 chainId; //native chainId
-        address nativeAddress; //native token address
+        bytes nativeAddress; //native token address
         uint8 decimals;
         uint8 confirmations; // received confirmations count
         bool approved;

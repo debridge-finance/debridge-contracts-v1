@@ -6,7 +6,6 @@ interface IConfirmationAggregator {
     /* ========== STRUCTS ========== */
 
     struct SubmissionInfo {
-        uint256 block; // confirmation block
         uint8 confirmations; // received confirmations count
         uint8 requiredConfirmations; // required oracles (DSRM) received confirmations count
         bool isConfirmed; // is confirmed submission (user can claim)
@@ -14,7 +13,7 @@ interface IConfirmationAggregator {
     }
     struct DebridgeDeployInfo {
         uint256 chainId; //native chainId
-        address nativeAddress; //native token address
+        bytes nativeAddress; //native token address
         uint8 confirmations; // received confirmations count
         uint8 requiredConfirmations; // required oracles (DSRM) received confirmations count
         uint8 decimals;
@@ -46,5 +45,5 @@ interface IConfirmationAggregator {
 
     function deployAsset(bytes32 _debridgeId)
         external
-        returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId);
+        returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId);
 }

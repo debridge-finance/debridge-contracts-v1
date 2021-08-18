@@ -9,7 +9,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /* ========== STATE VARIABLES ========== */
 
-    uint8 public confirmationThreshold; // required confirmations per block before extra check enabled
+    uint8 public confirmationThreshold; // required confirmations per block after extra check enabled
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public wrappedAssetAdmin; // admin for any deployed wrapped asset
     address public debridgeAddress; // Debridge gate address
@@ -18,13 +18,15 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
-    mapping(uint256 => BlockConfirmationsInfo) public getConfirmationsPerBlock; // block => confirmations
+
+    uint40 public submissionsInBlock; //submissions count in current block
+    uint40 public currentBlock; //Current block
 
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _confirmationThreshold Confirmations per block before extra check enabled.
+    /// @param _confirmationThreshold Confirmations per block after extra check enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
         uint8 _minConfirmations,
@@ -56,7 +58,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Confirms the transfer request.
     function confirmNewAsset(
-        address _tokenAddress,
+        bytes memory _tokenAddress,
         uint256 _chainId,
         string memory _name,
         string memory _symbol,
@@ -104,21 +106,19 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         }
         submissionInfo.hasVerified[msg.sender] = true;
         if (submissionInfo.confirmations >= minConfirmations) {
-            BlockConfirmationsInfo storage _blockConfirmationsInfo
-                = getConfirmationsPerBlock[block.number];
-            if (!_blockConfirmationsInfo.isConfirmed[_submissionId]) {
-                _blockConfirmationsInfo.count += 1;
-                _blockConfirmationsInfo.isConfirmed[_submissionId] = true;
-                if (_blockConfirmationsInfo.count >= confirmationThreshold) {
-                    _blockConfirmationsInfo.requireExtraCheck = true;
-                }
+            if(currentBlock != uint40(block.number)) {
+                currentBlock = uint40(block.number);
+                submissionsInBlock = 0;
             }
-            submissionInfo.block = block.number;
+            bool requireExtraCheck = submissionsInBlock >= confirmationThreshold;
+
 
             if(submissionInfo.requiredConfirmations >= requiredOraclesCount
-                && (!_blockConfirmationsInfo.requireExtraCheck
-                    || _blockConfirmationsInfo.requireExtraCheck
+                && !submissionInfo.isConfirmed
+                && (!requireExtraCheck
+                    || requireExtraCheck
                         && submissionInfo.confirmations >= excessConfirmations)) {
+                submissionsInBlock += 1;
                 submissionInfo.isConfirmed = true;
                 emit SubmissionApproved(_submissionId);
             }
@@ -131,7 +131,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
             external override
-            returns (address wrappedAssetAddress, address nativeAddress, uint256 nativeChainId){
+            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId){
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
 
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
