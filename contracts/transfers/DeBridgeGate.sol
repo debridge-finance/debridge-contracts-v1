@@ -204,6 +204,7 @@ contract DeBridgeGate is Initializable,
             0,
             ""
         );
+        emit Minted(submissionId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -278,6 +279,7 @@ contract DeBridgeGate is Initializable,
             0,
             ""
         );
+        emit Claimed(submissionId, _amount, _receiver, _debridgeId);
     }
 
 
@@ -389,6 +391,15 @@ contract DeBridgeGate is Initializable,
             _executionFee,
             _data
         );
+        emit AutoMinted(
+            submissionId,
+            _amount,
+            _receiver,
+            _debridgeId,
+            _executionFee,
+            _fallbackAddress,
+            _data
+        );
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -489,6 +500,15 @@ contract DeBridgeGate is Initializable,
             _amount,
             _fallbackAddress,
             _executionFee,
+            _data
+        );
+        emit AutoClaimed(
+            submissionId,
+            _amount,
+            _receiver,
+            _debridgeId,
+            _executionFee,
+            _fallbackAddress,
             _data
         );
     }
@@ -986,7 +1006,6 @@ contract DeBridgeGate is Initializable,
         } else {
             IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
         }
-        emit Minted(_submissionId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -1042,7 +1061,6 @@ contract DeBridgeGate is Initializable,
                 IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
             }
         }
-        emit Claimed(_submissionId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Mark submission as used.

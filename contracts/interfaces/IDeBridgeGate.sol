@@ -230,6 +230,15 @@ interface IDeBridgeGate {
         address receiver,
         bytes32 debridgeId
     ); // emited once the wrapped tokens are minted on the current chain
+    event AutoMinted(
+        bytes32 submissionId,
+        uint256 amount,
+        address receiver,
+        bytes32 debridgeId,
+        uint256 claimFee,
+        address fallbackAddress,
+        bytes data
+    ); // emited once the wrapped tokens are minted on the current chain
     event Burnt(
         bytes32 submissionId,
         bytes32 debridgeId,
@@ -254,6 +263,15 @@ interface IDeBridgeGate {
         uint256 amount,
         address receiver,
         bytes32 debridgeId
+    ); // emited once the tokens are withdrawn on native chain
+    event AutoClaimed(
+        bytes32 submissionId,
+        uint256 amount,
+        address receiver,
+        bytes32 debridgeId,
+        uint256 claimFee,
+        address fallbackAddress,
+        bytes data
     ); // emited once the tokens are withdrawn on native chain
     event PairAdded(
         bytes32 indexed debridgeId,
