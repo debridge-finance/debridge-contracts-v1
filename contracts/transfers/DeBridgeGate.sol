@@ -45,7 +45,7 @@ contract DeBridgeGate is Initializable,
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint16 public flashFeeBps; // fee in basis points (1/10000)
     uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
-    uint256 nonce; //outgoing submissions count
+    uint256 public nonce; //outgoing submissions count
 
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
