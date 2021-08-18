@@ -14,7 +14,7 @@ interface IDeBridgeGate {
         uint256 chainId; // native chain id
         uint256 maxAmount; // maximum amount to transfer
         uint256 collectedFees; // total collected fees
-        uint256 [donatedFees]; // total donated fees
+        uint256 donatedFees; // total donated fees
         uint256 withdrawnFees; // fees that already withdrawn
         uint256 balance; // total locked assets
         uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
