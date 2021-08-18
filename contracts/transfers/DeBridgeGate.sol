@@ -676,7 +676,7 @@ contract DeBridgeGate is Initializable,
                 IERC20(debridge.tokenAddress).safeTransfer(msg.sender, rewardAmount);
             }
         }
-        feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value);
+        feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value, debridge.tokenAddress, debridge.chainId);
     }
 
 
@@ -1195,13 +1195,4 @@ contract DeBridgeGate is Initializable,
             );
     }
 
-    function getDebridgeInfo(bytes32 _debridgeId)
-        external
-        view
-        override
-        returns (address _tokenAddress, uint256 _chainId, bool _exist)
-    {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        return (debridge.tokenAddress, debridge.chainId, debridge.exist);
-    }
 }

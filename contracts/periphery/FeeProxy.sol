@@ -85,11 +85,11 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     /// @param _nativeFixFee paid native fixed fee by worker
     function transferToTreasury(
         bytes32 _debridgeId,
-        uint256 _nativeFixFee
-    ) external payable override // onlyDeBridgeGate
+        uint256 _nativeFixFee,
+        address _tokenAddress,
+        uint256 _nativeChain
+    ) external payable override onlyDeBridgeGate
     {
-        (address _tokenAddress, uint256 _nativeChain, bool _exist) = debridgeGate.getDebridgeInfo(_debridgeId);
-        require(_exist, "debridge not exist");
         require(debridgeGateAddresses[_nativeChain].length > 0, "no debridge gate addresses");
         require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
 
