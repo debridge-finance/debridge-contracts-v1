@@ -70,7 +70,7 @@ describe("DefiController", function () {
             this.defiController
               .connect(worker)
               .rebalanceStrategy(this.strategyNativeToken.address)
-          ).to.be.revertedWith("strategy is not exists");
+          ).to.be.revertedWith("strategy doesn't exist");
         });
 
         it("rebalanceStrategy for stake token reverts if it's not enabled", async function () {
@@ -78,7 +78,7 @@ describe("DefiController", function () {
             this.defiController
               .connect(worker)
               .rebalanceStrategy(this.strategyStakeToken.address)
-          ).to.be.revertedWith("strategy is not exists");
+          ).to.be.revertedWith("strategy doesn't exist");
         });
 
         describe("then add stakeToken and native strategies", function () {

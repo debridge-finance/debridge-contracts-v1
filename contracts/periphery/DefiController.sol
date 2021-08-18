@@ -134,7 +134,7 @@ contract DefiController is Initializable,
     // returns true if strategy balance was changed
     function rebalanceStrategy(address _strategy) external onlyWorker whenNotPaused returns (bool) {
         Strategy memory strategy = strategies[_strategy];
-        require(strategy.isSupported, "strategy is not exists");
+        require(strategy.isSupported, "strategy doesn't exist");
 
         IStrategy strategyController = IStrategy(_strategy);
 
