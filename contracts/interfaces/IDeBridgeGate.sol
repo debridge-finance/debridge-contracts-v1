@@ -198,10 +198,10 @@ interface IDeBridgeGate {
     function returnReserves(address _tokenAddress, uint256 _amount)
         external payable;
 
-    function getDebridgeInfo(bytes32 _debridgeId)
-        external
-        view
-        returns (address _tokenAddress, uint256 _chainId, bool _exist);
+    // function getDebridgeInfo(bytes32 _debridgeId)
+    //     external
+    //     view
+    //     returns (address _tokenAddress, uint256 _chainId, bool _exist);
 
     /* ========== EVENTS ========== */
 

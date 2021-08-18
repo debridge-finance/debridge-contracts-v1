@@ -11,6 +11,8 @@ interface IFeeProxy {
         bytes32 _debridgeId,
         // address _erc20Token,
         // uint256 _nativeChain,
-        uint256 nativeFixFee
+        uint256 nativeFixFee,
+        address _tokenAddress,
+        uint256 _nativeChain
     ) external payable;
 }
