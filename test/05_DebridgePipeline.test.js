@@ -299,9 +299,9 @@ contract("DeBridgeGate real pipeline mode",  function() {
     this.linkDebridgeId = await this.debridgeETH.getDebridgeId(ethChainId, this.linkToken.address);
     this.cakeDebridgeId = await this.debridgeETH.getDebridgeId(bscChainId, this.cakeToken.address);
 
-    this.nativeDebridgeIdETH = await this.debridgeETH.nativeDebridgeId();
-    this.nativeDebridgeIdBSC = await this.debridgeBSC.nativeDebridgeId();
-    this.nativeDebridgeIdHECO = await this.debridgeHECO.nativeDebridgeId();
+    this.nativeDebridgeIdETH = await this.debridgeETH.getDebridgeId(ethChainId, ZERO_ADDRESS);
+    this.nativeDebridgeIdBSC = await this.debridgeBSC.getDebridgeId(bscChainId, ZERO_ADDRESS);
+    this.nativeDebridgeIdHECO = await this.debridgeHECO.getDebridgeId(hecoChainId, ZERO_ADDRESS);
   });
   context("Configure contracts", () => {
     it("Check init contract params", async function() {
