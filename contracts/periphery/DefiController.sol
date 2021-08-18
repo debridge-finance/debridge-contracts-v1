@@ -19,7 +19,7 @@ contract DefiController is Initializable,
     using SafeERC20 for IERC20;
 
     struct Strategy {
-        bool isSupported;
+        bool exists;
         bool isEnabled;
         // bool isRecoverable;
         uint16 maxReservesBps;
@@ -134,7 +134,7 @@ contract DefiController is Initializable,
     // returns true if strategy balance was changed
     function rebalanceStrategy(address _strategy) external onlyWorker whenNotPaused returns (bool) {
         Strategy memory strategy = strategies[_strategy];
-        require(strategy.isSupported, "strategy doesn't exist");
+        require(strategy.exists, "strategy doesn't exist");
 
         IStrategy strategyController = IStrategy(_strategy);
 
@@ -206,14 +206,14 @@ contract DefiController is Initializable,
             (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR >= _maxReservesBps),
             "invalid maxReservesBps");
         Strategy storage strategy = strategies[_strategy];
-        require(!strategy.isSupported, "strategy already exists");
+        require(!strategy.exists, "strategy already exists");
 
         if (_isEnabled) {
             require(tokenTotalReservesBps[_stakeToken] + _maxReservesBps <= BPS_DENOMINATOR, "invalid total maxReservesBps");
             tokenTotalReservesBps[_stakeToken] += _maxReservesBps;
         }
 
-        strategy.isSupported = true;
+        strategy.exists = true;
         strategy.isEnabled = _isEnabled;
         strategy.maxReservesBps = _maxReservesBps;
         strategy.stakeToken = _stakeToken;
@@ -233,7 +233,7 @@ contract DefiController is Initializable,
         uint16 _maxReservesBps
     ) external onlyAdmin {
         Strategy storage strategy = strategies[_strategy];
-        require(strategy.isSupported, "strategy not found");
+        require(strategy.exists, "strategy not found");
 
         if (strategy.isEnabled) {
             tokenTotalReservesBps[strategy.stakeToken] -= strategy.maxReservesBps;

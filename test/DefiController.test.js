@@ -215,7 +215,7 @@ describe("DefiController", function () {
 
           it("check correct values in strategy", async function () {
             const strategyFromContract = await this.defiController.strategies(this.strategyNativeToken.address);
-            expect(true).to.be.equal(strategyFromContract.isSupported);
+            expect(true).to.be.equal(strategyFromContract.exists);
             expect(true).to.be.equal(strategyFromContract.isEnabled);
             expect(nativeTokenStrategyMaxReservesBps).to.be.equal(strategyFromContract.maxReservesBps);
             //TODO: check for non ZERO_ADDRESS
@@ -237,7 +237,7 @@ describe("DefiController", function () {
             );
 
             const strategyFromContract = await this.defiController.strategies(this.strategyNativeToken.address);
-            expect(true).to.be.equal(strategyFromContract.isSupported);
+            expect(true).to.be.equal(strategyFromContract.exists);
             expect(false).to.be.equal(strategyFromContract.isEnabled);
             expect(10).to.be.equal(strategyFromContract.maxReservesBps);
             //TODO: check for non ZERO_ADDRESS
