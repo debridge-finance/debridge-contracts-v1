@@ -36,7 +36,6 @@ contract DeBridgeGate is Initializable,
     bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to withdraw fee
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
 
-    uint256 public chainId; // current chain id
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     address public callProxy; // proxy to execute user's calls
@@ -101,12 +100,11 @@ contract DeBridgeGate is Initializable,
         IDefiController _defiController,
         address _treasury
     ) public initializer {
-        uint256 cid;
-        assembly {
-            cid := chainid()
-        }
-        chainId = cid;
-        _addAsset(getDebridgeId(chainId, address(0)), address(0), abi.encodePacked(address(0)), chainId);
+        _addAsset(
+            getDebridgeId(getChainId(), address(0)),
+            address(0),
+            abi.encodePacked(address(0)),
+            getChainId());
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
@@ -141,7 +139,7 @@ contract DeBridgeGate is Initializable,
         uint256 _chainIdTo,
         bool _useAssetFee
     ) external payable override whenNotPaused() {
-        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
+        bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         _amount = _send(
             _tokenAddress,
             debridgeId,
@@ -151,7 +149,7 @@ contract DeBridgeGate is Initializable,
         );
         bytes32 sentId = getbSubmisionId(
             debridgeId,
-            chainId,
+            getChainId(),
             _chainIdTo,
             _amount,
             _receiver,
@@ -177,7 +175,7 @@ contract DeBridgeGate is Initializable,
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
             _chainIdFrom,
-            chainId,
+            getChainId(),
             _amount,
             _receiver,
             _nonce
@@ -228,7 +226,7 @@ contract DeBridgeGate is Initializable,
         );
         bytes32 burntId = getbSubmisionId(
             _debridgeId,
-            chainId,
+            getChainId(),
             _chainIdTo,
             _amount,
             _receiver,
@@ -255,7 +253,7 @@ contract DeBridgeGate is Initializable,
         bytes32 submissionId = getSubmisionId(
             _debridgeId,
             _chainIdFrom,
-            chainId,
+            getChainId(),
             _amount,
             _receiver,
             _nonce
@@ -299,7 +297,7 @@ contract DeBridgeGate is Initializable,
         bytes memory _data,
         bool _useAssetFee
     ) external payable override whenNotPaused() {
-        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
+        bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         //require(_executionFee != 0, "autoSend: fee too low");
         _amount = _send(
             _tokenAddress,
@@ -313,7 +311,7 @@ contract DeBridgeGate is Initializable,
         _amount -= _executionFee;
         bytes32 sentId = getbAutoSubmisionId(
             debridgeId,
-            chainId,
+            getChainId(),
             _chainIdTo,
             _amount,
             _receiver,
@@ -359,7 +357,7 @@ contract DeBridgeGate is Initializable,
         bytes32 submissionId = getAutoSubmisionId(
             _debridgeId,
             _chainIdFrom,
-            chainId,
+            getChainId(),
             _amount,
             _receiver,
             _nonce,
@@ -423,7 +421,7 @@ contract DeBridgeGate is Initializable,
         _amount -= _executionFee;
         bytes32 burntId = getbAutoSubmisionId(
             _debridgeId,
-            chainId,
+            getChainId(),
             _chainIdTo,
             _amount,
             _receiver,
@@ -465,7 +463,7 @@ contract DeBridgeGate is Initializable,
         bytes32 submissionId = getAutoSubmisionId(
             _debridgeId,
             _chainIdFrom,
-            chainId,
+            getChainId(),
             _amount,
             _receiver,
             _nonce,
@@ -500,7 +498,7 @@ contract DeBridgeGate is Initializable,
     ) external override nonReentrant
     // noDelegateCall
     {
-        DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
+        DebridgeInfo storage debridge = getDebridge[getDebridgeId(getChainId(), _tokenAddress)];
         uint256 currentFlashFee = (_amount * flashFeeBps) / BPS_DENOMINATOR;
         uint256 balanceBefore = IERC20(_tokenAddress).balanceOf(address(this));
 
@@ -685,7 +683,7 @@ contract DeBridgeGate is Initializable,
         external override
         onlyDefiController()
     {
-        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
+        bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
         require(minReserves + _amount < getBalance(debridge.tokenAddress), "not enough reserves");
@@ -708,7 +706,7 @@ contract DeBridgeGate is Initializable,
         payable override
         onlyDefiController()
     {
-        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
+        bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (debridge.tokenAddress != address(0)) {
             IERC20(debridge.tokenAddress).safeTransferFrom(
@@ -846,9 +844,9 @@ contract DeBridgeGate is Initializable,
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) {
-            _addAsset(_debridgeId, _tokenAddress, abi.encodePacked(_tokenAddress), chainId);
+            _addAsset(_debridgeId, _tokenAddress, abi.encodePacked(_tokenAddress), getChainId());
         }
-        require(debridge.chainId == chainId, "wrong chain");
+        require(debridge.chainId == getChainId(), "wrong chain");
         require(getChainSupport[_chainIdTo].isSupported, "wrong targed chain");
         require(_amount <= debridge.maxAmount, "amount too high");
         if (debridge.tokenAddress == address(0)) {
@@ -883,7 +881,7 @@ contract DeBridgeGate is Initializable,
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
-        require(debridge.chainId != chainId, "wrong chain");
+        require(debridge.chainId != getChainId(), "wrong chain");
         require(chainSupportInfo.isSupported, "wrong targed chain");
         require(_amount <= debridge.maxAmount, "amount too high");
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
@@ -932,7 +930,7 @@ contract DeBridgeGate is Initializable,
                 - chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR,
                 "amount not cover fees");
 
-            getDebridge[getDebridgeId(chainId, address(0))].collectedFees += msg.value;
+            getDebridge[getDebridgeId(getChainId(), address(0))].collectedFees += msg.value;
         }
         return _amount;
     }
@@ -958,7 +956,7 @@ contract DeBridgeGate is Initializable,
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         require(debridge.exist, "debridge not exist");
 
-        require(debridge.chainId != chainId, "wrong chain");
+        require(debridge.chainId != getChainId(), "wrong chain");
         if (_executionFee > 0) {
             IWrappedAsset(debridge.tokenAddress).mint(
                 msg.sender,
@@ -997,7 +995,7 @@ contract DeBridgeGate is Initializable,
         bytes memory _data
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        require(debridge.chainId == chainId, "wrong chain");
+        require(debridge.chainId == getChainId(), "wrong chain");
         _markAsUsed(_submissionId);
 
         debridge.balance -= _amount;
@@ -1059,7 +1057,7 @@ contract DeBridgeGate is Initializable,
     function getDefiAvaliableReserves(address _tokenAddress)
         external override view returns (uint256)
     {
-        DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
+        DebridgeInfo storage debridge = getDebridge[getDebridgeId(getChainId(), _tokenAddress)];
         return debridge.balance * (BPS_DENOMINATOR - debridge.minReservesBps) / BPS_DENOMINATOR;
     }
 
@@ -1187,4 +1185,9 @@ contract DeBridgeGate is Initializable,
             );
     }
 
+    function getChainId() virtual public view returns (uint256 cid) {
+        assembly {
+            cid := chainid()
+        }
+    }
 }

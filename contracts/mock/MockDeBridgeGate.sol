@@ -3,7 +3,9 @@ pragma solidity ^0.8.2;
 
 import "../transfers/DeBridgeGate.sol";
 
-contract MockDeBridgeGate is DeBridgeGate{
+contract MockDeBridgeGate is DeBridgeGate {
+
+    uint256 public chainId;
 
     /* ========== CONSTRUCTOR  ========== */
 
@@ -56,5 +58,10 @@ contract MockDeBridgeGate is DeBridgeGate{
         treasury = _treasury;
 
         flashFeeBps = 10;
+    }
+
+    // return overrided chain id
+    function getChainId() override public view returns (uint256 cid) {
+        return chainId;
     }
 }

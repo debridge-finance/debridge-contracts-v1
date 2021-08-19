@@ -357,7 +357,7 @@ contract("DeBridgeGate full mode", function () {
         const amount = toBN(1000);
         const flashFeeBps = await this.debridge.flashFeeBps();
         const fee = amount.mul(flashFeeBps).div(BPS);
-        const chainId = await this.debridge.chainId();
+        const chainId = await this.debridge.getChainId();
         const debridgeId = await this.debridge.getDebridgeId(chainId, this.mockToken.address);
         const debridge = await this.debridge.getDebridge(debridgeId);
         const paidBefore = debridge.collectedFees;
@@ -488,7 +488,7 @@ contract("DeBridgeGate full mode", function () {
             });
 
             it("should confirm new asset if called by the oracles", async function () {
-              currentChainId = await this.debridge.chainId();
+              currentChainId = await this.debridge.getChainId();
               // todo: what's address? Should be taken from fixture.
               const chainId = 56;
               const maxAmount = toWei("1000000");
@@ -540,7 +540,7 @@ contract("DeBridgeGate full mode", function () {
                 const amountThreshold = toWei("10");
 
                 receiver = bob.address;
-                currentChainId = await this.debridge.chainId();
+                currentChainId = await this.debridge.getChainId();
                 const newSupply = toWei("100");
                 await this.linkToken.mint(alice.address, newSupply, {
                   from: alice.address,
@@ -854,7 +854,7 @@ contract("DeBridgeGate full mode", function () {
 
                         it("should reject burning from current chain", async function () {
                           const tokenAddress = ZERO_ADDRESS;
-                          const chainId = await this.debridge.chainId();
+                          const chainId = await this.debridge.getChainId();
                           const receiver = bob.address;
                           const amount = toBN(toWei("1"));
                           const debridgeId = await this.debridge.getDebridgeId(
@@ -901,7 +901,7 @@ contract("DeBridgeGate full mode", function () {
               let erc20Submission;
               beforeEach(async function () {
                 receiver = bob.address;
-                chainId = await this.debridge.chainId();
+                chainId = await this.debridge.getChainId();
                 debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
                 outsideDebridgeId = await this.debridge.getDebridgeId(56, this.mockToken.address);
                 erc20DebridgeId = await this.debridge.getDebridgeId(
@@ -1075,7 +1075,7 @@ contract("DeBridgeGate full mode", function () {
                     expect(discount).to.equal(discountFromContract.discountFixBps);
 
                     const tokenAddress = ZERO_ADDRESS;
-                    const chainId = await this.debridge.chainId();
+                    const chainId = await this.debridge.getChainId();
                     const receiver = bob.address;
                     const amount = toBN(toWei("1"));
                     const chainIdTo = 42;
@@ -1103,7 +1103,7 @@ contract("DeBridgeGate full mode", function () {
                   beforeEach(async function () {
                     let discount = 0;
                     const tokenAddress = this.mockToken.address;
-                    const chainId = await this.debridge.chainId();
+                    const chainId = await this.debridge.getChainId();
                     const receiver = bob.address;
                     const amount = toBN(toWei("100"));
                     const chainIdTo = 42;
@@ -1171,7 +1171,7 @@ contract("DeBridgeGate full mode", function () {
                     const submissionId = await this.debridge.getSubmisionId(
                       erc20DebridgeId,
                       chainIdFrom,
-                      await this.debridge.chainId(),
+                      await this.debridge.getChainId(),
                       amount,
                       receiver,
                       nonce
@@ -1231,7 +1231,7 @@ contract("DeBridgeGate full mode", function () {
                       const submissionId = await this.debridge.getSubmisionId(
                         debridgeId,
                         chainIdFrom,
-                        await this.debridge.chainId(),
+                        await this.debridge.getChainId(),
                         amount,
                         receiver,
                         nonce
@@ -1281,7 +1281,7 @@ contract("DeBridgeGate full mode", function () {
 
                 it("should send native tokens from the current chain", async function () {
                   const tokenAddress = ZERO_ADDRESS;
-                  const chainId = await this.debridge.chainId();
+                  const chainId = await this.debridge.getChainId();
                   const receiver = bob.address;
                   const amount = toBN(toWei("1"));
                   const chainIdTo = 42;
@@ -1308,7 +1308,7 @@ contract("DeBridgeGate full mode", function () {
 
                 it("should send ERC20 tokens from the current chain", async function () {
                   const tokenAddress = this.mockToken.address;
-                  const chainId = await this.debridge.chainId();
+                  const chainId = await this.debridge.getChainId();
                   const receiver = bob.address;
                   const amount = toBN(toWei("100"));
                   const chainIdTo = 42;
@@ -1342,7 +1342,7 @@ contract("DeBridgeGate full mode", function () {
                 });
                 it("should send ERC20 tokens from the current chain (_useAssetFee=true)", async function () {
                   const tokenAddress = this.mockToken.address;
-                  const chainId = await this.debridge.chainId();
+                  const chainId = await this.debridge.getChainId();
                   const receiver = bob.address;
                   const amount = toBN(toWei("100"));
                   const chainIdTo = 42;
@@ -1392,7 +1392,7 @@ contract("DeBridgeGate full mode", function () {
                 it("should reverts if amount more than maxAmount", async function () {
                   const tokenAddress = ZERO_ADDRESS;
                   const receiver = bob.address;
-                  const chainId = await this.debridge.chainId();
+                  const chainId = await this.debridge.getChainId();
                   const amount = toWei("20");
                   const chainIdTo = 42;
 
@@ -1419,7 +1419,7 @@ contract("DeBridgeGate full mode", function () {
                 it("should reject sending too mismatched amount of native tokens", async function () {
                   const tokenAddress = ZERO_ADDRESS;
                   const receiver = bob.address;
-                  const chainId = await this.debridge.chainId();
+                  const chainId = await this.debridge.getChainId();
                   const amount = toBN(toWei("1"));
                   const chainIdTo = 42;
                   const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
@@ -1435,7 +1435,7 @@ contract("DeBridgeGate full mode", function () {
                 it("should reject sending tokens to unsupported chain", async function () {
                   const tokenAddress = ZERO_ADDRESS;
                   const receiver = bob.address;
-                  const chainId = await this.debridge.chainId();
+                  const chainId = await this.debridge.getChainId();
                   const amount = toBN(toWei("1"));
                   const chainIdTo = chainId;
                   const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
