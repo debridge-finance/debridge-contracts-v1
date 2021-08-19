@@ -1,0 +1,20 @@
+{
+  "root": true,
+  "parserOptions": {
+    "ecmaVersion": 2017
+  },
+  "env": {
+    "node": true,
+    "es6": true,
+    "mocha": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "prettier"
+  ],
+  "rules": {
+    "indent": ["error", 2],
+    // "prefer-const": 2,
+    "no-unused-expressions": 1
+  }
+}

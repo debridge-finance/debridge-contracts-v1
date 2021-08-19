@@ -43,7 +43,7 @@ contract DeBridgeGate is Initializable,
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint16 public flashFeeBps; // fee in basis points (1/10000)
     uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
-    uint256 nonce; //outgoing submissions count
+    uint256 public nonce; //outgoing submissions count
 
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
@@ -200,6 +200,7 @@ contract DeBridgeGate is Initializable,
             0,
             ""
         );
+        emit Minted(submissionId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -274,6 +275,7 @@ contract DeBridgeGate is Initializable,
             0,
             ""
         );
+        emit Claimed(submissionId, _amount, _receiver, _debridgeId);
     }
 
 
@@ -385,6 +387,15 @@ contract DeBridgeGate is Initializable,
             _executionFee,
             _data
         );
+        emit AutoMinted(
+            submissionId,
+            _amount,
+            _receiver,
+            _debridgeId,
+            _executionFee,
+            _fallbackAddress,
+            _data
+        );
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -485,6 +496,15 @@ contract DeBridgeGate is Initializable,
             _amount,
             _fallbackAddress,
             _executionFee,
+            _data
+        );
+        emit AutoClaimed(
+            submissionId,
+            _amount,
+            _receiver,
+            _debridgeId,
+            _executionFee,
+            _fallbackAddress,
             _data
         );
     }
@@ -685,12 +705,13 @@ contract DeBridgeGate is Initializable,
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
+        require(debridge.exist, "debridge not exist");
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
-        require(minReserves + _amount < getBalance(debridge.tokenAddress), "not enough reserves");
-        if (debridge.tokenAddress == address(0)) {
+        require(minReserves + _amount < getBalance(_tokenAddress), "not enough reserves");
+        if (_tokenAddress == address(0)) {
             payable(address(defiController)).transfer(_amount);
         } else {
-            IERC20(debridge.tokenAddress).safeTransfer(
+            IERC20(_tokenAddress).safeTransfer(
                 address(defiController),
                 _amount
             );
@@ -975,7 +996,6 @@ contract DeBridgeGate is Initializable,
         } else {
             IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
         }
-        emit Minted(_submissionId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -1031,7 +1051,6 @@ contract DeBridgeGate is Initializable,
                 IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
             }
         }
-        emit Claimed(_submissionId, _amount, _receiver, _debridgeId);
     }
 
     /// @dev Mark submission as used.
