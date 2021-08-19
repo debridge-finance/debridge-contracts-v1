@@ -431,7 +431,7 @@ contract("DeBridgeGate full mode", function () {
             await this.confirmationAggregator.deployed();
 
             await this.confirmationAggregator.setDebridgeAddress(this.debridge.address);
-            this.nativeDebridgeId = await this.debridge.nativeDebridgeId();
+            this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
             await this.debridge.setAggregator(this.confirmationAggregator.address);
           });
 
@@ -476,13 +476,13 @@ contract("DeBridgeGate full mode", function () {
                 },
               ];
               for (let oracle of this.initialOracles) {
-                await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, false, {
+                await this.confirmationAggregator.addOracles([oracle.address], [oracle.admin], [false], {
                   from: alice.address,
                 });
               }
 
               //Alice is required oracle
-              await this.confirmationAggregator.addOracle(alice.address, alice.address, true, {
+              await this.confirmationAggregator.addOracles([alice.address], [alice.address], [true], {
                 from: alice.address,
               });
             });

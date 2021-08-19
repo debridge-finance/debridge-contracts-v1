@@ -299,9 +299,9 @@ contract("DeBridgeGate real pipeline mode",  function() {
     this.linkDebridgeId = await this.debridgeETH.getDebridgeId(ethChainId, this.linkToken.address);
     this.cakeDebridgeId = await this.debridgeETH.getDebridgeId(bscChainId, this.cakeToken.address);
 
-    this.nativeDebridgeIdETH = await this.debridgeETH.nativeDebridgeId();
-    this.nativeDebridgeIdBSC = await this.debridgeBSC.nativeDebridgeId();
-    this.nativeDebridgeIdHECO = await this.debridgeHECO.nativeDebridgeId();
+    this.nativeDebridgeIdETH = await this.debridgeETH.getDebridgeId(ethChainId, ZERO_ADDRESS);
+    this.nativeDebridgeIdBSC = await this.debridgeBSC.getDebridgeId(bscChainId, ZERO_ADDRESS);
+    this.nativeDebridgeIdHECO = await this.debridgeHECO.getDebridgeId(hecoChainId, ZERO_ADDRESS);
   });
   context("Configure contracts", () => {
     it("Check init contract params", async function() {
@@ -341,31 +341,37 @@ contract("DeBridgeGate real pipeline mode",  function() {
       assert.equal(this.wethHECO.address, await this.debridgeHECO.weth());
     });
     it("Initialize oracles", async function() {
+      let oracleAddresses =[];
+      let oracleAdmins = [];
+      let required = [];
       for (let oracle of this.initialOracles) {
-        await this.confirmationAggregatorBSC.addOracle(oracle.address, oracle.admin, false, {
-          from: alice,
-        });
-        await this.confirmationAggregatorHECO.addOracle(oracle.address, oracle.admin, false, {
-          from: alice,
-        });
-      }
-      //Alice is required oracle
-      await this.confirmationAggregatorBSC.addOracle(alice, alice, true, {
-        from: alice,
-      });
-      await this.confirmationAggregatorHECO.addOracle(alice, alice, true, {
-        from: alice,
-      });
-
-
-      for (let oracle of this.initialOracles) {
-        await this.signatureVerifierETH.addOracle(oracle.address, oracle.address, false, {
-          from: alice,
-        });
+        oracleAddresses.push(oracle.address);
+        oracleAdmins.push(oracle.admin);
+        required.push(false);
       }
 
+      await this.confirmationAggregatorBSC.addOracles(oracleAddresses, oracleAdmins, required, {
+        from: alice,
+      });
+      await this.confirmationAggregatorHECO.addOracles(oracleAddresses, oracleAdmins, required, {
+        from: alice,
+      });
+
       //Alice is required oracle
-      await this.signatureVerifierETH.addOracle(alice, alice, true, {
+      await this.confirmationAggregatorBSC.addOracles([alice], [alice], [true], {
+        from: alice,
+      });
+      await this.confirmationAggregatorHECO.addOracles([alice], [alice], [true], {
+        from: alice,
+      });
+
+
+      await this.signatureVerifierETH.addOracles(oracleAddresses, oracleAdmins, required, {
+        from: alice,
+      });
+
+      //Alice is required oracle
+      await this.signatureVerifierETH.addOracles([alice], [alice], [true], {
         from: alice,
       });
 

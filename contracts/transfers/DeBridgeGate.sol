@@ -36,7 +36,6 @@ contract DeBridgeGate is Initializable,
     bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to withdraw fee
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
 
-    bytes32 public nativeDebridgeId; // native token debridgeId
     uint256 public chainId; // current chain id
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
@@ -107,8 +106,7 @@ contract DeBridgeGate is Initializable,
             cid := chainid()
         }
         chainId = cid;
-        nativeDebridgeId = getDebridgeId(chainId, address(0));
-        _addAsset(nativeDebridgeId, address(0), abi.encodePacked(address(0)), chainId);
+        _addAsset(getDebridgeId(chainId, address(0)), address(0), abi.encodePacked(address(0)), chainId);
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
@@ -696,7 +694,7 @@ contract DeBridgeGate is Initializable,
                 IERC20(debridge.tokenAddress).safeTransfer(msg.sender, rewardAmount);
             }
         }
-        feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value);
+        feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value, debridge.tokenAddress, debridge.chainId);
     }
 
 
@@ -739,15 +737,9 @@ contract DeBridgeGate is Initializable,
                 address(this),
                 _amount
             );
-            debridge.lockedInStrategies -=
-                _amount > debridge.lockedInStrategies
-                ? debridge.lockedInStrategies
-                : _amount;
+            debridge.lockedInStrategies -= _amount;
         } else {
-            debridge.lockedInStrategies -=
-                msg.value > debridge.lockedInStrategies
-                ? debridge.lockedInStrategies
-                : msg.value;
+            debridge.lockedInStrategies -= msg.value;
         }
     }
 
@@ -961,7 +953,7 @@ contract DeBridgeGate is Initializable,
                 - chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR,
                 "amount not cover fees");
 
-            getDebridge[nativeDebridgeId].collectedFees += msg.value;
+            getDebridge[getDebridgeId(chainId, address(0))].collectedFees += msg.value;
         }
         return _amount;
     }
@@ -1214,13 +1206,4 @@ contract DeBridgeGate is Initializable,
             );
     }
 
-    function getDebridgeInfo(bytes32 _debridgeId)
-        external
-        view
-        override
-        returns (address _tokenAddress, uint256 _chainId, bool _exist)
-    {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        return (debridge.tokenAddress, debridge.chainId, debridge.exist);
-    }
 }

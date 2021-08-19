@@ -114,7 +114,7 @@ contract("DeBridgeGate full with auto", function () {
       },
     ];
     for (let oracle of this.initialOracles) {
-      await this.confirmationAggregator.addOracle(oracle.address, oracle.admin, false, {
+      await this.confirmationAggregator.addOracles([oracle.address], [oracle.admin], [false], {
         from: alice,
       });
     }
@@ -176,7 +176,7 @@ contract("DeBridgeGate full with auto", function () {
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.confirmationAggregator.setDebridgeAddress(this.debridge.address.toString());
-    this.nativeDebridgeId = await this.debridge.nativeDebridgeId();
+    this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
   });
 
   context("Test setting configurations by different users", () => {

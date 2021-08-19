@@ -130,13 +130,13 @@ contract("DeBridgeGate light mode", function() {
       },
   ];
     for (let oracle of this.initialOracles) {
-      await this.signatureVerifier.addOracle(oracle.address, oracle.address, false, {
+      await this.signatureVerifier.addOracles([oracle.address], [oracle.address], [false], {
         from: alice,
       });
     }
 
     //Alice is required oracle
-    await this.signatureVerifier.addOracle(alice, alice, true, {
+    await this.signatureVerifier.addOracles([alice], [alice], [true], {
       from: alice,
     });
 
@@ -191,7 +191,7 @@ contract("DeBridgeGate light mode", function() {
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
-    this.nativeDebridgeId = await this.debridge.nativeDebridgeId();
+    this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
   });
 
   context("Test setting configurations by different users", () => {

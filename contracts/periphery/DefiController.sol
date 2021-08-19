@@ -19,7 +19,7 @@ contract DefiController is Initializable,
     using SafeERC20 for IERC20;
 
     struct Strategy {
-        bool isSupported;
+        bool exists;
         bool isEnabled;
         // bool isRecoverable;
         uint16 maxReservesBps;
@@ -38,6 +38,9 @@ contract DefiController is Initializable,
     bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to submit the data
 
     mapping(address => Strategy) public strategies;
+    // token address => total maxReserves for all strategies using this token in bps, should be <= BPS_DENOMINATOR
+    mapping(address => uint256) public tokenTotalReservesBps;
+
     IDeBridgeGate public deBridgeGate;
 
     /* ========== EVENTS ========== */
@@ -54,6 +57,16 @@ contract DefiController is Initializable,
         address strategy,
         bool isEnabled,
         uint16 maxReservesBps
+    );
+
+    event DepositToStrategy(
+        address strategy,
+        uint256 amount
+    );
+
+    event WithdrawFromStrategy(
+        address strategy,
+        uint256 amount
     );
 
     /* ========== MODIFIERS ========== */
@@ -95,6 +108,8 @@ contract DefiController is Initializable,
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
         strategyController.deposit(strategy.stakeToken, _amount);
+
+        emit DepositToStrategy(_strategy, _amount);
     }
 
     function withdrawFromStrategy(uint256 _amount, address _strategy) internal {
@@ -112,36 +127,44 @@ contract DefiController is Initializable,
 
         // Return tokens to Gate
         deBridgeGate.returnReserves(strategy.stakeToken, _amount);
+
+        emit WithdrawFromStrategy(_strategy, _amount);
     }
 
-    function rebalanceStrategy(address _strategy) external onlyWorker whenNotPaused returns (bool) {
+    function rebalanceStrategy(address _strategy) external onlyWorker whenNotPaused {
+        (uint256 deltaAmount, bool toDeposit) = isStrategyUnbalanced(_strategy);
+        if (deltaAmount > 0) {
+            if (toDeposit) {
+                depositToStrategy(deltaAmount, _strategy);
+            } else {
+                withdrawFromStrategy(deltaAmount, _strategy);
+            }
+        }
+    }
+
+    /* ========== VIEW ========== */
+
+    // isStrategyUnbalanced view method checks if strategy needs to be rebalanced,
+    // and if so returns [deltaAmount, directionToTransfer]
+    // where deltaAmount - delta between current strategy state and optimal state
+    // directionToTransfer - true if deposit is needed, false if withdraw is needed
+    // if strategy in optimal state it returns [0, false]
+    function isStrategyUnbalanced(address _strategy) public view returns (uint256 _deltaAmount, bool _toDeposit) {
         Strategy memory strategy = strategies[_strategy];
-        require(strategy.isEnabled, "strategy is not enabled");
+        require(strategy.exists, "strategy doesn't exist");
+
         IStrategy strategyController = IStrategy(_strategy);
 
         // avaliableReserves = 100%
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
         uint256 currentReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
 
-        // no reserves avaliable for stake token
-        if (avaliableReserves == 0) {
-            // prevent division by zero
-            if (currentReserves > 0) {
-                // debridge.minReservesBps was changed to 100%
-                withdrawFromStrategy(currentReserves, _strategy);
-                return true;
-            }
-            return false;
-        }
-
-        // strategy not allowed to use gate's reserves
-        if (strategy.maxReservesBps == 0) {
-            if (currentReserves > 0) {
-                // withdraw all current reserves from strategy
-                withdrawFromStrategy(currentReserves, _strategy);
-                return true;
-            }
-            return false;
+        // if strategy disabled
+        // or no reserves avaliable for stake token
+        // or strategy not allowed to use gate's reserves
+        if (!strategy.isEnabled || avaliableReserves == 0 || strategy.maxReservesBps == 0) {
+            // withdraw current reserves if there they are
+            return (currentReserves, false);
         }
 
         // current strategy reserves in bps
@@ -151,16 +174,21 @@ contract DefiController is Initializable,
 
         if (currentReservesBps > strategy.maxReservesBps) {
             // strategy reserves are more than allowed value, withdraw some to keep optimal balance
-            uint256 amount = (currentReservesBps - optimalReservesBps) * avaliableReserves / BPS_DENOMINATOR;
-            withdrawFromStrategy(amount, _strategy);
-            return true;
+            return (
+                (currentReservesBps - optimalReservesBps)
+                    * avaliableReserves
+                    / BPS_DENOMINATOR,
+                false
+            );
         } else if (currentReservesBps + STRATEGY_RESERVES_DELTA_BPS < strategy.maxReservesBps) {
             // strategy reserves are less than optimal value, deposit some to keep optimal balance
-            uint256 amount = (optimalReservesBps - currentReservesBps) * avaliableReserves / BPS_DENOMINATOR;
-            depositToStrategy(amount, _strategy);
-            return true;
+            return (
+                (optimalReservesBps - currentReservesBps)
+                    * avaliableReserves
+                    / BPS_DENOMINATOR,
+                true
+            );
         }
-        return false;
     }
 
     /* ========== ADMIN ========== */
@@ -176,11 +204,17 @@ contract DefiController is Initializable,
     ) external onlyAdmin {
 
         require(_maxReservesBps == 0 ||
-            (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR > _maxReservesBps),
+            (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR >= _maxReservesBps),
             "invalid maxReservesBps");
         Strategy storage strategy = strategies[_strategy];
-        require(!strategy.isSupported, "strategy already exists");
-        strategy.isSupported = true;
+        require(!strategy.exists, "strategy already exists");
+
+        if (_isEnabled) {
+            require(tokenTotalReservesBps[_stakeToken] + _maxReservesBps <= BPS_DENOMINATOR, "invalid total maxReservesBps");
+            tokenTotalReservesBps[_stakeToken] += _maxReservesBps;
+        }
+
+        strategy.exists = true;
         strategy.isEnabled = _isEnabled;
         strategy.maxReservesBps = _maxReservesBps;
         strategy.stakeToken = _stakeToken;
@@ -200,7 +234,16 @@ contract DefiController is Initializable,
         uint16 _maxReservesBps
     ) external onlyAdmin {
         Strategy storage strategy = strategies[_strategy];
-        require(strategy.isSupported, "strategy not found");
+        require(strategy.exists, "strategy doesn't exist");
+
+        if (strategy.isEnabled) {
+            tokenTotalReservesBps[strategy.stakeToken] -= strategy.maxReservesBps;
+        }
+        if (_isEnabled) {
+            require(tokenTotalReservesBps[strategy.stakeToken] + _maxReservesBps <= BPS_DENOMINATOR, "invalid total maxReservesBps");
+            tokenTotalReservesBps[strategy.stakeToken] += _maxReservesBps;
+        }
+
         strategy.isEnabled = _isEnabled;
         strategy.maxReservesBps = _maxReservesBps;
 
