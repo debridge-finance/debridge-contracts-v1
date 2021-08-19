@@ -349,7 +349,7 @@ contract("DeBridgeGate light mode", function() {
   context("Test send method", () => {
     it("should send native tokens from the current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const chainIdTo = 42;
@@ -388,7 +388,7 @@ contract("DeBridgeGate light mode", function() {
 
     it("should send ERC20 tokens from the current chain", async function() {
       const tokenAddress = this.mockToken.address;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const receiver = bob;
       const amount = toBN(toWei("100"));
       const chainIdTo = 42;
@@ -443,7 +443,7 @@ contract("DeBridgeGate light mode", function() {
     it("should reject sending too mismatched amount of native tokens", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const amount = toBN(toWei("1"));
       const chainIdTo = 42;
       const debridgeId = await this.debridge.getDebridgeId(
@@ -462,7 +462,7 @@ contract("DeBridgeGate light mode", function() {
     it("should reject sending tokens to unsupported chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const amount = toBN(toWei("1"));
       const chainIdTo = chainId;
       const debridgeId = await this.debridge.getDebridgeId(
@@ -492,7 +492,7 @@ contract("DeBridgeGate light mode", function() {
       receiver = bob;
       debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       //console.log('debridgeId '+debridgeId);
-      currentChainId = await this.debridge.chainId();
+      currentChainId = await this.debridge.getChainId();
       const submission = await this.debridge.getSubmisionId(
         debridgeId,
         chainId,
@@ -682,7 +682,7 @@ contract("DeBridgeGate light mode", function() {
 
     it("should reject burning from current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const debridgeId = await this.debridge.getDebridgeId(
@@ -763,7 +763,7 @@ contract("DeBridgeGate light mode", function() {
 
     before(async function() {
       receiver = bob;
-      chainId = await this.debridge.chainId();
+      chainId = await this.debridge.getChainId();
       debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       erc20DebridgeId = await this.debridge.getDebridgeId(
         chainId,

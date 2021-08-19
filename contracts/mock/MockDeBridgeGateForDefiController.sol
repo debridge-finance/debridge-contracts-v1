@@ -3,11 +3,10 @@ pragma solidity ^0.8.2;
 
 import "../transfers/DeBridgeGate.sol";
 
-contract MockDeBridgeGateForDefiController is DeBridgeGate{
+contract MockDeBridgeGateForDefiController is DeBridgeGate {
 
     function init() external {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        chainId = 1;
     }
 
     function sendETH() payable external {}
@@ -33,5 +32,10 @@ contract MockDeBridgeGateForDefiController is DeBridgeGate{
         debridge.minReservesBps = minReservesBps;
         debridge.getChainFee[chainId] = chainFee;
         debridge.exist = exist;
+    }
+
+    // override chain id
+    function getChainId() override public pure returns (uint256 cid) {
+        return 1;
     }
 }

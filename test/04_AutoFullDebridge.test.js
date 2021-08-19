@@ -247,7 +247,7 @@ contract("DeBridgeGate full with auto", function () {
 
   context("Test managing assets", () => {
     before(async function() {
-      currentChainId = await this.debridge.chainId();
+      currentChainId = await this.debridge.getChainId();
       const newSupply = toWei("100");
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
@@ -329,7 +329,7 @@ contract("DeBridgeGate full with auto", function () {
   context("Test send method", () => {
     it("should send native tokens from the current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const chainIdTo = 42;
@@ -371,7 +371,7 @@ contract("DeBridgeGate full with auto", function () {
 
     it("should send ERC20 tokens from the current chain", async function() {
       const tokenAddress = this.mockToken.address;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const receiver = bob;
       const amount = toBN(toWei("100"));
       const chainIdTo = 42;
@@ -429,7 +429,7 @@ contract("DeBridgeGate full with auto", function () {
     it("should reject sending too mismatched amount of native tokens", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const amount = toBN(toWei("1"));
       const chainIdTo = 42;
       const debridgeId = await this.debridge.getDebridgeId(
@@ -452,7 +452,7 @@ contract("DeBridgeGate full with auto", function () {
     it("should reject sending tokens to unsupported chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const amount = toBN(toWei("1"));
       const chainIdTo = chainId;
       const debridgeId = await this.debridge.getDebridgeId(
@@ -482,7 +482,7 @@ contract("DeBridgeGate full with auto", function () {
     let currentChainId;
     before(async function() {
       receiver = bob
-      currentChainId = await this.debridge.chainId();
+      currentChainId = await this.debridge.getChainId();
       const newSupply = toWei("100");
       await this.linkToken.mint(alice, newSupply, {
         from: alice,
@@ -704,7 +704,7 @@ contract("DeBridgeGate full with auto", function () {
 
     it("should reject burning from current chain", async function() {
       const tokenAddress = ZERO_ADDRESS;
-      const chainId = await this.debridge.chainId();
+      const chainId = await this.debridge.getChainId();
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const debridgeId = await this.debridge.getDebridgeId(
@@ -746,7 +746,7 @@ contract("DeBridgeGate full with auto", function () {
     let erc20DebridgeId;
     before(async function() {
       receiver = bob
-      chainId = await this.debridge.chainId();
+      chainId = await this.debridge.getChainId();
       debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       outsideDebridgeId = await this.debridge.getDebridgeId(
         56,
@@ -815,7 +815,7 @@ contract("DeBridgeGate full with auto", function () {
       const submissionId = await this.debridge.getAutoSubmisionId(
         debridgeId,
         chainIdFrom,
-        await this.debridge.chainId(),
+        await this.debridge.getChainId(),
         amount,
         receiver,
         nonce,
@@ -856,7 +856,7 @@ contract("DeBridgeGate full with auto", function () {
       const submissionId = await this.debridge.getAutoSubmisionId(
         erc20DebridgeId,
         chainIdFrom,
-        await this.debridge.chainId(),
+        await this.debridge.getChainId(),
         amount,
         receiver,
         nonce,
