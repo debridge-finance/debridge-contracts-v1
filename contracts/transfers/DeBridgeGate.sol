@@ -103,7 +103,7 @@ contract DeBridgeGate is Initializable,
     ) public initializer {
         _addAsset(
             getDebridgeId(getChainId(), address(_weth)),
-            address(0),
+            address(_weth),
             abi.encodePacked(address(0)),
             getChainId());
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
@@ -663,37 +663,46 @@ contract DeBridgeGate is Initializable,
         nonReentrant
         onlyWorker
     {
-        // need to pay fee when call burn/send
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        //Don't needed
-        // require(debridge.exist, "debridge not exist");
+        require(debridge.exist, "debridge not exist");
 
         //Amount for transfer to treasure
         uint256 amount = debridgeFee.collectedFees + debridgeFee.donatedFees - debridgeFee.withdrawnFees;
-        //save contract size
-        // require(amount > 0, "Zero collected fees");
         debridgeFee.withdrawnFees += amount;
         //Reward amount for user
         uint256 rewardAmount = amount * collectRewardBps / BPS_DENOMINATOR;
         amount -= rewardAmount;
-        uint256 ethAmount = msg.value;
 
-        //TODO: hack. withdraw native token, debridge not exist
-        if (debridge.tokenAddress == address(0)) {
-            ethAmount += amount;
-            if(rewardAmount > 0) {
-                payable(msg.sender).transfer(rewardAmount);
-            }
-        } else {
-            IERC20(debridge.tokenAddress).safeTransfer(address(feeProxy), amount);
-            if(rewardAmount > 0) {
-                IERC20(debridge.tokenAddress).safeTransfer(msg.sender, rewardAmount);
-            }
+        IERC20(debridge.tokenAddress).safeTransfer(address(feeProxy), amount);
+        if(rewardAmount > 0) {
+            IERC20(debridge.tokenAddress).safeTransfer(msg.sender, rewardAmount);
         }
-        feeProxy.transferToTreasury{value: ethAmount}(_debridgeId, msg.value, debridge.tokenAddress, debridge.chainId);
+
+        feeProxy.transferToTreasury{value: msg.value}(_debridgeId, debridge.tokenAddress, debridge.chainId);
     }
 
+
+    /// @dev Withdraw native fees.
+    function withdrawNativeFee() external payable
+        nonReentrant
+        onlyWorker
+    {
+        bytes32 debridgeId = getDebridgeId(getChainId(), address(0));
+        DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[debridgeId];
+
+        //Amount for transfer to treasure
+        uint256 amount = debridgeFee.collectedFees + debridgeFee.donatedFees - debridgeFee.withdrawnFees;
+
+        debridgeFee.withdrawnFees += amount;
+        //Reward amount for user
+        uint256 rewardAmount = amount * collectRewardBps / BPS_DENOMINATOR;
+        if (rewardAmount > 0) {
+            amount -= rewardAmount;
+            payable(msg.sender).transfer(rewardAmount);
+        }
+        feeProxy.transferNativeToTreasury{value: msg.value + amount}(debridgeId, msg.value);
+    }
 
     /// @dev Request the assets to be used in defi protocol.
     /// @param _tokenAddress Asset address.
@@ -964,8 +973,6 @@ contract DeBridgeGate is Initializable,
                 - chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR,
                 "amount not cover fees");
 
-            //TODO: we want don't support debridge from address(0)
-            //nativecollectedFees += msg.value;
             getDebridgeFeeInfo[getDebridgeId(getChainId(), address(0))].collectedFees += msg.value;
         }
         return _amount;

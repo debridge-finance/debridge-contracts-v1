@@ -9,10 +9,13 @@ interface IFeeProxy {
 
     function transferToTreasury(
         bytes32 _debridgeId,
-        // address _erc20Token,
-        // uint256 _nativeChain,
-        uint256 nativeFixFee,
         address _tokenAddress,
         uint256 _nativeChain
+    ) external payable;
+
+    /// @dev Swap  Native tokens to deETH and then transfer reward to Ethereum network.
+    function transferNativeToTreasury(
+        bytes32 _wethDebridgeId,
+        uint256 _nativeFixFee
     ) external payable;
 }
