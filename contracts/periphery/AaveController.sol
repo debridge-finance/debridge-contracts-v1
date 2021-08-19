@@ -28,6 +28,7 @@ contract AaveInteractor is IStrategy {
     return ILendingPoolAddressesProvider(lendingPoolProvider).getLendingPool();
   }
 
+  // TODO: rename to getAaveTokenAddress
   function aToken(address _token) public view returns (address) {
     (address newATokenAddress,,) =
       IAaveProtocolDataProvider(protocolDataProvider).getReserveTokensAddresses(_token);
