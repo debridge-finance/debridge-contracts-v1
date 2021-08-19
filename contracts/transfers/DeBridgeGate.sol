@@ -141,10 +141,8 @@ contract DeBridgeGate is Initializable,
         uint256 _chainIdTo,
         bool _useAssetFee
     ) external payable override whenNotPaused() {
-        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
-        _amount = _send(
+        (uint256 newAmount, bytes32 debridgeId) = _send(
             _tokenAddress,
-            debridgeId,
             _amount,
             _chainIdTo,
             _useAssetFee
@@ -153,11 +151,11 @@ contract DeBridgeGate is Initializable,
             debridgeId,
             chainId,
             _chainIdTo,
-            _amount,
+            newAmount,
             _receiver,
             nonce
         );
-        emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo);
+        emit Sent(sentId, debridgeId, newAmount, _receiver, nonce, _chainIdTo);
         nonce++;
     }
 
@@ -299,23 +297,20 @@ contract DeBridgeGate is Initializable,
         bytes memory _data,
         bool _useAssetFee
     ) external payable override whenNotPaused() {
-        bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
-        //require(_executionFee != 0, "autoSend: fee too low");
-        _amount = _send(
+        (uint256 newAmount, bytes32 debridgeId) = _send(
             _tokenAddress,
-            debridgeId,
             _amount,
             _chainIdTo,
             _useAssetFee
         );
         //Commented out: contract-size limit
         // require(_amount >= _executionFee, "autoSend: proposed fee too high");
-        _amount -= _executionFee;
+        newAmount -= _executionFee;
         bytes32 sentId = getbAutoSubmisionId(
             debridgeId,
             chainId,
             _chainIdTo,
-            _amount,
+            newAmount,
             _receiver,
             nonce,
             _fallbackAddress,
@@ -325,7 +320,7 @@ contract DeBridgeGate is Initializable,
         emit AutoSent(
             sentId,
             debridgeId,
-            _amount,
+            newAmount,
             _receiver,
             nonce,
             _chainIdTo,
@@ -501,6 +496,7 @@ contract DeBridgeGate is Initializable,
     // noDelegateCall
     {
         DebridgeInfo storage debridge = getDebridge[getDebridgeId(chainId, _tokenAddress)];
+        require(debridge.exist, "debridge not exist");
         uint256 currentFlashFee = (_amount * flashFeeBps) / BPS_DENOMINATOR;
         uint256 balanceBefore = IERC20(_tokenAddress).balanceOf(address(this));
 
@@ -651,7 +647,7 @@ contract DeBridgeGate is Initializable,
         // need to pay fee when call burn/send
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         //Don't needed
-        require(debridge.exist, "debridge not exist");
+        // require(debridge.exist, "debridge not exist");
 
         //Amount for transfer to treasure
         uint256 amount = debridge.collectedFees + debridge.donatedFees - debridge.withdrawnFees;
@@ -689,14 +685,14 @@ contract DeBridgeGate is Initializable,
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
         require(minReserves + _amount < getBalance(debridge.tokenAddress), "not enough reserves");
-        if (debridge.tokenAddress == address(0)) {
-            payable(address(defiController)).transfer(_amount);
-        } else {
-            IERC20(debridge.tokenAddress).safeTransfer(
-                address(defiController),
-                _amount
-            );
-        }
+        // if (debridge.tokenAddress == address(0)) {
+        //     payable(address(defiController)).transfer(_amount);
+        // } else {
+        IERC20(debridge.tokenAddress).safeTransfer(
+            address(defiController),
+            _amount
+        );
+        // }
         debridge.lockedInStrategies += _amount;
     }
 
@@ -705,21 +701,22 @@ contract DeBridgeGate is Initializable,
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
         external
-        payable override
+        //payable
+        override
         onlyDefiController()
     {
         bytes32 debridgeId = getDebridgeId(chainId, _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
-        if (debridge.tokenAddress != address(0)) {
+        // if (debridge.tokenAddress != address(0)) {
             IERC20(debridge.tokenAddress).safeTransferFrom(
                 address(defiController),
                 address(this),
                 _amount
             );
             debridge.lockedInStrategies -= _amount;
-        } else {
-            debridge.lockedInStrategies -= msg.value;
-        }
+        // } else {
+        //     debridge.lockedInStrategies -= msg.value;
+        // }
     }
 
     /// @dev Set fee converter proxy.
@@ -768,6 +765,11 @@ contract DeBridgeGate is Initializable,
 
     function updateTreasury(address _address) external onlyAdmin() {
         treasury = _address;
+    }
+
+    // we need to accept ETH sends to unwrap WETH
+    receive() external payable {
+        assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
     }
 
     /* ========== INTERNAL ========== */
@@ -834,27 +836,30 @@ contract DeBridgeGate is Initializable,
     }
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
-    /// @param _debridgeId Asset identifier.
     /// @param _amount Amount to be transfered (note: the fee can be applyed).
     /// @param _chainIdTo Chain id of the target chain.
     function _send(
         address _tokenAddress,
-        bytes32 _debridgeId,
         uint256 _amount,
         uint256 _chainIdTo,
         bool _useAssetFee
-    ) internal returns (uint256) {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+    ) internal returns (uint256 newAmount, bytes32 debridgeId) {
+        //We use WETH debridgeId for transfer ETH
+        debridgeId = getDebridgeId(chainId, _tokenAddress == address(0) ? address(weth) : _tokenAddress);
+
+        DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) {
-            _addAsset(_debridgeId, _tokenAddress, abi.encodePacked(_tokenAddress), chainId);
+            _addAsset(debridgeId, _tokenAddress, abi.encodePacked(_tokenAddress), chainId);
         }
         require(debridge.chainId == chainId, "wrong chain");
         require(getChainSupport[_chainIdTo].isSupported, "wrong targed chain");
         require(_amount <= debridge.maxAmount, "amount too high");
-        if (debridge.tokenAddress == address(0)) {
+        if (_tokenAddress == address(0)) {
             require(_amount == msg.value, "send: amount mismatch");
-         } else {
-            IERC20 token = IERC20(debridge.tokenAddress);
+            weth.deposit{ value : msg.value }();
+            _useAssetFee = true;
+        } else {
+            IERC20 token = IERC20(_tokenAddress);
             uint256 balanceBefore = token.balanceOf(address(this));
             token.safeTransferFrom(
                 msg.sender,
@@ -864,9 +869,9 @@ contract DeBridgeGate is Initializable,
             // Received real amount
             _amount = token.balanceOf(address(this)) - balanceBefore;
         }
-        _amount = _processFeeForTransfer(_debridgeId, _amount, _chainIdTo, _useAssetFee);
+        _amount = _processFeeForTransfer(debridgeId, _amount, _chainIdTo, _useAssetFee);
         debridge.balance += _amount;
-        return _amount;
+        return (_amount, debridgeId);
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -909,10 +914,8 @@ contract DeBridgeGate is Initializable,
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
         DiscountInfo memory discountInfo = feeDiscount[msg.sender];
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        if (_useAssetFee || debridge.tokenAddress == address(0)) {
-            uint256 fixedFee = debridge.tokenAddress == address(0)
-                ? chainSupportInfo.fixedNativeFee
-                : debridge.getChainFee[_chainIdTo];
+        if (_useAssetFee) {
+            uint256 fixedFee = debridge.getChainFee[_chainIdTo];
             require(fixedFee != 0, "fixed fee is not supported");
             uint256 transferFee = fixedFee +
                 (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
@@ -932,6 +935,8 @@ contract DeBridgeGate is Initializable,
                 - chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR,
                 "amount not cover fees");
 
+            //TODO: we want don't support debridge from address(0)
+            //nativecollectedFees += msg.value;
             getDebridge[getDebridgeId(chainId, address(0))].collectedFees += msg.value;
         }
         return _amount;
@@ -1001,22 +1006,24 @@ contract DeBridgeGate is Initializable,
         _markAsUsed(_submissionId);
 
         debridge.balance -= _amount;
-        if (debridge.tokenAddress == address(0)) {
-            if (_executionFee > 0) {
-                payable(msg.sender).transfer(_executionFee);
-            }
-            if(_data.length > 0)
-            {
-                bool status = ICallProxy(callProxy).call{value: _amount}(
-                    _fallbackAddress,
-                    _receiver,
-                    _data
-                );
-                emit AutoRequestExecuted(_submissionId, status);
-            } else {
-                payable(_receiver).transfer(_amount);
-            }
-        } else {
+        //TODO: We use WETH only
+        // if (debridge.tokenAddress == address(0)) {
+        //     weth.withdraw(_amount + _executionFee);
+        //     if (_executionFee > 0) {
+        //         payable(msg.sender).transfer(_executionFee);
+        //     }
+        //     if(_data.length > 0)
+        //     {
+        //         bool status = ICallProxy(callProxy).call{value: _amount}(
+        //             _fallbackAddress,
+        //             _receiver,
+        //             _data
+        //         );
+        //         emit AutoRequestExecuted(_submissionId, status);
+        //     } else {
+        //         payable(_receiver).transfer(_amount);
+        //     }
+        // } else {
             if (_executionFee > 0) {
                 IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _executionFee);
             }
@@ -1032,7 +1039,7 @@ contract DeBridgeGate is Initializable,
             } else {
                 IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
             }
-        }
+        // }
         emit Claimed(_submissionId, _amount, _receiver, _debridgeId);
     }
 

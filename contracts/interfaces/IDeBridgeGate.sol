@@ -196,7 +196,7 @@ interface IDeBridgeGate {
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
-        external payable;
+        external;
 
     /* ========== EVENTS ========== */
 
