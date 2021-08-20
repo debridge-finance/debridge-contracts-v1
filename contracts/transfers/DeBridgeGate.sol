@@ -104,7 +104,7 @@ contract DeBridgeGate is Initializable,
         _addAsset(
             getDebridgeId(getChainId(), address(_weth)),
             address(_weth),
-            abi.encodePacked(address(0)),
+            abi.encodePacked(address(_weth)),
             getChainId());
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
