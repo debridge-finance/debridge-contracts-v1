@@ -137,6 +137,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
     );
 
     //Hack override contract chain Id
+    await this.feeProxyETH.overrideChainId(ethChainId);
     await this.feeProxyBSC.overrideChainId(bscChainId);
     await this.feeProxyHECO.overrideChainId(hecoChainId);
 

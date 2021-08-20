@@ -27,7 +27,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     mapping(uint256 => bytes) public treasuryAddresses;
 
     uint256 public constant ETH_CHAINID = 1; //Ethereum chainId
-    uint256 public chainId; // current chain id
     address public deEthToken; //address of deETH token
 
     /* ========== MODIFIERS ========== */
@@ -46,12 +45,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
 
     constructor(IUniswapV2Factory _uniswapFactory, IWETH _weth)
     {
-        uint256 cid;
-        assembly {
-            cid := chainid()
-        }
-        chainId = cid;
-
         uniswapFactory = _uniswapFactory;
         weth = _weth;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -87,6 +80,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         uint256 _nativeChain
     ) external payable override onlyDeBridgeGate
     {
+        uint256 chainId = getChainId();
         require(debridgeGateAddresses[_nativeChain].length > 0, "no debridge gate addresses");
         require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
 
@@ -137,8 +131,9 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         uint256 _nativeFixFee
     ) external payable override onlyDeBridgeGate
     {
-        // require(debridgeGateAddresses[_nativeChain].length > 0, "no debridge gate addresses");
-        // require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
+        uint256 chainId = getChainId();
+        require(debridgeGateAddresses[chainId].length > 0, "no debridge gate addresses");
+        require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
 
         address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
 
@@ -162,8 +157,10 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         }
     }
 
-    //Used when weth.withdraw
-    fallback() external payable {}
+    // we need to accept ETH sends to unwrap WETH
+    receive() external payable {
+        assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
+    }
 
     /* ========== PRIVATE FUNCTIONS  ========== */
 
@@ -237,5 +234,11 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         }
 
         return tempAddress;
+    }
+
+    function getChainId() virtual public view returns (uint256 cid) {
+        assembly {
+            cid := chainid()
+        }
     }
 }

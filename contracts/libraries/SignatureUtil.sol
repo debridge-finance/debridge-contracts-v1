@@ -32,7 +32,11 @@ library SignatureUtil {
         assembly {
             r := mload(add(_signature, 32))
             s := mload(add(_signature, 64))
-            v := byte(0, mload(add(_signature, 96)))
+            v := and(mload(add(_signature, 65)), 0xff)
+            //the same
+            // v := byte(0, mload(add(_signature, 96)))
         }
+        if (v < 27) v += 27;
+        require(v == 27 || v == 28, "Incorrect v");
     }
 }

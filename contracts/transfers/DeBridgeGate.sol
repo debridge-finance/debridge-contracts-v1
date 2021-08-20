@@ -30,6 +30,7 @@ contract DeBridgeGate is Initializable,
 
     /* ========== STATE VARIABLES ========== */
 
+    uint256 public constant MAX_UINT = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
     // Basis points or bps equal to 1/10000
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
@@ -716,14 +717,10 @@ contract DeBridgeGate is Initializable,
         require(debridge.exist, "debridge not exist");
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
         require(minReserves + _amount < IERC20(_tokenAddress).balanceOf(address(this)), "not enough reserves");
-        // if (debridge.tokenAddress == address(0)) {
-        //     payable(address(defiController)).transfer(_amount);
-        // } else {
         IERC20(_tokenAddress).safeTransfer(
             address(defiController),
             _amount
         );
-        // }
         debridge.lockedInStrategies += _amount;
     }
 
@@ -738,16 +735,12 @@ contract DeBridgeGate is Initializable,
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
-        // if (debridge.tokenAddress != address(0)) {
-            IERC20(debridge.tokenAddress).safeTransferFrom(
-                address(defiController),
-                address(this),
-                _amount
-            );
-            debridge.lockedInStrategies -= _amount;
-        // } else {
-        //     debridge.lockedInStrategies -= msg.value;
-        // }
+        IERC20(debridge.tokenAddress).safeTransferFrom(
+            address(defiController),
+            address(this),
+            _amount
+        );
+        debridge.lockedInStrategies -= _amount;
     }
 
     /// @dev Set fee converter proxy.
@@ -851,11 +844,11 @@ contract DeBridgeGate is Initializable,
         debridge.chainId = _chainId;
         //Don't override if the admin already set maxAmount
         if(debridge.maxAmount == 0){
-            debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            debridge.maxAmount = MAX_UINT;
         }
         // debridge.minReservesBps = BPS;
         if(getAmountThreshold[_debridgeId] == 0){
-            getAmountThreshold[_debridgeId] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            getAmountThreshold[_debridgeId] = MAX_UINT;
         }
 
         TokenInfo storage tokenInfo = getNativeInfo[_tokenAddress];
@@ -947,6 +940,7 @@ contract DeBridgeGate is Initializable,
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
         _amount = _processFeeForTransfer(_debridgeId, _amount, _chainIdTo, _useAssetFee);
         wrappedAsset.burn(_amount);
+        debridge.balance -= _amount;
         return _amount;
     }
 
@@ -1013,6 +1007,7 @@ contract DeBridgeGate is Initializable,
         } else {
             IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
         }
+        debridge.balance += _amount + _executionFee;
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -1036,40 +1031,22 @@ contract DeBridgeGate is Initializable,
         _markAsUsed(_submissionId);
 
         debridge.balance -= _amount;
-        //TODO: We use WETH only
-        // if (debridge.tokenAddress == address(0)) {
-        //     weth.withdraw(_amount + _executionFee);
-        //     if (_executionFee > 0) {
-        //         payable(msg.sender).transfer(_executionFee);
-        //     }
-        //     if(_data.length > 0)
-        //     {
-        //         bool status = ICallProxy(callProxy).call{value: _amount}(
-        //             _fallbackAddress,
-        //             _receiver,
-        //             _data
-        //         );
-        //         emit AutoRequestExecuted(_submissionId, status);
-        //     } else {
-        //         payable(_receiver).transfer(_amount);
-        //     }
-        // } else {
-            if (_executionFee > 0) {
-                IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _executionFee);
-            }
-            if(_data.length > 0){
-                IERC20(debridge.tokenAddress).safeTransfer(callProxy, _amount);
-                bool status = ICallProxy(callProxy).callERC20(
-                    debridge.tokenAddress,
-                    _fallbackAddress,
-                    _receiver,
-                    _data
-                );
-                emit AutoRequestExecuted(_submissionId, status);
-            } else {
-                IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
-            }
-        // }
+
+        if (_executionFee > 0) {
+            IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _executionFee);
+        }
+        if(_data.length > 0){
+            IERC20(debridge.tokenAddress).safeTransfer(callProxy, _amount);
+            bool status = ICallProxy(callProxy).callERC20(
+                debridge.tokenAddress,
+                _fallbackAddress,
+                _receiver,
+                _data
+            );
+            emit AutoRequestExecuted(_submissionId, status);
+        } else {
+            IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+        }
     }
 
     /// @dev Mark submission as used.
