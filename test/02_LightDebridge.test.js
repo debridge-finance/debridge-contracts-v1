@@ -378,6 +378,7 @@ contract("DeBridgeGate light mode", function() {
         amount,
         chainIdTo,
         false,
+        0,
         {
           value: amount,
           from: alice,
@@ -425,6 +426,7 @@ contract("DeBridgeGate light mode", function() {
         amount,
         chainIdTo,
         false,
+        0,
         {
           value: supportedChainInfo.fixedNativeFee,
           from: alice,
@@ -459,7 +461,7 @@ contract("DeBridgeGate light mode", function() {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, {
+        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
           value: toWei("0.1"),
           from: alice,
         }),
@@ -478,7 +480,7 @@ contract("DeBridgeGate light mode", function() {
         tokenAddress
       );
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, {
+        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
           value: amount,
           from: alice,
         }),
@@ -666,6 +668,7 @@ contract("DeBridgeGate light mode", function() {
         deadline,
         signature,
         false,
+        0,
         {
           value: supportedChainInfo.fixedNativeFee,
         }
@@ -708,6 +711,8 @@ contract("DeBridgeGate light mode", function() {
           42,
           deadline,
           signature,
+          false,
+          0,
           {
             from: alice,
           }

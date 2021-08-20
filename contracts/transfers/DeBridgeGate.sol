@@ -30,7 +30,6 @@ contract DeBridgeGate is Initializable,
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public constant MAX_UINT = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
     // Basis points or bps equal to 1/10000
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
@@ -139,7 +138,8 @@ contract DeBridgeGate is Initializable,
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable override whenNotPaused() {
         (uint256 newAmount, bytes32 debridgeId) = _send(
             _tokenAddress,
@@ -155,7 +155,7 @@ contract DeBridgeGate is Initializable,
             _receiver,
             nonce
         );
-        emit Sent(sentId, debridgeId, newAmount, _receiver, nonce, _chainIdTo);
+        emit Sent(sentId, debridgeId, newAmount, _receiver, nonce, _chainIdTo, _referralCode);
         nonce++;
     }
 
@@ -215,7 +215,8 @@ contract DeBridgeGate is Initializable,
         uint256 _chainIdTo,
         uint256 _deadline,
         bytes memory _signature,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable override whenNotPaused() {
         _amount = _burn(
             _debridgeId,
@@ -233,7 +234,7 @@ contract DeBridgeGate is Initializable,
             _receiver,
             nonce
         );
-        emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo);
+        emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
         nonce++;
     }
 
@@ -297,7 +298,8 @@ contract DeBridgeGate is Initializable,
         bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable override whenNotPaused() {
         (uint256 newAmount, bytes32 debridgeId) = _send(
             _tokenAddress,
@@ -328,7 +330,8 @@ contract DeBridgeGate is Initializable,
             _chainIdTo,
             _executionFee,
             _fallbackAddress,
-            _data
+            _data,
+            _referralCode
         );
         nonce++;
     }
@@ -413,9 +416,9 @@ contract DeBridgeGate is Initializable,
         bytes memory _data,
         uint256 _deadline,
         bytes memory _signature,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable override whenNotPaused() {
-        //require(_executionFee != 0, "autoBurn: fee too low");
         _amount = _burn(
             _debridgeId,
             _amount,
@@ -447,7 +450,8 @@ contract DeBridgeGate is Initializable,
             _chainIdTo,
             _executionFee,
             _fallbackAddress,
-            _data
+            _data,
+            _referralCode
         );
         nonce++;
     }
@@ -844,11 +848,11 @@ contract DeBridgeGate is Initializable,
         debridge.chainId = _chainId;
         //Don't override if the admin already set maxAmount
         if(debridge.maxAmount == 0){
-            debridge.maxAmount = MAX_UINT;
+            debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
         // debridge.minReservesBps = BPS;
         if(getAmountThreshold[_debridgeId] == 0){
-            getAmountThreshold[_debridgeId] = MAX_UINT;
+            getAmountThreshold[_debridgeId] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
 
         TokenInfo storage tokenInfo = getNativeInfo[_tokenAddress];
@@ -1112,7 +1116,7 @@ contract DeBridgeGate is Initializable,
         uint256 _amount,
         bytes memory _receiver,
         uint256 _nonce
-    ) public pure returns (bytes32) {
+    ) private pure returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(
@@ -1173,7 +1177,7 @@ contract DeBridgeGate is Initializable,
         bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data
-    ) public pure returns (bytes32) {
+    ) private pure returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(

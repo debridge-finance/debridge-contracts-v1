@@ -184,7 +184,8 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
             abi.encodeWithSelector(DONATEFEES_SELECTOR, _debridgeId, _amount), //_data,
             0, //_deadline,
             "", //_signature,
-            false //_useAssetFee
+            false, //_useAssetFee,
+            0
             );
     }
 

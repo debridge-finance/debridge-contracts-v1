@@ -356,6 +356,7 @@ contract("DeBridgeGate full with auto", function () {
         claimFee,
         data,
         false,
+        0,
         {
           value: amount,
           from: alice,
@@ -406,6 +407,7 @@ contract("DeBridgeGate full with auto", function () {
         claimFee,
         data,
         false,
+        0,
         {
           value: supportedChainInfo.fixedNativeFee,
           from: alice,
@@ -440,7 +442,8 @@ contract("DeBridgeGate full with auto", function () {
           reserveAddress,
           claimFee,
           data,
-          false, {
+          false,
+          0, {
           value: toWei("0.1"),
           from: alice,
         }),
@@ -459,7 +462,8 @@ contract("DeBridgeGate full with auto", function () {
           reserveAddress,
           claimFee,
           data,
-          false, {
+          false,
+          0, {
           value: amount,
           from: alice,
         }),
@@ -675,6 +679,7 @@ contract("DeBridgeGate full with auto", function () {
         deadline,
         signature,
         false,
+        0,
         {
           value: supportedChainInfo.fixedNativeFee,
         }
@@ -715,6 +720,7 @@ contract("DeBridgeGate full with auto", function () {
           deadline,
           signature,
           false,
+          0,
           {
             from: alice,
           }
