@@ -952,29 +952,22 @@ contract DeBridgeGate is Initializable,
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
         DiscountInfo memory discountInfo = feeDiscount[msg.sender];
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
+        uint256 fixedFee;
         if (_useAssetFee) {
-            uint256 fixedFee = debridgeFee.getChainFee[_chainIdTo];
+            fixedFee = debridgeFee.getChainFee[_chainIdTo];
             require(fixedFee != 0, "fixed fee is not supported");
-            uint256 transferFee = fixedFee +
-                (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
-            transferFee = transferFee - transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
-            require(_amount >= transferFee, "amount not cover fees");
-            debridgeFee.collectedFees += transferFee;
-            _amount -= transferFee;
         } else {
-            {
-                uint256 transferFee = (_amount*chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
-                transferFee = transferFee - transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
-                require(_amount >= transferFee, "amount not cover fees");
-                debridgeFee.collectedFees += transferFee;
-                _amount -= transferFee;
-            }
+            // collect native fees
             require(msg.value >= chainSupportInfo.fixedNativeFee
                 - chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR,
                 "amount not cover fees");
-
             getDebridgeFeeInfo[getDebridgeId(getChainId(), address(0))].collectedFees += msg.value;
         }
+        uint256 transferFee = (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR + fixedFee;
+        transferFee = transferFee - transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
+        require(_amount >= transferFee, "amount not cover fees");
+        debridgeFee.collectedFees += transferFee;
+        _amount -= transferFee;
         return _amount;
     }
 
