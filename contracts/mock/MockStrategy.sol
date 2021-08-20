@@ -6,8 +6,7 @@ import "../interfaces/IStrategy.sol";
 contract MockStrategy is IStrategy {
     uint256 public balance;
 
-    constructor()
-    {
+    constructor() {
         balance = 0;
     }
 
@@ -27,7 +26,7 @@ contract MockStrategy is IStrategy {
         external
         view
         override
-        returns(uint256)
+        returns (uint256)
     {
         return balance;
     }

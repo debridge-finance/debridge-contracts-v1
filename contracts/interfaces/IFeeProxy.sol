@@ -14,8 +14,7 @@ interface IFeeProxy {
     ) external payable;
 
     /// @dev Swap  Native tokens to deETH and then transfer reward to Ethereum network.
-    function transferNativeToTreasury(
-        bytes32 _wethDebridgeId,
-        uint256 _nativeFixFee
-    ) external payable;
+    function transferNativeToTreasury(bytes32 _wethDebridgeId, uint256 _nativeFixFee)
+        external
+        payable;
 }

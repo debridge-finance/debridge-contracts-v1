@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract MockProxyConsumer {
-
     using SafeERC20 for IERC20;
 
     address public callProxy;
@@ -13,16 +12,16 @@ contract MockProxyConsumer {
     bool public lastOperationStatus;
 
     constructor(address _callProxy, address _token) {
-        callProxy=_callProxy;
-        token=_token;
+        callProxy = _callProxy;
+        token = _token;
     }
-    
+
     function transferToken(
         address _token,
         address _receiver,
         address _fallbackAddress,
         bytes memory _data
-    ) payable external {
+    ) external payable {
         bool status;
         if (_token == address(0)) {
             status = ICallProxy(callProxy).call{value: msg.value}(
@@ -32,13 +31,8 @@ contract MockProxyConsumer {
             );
         } else {
             IERC20(_token).transfer(callProxy, msg.value);
-            status = ICallProxy(callProxy).callERC20(
-                _token,
-                _fallbackAddress,
-                _receiver,
-                _data
-            );
+            status = ICallProxy(callProxy).callERC20(_token, _fallbackAddress, _receiver, _data);
         }
-        lastOperationStatus = status; 
+        lastOperationStatus = status;
     }
 }

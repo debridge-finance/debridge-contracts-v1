@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "prettier": "prettier -c --write test/*.js && prettier --write contracts/*/*.sol",
-    "lint": "prettier",
+    "format:check": "prettier -c 'contracts/**/*.sol' 'test/*.js'",
+    "format:fix": "prettier --write 'contracts/**/*.sol' 'test/*.js'",
+    "lint:check": "solhint 'contracts/**/*.sol'",
+    "lint:fix": "solhint --fix 'contracts/**/*.sol'",
     "precompile": "mkdir -p build/contracts/ && cp precompiled/* build/contracts/",
     "compile": "hardhat compile",
     "build": "truffle build",

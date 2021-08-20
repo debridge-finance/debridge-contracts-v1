@@ -7,7 +7,6 @@ import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
-
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
 
@@ -20,9 +19,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initialize(uint8 _minConfirmations)
-        public initializer
-    {
+    function initialize(uint8 _minConfirmations) public initializer {
         AggregatorBase.initializeBase(_minConfirmations);
     }
 
@@ -65,7 +62,11 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.
     /// @param _signatures Oracles signature.
-    function submitMany(bytes32[] memory _submissionIds, bytes[] memory _signatures) external override onlyOracle {
+    function submitMany(bytes32[] memory _submissionIds, bytes[] memory _signatures)
+        external
+        override
+        onlyOracle
+    {
         require(_submissionIds.length == _signatures.length, "arguments count mismatch");
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i], _signatures[i]);
@@ -83,9 +84,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @param _submissionId Submission identifier.
     /// @param _signature Oracle's signature.
     function _submit(bytes32 _submissionId, bytes memory _signature) internal {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
@@ -103,11 +102,12 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @return _confirmations number of confirmation.
     /// @return _confirmed Whether transfer request is confirmed.
     function getSubmissionConfirmations(bytes32 _submissionId)
-        external view override returns (uint8 _confirmations, bool _confirmed)
+        external
+        view
+        override
+        returns (uint8 _confirmations, bool _confirmed)
     {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         _confirmations = submissionInfo.confirmations;
         return (_confirmations, _confirmations >= minConfirmations);
     }
@@ -115,9 +115,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
     /// @return Oracles signatures.
-    function getSubmissionSignatures(bytes32 _submissionId)
-        external view returns (bytes[] memory)
-    {
+    function getSubmissionSignatures(bytes32 _submissionId) external view returns (bytes[] memory) {
         return getSubmissionInfo[_submissionId].signatures;
     }
 }

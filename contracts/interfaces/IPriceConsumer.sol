@@ -2,5 +2,5 @@
 pragma solidity ^0.8.2;
 
 interface IPriceConsumer {
-    function getPriceOfToken(address token) external view returns(uint256);
+    function getPriceOfToken(address token) external view returns (uint256);
 }

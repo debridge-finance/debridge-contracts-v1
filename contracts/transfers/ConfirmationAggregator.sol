@@ -6,7 +6,6 @@ import "../interfaces/IConfirmationAggregator.sol";
 import "../periphery/WrappedAsset.sol";
 
 contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
-
     /* ========== STATE VARIABLES ========== */
 
     uint8 public confirmationThreshold; // required confirmations per block after extra check enabled
@@ -46,11 +45,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.
-    function submitMany(bytes32[] memory _submissionIds)
-        external
-        override
-        onlyOracle
-    {
+    function submitMany(bytes32[] memory _submissionIds) external override onlyOracle {
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i]);
         }
@@ -77,12 +72,12 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         debridgeInfo.chainId = _chainId;
         debridgeInfo.decimals = _decimals;
         debridgeInfo.confirmations += 1;
-        if(getOracleInfo[msg.sender].required){
+        if (getOracleInfo[msg.sender].required) {
             debridgeInfo.requiredConfirmations += 1;
         }
         debridgeInfo.hasVerified[msg.sender] = true;
 
-        if( debridgeInfo.confirmations >= minConfirmations){
+        if (debridgeInfo.confirmations >= minConfirmations) {
             confirmedDeployInfo[debridgeId] = deployId;
         }
 
@@ -101,23 +96,23 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         submissionInfo.confirmations += 1;
-        if(getOracleInfo[msg.sender].required) {
+        if (getOracleInfo[msg.sender].required) {
             submissionInfo.requiredConfirmations += 1;
         }
         submissionInfo.hasVerified[msg.sender] = true;
         if (submissionInfo.confirmations >= minConfirmations) {
-            if(currentBlock != uint40(block.number)) {
+            if (currentBlock != uint40(block.number)) {
                 currentBlock = uint40(block.number);
                 submissionsInBlock = 0;
             }
             bool requireExtraCheck = submissionsInBlock >= confirmationThreshold;
 
-
-            if(submissionInfo.requiredConfirmations >= requiredOraclesCount
-                && !submissionInfo.isConfirmed
-                && (!requireExtraCheck
-                    || requireExtraCheck
-                        && submissionInfo.confirmations >= excessConfirmations)) {
+            if (
+                submissionInfo.requiredConfirmations >= requiredOraclesCount &&
+                !submissionInfo.isConfirmed &&
+                (!requireExtraCheck ||
+                    (requireExtraCheck && submissionInfo.confirmations >= excessConfirmations))
+            ) {
                 submissionsInBlock += 1;
                 submissionInfo.isConfirmed = true;
                 emit SubmissionApproved(_submissionId);
@@ -130,8 +125,14 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
-            external override
-            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId){
+        external
+        override
+        returns (
+            address wrappedAssetAddress,
+            bytes memory nativeAddress,
+            uint256 nativeChainId
+        )
+    {
         require(debridgeAddress == msg.sender, "deployAsset: bad role");
 
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
@@ -159,8 +160,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Sets minimal required confirmations.
     /// @param _excessConfirmations Confirmation info.
-    function setExcessConfirmations(uint8 _excessConfirmations) public onlyAdmin
-    {
+    function setExcessConfirmations(uint8 _excessConfirmations) public onlyAdmin {
         excessConfirmations = _excessConfirmations;
     }
 
@@ -194,9 +194,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         override
         returns (uint8 _confirmations, bool _isConfirmed)
     {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
 
         return (submissionInfo.confirmations, submissionInfo.isConfirmed);
     }

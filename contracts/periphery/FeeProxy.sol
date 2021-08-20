@@ -11,7 +11,7 @@ import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IWETH.sol";
 
-contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
+contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -31,20 +31,19 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyDeBridgeGate {
+    modifier onlyDeBridgeGate() {
         require(address(debridgeGate) == msg.sender, "onlyDeBridgeGate: bad role");
         _;
     }
 
-    modifier onlyAdmin {
+    modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
 
     /* ========== CONSTRUCTOR  ========== */
 
-    constructor(IUniswapV2Factory _uniswapFactory, IWETH _weth)
-    {
+    constructor(IUniswapV2Factory _uniswapFactory, IWETH _weth) {
         uniswapFactory = _uniswapFactory;
         weth = _weth;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -52,23 +51,26 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
 
     /* ========== FUNCTIONS  ========== */
 
-    function setUniswapFactory(IUniswapV2Factory _uniswapFactory) external onlyAdmin() {
+    function setUniswapFactory(IUniswapV2Factory _uniswapFactory) external onlyAdmin {
         uniswapFactory = _uniswapFactory;
     }
 
-    function setDebridgeGate(IDeBridgeGate _debridgeGate) external onlyAdmin() {
+    function setDebridgeGate(IDeBridgeGate _debridgeGate) external onlyAdmin {
         debridgeGate = _debridgeGate;
     }
 
-    function setTreasury(uint256 _chainId, bytes memory _treasuryAddress) external onlyAdmin() {
+    function setTreasury(uint256 _chainId, bytes memory _treasuryAddress) external onlyAdmin {
         treasuryAddresses[_chainId] = _treasuryAddress;
     }
 
-    function setDeEthToken(address _deEthToken) external onlyAdmin() {
+    function setDeEthToken(address _deEthToken) external onlyAdmin {
         deEthToken = _deEthToken;
     }
 
-    function setDebridgeGateAddresses(uint256 _chainId, bytes memory _debridgeGateAddresses) external onlyAdmin() {
+    function setDebridgeGateAddresses(uint256 _chainId, bytes memory _debridgeGateAddresses)
+        external
+        onlyAdmin
+    {
         debridgeGateAddresses[_chainId] = _debridgeGateAddresses;
     }
 
@@ -78,8 +80,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         bytes32 _debridgeId,
         address _tokenAddress,
         uint256 _nativeChain
-    ) external payable override onlyDeBridgeGate
-    {
+    ) external payable override onlyDeBridgeGate {
         uint256 chainId = getChainId();
         require(debridgeGateAddresses[_nativeChain].length > 0, "no debridge gate addresses");
         require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
@@ -92,44 +93,49 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         if (chainId == _nativeChain) {
             //Reward is token (DBR, LINK, WETH, deDBT, deLINK, deETH)
             //If token is deETH
-            if(_tokenAddress == deEthToken) {
+            if (_tokenAddress == deEthToken) {
                 //Create transfer to Ehereum netrowk ETH
                 _autoBurnWithTransfer(_debridgeId, _tokenAddress, amount, _nativeChain, msg.value);
             }
             //For others tokens
             else {
                 // create swap to weth
-                if(_tokenAddress != address(weth)){
+                if (_tokenAddress != address(weth)) {
                     _swap(_tokenAddress, address(weth), address(this));
                 }
                 //If we are in Ethereum chain transfer to Treasery
-                if(chainId == ETH_CHAINID) {
+                if (chainId == ETH_CHAINID) {
                     IERC20(address(weth)).safeTransfer(
                         address(currentTreaseryAddress),
-                        weth.balanceOf(address(this)));
-                }
-                else
-                {
+                        weth.balanceOf(address(this))
+                    );
+                } else {
                     //create swap from Native token to deETH
                     _swap(address(weth), deEthToken, address(this));
                     //transfer deETH to Ethereum
                     uint256 deEthAmount = IERC20(deEthToken).balanceOf(address(this));
-                    _autoBurnWithTransfer(_debridgeId, deEthToken, deEthAmount, ETH_CHAINID, msg.value);
+                    _autoBurnWithTransfer(
+                        _debridgeId,
+                        deEthToken,
+                        deEthAmount,
+                        ETH_CHAINID,
+                        msg.value
+                    );
                 }
             }
         }
         //create transfer if different chains
         else {
-           _autoBurnWithTransfer(_debridgeId, _tokenAddress, amount, _nativeChain, msg.value);
+            _autoBurnWithTransfer(_debridgeId, _tokenAddress, amount, _nativeChain, msg.value);
         }
     }
 
-
     /// @dev Swap native tokens to deETH and then transfer reward to Ethereum network.
-     function transferNativeToTreasury(
-        bytes32 _wethDebridgeId,
-        uint256 _nativeFixFee
-    ) external payable override onlyDeBridgeGate
+    function transferNativeToTreasury(bytes32 _wethDebridgeId, uint256 _nativeFixFee)
+        external
+        payable
+        override
+        onlyDeBridgeGate
     {
         uint256 chainId = getChainId();
         require(debridgeGateAddresses[chainId].length > 0, "no debridge gate addresses");
@@ -141,7 +147,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
 
         //reward is native token (ETH/BNB/HT)
         //If we are in Ethereum chain
-        if(chainId == ETH_CHAINID) {
+        if (chainId == ETH_CHAINID) {
             //TODO: send 50% reward to slashing contract
             payable(currentTreaseryAddress).transfer(amount);
         }
@@ -153,7 +159,13 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
             _swap(address(weth), deEthToken, address(this));
             uint256 deEthBalance = IERC20(deEthToken).balanceOf(address(this));
             //transfer deETH to Ethereum
-            _autoBurnWithTransfer(_wethDebridgeId, deEthToken, deEthBalance, ETH_CHAINID, _nativeFixFee);
+            _autoBurnWithTransfer(
+                _wethDebridgeId,
+                deEthToken,
+                deEthBalance,
+                ETH_CHAINID,
+                _nativeFixFee
+            );
         }
     }
 
@@ -174,8 +186,8 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     ) private {
         require(treasuryAddresses[_nativeChain].length > 0, "no treasury addresses");
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
-        debridgeGate.autoBurn{value: _nativeFixFee}
-            (_debridgeId,
+        debridgeGate.autoBurn{value: _nativeFixFee}(
+            _debridgeId,
             debridgeGateAddresses[_nativeChain], //_receiver,
             _amount,
             _nativeChain, //_chainIdTo,
@@ -186,7 +198,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
             "", //_signature,
             false, //_useAssetFee,
             0
-            );
+        );
     }
 
     function _swap(
@@ -196,8 +208,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     ) private {
         IERC20 erc20 = IERC20(_fromToken);
         uint256 _amount = erc20.balanceOf(address(this));
-        IUniswapV2Pair uniswapPair =
-            IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
+        IUniswapV2Pair uniswapPair = IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
         erc20.safeTransfer(address(uniswapPair), _amount);
 
         bool toFirst = _toToken < _fromToken;
@@ -225,8 +236,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         amountOut = numerator / denominator;
     }
 
-
-     function toAddress(bytes memory _bytes) internal pure returns (address) {
+    function toAddress(bytes memory _bytes) internal pure returns (address) {
         require(_bytes.length >= 20, "toAddress_outOfBounds");
         address tempAddress;
 
@@ -237,7 +247,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         return tempAddress;
     }
 
-    function getChainId() virtual public view returns (uint256 cid) {
+    function getChainId() public view virtual returns (uint256 cid) {
         assembly {
             cid := chainid()
         }

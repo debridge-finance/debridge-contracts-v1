@@ -7,7 +7,6 @@ import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
-
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
 
@@ -28,8 +27,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyGate {
-        require(msg.sender== debridgeAddress, "onlyGate: bad role");
+    modifier onlyGate() {
+        require(msg.sender == debridgeAddress, "onlyGate: bad role");
         _;
     }
 
@@ -78,26 +77,29 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         // stack variable to aggregate confirmations and write to storage once
         uint8 confirmations = debridgeInfo.confirmations;
 
-        uint signaturesCount = _countSignatures(_signatures);
+        uint256 signaturesCount = _countSignatures(_signatures);
         address[] memory validators = new address[](signaturesCount);
-        for (uint i = 0; i < signaturesCount; i++) {
+        for (uint256 i = 0; i < signaturesCount; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _parseSignature(_signatures, i);
             address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
-            if(getOracleInfo[oracle].isValid) {
+            if (getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
                     require(validators[k] != oracle, "deployAsset: submitted already");
                 }
                 validators[i] = oracle;
                 emit DeployConfirmed(deployId, oracle);
                 confirmations += 1;
-                if(getOracleInfo[oracle].required) {
+                if (getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
             }
         }
 
         require(confirmations >= minConfirmations, "not confirmed");
-        require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
+        require(
+            currentRequiredOraclesCount == requiredOraclesCount,
+            "not confirmed by req oracles"
+        );
 
         debridgeInfo.confirmations = confirmations;
         confirmedDeployInfo[debridgeId] = deployId;
@@ -106,22 +108,25 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @dev Confirms the mint request.
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
-    function submit(bytes32 _submissionId, bytes memory _signatures, uint8 _excessConfirmations)
-        external  override
-        onlyGate
-    {
+    function submit(
+        bytes32 _submissionId,
+        bytes memory _signatures,
+        uint8 _excessConfirmations
+    ) external override onlyGate {
         //Need confirmation to confirm submission
-        uint8 needConfirmations = _excessConfirmations > minConfirmations ? _excessConfirmations : minConfirmations;
+        uint8 needConfirmations = _excessConfirmations > minConfirmations
+            ? _excessConfirmations
+            : minConfirmations;
         // Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
         uint8 confirmations;
-        uint signaturesCount = _countSignatures(_signatures);
+        uint256 signaturesCount = _countSignatures(_signatures);
         address[] memory validators = new address[](signaturesCount);
-        for (uint i = 0; i < signaturesCount; i++) {
+        for (uint256 i = 0; i < signaturesCount; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _parseSignature(_signatures, i);
             address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
-            if(getOracleInfo[oracle].isValid) {
+            if (getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
                     require(validators[k] != oracle, "duplicate signatures");
                 }
@@ -129,43 +134,53 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
                 confirmations += 1;
                 emit Confirmed(_submissionId, oracle);
-                if(getOracleInfo[oracle].required) {
+                if (getOracleInfo[oracle].required) {
                     currentRequiredOraclesCount += 1;
                 }
-                if(confirmations >= needConfirmations
-                    && currentRequiredOraclesCount >= requiredOraclesCount) {
+                if (
+                    confirmations >= needConfirmations &&
+                    currentRequiredOraclesCount >= requiredOraclesCount
+                ) {
                     break;
                 }
             }
         }
 
-        require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
+        require(
+            currentRequiredOraclesCount == requiredOraclesCount,
+            "not confirmed by req oracles"
+        );
 
         if (confirmations >= minConfirmations) {
-            if(currentBlock == uint40(block.number)){
+            if (currentBlock == uint40(block.number)) {
                 submissionsInBlock += 1;
-            }
-            else {
+            } else {
                 currentBlock = uint40(block.number);
                 submissionsInBlock = 1;
             }
             emit SubmissionApproved(_submissionId);
         }
 
-        if(submissionsInBlock > confirmationThreshold) {
-            require(confirmations >= excessConfirmations, "not confirmed" );
+        if (submissionsInBlock > confirmationThreshold) {
+            require(confirmations >= excessConfirmations, "not confirmed");
         }
 
-        require(confirmations >= needConfirmations, "not confirmed" );
+        require(confirmations >= needConfirmations, "not confirmed");
     }
 
     /* ========== deployAsset ========== */
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
-            external override
-            onlyGate
-            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId){
+        external
+        override
+        onlyGate
+        returns (
+            address wrappedAssetAddress,
+            bytes memory nativeAddress,
+            uint256 nativeChainId
+        )
+    {
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         require(deployId != "", "deployAsset: not found deployId");
 
@@ -200,13 +215,15 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         debridgeAddress = _debridgeAddress;
     }
 
-     /* ========== VIEW ========== */
+    /* ========== VIEW ========== */
 
     /// @dev Check is valid signature
     /// @param _submissionId Submission identifier.
     /// @param _signature signature by oracle.
     function isValidSignature(bytes32 _submissionId, bytes memory _signature)
-        external view returns (bool)
+        external
+        view
+        returns (bool)
     {
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
@@ -215,10 +232,16 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== INTERNAL ========== */
 
-    function _parseSignature(bytes memory _signatures, uint _pos)
-             pure internal returns (bytes32 r, bytes32 s, uint8 v)
+    function _parseSignature(bytes memory _signatures, uint256 _pos)
+        internal
+        pure
+        returns (
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        )
     {
-        uint offset = _pos * 65;
+        uint256 offset = _pos * 65;
         assembly {
             r := mload(add(_signatures, add(32, offset)))
             s := mload(add(_signatures, add(64, offset)))
@@ -229,8 +252,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         require(v == 27 || v == 28, "Incorrect v");
     }
 
-    function _countSignatures(bytes memory _signatures) pure internal returns (uint)
-    {
+    function _countSignatures(bytes memory _signatures) internal pure returns (uint256) {
         return _signatures.length % 65 == 0 ? _signatures.length / 65 : 0;
     }
 }
