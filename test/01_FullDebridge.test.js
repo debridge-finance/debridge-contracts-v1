@@ -77,7 +77,7 @@ contract("DeBridgeGate full mode", function () {
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
     await this.debridge.updateAssetFixedFees(
       this.wethDebridgeId,
-      [42],
+      supportedChainIds,
       [fixedNativeFee, fixedNativeFee]
     );
 
@@ -1143,11 +1143,6 @@ contract("DeBridgeGate full mode", function () {
                       from: alice.address,
                     });
                     const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-
-                    console.log("beforeEach tokenAddress mockToken debridgeId " + debridgeId);
-                    const info = await this.debridge.getDebridge(debridgeId);
-                    console.log(`info ${info.chainId} ${info.tokenAddress}`);
-
                     const balance = toBN(await this.mockToken.balanceOf(this.debridge.address));
                     const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
                     const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
