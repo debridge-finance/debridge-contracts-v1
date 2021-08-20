@@ -680,6 +680,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
           amount,
           chainIdTo,
           false,
+          0,
           {
             value: amount,
             from: alice,
@@ -743,6 +744,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
           amount,
           chainIdTo,
           false,
+          0,
           {
             value: supportedChainInfo.fixedNativeFee,
             from: alice,
@@ -785,7 +787,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
         const amount = toBN(toWei("1"));
         const chainIdTo = bscChainId;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, {
+          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
             value: toWei("0.1"),
             from: alice,
           }),
@@ -799,7 +801,7 @@ contract("DeBridgeGate real pipeline mode",  function() {
         const amount = toBN(toWei("1"));
         const chainIdTo = 9999;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, {
+          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
             value: amount,
             from: alice,
           }),
@@ -1145,6 +1147,7 @@ for (let i = 0; i <= 2; i++) {
           deadline,
           signature,
           false,
+          0,
           {
             value: fixedNativeFeeWithDiscount,
           }
@@ -1190,6 +1193,7 @@ for (let i = 0; i <= 2; i++) {
           deadline,
           signature,
           false,
+          0,
           {
             from: alice,
           }
@@ -1415,6 +1419,7 @@ for (let i = 0; i <= 2; i++) {
         amount,
         chainIdTo,
         false,
+        0,
         {
           value: amount,
           from: alice,
@@ -1472,6 +1477,7 @@ for (let i = 0; i <= 2; i++) {
         amount,
         chainIdTo,
         false,
+        0,
         {
           value: supportedChainInfo.fixedNativeFee,
           from: alice,
@@ -1621,6 +1627,7 @@ for (let i = 0; i <= 2; i++) {
         deadline,
         signature,
         false,
+        0,
         {
           value: fixedNativeFeeWithDiscount,
         }

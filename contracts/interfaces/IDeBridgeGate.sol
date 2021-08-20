@@ -55,7 +55,8 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable;
 
     /// @dev Mints wrapped asset on the current chain.
@@ -84,7 +85,8 @@ interface IDeBridgeGate {
         uint256 _chainIdTo,
         uint256 _deadline,
         bytes memory _signature,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable;
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -118,7 +120,8 @@ interface IDeBridgeGate {
         bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable;
 
     /// @dev Mints wrapped asset on the current chain.
@@ -159,7 +162,8 @@ interface IDeBridgeGate {
         bytes memory _data,
         uint256 _deadline,
         bytes memory _signature,
-        bool _useAssetFee
+        bool _useAssetFee,
+        uint32 _referralCode
     ) external payable;
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -209,7 +213,8 @@ interface IDeBridgeGate {
         uint256 amount,
         bytes receiver,
         uint256 nonce,
-        uint256 chainIdTo
+        uint256 chainIdTo,
+        uint32 referralCode
     ); // emited once the native tokens are locked to be sent to the other chain
     event AutoSent(
         bytes32 submissionId,
@@ -220,7 +225,8 @@ interface IDeBridgeGate {
         uint256 chainIdTo,
         uint256 claimFee,
         bytes fallbackAddress,
-        bytes data
+        bytes data,
+        uint32 referralCode
     ); // emited once the native tokens are locked to be sent to the other chain
     event Minted(
         bytes32 submissionId,
@@ -243,7 +249,8 @@ interface IDeBridgeGate {
         uint256 amount,
         bytes receiver,
         uint256 nonce,
-        uint256 chainIdTo
+        uint256 chainIdTo,
+        uint32 referralCode
     ); // emited once the wrapped tokens are sent to the contract
     event AutoBurnt(
         bytes32 submissionId,
@@ -254,7 +261,8 @@ interface IDeBridgeGate {
         uint256 chainIdTo,
         uint256 claimFee,
         bytes fallbackAddress,
-        bytes data
+        bytes data,
+        uint32 referralCode
     ); // emited once the wrapped tokens are sent to the contract
     event Claimed(
         bytes32 submissionId,
