@@ -3,10 +3,10 @@ pragma solidity ^0.8.2;
 
 interface IStrategy {
     function deposit(address token, uint256 amount) external;
+
     function withdraw(address token, uint256 amount) external;
+
     function withdrawAll(address token) external;
-    function updateReserves(address account, address token) 
-        external 
-        view 
-        returns(uint256);
+
+    function updateReserves(address account, address token) external view returns (uint256);
 }

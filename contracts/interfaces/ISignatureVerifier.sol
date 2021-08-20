@@ -4,7 +4,6 @@ pragma solidity ^0.8.2;
 interface ISignatureVerifier {
     /* ========== STRUCTS ========== */
 
-
     struct DebridgeDeployInfo {
         uint256 chainId; //native chainId
         bytes nativeAddress; //native token address
@@ -21,8 +20,11 @@ interface ISignatureVerifier {
 
     /* ========== FUNCTIONS ========== */
 
-    function submit(bytes32 _submissionId, bytes memory _signatures, uint8 _excessConfirmations)
-        external;
+    function submit(
+        bytes32 _submissionId,
+        bytes memory _signatures,
+        uint8 _excessConfirmations
+    ) external;
 
     function getWrappedAssetAddress(bytes32 _debridgeId)
         external
@@ -31,5 +33,9 @@ interface ISignatureVerifier {
 
     function deployAsset(bytes32 _debridgeId)
         external
-        returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId);
+        returns (
+            address wrappedAssetAddress,
+            bytes memory nativeAddress,
+            uint256 nativeChainId
+        );
 }

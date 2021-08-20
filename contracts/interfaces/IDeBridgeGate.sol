@@ -2,7 +2,6 @@
 pragma solidity ^0.8.2;
 
 interface IDeBridgeGate {
-
     /* ========== STRUCTS ========== */
 
     struct TokenInfo {
@@ -190,20 +189,17 @@ interface IDeBridgeGate {
         bytes memory _data
     ) external;
 
-    function getDefiAvaliableReserves(address _tokenAddress)
-        external view returns (uint256);
+    function getDefiAvaliableReserves(address _tokenAddress) external view returns (uint256);
 
     /// @dev Request the assets to be used in defi protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to request.
-    function requestReserves(address _tokenAddress, uint256 _amount)
-        external;
+    function requestReserves(address _tokenAddress, uint256 _amount) external;
 
     /// @dev Return the assets that were used in defi protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to claim.
-    function returnReserves(address _tokenAddress, uint256 _amount)
-        external;
+    function returnReserves(address _tokenAddress, uint256 _amount) external;
 
     /* ========== EVENTS ========== */
 
@@ -228,12 +224,7 @@ interface IDeBridgeGate {
         bytes data,
         uint32 referralCode
     ); // emited once the native tokens are locked to be sent to the other chain
-    event Minted(
-        bytes32 submissionId,
-        uint256 amount,
-        address receiver,
-        bytes32 debridgeId
-    ); // emited once the wrapped tokens are minted on the current chain
+    event Minted(bytes32 submissionId, uint256 amount, address receiver, bytes32 debridgeId); // emited once the wrapped tokens are minted on the current chain
     event AutoMinted(
         bytes32 submissionId,
         uint256 amount,
@@ -264,12 +255,7 @@ interface IDeBridgeGate {
         bytes data,
         uint32 referralCode
     ); // emited once the wrapped tokens are sent to the contract
-    event Claimed(
-        bytes32 submissionId,
-        uint256 amount,
-        address receiver,
-        bytes32 debridgeId
-    ); // emited once the tokens are withdrawn on native chain
+    event Claimed(bytes32 submissionId, uint256 amount, address receiver, bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
     event AutoClaimed(
         bytes32 submissionId,
         uint256 amount,
@@ -286,10 +272,7 @@ interface IDeBridgeGate {
         uint256 maxAmount,
         uint16 minReservesBps
     ); // emited when new asset is supported
-    event ChainSupportUpdated(
-        uint256 chainId,
-        bool _isSupported
-    ); // Emits when the asset is allowed/disallowed to be transferred to the chain.
+    event ChainSupportUpdated(uint256 chainId, bool _isSupported); // Emits when the asset is allowed/disallowed to be transferred to the chain.
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
     event CallProxyUpdated(address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(bytes32 submissionId, bool success); // emited when the new call proxy set
@@ -297,7 +280,13 @@ interface IDeBridgeGate {
     event Blocked(bytes32 submissionId); //Block submission
     event Unblocked(bytes32 submissionId); //UnBlock submission
 
-    event Flash(address sender, address tokenAddress,  address receiver, uint256 amount, uint256 paid);
+    event Flash(
+        address sender,
+        address tokenAddress,
+        address receiver,
+        uint256 amount,
+        uint256 paid
+    );
 
     event ReceivedTransferFee(bytes32 debridgeId, uint256 amount);
 }

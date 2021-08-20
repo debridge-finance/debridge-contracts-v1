@@ -4,12 +4,11 @@ pragma solidity ^0.8.2;
 import "../transfers/DeBridgeGate.sol";
 
 contract MockDeBridgeGateForDefiController is DeBridgeGate {
-
     function init() external {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function sendETH() payable external {}
+    function sendETH() external payable {}
 
     function addDebridge(
         address tokenAddress,
@@ -35,7 +34,7 @@ contract MockDeBridgeGateForDefiController is DeBridgeGate {
     }
 
     // override chain id
-    function getChainId() override public pure returns (uint256 cid) {
+    function getChainId() public pure override returns (uint256 cid) {
         return 1;
     }
 }

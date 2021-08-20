@@ -2,7 +2,6 @@
 pragma solidity ^0.8.2;
 
 interface IAggregatorBase {
-
     /* ========== STRUCTS ========== */
 
     struct OracleInfo {
@@ -12,7 +11,6 @@ interface IAggregatorBase {
         address admin; // current oracle admin
     }
 
-
     /* ========== EVENTS ========== */
 
     event AddOracle(address oracle, address admin, bool required); // add oracle by admin
@@ -21,5 +19,4 @@ interface IAggregatorBase {
     event UpdateOracleAdminByOwner(address oracle, address admin); // update oracle by admin
     event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
     event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
-
 }

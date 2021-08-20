@@ -4,7 +4,6 @@ pragma solidity ^0.8.2;
 import "../transfers/DeBridgeGate.sol";
 
 contract MockDeBridgeGate is DeBridgeGate {
-
     uint256 public chainId;
 
     /* ========== CONSTRUCTOR  ========== */
@@ -38,9 +37,13 @@ contract MockDeBridgeGate is DeBridgeGate {
         // _defiController,
         // _treasury);
 
-
         chainId = overrideChainId;
-        _addAsset(getDebridgeId(chainId, address(_weth)), address(_weth), abi.encodePacked(address(_weth)), chainId);
+        _addAsset(
+            getDebridgeId(chainId, address(_weth)),
+            address(_weth),
+            abi.encodePacked(address(_weth)),
+            chainId
+        );
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
@@ -61,7 +64,7 @@ contract MockDeBridgeGate is DeBridgeGate {
     }
 
     // return overrided chain id
-    function getChainId() override public view returns (uint256 cid) {
+    function getChainId() public view override returns (uint256 cid) {
         return chainId;
     }
 }

@@ -12,10 +12,7 @@ import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IStrategy.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract DefiController is Initializable,
-                           AccessControlUpgradeable,
-                           PausableUpgradeable {
-
+contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using SafeERC20 for IERC20;
 
     struct Strategy {
@@ -29,7 +26,6 @@ contract DefiController is Initializable,
         // uint256 totalShares;
         // uint256 totalReserves;
     }
-
 
     /* ========== STATE VARIABLES ========== */
 
@@ -53,38 +49,31 @@ contract DefiController is Initializable,
         address strategyToken
     );
 
-    event UpdateStrategy(
-        address strategy,
-        bool isEnabled,
-        uint16 maxReservesBps
-    );
+    event UpdateStrategy(address strategy, bool isEnabled, uint16 maxReservesBps);
 
-    event DepositToStrategy(
-        address strategy,
-        uint256 amount
-    );
+    event DepositToStrategy(address strategy, uint256 amount);
 
-    event WithdrawFromStrategy(
-        address strategy,
-        uint256 amount
-    );
+    event WithdrawFromStrategy(address strategy, uint256 amount);
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyWorker {
+    modifier onlyWorker() {
         require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
         _;
     }
 
-    modifier onlyAdmin {
+    modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize()//IDeBridgeGate _deBridgeGate)
-        public initializer {
+    function initialize()
+        public
+        //IDeBridgeGate _deBridgeGate)
+        initializer
+    {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         // deBridgeGate = _deBridgeGate;
     }
@@ -97,8 +86,12 @@ contract DefiController is Initializable,
 
         // Check that strategy will use only allowed % of all avaliable for DefiController reserves
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
-        uint256 maxStrategyReserves = avaliableReserves * strategy.maxReservesBps / BPS_DENOMINATOR;
-        uint256 currentReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 maxStrategyReserves = (avaliableReserves * strategy.maxReservesBps) /
+            BPS_DENOMINATOR;
+        uint256 currentReserves = strategyController.updateReserves(
+            address(this),
+            strategy.strategyToken
+        );
         require(currentReserves + _amount < maxStrategyReserves, "");
 
         // Get tokens from Gate
@@ -149,7 +142,11 @@ contract DefiController is Initializable,
     // where deltaAmount - delta between current strategy state and optimal state
     // directionToTransfer - true if deposit is needed, false if withdraw is needed
     // if strategy in optimal state it returns [0, false]
-    function isStrategyUnbalanced(address _strategy) public view returns (uint256 _deltaAmount, bool _toDeposit) {
+    function isStrategyUnbalanced(address _strategy)
+        public
+        view
+        returns (uint256 _deltaAmount, bool _toDeposit)
+    {
         Strategy memory strategy = strategies[_strategy];
         require(strategy.exists, "strategy doesn't exist");
 
@@ -157,7 +154,10 @@ contract DefiController is Initializable,
 
         // avaliableReserves = 100%
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
-        uint256 currentReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 currentReserves = strategyController.updateReserves(
+            address(this),
+            strategy.strategyToken
+        );
 
         // if strategy disabled
         // or no reserves avaliable for stake token
@@ -168,31 +168,26 @@ contract DefiController is Initializable,
         }
 
         // current strategy reserves in bps
-        uint256 currentReservesBps = currentReserves * BPS_DENOMINATOR / avaliableReserves;
+        uint256 currentReservesBps = (currentReserves * BPS_DENOMINATOR) / avaliableReserves;
         // calculate optimal value of strategy reserves in bps:
         uint256 optimalReservesBps = strategy.maxReservesBps - STRATEGY_RESERVES_DELTA_BPS / 2;
 
         if (currentReservesBps > strategy.maxReservesBps) {
             // strategy reserves are more than allowed value, withdraw some to keep optimal balance
             return (
-                (currentReservesBps - optimalReservesBps)
-                    * avaliableReserves
-                    / BPS_DENOMINATOR,
+                ((currentReservesBps - optimalReservesBps) * avaliableReserves) / BPS_DENOMINATOR,
                 false
             );
         } else if (currentReservesBps + STRATEGY_RESERVES_DELTA_BPS < strategy.maxReservesBps) {
             // strategy reserves are less than optimal value, deposit some to keep optimal balance
             return (
-                (optimalReservesBps - currentReservesBps)
-                    * avaliableReserves
-                    / BPS_DENOMINATOR,
+                ((optimalReservesBps - currentReservesBps) * avaliableReserves) / BPS_DENOMINATOR,
                 true
             );
         }
     }
 
     /* ========== ADMIN ========== */
-
 
     /// @dev add new strategy
     function addStrategy(
@@ -202,15 +197,20 @@ contract DefiController is Initializable,
         address _stakeToken,
         address _strategyToken
     ) external onlyAdmin {
-
-        require(_maxReservesBps == 0 ||
-            (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR >= _maxReservesBps),
-            "invalid maxReservesBps");
+        require(
+            _maxReservesBps == 0 ||
+                (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS &&
+                    BPS_DENOMINATOR >= _maxReservesBps),
+            "invalid maxReservesBps"
+        );
         Strategy storage strategy = strategies[_strategy];
         require(!strategy.exists, "strategy already exists");
 
         if (_isEnabled) {
-            require(tokenTotalReservesBps[_stakeToken] + _maxReservesBps <= BPS_DENOMINATOR, "invalid total maxReservesBps");
+            require(
+                tokenTotalReservesBps[_stakeToken] + _maxReservesBps <= BPS_DENOMINATOR,
+                "invalid total maxReservesBps"
+            );
             tokenTotalReservesBps[_stakeToken] += _maxReservesBps;
         }
 
@@ -220,12 +220,7 @@ contract DefiController is Initializable,
         strategy.stakeToken = _stakeToken;
         strategy.strategyToken = _strategyToken;
 
-        emit AddStrategy(
-            _strategy,
-            _isEnabled,
-            _maxReservesBps,
-            _stakeToken,
-            _strategyToken);
+        emit AddStrategy(_strategy, _isEnabled, _maxReservesBps, _stakeToken, _strategyToken);
     }
 
     function updateStrategy(
@@ -240,17 +235,17 @@ contract DefiController is Initializable,
             tokenTotalReservesBps[strategy.stakeToken] -= strategy.maxReservesBps;
         }
         if (_isEnabled) {
-            require(tokenTotalReservesBps[strategy.stakeToken] + _maxReservesBps <= BPS_DENOMINATOR, "invalid total maxReservesBps");
+            require(
+                tokenTotalReservesBps[strategy.stakeToken] + _maxReservesBps <= BPS_DENOMINATOR,
+                "invalid total maxReservesBps"
+            );
             tokenTotalReservesBps[strategy.stakeToken] += _maxReservesBps;
         }
 
         strategy.isEnabled = _isEnabled;
         strategy.maxReservesBps = _maxReservesBps;
 
-        emit UpdateStrategy(
-            _strategy,
-            _isEnabled,
-            _maxReservesBps);
+        emit UpdateStrategy(_strategy, _isEnabled, _maxReservesBps);
     }
 
     function setDeBridgeGate(IDeBridgeGate _deBridgeGate) external onlyAdmin {
@@ -274,5 +269,4 @@ contract DefiController is Initializable,
     function unpause() external onlyAdmin whenPaused {
         _unpause();
     }
-
 }

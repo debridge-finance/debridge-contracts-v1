@@ -9,5 +9,5 @@ pragma solidity ^0.8.2;
  * @author Aave
  **/
 interface ILendingPoolAddressesProvider {
-  function getLendingPool() external view returns (address);
+    function getLendingPool() external view returns (address);
 }
