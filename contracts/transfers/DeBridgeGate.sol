@@ -817,6 +817,7 @@ contract DeBridgeGate is Initializable,
      function _checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId,
                                   uint256 _amount, bytes memory _signatures)
         internal {
+        require(!isBlockedSubmission[_submissionId], "blocked submission");
         if (_signatures.length > 0) {
             // inside check is confirmed
             ISignatureVerifier(signatureVerifier).submit(_submissionId, _signatures,
@@ -926,6 +927,7 @@ contract DeBridgeGate is Initializable,
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
+        require(debridge.exist, "debridge not exist");
         require(debridge.chainId != getChainId(), "wrong chain");
         require(chainSupportInfo.isSupported, "wrong targed chain");
         require(_amount <= debridge.maxAmount, "amount too high");
@@ -1081,7 +1083,6 @@ contract DeBridgeGate is Initializable,
     /// @param _submissionId Submission identifier.
     function _markAsUsed(bytes32 _submissionId) internal {
         require(!isSubmissionUsed[_submissionId], "submission already used");
-        require(!isBlockedSubmission[_submissionId], "blocked submission");
         isSubmissionUsed[_submissionId] = true;
     }
 
