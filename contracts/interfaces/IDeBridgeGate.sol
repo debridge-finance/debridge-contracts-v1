@@ -13,14 +13,17 @@ interface IDeBridgeGate {
     struct DebridgeInfo {
         uint256 chainId; // native chain id
         uint256 maxAmount; // maximum amount to transfer
-        uint256 collectedFees; // total collected fees
-        uint256 donatedFees; // total donated fees
-        uint256 withdrawnFees; // fees that already withdrawn
         uint256 balance; // total locked assets
         uint256 lockedInStrategies; // total locked assets in strategy (AAVE, Compound, etc)
         address tokenAddress; // asset address on the current chain
         uint16 minReservesBps; // minimal hot reserves in basis points (1/10000)
         bool exist;
+    }
+
+    struct DebridgeFeeInfo {
+        uint256 collectedFees; // total collected fees
+        uint256 donatedFees; // total donated fees
+        uint256 withdrawnFees; // fees that already withdrawn
         mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
     }
 
@@ -196,7 +199,7 @@ interface IDeBridgeGate {
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount)
-        external payable;
+        external;
 
     /* ========== EVENTS ========== */
 

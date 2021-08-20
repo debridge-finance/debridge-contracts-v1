@@ -26,11 +26,11 @@ contract MockDeBridgeGateForDefiController is DeBridgeGate {
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         debridge.tokenAddress = tokenAddress;
         debridge.maxAmount = maxAmount;
-        debridge.collectedFees = collectedFees;
+        getDebridgeFeeInfo[debridgeId].collectedFees = collectedFees;
         debridge.balance = balance;
         debridge.lockedInStrategies = lockedInStrategies;
         debridge.minReservesBps = minReservesBps;
-        debridge.getChainFee[chainId] = chainFee;
+        getDebridgeFeeInfo[debridgeId].getChainFee[chainId] = chainFee;
         debridge.exist = exist;
     }
 

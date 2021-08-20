@@ -40,7 +40,7 @@ contract MockDeBridgeGate is DeBridgeGate {
 
 
         chainId = overrideChainId;
-        _addAsset(getDebridgeId(chainId, address(0)), address(0), abi.encodePacked(address(0)), chainId);
+        _addAsset(getDebridgeId(chainId, address(_weth)), address(_weth), abi.encodePacked(address(_weth)), chainId);
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
