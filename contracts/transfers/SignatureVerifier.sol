@@ -26,10 +26,19 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
 
+    /* ========== ERRORS ========== */
+
+    error NotConfirmedByRequiredOracles();
+    error NotConfirmedThreshold();
+
+    error DuplicateSignatures();
+    error SignatureInvalidV();
+
     /* ========== MODIFIERS ========== */
 
-    modifier onlyGate {
-        require(msg.sender== debridgeAddress, "onlyGate: bad role");
+    modifier onlyDeBridgeGate {
+        if(msg.sender != debridgeAddress) revert DeBridgeGateBadRole();
+        // require(msg.sender== debridgeAddress, "onlyGate: bad role");
         _;
     }
 
@@ -63,7 +72,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         bytes memory _signatures
     ) external {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
-        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
+        if(getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
+        // require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
 
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
@@ -85,7 +95,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
-                    require(validators[k] != oracle, "deployAsset: submitted already");
+                    if(validators[k] == oracle) revert DuplicateSignatures();
+                    // require(validators[k] != oracle, "deployAsset: submitted already");
                 }
                 validators[i] = oracle;
                 emit DeployConfirmed(deployId, oracle);
@@ -96,8 +107,10 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             }
         }
 
-        require(confirmations >= minConfirmations, "not confirmed");
-        require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
+        if(confirmations < minConfirmations) revert DeployNotConfirmed();
+        //require(confirmations >= minConfirmations, "deploy not confirmed");
+        if(currentRequiredOraclesCount != requiredOraclesCount) revert NotConfirmedByRequiredOracles();
+        // require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
 
         debridgeInfo.confirmations = confirmations;
         confirmedDeployInfo[debridgeId] = deployId;
@@ -108,7 +121,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _signatures Array of signatures by oracles.
     function submit(bytes32 _submissionId, bytes memory _signatures, uint8 _excessConfirmations)
         external  override
-        onlyGate
+        onlyDeBridgeGate
     {
         //Need confirmation to confirm submission
         uint8 needConfirmations = _excessConfirmations > minConfirmations ? _excessConfirmations : minConfirmations;
@@ -123,7 +136,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
             if(getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
-                    require(validators[k] != oracle, "duplicate signatures");
+                    if(validators[k] == oracle) revert DuplicateSignatures();
+                    // require(validators[k] != oracle, "duplicate signatures");
                 }
                 validators[i] = oracle;
 
@@ -139,7 +153,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             }
         }
 
-        require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
+        if(currentRequiredOraclesCount != requiredOraclesCount) revert NotConfirmedByRequiredOracles();
+        // require(currentRequiredOraclesCount == requiredOraclesCount, "not confirmed by req oracles");
 
         if (confirmations >= minConfirmations) {
             if(currentBlock == uint40(block.number)){
@@ -153,10 +168,12 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         }
 
         if(submissionsInBlock > confirmationThreshold) {
-            require(confirmations >= excessConfirmations, "not confirmed" );
+            if(confirmations < excessConfirmations) revert NotConfirmedThreshold();
+            // require(confirmations >= excessConfirmations, "not confirmed" );
         }
 
-        require(confirmations >= needConfirmations, "not confirmed" );
+        if(confirmations < needConfirmations) revert SubmissionNotConfirmed();
+        // require(confirmations >= needConfirmations, "not confirmed" );
     }
 
     /* ========== deployAsset ========== */
@@ -164,13 +181,17 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
             external override
-            onlyGate
+            onlyDeBridgeGate
             returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId){
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        require(deployId != "", "deployAsset: not found deployId");
+        //TODO: check deployId == ""
+        if(deployId == "") revert DeployNotFound();
+        // require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
+
+        if(getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
+        // require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
 
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
@@ -226,7 +247,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         }
 
         if (v < 27) v += 27;
-        require(v == 27 || v == 28, "Incorrect v");
+        if( !(v == 27 || v == 28)) revert SignatureInvalidV();
+        // require(v == 27 || v == 28, "Incorrect v");
     }
 
     function _countSignatures(bytes memory _signatures) pure internal returns (uint)

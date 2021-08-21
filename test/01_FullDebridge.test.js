@@ -226,30 +226,30 @@ contract("DeBridgeGate full mode", function () {
     it("should reject setting aggregator if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bob).setAggregator(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bob).setFeeProxy(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bob).setDefiController(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     // it("should reject setting weth if called by the non-admin", async function () {
-    //   await expectRevert(this.debridge.connect(bob).setWeth(ZERO_ADDRESS), "onlyAdmin: bad role");
+    //   await expectRevert(this.debridge.connect(bob).setWeth(ZERO_ADDRESS), "AdminBadRole()");
     // });
 
     it("should reject setting flash fee if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).updateFlashFee(300), "bad role");
+      await expectRevert(this.debridge.connect(bob).updateFlashFee(300), "AdminBadRole()");
     });
 
     it("should reject updating Chain Support if called by the non-admin", async function () {
@@ -261,7 +261,7 @@ contract("DeBridgeGate full mode", function () {
 
       await expectRevert(
         this.debridge.connect(bob).updateChainSupport([42], [newChainInfo]),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
@@ -272,7 +272,7 @@ contract("DeBridgeGate full mode", function () {
 
       await expectRevert(
         this.debridge.connect(bob).updateAssetFixedFees(debridgeId, [chainId], [newChainFee]),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
@@ -282,40 +282,40 @@ contract("DeBridgeGate full mode", function () {
 
       await expectRevert(
         this.debridge.connect(bob).setChainSupport(chainId, support),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting CallProxy if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bob).setCallProxy(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
-    it("should reject stopping (pausing) all transfers if called buy the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).pause(), "bad role");
+    it("should reject stopping (pausing) all transfers if called buy the non-gov-monitoring", async function () {
+      await expectRevert(this.debridge.connect(bob).pause(), "GovMonitoringBadRole");
     });
 
     it("should reject allowing (uppausing) all transfers if called buy the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).unpause(), "bad role");
+      await expectRevert(this.debridge.connect(bob).unpause(), "AdminBadRole");
     });
 
     it("should reject setting amount flashFeeBps if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).updateFlashFee(20), "bad role");
+      await expectRevert(this.debridge.connect(bob).updateFlashFee(20), "AdminBadRole");
     });
 
     it("should reject setting amount collectRewardBps if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bob).updateCollectRewardBps(20),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting address treasury if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bob).updateTreasury(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
   });
@@ -406,7 +406,7 @@ contract("DeBridgeGate full mode", function () {
       it("flash reverts if not profitable", async function () {
         await expect(
           flash.flash(this.debridge.address, this.mockToken.address, alice.address, 1000, true)
-        ).to.be.revertedWith("Not paid fee");
+        ).to.be.revertedWith("FeeNotPaid()");
       });
     });
 
@@ -622,7 +622,7 @@ contract("DeBridgeGate full mode", function () {
                   this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
                     from: alice.address,
                   }),
-                  "not confirmed"
+                  "SubmissionNotConfirmed()"
                 );
               });
               describe("confirm by required oracle", function () {
@@ -648,7 +648,7 @@ contract("DeBridgeGate full mode", function () {
                     this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
                       from: alice.address,
                     }),
-                    "amount not confirmed"
+                    "SubmissionAmountNotConfirmed()"
                   );
                 });
                 describe("update reduce ExcessConfirmations", function () {
@@ -673,7 +673,7 @@ contract("DeBridgeGate full mode", function () {
                       this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
                         from: alice.address,
                       }),
-                      "blocked submission"
+                      "SubmissionBlocked()"
                     );
                   });
 
@@ -692,7 +692,7 @@ contract("DeBridgeGate full mode", function () {
                       this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
                         from: alice.address,
                       }),
-                      "not confirmed"
+                      "SubmissionNotConfirmed()"
                     );
                   });
                   describe("should mint when the submission is approved", function () {
@@ -724,7 +724,7 @@ contract("DeBridgeGate full mode", function () {
                         this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, [], {
                           from: alice.address,
                         }),
-                        "submission already used"
+                        "SubmissionUsed()"
                       );
                     });
                     for (let i = 0; i <= 2; i++) {
@@ -908,7 +908,7 @@ contract("DeBridgeGate full mode", function () {
                                 from: alice.address,
                               }
                             ),
-                            "wrong chain"
+                            "WrongChain()"
                           );
                         });
                       });
@@ -1004,7 +1004,7 @@ contract("DeBridgeGate full mode", function () {
                   this.debridge.claim(this.wethDebridgeId, chainIdFrom, receiver, amount, nonce, [], {
                     from: alice.address,
                   }),
-                  "not confirmed"
+                  "SubmissionNotConfirmed()"
                 );
               });
               describe("after confirmation by required oracle", function () {
@@ -1041,7 +1041,7 @@ contract("DeBridgeGate full mode", function () {
                     this.debridge.claim(this.wethDebridgeId, chainIdFrom, receiver, amount, nonce, [], {
                       from: alice.address,
                     }),
-                    "blocked submission"
+                    "SubmissionBlocked()"
                   );
                 });
 
@@ -1230,7 +1230,7 @@ contract("DeBridgeGate full mode", function () {
                       this.debridge.claim(this.wethDebridgeId, chainIdFrom, receiver, amount, nonce, [], {
                         from: alice.address,
                       }),
-                      "not confirmed"
+                      "SubmissionNotConfirmed()"
                     );
                   });
 
@@ -1248,7 +1248,7 @@ contract("DeBridgeGate full mode", function () {
                           from: alice.address,
                         }
                       ),
-                      "not confirmed"
+                      "SubmissionNotConfirmed()"
                     );
                   });
 
@@ -1288,7 +1288,7 @@ contract("DeBridgeGate full mode", function () {
                         this.debridge.claim(this.wethDebridgeId, chainIdFrom, receiver, amount, nonce, [], {
                           from: alice.address,
                         }),
-                        "submission already used"
+                        "SubmissionUsed()"
                       );
                     });
                   });
@@ -1453,7 +1453,7 @@ contract("DeBridgeGate full mode", function () {
                       value: amount,
                       from: alice.address,
                     }),
-                    "amount too high"
+                    "AmountTooHigh()"
                   );
                 });
 
@@ -1469,7 +1469,7 @@ contract("DeBridgeGate full mode", function () {
                       value: toWei("0.1"),
                       from: alice.address,
                     }),
-                    "send: amount mismatch"
+                    "AmountMismatch()"
                   );
                 });
 
@@ -1485,7 +1485,7 @@ contract("DeBridgeGate full mode", function () {
                       value: amount,
                       from: alice.address,
                     }),
-                    "wrong targed chain"
+                    "WrongTargedChain()"
                   );
                 });
 
