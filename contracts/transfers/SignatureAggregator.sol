@@ -47,7 +47,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
-        if(msg.sender != oracle) revert SenderSignatureMismatch();
+        if (msg.sender != oracle) revert SenderSignatureMismatch();
         // require(msg.sender == oracle, "onlyOracle: bad role");
 
         debridgeInfo.confirmations += 1;
@@ -68,8 +68,12 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @dev Confirms few transfer requests.
     /// @param _submissionIds Submission identifiers.
     /// @param _signatures Oracles signature.
-    function submitMany(bytes32[] memory _submissionIds, bytes[] memory _signatures) external override onlyOracle {
-        if(_submissionIds.length != _signatures.length) revert IncorrectParams();
+    function submitMany(bytes32[] memory _submissionIds, bytes[] memory _signatures)
+        external
+        override
+        onlyOracle
+    {
+        if (_submissionIds.length != _signatures.length) revert IncorrectParams();
         // require(_submissionIds.length == _signatures.length, "arguments count mismatch");
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i], _signatures[i]);
@@ -87,15 +91,13 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @param _submissionId Submission identifier.
     /// @param _signature Oracle's signature.
     function _submit(bytes32 _submissionId, bytes memory _signature) internal {
-        SubmissionInfo storage submissionInfo = getSubmissionInfo[
-            _submissionId
-        ];
+        SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         if (submissionInfo.hasVerified[msg.sender]) revert SubmittedAlready();
         // require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
 
-        if(msg.sender != oracle) revert SenderSignatureMismatch();
+        if (msg.sender != oracle) revert SenderSignatureMismatch();
         // require(msg.sender == oracle, "onlyOracle: bad role");
         submissionInfo.confirmations += 1;
         submissionInfo.signatures.push(_signature);

@@ -21,10 +21,10 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
 
-     /* ========== MODIFIERS ========== */
+    /* ========== MODIFIERS ========== */
 
-    modifier onlyDeBridgeGate {
-        if(msg.sender != debridgeAddress) revert DeBridgeGateBadRole();
+    modifier onlyDeBridgeGate() {
+        if (msg.sender != debridgeAddress) revert DeBridgeGateBadRole();
         _;
     }
 
@@ -67,7 +67,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         uint8 _decimals
     ) external onlyOracle {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
-         if(getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
+        if (getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
         // require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
 
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
@@ -136,17 +136,22 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
-            external override
-            onlyDeBridgeGate
-            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId) {
-
+        external
+        override
+        onlyDeBridgeGate
+        returns (
+            address wrappedAssetAddress,
+            bytes memory nativeAddress,
+            uint256 nativeChainId
+        )
+    {
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         //TODO: check deployId == ""
-        if(deployId == "") revert DeployNotFound();
+        if (deployId == "") revert DeployNotFound();
         // require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        if(getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
+        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
         // require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
 
         //Can be removed, we already checked in confirmedDeployInfo

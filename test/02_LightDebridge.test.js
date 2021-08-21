@@ -310,9 +310,17 @@ contract("DeBridgeGate light mode", function () {
       }
 
       await expectRevert(
-          this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
-          from: alice,
-        }),
+        this.signatureVerifier.confirmNewAsset(
+          tokenAddress,
+          chainId,
+          name,
+          symbol,
+          decimals,
+          signatures,
+          {
+            from: alice,
+          }
+        ),
         "NotConfirmedByRequiredOracles()"
       );
     });
@@ -338,9 +346,17 @@ contract("DeBridgeGate light mode", function () {
       }
 
       await expectRevert(
-          this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
-          from: alice,
-        }),
+        this.signatureVerifier.confirmNewAsset(
+          tokenAddress,
+          chainId,
+          name,
+          symbol,
+          decimals,
+          signatures,
+          {
+            from: alice,
+          }
+        ),
         "DeployNotConfirmed()"
       );
     });
@@ -545,7 +561,7 @@ contract("DeBridgeGate light mode", function () {
           //will call IConfirmationAggregator
           from: alice,
         }),
-         "SubmissionNotConfirmed()"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -624,19 +640,9 @@ contract("DeBridgeGate light mode", function () {
       const deadline = 0;
       const signature = "0x";
       await expectRevert(
-        this.debridge.burn(
-          debridgeId,
-          receiver,
-          amount,
-          42,
-          deadline,
-          signature,
-          false,
-          0,
-          {
-            from: alice,
-          }
-        ),
+        this.debridge.burn(debridgeId, receiver, amount, 42, deadline, signature, false, 0, {
+          from: alice,
+        }),
         "WrongChain()"
       );
     });
@@ -744,17 +750,9 @@ contract("DeBridgeGate light mode", function () {
         currentSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       await expectRevert(
-        this.debridge.claim(
-          debridgeId,
-          chainIdFrom,
-          receiver,
-          amount,
-          nonce,
-          currentSignatures,
-          {
-            from: alice,
-          }
-        ),
+        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, currentSignatures, {
+          from: alice,
+        }),
         "NotConfirmedByRequiredOracles()"
       );
     });
@@ -845,17 +843,9 @@ contract("DeBridgeGate light mode", function () {
 
     it("should reject claiming twice", async function () {
       await expectRevert(
-        this.debridge.claim(
-          debridgeId,
-          chainIdFrom,
-          receiver,
-          amount,
-          nonce,
-          this.ethSignatures,
-          {
-            from: alice,
-          }
-        ),
+        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, this.ethSignatures, {
+          from: alice,
+        }),
         "SubmissionUsed()"
       );
     });

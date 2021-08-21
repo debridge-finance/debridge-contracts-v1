@@ -43,13 +43,13 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyDeBridgeGate {
-        if(msg.sender != address(debridgeGate)) revert DeBridgeGateBadRole();
+    modifier onlyDeBridgeGate() {
+        if (msg.sender != address(debridgeGate)) revert DeBridgeGateBadRole();
         _;
     }
 
-    modifier onlyAdmin {
-        if(!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
+    modifier onlyAdmin() {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
         _;
     }
 
@@ -258,9 +258,8 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
         amountOut = numerator / denominator;
     }
 
-
-     function toAddress(bytes memory _bytes) internal pure returns (address) {
-        if(_bytes.length != 20) revert CantConvertAddress();
+    function toAddress(bytes memory _bytes) internal pure returns (address) {
+        if (_bytes.length != 20) revert CantConvertAddress();
         // require(_bytes.length >= 20, "toAddress_outOfBounds");
         address tempAddress;
 

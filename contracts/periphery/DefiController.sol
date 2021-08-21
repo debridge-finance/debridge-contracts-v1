@@ -55,7 +55,6 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
 
     event WithdrawFromStrategy(address strategy, uint256 amount);
 
-
     /* ========== ERRORS ========== */
 
     error WorkerBadRole();
@@ -69,14 +68,14 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
     error InvalidTotalMaxReservesBps();
     /* ========== MODIFIERS ========== */
 
-    modifier onlyWorker {
-        if(!hasRole(WORKER_ROLE, msg.sender)) revert WorkerBadRole();
+    modifier onlyWorker() {
+        if (!hasRole(WORKER_ROLE, msg.sender)) revert WorkerBadRole();
         // require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
         _;
     }
 
-    modifier onlyAdmin {
-        if(!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
+    modifier onlyAdmin() {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
         // require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
@@ -100,10 +99,14 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
 
         // Check that strategy will use only allowed % of all avaliable for DefiController reserves
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
-        uint256 maxStrategyReserves = avaliableReserves * strategy.maxReservesBps / BPS_DENOMINATOR;
-        uint256 currentReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 maxStrategyReserves = (avaliableReserves * strategy.maxReservesBps) /
+            BPS_DENOMINATOR;
+        uint256 currentReserves = strategyController.updateReserves(
+            address(this),
+            strategy.strategyToken
+        );
 
-        if(currentReserves + _amount >= maxStrategyReserves) revert ExceedMaxStrategyReserves();
+        if (currentReserves + _amount >= maxStrategyReserves) revert ExceedMaxStrategyReserves();
         // require(currentReserves + _amount < maxStrategyReserves, "");
 
         // Get tokens from Gate
@@ -160,7 +163,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         returns (uint256 _deltaAmount, bool _toDeposit)
     {
         Strategy memory strategy = strategies[_strategy];
-        if(!strategy.exists) revert StrategyNotFound();
+        if (!strategy.exists) revert StrategyNotFound();
         // require(strategy.exists, "strategy doesn't exist");
 
         IStrategy strategyController = IStrategy(_strategy);
@@ -210,19 +213,23 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         address _stakeToken,
         address _strategyToken
     ) external onlyAdmin {
-        if(!(_maxReservesBps == 0 ||
-            (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR >= _maxReservesBps))) revert InvalidMaxReservesBps();
+        if (
+            !(_maxReservesBps == 0 ||
+                (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS &&
+                    BPS_DENOMINATOR >= _maxReservesBps))
+        ) revert InvalidMaxReservesBps();
 
         // require(_maxReservesBps == 0 ||
         //     (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS && BPS_DENOMINATOR >= _maxReservesBps),
         //     "invalid maxReservesBps");
 
         Strategy storage strategy = strategies[_strategy];
-        if(strategy.exists) revert StrategyAlreadyExists();
+        if (strategy.exists) revert StrategyAlreadyExists();
         // require(!strategy.exists, "strategy already exists");
 
         if (_isEnabled) {
-            if(tokenTotalReservesBps[_stakeToken] + _maxReservesBps > BPS_DENOMINATOR) revert InvalidTotalMaxReservesBps();
+            if (tokenTotalReservesBps[_stakeToken] + _maxReservesBps > BPS_DENOMINATOR)
+                revert InvalidTotalMaxReservesBps();
             // require(tokenTotalReservesBps[_stakeToken] + _maxReservesBps <= BPS_DENOMINATOR, "invalid total maxReservesBps");
             tokenTotalReservesBps[_stakeToken] += _maxReservesBps;
         }
@@ -242,14 +249,15 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         uint16 _maxReservesBps
     ) external onlyAdmin {
         Strategy storage strategy = strategies[_strategy];
-        if(!strategy.exists) revert StrategyNotFound();
+        if (!strategy.exists) revert StrategyNotFound();
         // require(strategy.exists, "strategy doesn't exist");
 
         if (strategy.isEnabled) {
             tokenTotalReservesBps[strategy.stakeToken] -= strategy.maxReservesBps;
         }
         if (_isEnabled) {
-            if(tokenTotalReservesBps[strategy.stakeToken] + _maxReservesBps > BPS_DENOMINATOR) revert InvalidTotalMaxReservesBps();
+            if (tokenTotalReservesBps[strategy.stakeToken] + _maxReservesBps > BPS_DENOMINATOR)
+                revert InvalidTotalMaxReservesBps();
 
             //require(tokenTotalReservesBps[strategy.stakeToken] + _maxReservesBps <= BPS_DENOMINATOR, "invalid total maxReservesBps");
             tokenTotalReservesBps[strategy.stakeToken] += _maxReservesBps;

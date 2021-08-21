@@ -69,17 +69,13 @@ describe("DefiController", function () {
 
         it("rebalanceStrategy for native token reverts if it's not enabled", async function () {
           await expect(
-            this.defiController
-              .connect(worker)
-              .rebalanceStrategy(this.strategyNativeToken.address)
+            this.defiController.connect(worker).rebalanceStrategy(this.strategyNativeToken.address)
           ).to.be.revertedWith("StrategyNotFound");
         });
 
         it("rebalanceStrategy for stake token reverts if it's not enabled", async function () {
           await expect(
-            this.defiController
-              .connect(worker)
-              .rebalanceStrategy(this.strategyStakeToken.address)
+            this.defiController.connect(worker).rebalanceStrategy(this.strategyStakeToken.address)
           ).to.be.revertedWith("StrategyNotFound");
         });
 
@@ -125,15 +121,9 @@ describe("DefiController", function () {
             await expect(
               this.defiController
                 .connect(other)
-                .addStrategy(
-                  this.strategyNativeToken.address,
-                  true,
-                  0,
-                  ZERO_ADDRESS,
-                  ZERO_ADDRESS,
-                )
+                .addStrategy(this.strategyNativeToken.address, true, 0, ZERO_ADDRESS, ZERO_ADDRESS)
             ).to.be.revertedWith("AdminBadRole()");
-          })
+          });
 
           it("should revert adding strategy if it's already exists", async function () {
             await expect(
@@ -145,7 +135,7 @@ describe("DefiController", function () {
                 ZERO_ADDRESS
               )
             ).to.be.revertedWith("StrategyAlreadyExists");
-          })
+          });
 
           it("should revert adding strategy with invalid maxReservesBps", async function () {
             const token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
@@ -169,7 +159,7 @@ describe("DefiController", function () {
                 ZERO_ADDRESS
               )
             ).to.be.revertedWith("InvalidMaxReservesBps");
-          })
+          });
 
           it("should revert adding strategy with invalid total maxReservesBps", async function () {
             const strategy = await this.MockStrategyFactory.deploy();
@@ -184,7 +174,7 @@ describe("DefiController", function () {
                 ZERO_ADDRESS
               )
             ).to.be.revertedWith("InvalidTotalMaxReservesBps");
-          })
+          });
 
           it("should revert updating strategy with invalid total maxReservesBps", async function () {
             // try to set invalid maxReservesBps for enabled strategy, should revert
@@ -214,7 +204,7 @@ describe("DefiController", function () {
                 invalidNewMaxReservesBps
               )
             ).to.be.revertedWith("InvalidTotalMaxReservesBps");
-          })
+          });
 
           it("check correct values in strategy", async function () {
             const strategyFromContract = await this.defiController.strategies(
@@ -232,7 +222,9 @@ describe("DefiController", function () {
 
           it("only admin can update strategy", async function () {
             await expect(
-              this.defiController.connect(other).updateStrategy(this.strategyNativeToken.address, false, 0)
+              this.defiController
+                .connect(other)
+                .updateStrategy(this.strategyNativeToken.address, false, 0)
             ).to.be.revertedWith("AdminBadRole()");
           });
 
@@ -274,7 +266,7 @@ describe("DefiController", function () {
               await expect(
                 this.defiController
                   .connect(other)
-                  .rebalanceStrategy (this.strategyNativeToken.address)
+                  .rebalanceStrategy(this.strategyNativeToken.address)
               ).to.be.revertedWith("WorkerBadRole()");
             });
 
@@ -757,14 +749,10 @@ describe("DefiController", function () {
 
         it("rebalanceStrategy reverts if called by worker after it's role was revoked", async function () {
           await expect(
-            this.defiController
-              .connect(worker)
-              .rebalanceStrategy(ZERO_ADDRESS)
+            this.defiController.connect(worker).rebalanceStrategy(ZERO_ADDRESS)
           ).to.be.revertedWith("WorkerBadRole()");
           await expect(
-            this.defiController
-              .connect(worker)
-              .rebalanceStrategy(ZERO_ADDRESS)
+            this.defiController.connect(worker).rebalanceStrategy(ZERO_ADDRESS)
           ).to.be.revertedWith("WorkerBadRole()");
         });
       });

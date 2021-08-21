@@ -1191,29 +1191,29 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       });
 
-    it("should reject burning from current chain", async function() {
-      const receiver = bob;
-      const amount = toBN(toWei("1"));
-      const deadline = 0;
-      const signature = "0x";
-      await expectRevert(
-        this.debridgeETH.burn(
-          this.debridgeWethId,
-          receiver,
-          amount,
-          ethChainId,
-          deadline,
-          signature,
-          false,
-          0,
-          {
-            from: alice,
-          }
-        ),
-        "WrongChain()"
-      );
+      it("should reject burning from current chain", async function () {
+        const receiver = bob;
+        const amount = toBN(toWei("1"));
+        const deadline = 0;
+        const signature = "0x";
+        await expectRevert(
+          this.debridgeETH.burn(
+            this.debridgeWethId,
+            receiver,
+            amount,
+            ethChainId,
+            deadline,
+            signature,
+            false,
+            0,
+            {
+              from: alice,
+            }
+          ),
+          "WrongChain()"
+        );
+      });
     });
-  });
   }
 
   context("Test claim method (ETH network)", () => {
@@ -1279,9 +1279,11 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.nativeSubmission.args.receiver,
           this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
-          this.nativeSignatures, {
-          from: alice,
-        }),
+          this.nativeSignatures,
+          {
+            from: alice,
+          }
+        ),
         "SubmissionBlocked()"
       );
     });
@@ -1306,18 +1308,20 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       //console.log("signatures count: " + signaturesWithDublicate.length);
 
-      await expectRevert(this.debridgeETH.claim(
-        debridgeId,
-        bscChainId,
-        receiver,
-        amount,
-        nonce,
-        signaturesWithDublicate,
-        {
-          from: alice,
-        }
-      ),
-      "DuplicateSignatures()");
+      await expectRevert(
+        this.debridgeETH.claim(
+          debridgeId,
+          bscChainId,
+          receiver,
+          amount,
+          nonce,
+          signaturesWithDublicate,
+          {
+            from: alice,
+          }
+        ),
+        "DuplicateSignatures()"
+      );
     });
 
     it("should claim native token when the submission is approved", async function () {
@@ -1385,7 +1389,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       const amount = this.linkSubmission.args.amount;
       const wrongNonce = 999;
       await expectRevert(
-        this.debridgeETH.claim(debridgeId, bscChainId, receiver, amount, wrongNonce, this.linkSignatures, { from: alice, }),
+        this.debridgeETH.claim(
+          debridgeId,
+          bscChainId,
+          receiver,
+          amount,
+          wrongNonce,
+          this.linkSignatures,
+          { from: alice }
+        ),
         "NotConfirmedByRequiredOracles()"
       );
     });
@@ -1397,7 +1409,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       const nonce = this.linkSubmission.args.nonce;
 
       await expectRevert(
-        this.debridgeETH.claim(debridgeId, bscChainId, receiver, amount, nonce, this.linkSignatures, { from: alice, }),
+        this.debridgeETH.claim(
+          debridgeId,
+          bscChainId,
+          receiver,
+          amount,
+          nonce,
+          this.linkSignatures,
+          { from: alice }
+        ),
         "Submission"
       );
     });

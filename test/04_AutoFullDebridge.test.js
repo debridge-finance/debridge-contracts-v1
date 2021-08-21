@@ -221,14 +221,14 @@ contract("DeBridgeGate full with auto", function () {
     //   assert.equal(weth, newWeth);
     // });
 
-    it("should reject setting aggregator if called by the non-admin", async function() {
+    it("should reject setting aggregator if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS),
         "AdminBadRole()"
       );
     });
 
-    it("should reject setting fee proxy if called by the non-admin", async function() {
+    it("should reject setting fee proxy if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
         "AdminBadRole()"
@@ -426,10 +426,12 @@ contract("DeBridgeGate full with auto", function () {
           claimFee,
           data,
           false,
-          0, {
-          value: toWei("0.1"),
-          from: alice,
-        }),
+          0,
+          {
+            value: toWei("0.1"),
+            from: alice,
+          }
+        ),
         "AmountMismatch()"
       );
     });
@@ -450,10 +452,12 @@ contract("DeBridgeGate full with auto", function () {
           claimFee,
           data,
           false,
-          0, {
-          value: amount,
-          from: alice,
-        }),
+          0,
+          {
+            value: amount,
+            from: alice,
+          }
+        ),
         "WrongTargedChain()"
       );
     });
@@ -847,9 +851,11 @@ contract("DeBridgeGate full with auto", function () {
           [],
           reserveAddress,
           claimFee,
-          data, {
-          from: alice,
-        }),
+          data,
+          {
+            from: alice,
+          }
+        ),
         "SubmissionNotConfirmed()"
       );
     });
@@ -885,9 +891,11 @@ contract("DeBridgeGate full with auto", function () {
           [],
           reserveAddress,
           claimFee,
-          data, {
-          from: alice,
-        }),
+          data,
+          {
+            from: alice,
+          }
+        ),
         "SubmissionUsed()"
       );
     });

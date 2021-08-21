@@ -2,12 +2,10 @@
 pragma solidity ^0.8.7;
 
 library SignatureUtil {
-
     /* ========== ERRORS ========== */
 
     error SignatureInvalidLength();
     error SignatureInvalidV();
-
 
     /// @dev Prepares raw msg that was signed by the oracle.
     /// @param _submissionId Submission identifier.
@@ -26,7 +24,7 @@ library SignatureUtil {
             uint8 v
         )
     {
-        if(_signature.length != 65) revert SignatureInvalidLength();
+        if (_signature.length != 65) revert SignatureInvalidLength();
         // require(_signature.length == 65, "splitSignature: invalid length");
 
         assembly {
@@ -38,7 +36,7 @@ library SignatureUtil {
         }
         if (v < 27) v += 27;
 
-        if( !(v == 27 || v == 28)) revert SignatureInvalidV();
+        if (!(v == 27 || v == 28)) revert SignatureInvalidV();
         // require(v == 27 || v == 28, "Incorrect v");
     }
 }
