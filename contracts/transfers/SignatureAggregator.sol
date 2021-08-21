@@ -43,12 +43,10 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
 
         if (debridgeInfo.hasVerified[msg.sender]) revert SubmittedAlready();
-        // require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
 
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
         if (msg.sender != oracle) revert SenderSignatureMismatch();
-        // require(msg.sender == oracle, "onlyOracle: bad role");
 
         debridgeInfo.confirmations += 1;
         debridgeInfo.nativeAddress = _tokenAddress;
@@ -74,7 +72,6 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         onlyOracle
     {
         if (_submissionIds.length != _signatures.length) revert IncorrectParams();
-        // require(_submissionIds.length == _signatures.length, "arguments count mismatch");
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i], _signatures[i]);
         }
@@ -93,12 +90,12 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     function _submit(bytes32 _submissionId, bytes memory _signature) internal {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         if (submissionInfo.hasVerified[msg.sender]) revert SubmittedAlready();
-        // require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
+
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
 
         if (msg.sender != oracle) revert SenderSignatureMismatch();
-        // require(msg.sender == oracle, "onlyOracle: bad role");
+
         submissionInfo.confirmations += 1;
         submissionInfo.signatures.push(_signature);
         submissionInfo.hasVerified[msg.sender] = true;

@@ -25,8 +25,6 @@ library SignatureUtil {
         )
     {
         if (_signature.length != 65) revert SignatureInvalidLength();
-        // require(_signature.length == 65, "splitSignature: invalid length");
-
         assembly {
             r := mload(add(_signature, 32))
             s := mload(add(_signature, 64))
@@ -37,6 +35,5 @@ library SignatureUtil {
         if (v < 27) v += 27;
 
         if (!(v == 27 || v == 28)) revert SignatureInvalidV();
-        // require(v == 27 || v == 28, "Incorrect v");
     }
 }

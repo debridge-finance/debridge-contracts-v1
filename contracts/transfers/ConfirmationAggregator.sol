@@ -68,12 +68,10 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     ) external onlyOracle {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         if (getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
-        // require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
 
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         if (debridgeInfo.hasVerified[msg.sender]) revert SubmittedAlready();
-        // require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
 
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
@@ -104,7 +102,6 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     function _submit(bytes32 _submissionId) internal {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         if (submissionInfo.hasVerified[msg.sender]) revert SubmittedAlready();
-        // require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
 
         submissionInfo.confirmations += 1;
         if (getOracleInfo[msg.sender].required) {
@@ -148,15 +145,12 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         //TODO: check deployId == ""
         if (deployId == "") revert DeployNotFound();
-        // require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
-        // require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
 
         //Can be removed, we already checked in confirmedDeployInfo
         // if(debridgeInfo.confirmations < minConfirmations) revert DeployNotConfirmed();
-        // require(debridgeInfo.confirmations >= minConfirmations, "deployAsset: not confirmed");
 
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;

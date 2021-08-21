@@ -70,13 +70,11 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
 
     modifier onlyWorker() {
         if (!hasRole(WORKER_ROLE, msg.sender)) revert WorkerBadRole();
-        // require(hasRole(WORKER_ROLE, msg.sender), "onlyWorker: bad role");
         _;
     }
 
     modifier onlyAdmin() {
         if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
-        // require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
 
@@ -107,7 +105,6 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         );
 
         if (currentReserves + _amount >= maxStrategyReserves) revert ExceedMaxStrategyReserves();
-        // require(currentReserves + _amount < maxStrategyReserves, "");
 
         // Get tokens from Gate
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
@@ -164,7 +161,6 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
     {
         Strategy memory strategy = strategies[_strategy];
         if (!strategy.exists) revert StrategyNotFound();
-        // require(strategy.exists, "strategy doesn't exist");
 
         IStrategy strategyController = IStrategy(_strategy);
 
@@ -225,7 +221,6 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
 
         Strategy storage strategy = strategies[_strategy];
         if (strategy.exists) revert StrategyAlreadyExists();
-        // require(!strategy.exists, "strategy already exists");
 
         if (_isEnabled) {
             if (tokenTotalReservesBps[_stakeToken] + _maxReservesBps > BPS_DENOMINATOR)

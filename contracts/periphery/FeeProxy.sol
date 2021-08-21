@@ -97,9 +97,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
         if (debridgeGateAddresses[_nativeChain].length == 0) revert EmptyDeBridgeGateAddress();
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
-        // require(debridgeGateAddresses[_nativeChain].length > 0, "no debridge gate addresses");
-        // require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
-
         address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
 
         uint256 amount = IERC20(_tokenAddress).balanceOf(address(this));
@@ -156,8 +153,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
 
         if (debridgeGateAddresses[chainId].length == 0) revert EmptyDeBridgeGateAddress();
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
-        // require(debridgeGateAddresses[chainId].length > 0, "no debridge gate addresses");
-        // require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
 
         address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
 
@@ -204,7 +199,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
     ) private {
         if (treasuryAddresses[_nativeChain].length == 0) revert EmptyTreasuryAddress(_nativeChain);
 
-        // require(treasuryAddresses[_nativeChain].length > 0, "no treasury addresses");
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
         debridgeGate.autoBurn{value: _nativeFixFee}(
             _debridgeId,
@@ -250,8 +244,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
     ) private pure returns (uint256 amountOut) {
         if (amountIn == 0) revert InsuffientAmountIn();
         if (reserveIn == 0 || reserveOut == 0) revert InsuffientLiquidity();
-        // require(amountIn > 0, "insuffient amount");
-        // require(reserveIn > 0 && reserveOut > 0, "insuffient liquidity");
         uint256 amountInWithFee = amountIn * 997;
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = reserveIn * 1000 + amountInWithFee;
@@ -260,7 +252,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
 
     function toAddress(bytes memory _bytes) internal pure returns (address) {
         if (_bytes.length != 20) revert CantConvertAddress();
-        // require(_bytes.length >= 20, "toAddress_outOfBounds");
         address tempAddress;
 
         assembly {

@@ -40,12 +40,10 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
 
     modifier onlyAdmin() {
         if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
-        // require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
         _;
     }
     modifier onlyOracle() {
         if (!getOracleInfo[msg.sender].isValid) revert OracleBadRole();
-        // require(getOracleInfo[msg.sender].isValid, "onlyOracle: bad role");
         _;
     }
 
@@ -65,7 +63,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @param _newOracleAdmin New oracle address.
     function updateOracleAdmin(address _oracle, address _newOracleAdmin) external {
         if (getOracleInfo[_oracle].admin != msg.sender) revert OraclesAdminAccessDenied();
-        // require(getOracleInfo[_oracle].admin == msg.sender, "only callable by admin");
         getOracleInfo[_oracle].admin = _newOracleAdmin;
         emit UpdateOracleAdmin(_oracle, _newOracleAdmin);
     }
@@ -76,7 +73,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @param _minConfirmations Confirmation info.
     function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
         if (_minConfirmations == 0) revert GreaterThanZero();
-        // require(_minConfirmations > 0, "Must be greater than zero");
         minConfirmations = _minConfirmations;
     }
 
@@ -92,7 +88,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         for (uint256 i = 0; i < _oracles.length; i++) {
             OracleInfo storage oracleInfo = getOracleInfo[_oracles[i]];
             if (oracleInfo.exist) revert OracleAlreadyExist();
-            // require(!oracleInfo.exist, "Already exist");
 
             oracleAddresses.push(_oracles[i]);
 
@@ -119,11 +114,9 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         bool _required
     ) external onlyAdmin {
         if (!(_isValid || (!_isValid && !_required))) revert IncorrectParams();
-        // require(_isValid || !_isValid && !_required, "Need to disable required");
 
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         if (!oracleInfo.exist) revert OracleNotFound();
-        // require(oracleInfo.exist, "Not exist");
 
         oracleInfo.isValid = _isValid;
 
@@ -142,7 +135,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     function updateOracleAdminByOwner(address _oracle, address _admin) external onlyAdmin {
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         if (!oracleInfo.exist) revert OracleNotFound();
-        // require(oracleInfo.exist, "Not exist");
         oracleInfo.admin = _admin;
         emit UpdateOracleAdminByOwner(_oracle, _admin);
     }
