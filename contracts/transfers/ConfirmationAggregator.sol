@@ -21,6 +21,13 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
 
+     /* ========== MODIFIERS ========== */
+
+    modifier onlyDeBridgeGate {
+        if(msg.sender != debridgeAddress) revert DeBridgeGateBadRole();
+        _;
+    }
+
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -60,11 +67,13 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         uint8 _decimals
     ) external onlyOracle {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
-        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
+         if(getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
+        // require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
 
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
+        if (debridgeInfo.hasVerified[msg.sender]) revert SubmittedAlready();
+        // require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
 
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
@@ -94,7 +103,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @param _submissionId Submission identifier.
     function _submit(bytes32 _submissionId) internal {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
-        require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
+        if (submissionInfo.hasVerified[msg.sender]) revert SubmittedAlready();
+        // require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
+
         submissionInfo.confirmations += 1;
         if (getOracleInfo[msg.sender].required) {
             submissionInfo.requiredConfirmations += 1;
@@ -125,23 +136,23 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(bytes32 _debridgeId)
-        external
-        override
-        returns (
-            address wrappedAssetAddress,
-            bytes memory nativeAddress,
-            uint256 nativeChainId
-        )
-    {
-        require(debridgeAddress == msg.sender, "deployAsset: bad role");
+            external override
+            onlyDeBridgeGate
+            returns (address wrappedAssetAddress, bytes memory nativeAddress, uint256 nativeChainId) {
 
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        require(deployId != "", "deployAsset: not found deployId");
+        //TODO: check deployId == ""
+        if(deployId == "") revert DeployNotFound();
+        // require(deployId != "", "deployAsset: not found deployId");
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
-        //TODO: can be removed, we already checked in confirmedDeployInfo
-        require(debridgeInfo.confirmations >= minConfirmations, "deployAsset: not confirmed");
+        if(getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
+        // require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
+
+        //Can be removed, we already checked in confirmedDeployInfo
+        // if(debridgeInfo.confirmations < minConfirmations) revert DeployNotConfirmed();
+        // require(debridgeInfo.confirmations >= minConfirmations, "deployAsset: not confirmed");
+
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
         WrappedAsset wrappedAsset = new WrappedAsset(

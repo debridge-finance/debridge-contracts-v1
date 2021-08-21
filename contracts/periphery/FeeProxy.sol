@@ -29,15 +29,27 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
     uint256 public constant ETH_CHAINID = 1; //Ethereum chainId
     address public deEthToken; //address of deETH token
 
+    /* ========== ERRORS ========== */
+
+    error AdminBadRole();
+    error DeBridgeGateBadRole();
+    error EmptyDeBridgeGateAddress();
+    error EmptyTreasuryAddress(uint256 chainId);
+
+    error InsuffientAmountIn();
+    error InsuffientLiquidity();
+
+    error CantConvertAddress();
+
     /* ========== MODIFIERS ========== */
 
-    modifier onlyDeBridgeGate() {
-        require(address(debridgeGate) == msg.sender, "onlyDeBridgeGate: bad role");
+    modifier onlyDeBridgeGate {
+        if(msg.sender != address(debridgeGate)) revert DeBridgeGateBadRole();
         _;
     }
 
-    modifier onlyAdmin() {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
+    modifier onlyAdmin {
+        if(!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
         _;
     }
 
@@ -82,8 +94,11 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
         uint256 _nativeChain
     ) external payable override onlyDeBridgeGate {
         uint256 chainId = getChainId();
-        require(debridgeGateAddresses[_nativeChain].length > 0, "no debridge gate addresses");
-        require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
+        if (debridgeGateAddresses[_nativeChain].length == 0) revert EmptyDeBridgeGateAddress();
+        if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
+
+        // require(debridgeGateAddresses[_nativeChain].length > 0, "no debridge gate addresses");
+        // require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
 
         address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
 
@@ -138,8 +153,11 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
         onlyDeBridgeGate
     {
         uint256 chainId = getChainId();
-        require(debridgeGateAddresses[chainId].length > 0, "no debridge gate addresses");
-        require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
+
+        if (debridgeGateAddresses[chainId].length == 0) revert EmptyDeBridgeGateAddress();
+        if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
+        // require(debridgeGateAddresses[chainId].length > 0, "no debridge gate addresses");
+        // require(treasuryAddresses[chainId].length > 0, "no treasury addresses");
 
         address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
 
@@ -184,7 +202,9 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
         uint256 _nativeChain,
         uint256 _nativeFixFee
     ) private {
-        require(treasuryAddresses[_nativeChain].length > 0, "no treasury addresses");
+        if (treasuryAddresses[_nativeChain].length == 0) revert EmptyTreasuryAddress(_nativeChain);
+
+        // require(treasuryAddresses[_nativeChain].length > 0, "no treasury addresses");
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
         debridgeGate.autoBurn{value: _nativeFixFee}(
             _debridgeId,
@@ -228,16 +248,20 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
         uint256 reserveIn,
         uint256 reserveOut
     ) private pure returns (uint256 amountOut) {
-        require(amountIn > 0, "insuffient amount");
-        require(reserveIn > 0 && reserveOut > 0, "insuffient liquidity");
+        if (amountIn == 0) revert InsuffientAmountIn();
+        if (reserveIn == 0 || reserveOut == 0) revert InsuffientLiquidity();
+        // require(amountIn > 0, "insuffient amount");
+        // require(reserveIn > 0 && reserveOut > 0, "insuffient liquidity");
         uint256 amountInWithFee = amountIn * 997;
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = reserveIn * 1000 + amountInWithFee;
         amountOut = numerator / denominator;
     }
 
-    function toAddress(bytes memory _bytes) internal pure returns (address) {
-        require(_bytes.length >= 20, "toAddress_outOfBounds");
+
+     function toAddress(bytes memory _bytes) internal pure returns (address) {
+        if(_bytes.length != 20) revert CantConvertAddress();
+        // require(_bytes.length >= 20, "toAddress_outOfBounds");
         address tempAddress;
 
         assembly {

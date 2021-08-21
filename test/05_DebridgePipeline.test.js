@@ -510,21 +510,21 @@ contract("DeBridgeGate real pipeline mode", function () {
     it("should reject setting aggregator if called by the non-admin", async function () {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setAggregator(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function () {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function () {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
@@ -532,7 +532,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     // it("should reject setting weth if called by the non-admin", async function() {
     //   await expectRevert(
     //     this.debridgeETH.connect(bobAccount).setWeth(ZERO_ADDRESS),
-    //     "onlyAdmin: bad role"
+    //     "onlyAdmin: AdminBadRole()"
     //   );
     // });
   });
@@ -814,7 +814,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             value: toWei("0.1"),
             from: alice,
           }),
-          "send: amount mismatch"
+          "AmountMismatch()"
         );
       });
 
@@ -828,7 +828,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             value: amount,
             from: alice,
           }),
-          "wrong targed chain"
+          "WrongTargedChain()"
         );
       });
     });
@@ -885,7 +885,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "not confirmed"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -963,7 +963,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "blocked submission"
+        "SubmissionBlocked()"
       );
     });
 
@@ -1085,7 +1085,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "not confirmed"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -1102,7 +1102,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "submission already used"
+        "SubmissionUsed"
       );
     });
   });
@@ -1191,29 +1191,29 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       });
 
-      it("should reject burning from current chain", async function () {
-        const receiver = bob;
-        const amount = toBN(toWei("1"));
-        const deadline = 0;
-        const signature = "0x";
-        await expectRevert(
-          this.debridgeETH.burn(
-            this.debridgeWethId,
-            receiver,
-            amount,
-            ethChainId,
-            deadline,
-            signature,
-            false,
-            0,
-            {
-              from: alice,
-            }
-          ),
-          "wrong chain"
-        );
-      });
+    it("should reject burning from current chain", async function() {
+      const receiver = bob;
+      const amount = toBN(toWei("1"));
+      const deadline = 0;
+      const signature = "0x";
+      await expectRevert(
+        this.debridgeETH.burn(
+          this.debridgeWethId,
+          receiver,
+          amount,
+          ethChainId,
+          deadline,
+          signature,
+          false,
+          0,
+          {
+            from: alice,
+          }
+        ),
+        "WrongChain()"
+      );
     });
+  });
   }
 
   context("Test claim method (ETH network)", () => {
@@ -1279,12 +1279,10 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.nativeSubmission.args.receiver,
           this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
-          this.nativeSignatures,
-          {
-            from: alice,
-          }
-        ),
-        "blocked submission"
+          this.nativeSignatures, {
+          from: alice,
+        }),
+        "SubmissionBlocked()"
       );
     });
 
@@ -1308,20 +1306,18 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       //console.log("signatures count: " + signaturesWithDublicate.length);
 
-      await expectRevert(
-        this.debridgeETH.claim(
-          debridgeId,
-          bscChainId,
-          receiver,
-          amount,
-          nonce,
-          signaturesWithDublicate,
-          {
-            from: alice,
-          }
-        ),
-        "duplicate signatures"
-      );
+      await expectRevert(this.debridgeETH.claim(
+        debridgeId,
+        bscChainId,
+        receiver,
+        amount,
+        nonce,
+        signaturesWithDublicate,
+        {
+          from: alice,
+        }
+      ),
+      "DuplicateSignatures()");
     });
 
     it("should claim native token when the submission is approved", async function () {
@@ -1389,16 +1385,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       const amount = this.linkSubmission.args.amount;
       const wrongNonce = 999;
       await expectRevert(
-        this.debridgeETH.claim(
-          debridgeId,
-          bscChainId,
-          receiver,
-          amount,
-          wrongNonce,
-          this.linkSignatures,
-          { from: alice }
-        ),
-        "not confirmed by req oracles"
+        this.debridgeETH.claim(debridgeId, bscChainId, receiver, amount, wrongNonce, this.linkSignatures, { from: alice, }),
+        "NotConfirmedByRequiredOracles()"
       );
     });
 
@@ -1409,16 +1397,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       const nonce = this.linkSubmission.args.nonce;
 
       await expectRevert(
-        this.debridgeETH.claim(
-          debridgeId,
-          bscChainId,
-          receiver,
-          amount,
-          nonce,
-          this.linkSignatures,
-          { from: alice }
-        ),
-        "submission already used"
+        this.debridgeETH.claim(debridgeId, bscChainId, receiver, amount, nonce, this.linkSignatures, { from: alice, }),
+        "Submission"
       );
     });
   });
@@ -2070,7 +2050,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     it("should reject withdrawing fee by non-worker", async function () {
       await expectRevert(
         this.debridgeBSC.connect(bobAccount).withdrawFee(this.linkDebridgeId),
-        "bad role"
+        "WorkerBadRole()"
       );
     });
 
@@ -2081,7 +2061,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       await expectRevert(
         this.debridgeBSC.connect(workerAccount).withdrawFee(fakeDebridgeId),
-        "debridge not exist"
+        "DebridgeNotFound()"
       );
     });
   });

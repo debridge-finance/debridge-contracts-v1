@@ -221,25 +221,31 @@ contract("DeBridgeGate full with auto", function () {
     //   assert.equal(weth, newWeth);
     // });
 
-    it("should reject setting aggregator if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS), "bad role");
+    it("should reject setting aggregator if called by the non-admin", async function() {
+      await expectRevert(
+        this.debridge.connect(bobAccount).setAggregator(ZERO_ADDRESS),
+        "AdminBadRole()"
+      );
     });
 
-    it("should reject setting fee proxy if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bobAccount).setFeeProxy(ZERO_ADDRESS), "bad role");
+    it("should reject setting fee proxy if called by the non-admin", async function() {
+      await expectRevert(
+        this.debridge.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
+        "AdminBadRole()"
+      );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     // it("should reject setting weth if called by the non-admin", async function() {
     //   await expectRevert(
     //     this.debridge.connect(bobAccount).setWeth(ZERO_ADDRESS),
-    //     "onlyAdmin: bad role"
+    //     "AdminBadRole()"
     //   );
     // });
   });
@@ -420,13 +426,11 @@ contract("DeBridgeGate full with auto", function () {
           claimFee,
           data,
           false,
-          0,
-          {
-            value: toWei("0.1"),
-            from: alice,
-          }
-        ),
-        "send: amount mismatch"
+          0, {
+          value: toWei("0.1"),
+          from: alice,
+        }),
+        "AmountMismatch()"
       );
     });
 
@@ -446,13 +450,11 @@ contract("DeBridgeGate full with auto", function () {
           claimFee,
           data,
           false,
-          0,
-          {
-            value: amount,
-            from: alice,
-          }
-        ),
-        "wrong targed chain"
+          0, {
+          value: amount,
+          from: alice,
+        }),
+        "WrongTargedChain()"
       );
     });
   });
@@ -590,7 +592,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "not confirmed"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -611,7 +613,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "submission already used"
+        "SubmissionUsed()"
       );
     });
   });
@@ -695,7 +697,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "wrong chain"
+        "WrongChain()"
       );
     });
   });
@@ -845,12 +847,10 @@ contract("DeBridgeGate full with auto", function () {
           [],
           reserveAddress,
           claimFee,
-          data,
-          {
-            from: alice,
-          }
-        ),
-        "not confirmed"
+          data, {
+          from: alice,
+        }),
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -870,7 +870,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "not confirmed"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -885,12 +885,10 @@ contract("DeBridgeGate full with auto", function () {
           [],
           reserveAddress,
           claimFee,
-          data,
-          {
-            from: alice,
-          }
-        ),
-        "submission already used"
+          data, {
+          from: alice,
+        }),
+        "SubmissionUsed()"
       );
     });
   });

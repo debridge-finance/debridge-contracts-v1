@@ -30,7 +30,7 @@ describe("DefiController", function () {
   it("only admin can setDeBridgeGate", async function () {
     await expect(
       this.defiController.connect(other).setDeBridgeGate(other.address)
-    ).to.be.revertedWith("onlyAdmin: bad role");
+    ).to.be.revertedWith("AdminBadRole()");
   });
 
   describe("with debridgeGate", function () {
@@ -45,7 +45,7 @@ describe("DefiController", function () {
 
     it("non-worker can't rebalanceStrategy", async function () {
       await expect(this.defiController.rebalanceStrategy(ZERO_ADDRESS)).to.be.revertedWith(
-        "onlyWorker: bad role"
+        "WorkerBadRole()"
       );
     });
 
@@ -69,14 +69,18 @@ describe("DefiController", function () {
 
         it("rebalanceStrategy for native token reverts if it's not enabled", async function () {
           await expect(
-            this.defiController.connect(worker).rebalanceStrategy(this.strategyNativeToken.address)
-          ).to.be.revertedWith("strategy doesn't exist");
+            this.defiController
+              .connect(worker)
+              .rebalanceStrategy(this.strategyNativeToken.address)
+          ).to.be.revertedWith("StrategyNotFound");
         });
 
         it("rebalanceStrategy for stake token reverts if it's not enabled", async function () {
           await expect(
-            this.defiController.connect(worker).rebalanceStrategy(this.strategyStakeToken.address)
-          ).to.be.revertedWith("strategy doesn't exist");
+            this.defiController
+              .connect(worker)
+              .rebalanceStrategy(this.strategyStakeToken.address)
+          ).to.be.revertedWith("StrategyNotFound");
         });
 
         describe("then add stakeToken and native strategies", function () {
@@ -116,14 +120,20 @@ describe("DefiController", function () {
                   this.stakeToken.address,
                   ZERO_ADDRESS
                 )
-            ).to.be.revertedWith("onlyAdmin: bad role");
+            ).to.be.revertedWith("AdminBadRole()");
 
             await expect(
               this.defiController
                 .connect(other)
-                .addStrategy(this.strategyNativeToken.address, true, 0, ZERO_ADDRESS, ZERO_ADDRESS)
-            ).to.be.revertedWith("onlyAdmin: bad role");
-          });
+                .addStrategy(
+                  this.strategyNativeToken.address,
+                  true,
+                  0,
+                  ZERO_ADDRESS,
+                  ZERO_ADDRESS,
+                )
+            ).to.be.revertedWith("AdminBadRole()");
+          })
 
           it("should revert adding strategy if it's already exists", async function () {
             await expect(
@@ -134,8 +144,8 @@ describe("DefiController", function () {
                 this.stakeToken.address,
                 ZERO_ADDRESS
               )
-            ).to.be.revertedWith("strategy already exists");
-          });
+            ).to.be.revertedWith("StrategyAlreadyExists");
+          })
 
           it("should revert adding strategy with invalid maxReservesBps", async function () {
             const token = await this.MockTokenFactory.deploy("Test Token", "TEST", 18);
@@ -148,7 +158,7 @@ describe("DefiController", function () {
                 token.address,
                 ZERO_ADDRESS
               )
-            ).to.be.revertedWith("invalid maxReservesBps");
+            ).to.be.revertedWith("InvalidMaxReservesBps");
 
             await expect(
               this.defiController.addStrategy(
@@ -158,8 +168,8 @@ describe("DefiController", function () {
                 token.address,
                 ZERO_ADDRESS
               )
-            ).to.be.revertedWith("invalid maxReservesBps");
-          });
+            ).to.be.revertedWith("InvalidMaxReservesBps");
+          })
 
           it("should revert adding strategy with invalid total maxReservesBps", async function () {
             const strategy = await this.MockStrategyFactory.deploy();
@@ -173,8 +183,8 @@ describe("DefiController", function () {
                 this.stakeToken.address,
                 ZERO_ADDRESS
               )
-            ).to.be.revertedWith("invalid total maxReservesBps");
-          });
+            ).to.be.revertedWith("InvalidTotalMaxReservesBps");
+          })
 
           it("should revert updating strategy with invalid total maxReservesBps", async function () {
             // try to set invalid maxReservesBps for enabled strategy, should revert
@@ -185,7 +195,7 @@ describe("DefiController", function () {
                 true,
                 invalidNewMaxReservesBps
               )
-            ).to.be.revertedWith("invalid total maxReservesBps");
+            ).to.be.revertedWith("InvalidTotalMaxReservesBps");
 
             // disable strategy and set invalid maxReservesBps, should not revert
             await expect(
@@ -194,7 +204,7 @@ describe("DefiController", function () {
                 false,
                 invalidNewMaxReservesBps
               )
-            ).to.be.not.revertedWith("invalid total maxReservesBps");
+            ).to.be.not.revertedWith("InvalidTotalMaxReservesBps");
 
             // enable strategy with invalid maxReservesBps, should revert
             await expect(
@@ -203,8 +213,8 @@ describe("DefiController", function () {
                 true,
                 invalidNewMaxReservesBps
               )
-            ).to.be.revertedWith("invalid total maxReservesBps");
-          });
+            ).to.be.revertedWith("InvalidTotalMaxReservesBps");
+          })
 
           it("check correct values in strategy", async function () {
             const strategyFromContract = await this.defiController.strategies(
@@ -222,10 +232,8 @@ describe("DefiController", function () {
 
           it("only admin can update strategy", async function () {
             await expect(
-              this.defiController
-                .connect(other)
-                .updateStrategy(this.strategyNativeToken.address, false, 0)
-            ).to.be.revertedWith("onlyAdmin: bad role");
+              this.defiController.connect(other).updateStrategy(this.strategyNativeToken.address, false, 0)
+            ).to.be.revertedWith("AdminBadRole()");
           });
 
           it("should update strategy by admin", async function () {
@@ -262,12 +270,12 @@ describe("DefiController", function () {
                 this.defiController
                   .connect(other)
                   .rebalanceStrategy(this.strategyStakeToken.address)
-              ).to.be.revertedWith("onlyWorker: bad role");
+              ).to.be.revertedWith("WorkerBadRole()");
               await expect(
                 this.defiController
                   .connect(other)
-                  .rebalanceStrategy(this.strategyNativeToken.address)
-              ).to.be.revertedWith("onlyWorker: bad role");
+                  .rebalanceStrategy (this.strategyNativeToken.address)
+              ).to.be.revertedWith("WorkerBadRole()");
             });
 
             describe("add bridges & connect deBridgeGate", function () {
@@ -749,11 +757,15 @@ describe("DefiController", function () {
 
         it("rebalanceStrategy reverts if called by worker after it's role was revoked", async function () {
           await expect(
-            this.defiController.connect(worker).rebalanceStrategy(ZERO_ADDRESS)
-          ).to.be.revertedWith("onlyWorker: bad role");
+            this.defiController
+              .connect(worker)
+              .rebalanceStrategy(ZERO_ADDRESS)
+          ).to.be.revertedWith("WorkerBadRole()");
           await expect(
-            this.defiController.connect(worker).rebalanceStrategy(ZERO_ADDRESS)
-          ).to.be.revertedWith("onlyWorker: bad role");
+            this.defiController
+              .connect(worker)
+              .rebalanceStrategy(ZERO_ADDRESS)
+          ).to.be.revertedWith("WorkerBadRole()");
         });
       });
     });
