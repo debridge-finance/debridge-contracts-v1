@@ -763,7 +763,8 @@ contract DeBridgeGate is
         uint16 _discountFixBps,
         uint16 _discountTransferBps
     ) external onlyAdmin {
-        if (_discountBps > BPS_DENOMINATOR) revert WrongArgument();
+        if (_discountFixBps > BPS_DENOMINATOR) revert WrongArgument();
+        if (_discountTransferBps > BPS_DENOMINATOR) revert WrongArgument();
         DiscountInfo storage discountInfo = feeDiscount[_address];
         discountInfo.discountFixBps = _discountFixBps;
         discountInfo.discountTransferBps = _discountTransferBps;
@@ -830,7 +831,7 @@ contract DeBridgeGate is
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
 
-        if (debridge.exist) revert AssetAlreadyExist(););
+        if (debridge.exist) revert AssetAlreadyExist();
         if (_tokenAddress == address(0)) revert ZeroAddress();
 
         debridge.exist = true;
