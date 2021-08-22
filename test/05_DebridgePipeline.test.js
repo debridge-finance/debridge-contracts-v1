@@ -510,21 +510,21 @@ contract("DeBridgeGate real pipeline mode", function () {
     it("should reject setting aggregator if called by the non-admin", async function () {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setAggregator(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting fee proxy if called by the non-admin", async function () {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setFeeProxy(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function () {
       await expectRevert(
         this.debridgeETH.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
@@ -532,7 +532,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     // it("should reject setting weth if called by the non-admin", async function() {
     //   await expectRevert(
     //     this.debridgeETH.connect(bobAccount).setWeth(ZERO_ADDRESS),
-    //     "onlyAdmin: bad role"
+    //     "onlyAdmin: AdminBadRole()"
     //   );
     // });
   });
@@ -814,7 +814,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             value: toWei("0.1"),
             from: alice,
           }),
-          "send: amount mismatch"
+          "AmountMismatch()"
         );
       });
 
@@ -828,7 +828,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             value: amount,
             from: alice,
           }),
-          "wrong targed chain"
+          "WrongTargedChain()"
         );
       });
     });
@@ -885,7 +885,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "not confirmed"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -963,7 +963,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "blocked submission"
+        "SubmissionBlocked()"
       );
     });
 
@@ -1085,7 +1085,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "not confirmed"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -1102,7 +1102,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "submission already used"
+        "SubmissionUsed"
       );
     });
   });
@@ -1210,7 +1210,7 @@ contract("DeBridgeGate real pipeline mode", function () {
               from: alice,
             }
           ),
-          "wrong chain"
+          "WrongChain()"
         );
       });
     });
@@ -1284,7 +1284,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "blocked submission"
+        "SubmissionBlocked()"
       );
     });
 
@@ -1320,7 +1320,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             from: alice,
           }
         ),
-        "duplicate signatures"
+        "DuplicateSignatures()"
       );
     });
 
@@ -1398,7 +1398,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.linkSignatures,
           { from: alice }
         ),
-        "not confirmed by req oracles"
+        "NotConfirmedByRequiredOracles()"
       );
     });
 
@@ -1418,7 +1418,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.linkSignatures,
           { from: alice }
         ),
-        "submission already used"
+        "Submission"
       );
     });
   });
@@ -2070,7 +2070,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     it("should reject withdrawing fee by non-worker", async function () {
       await expectRevert(
         this.debridgeBSC.connect(bobAccount).withdrawFee(this.linkDebridgeId),
-        "bad role"
+        "WorkerBadRole()"
       );
     });
 
@@ -2081,7 +2081,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       await expectRevert(
         this.debridgeBSC.connect(workerAccount).withdrawFee(fakeDebridgeId),
-        "debridge not exist"
+        "DebridgeNotFound()"
       );
     });
   });

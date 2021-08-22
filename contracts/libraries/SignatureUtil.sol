@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.7;
 
 library SignatureUtil {
+    /* ========== ERRORS ========== */
+
+    error SignatureInvalidLength();
+    error SignatureInvalidV();
+
     /// @dev Prepares raw msg that was signed by the oracle.
     /// @param _submissionId Submission identifier.
     function getUnsignedMsg(bytes32 _submissionId) internal pure returns (bytes32) {
@@ -19,7 +24,7 @@ library SignatureUtil {
             uint8 v
         )
     {
-        require(_signature.length == 65, "splitSignature: invalid length");
+        if (_signature.length != 65) revert SignatureInvalidLength();
         assembly {
             r := mload(add(_signature, 32))
             s := mload(add(_signature, 64))
@@ -28,6 +33,7 @@ library SignatureUtil {
             // v := byte(0, mload(add(_signature, 96)))
         }
         if (v < 27) v += 27;
-        require(v == 27 || v == 28, "Incorrect v");
+
+        if (v != 27 && v != 28) revert SignatureInvalidV();
     }
 }

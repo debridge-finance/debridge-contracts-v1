@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/IConfirmationAggregator.sol";
@@ -20,6 +20,13 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
+
+    /* ========== MODIFIERS ========== */
+
+    modifier onlyDeBridgeGate() {
+        if (msg.sender != debridgeAddress) revert DeBridgeGateBadRole();
+        _;
+    }
 
     /* ========== CONSTRUCTOR  ========== */
 
@@ -60,11 +67,11 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         uint8 _decimals
     ) external onlyOracle {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
-        require(getWrappedAssetAddress[debridgeId] == address(0), "deployAsset: deployed already");
+        if (getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
 
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
+        if (debridgeInfo.hasVerified[msg.sender]) revert SubmittedAlready();
 
         debridgeInfo.name = _name;
         debridgeInfo.symbol = _symbol;
@@ -94,7 +101,8 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @param _submissionId Submission identifier.
     function _submit(bytes32 _submissionId) internal {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
-        require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
+        if (submissionInfo.hasVerified[msg.sender]) revert SubmittedAlready();
+
         submissionInfo.confirmations += 1;
         if (getOracleInfo[msg.sender].required) {
             submissionInfo.requiredConfirmations += 1;
@@ -127,21 +135,19 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     function deployAsset(bytes32 _debridgeId)
         external
         override
+        onlyDeBridgeGate
         returns (
             address wrappedAssetAddress,
             bytes memory nativeAddress,
             uint256 nativeChainId
         )
     {
-        require(debridgeAddress == msg.sender, "deployAsset: bad role");
-
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        require(deployId != "", "deployAsset: not found deployId");
+        if (deployId == "") revert DeployNotFound();
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(getWrappedAssetAddress[_debridgeId] == address(0), "deployAsset: deployed already");
-        //TODO: can be removed, we already checked in confirmedDeployInfo
-        require(debridgeInfo.confirmations >= minConfirmations, "deployAsset: not confirmed");
+        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
+
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
         WrappedAsset wrappedAsset = new WrappedAsset(

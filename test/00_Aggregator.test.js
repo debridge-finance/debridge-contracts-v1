@@ -134,7 +134,7 @@ contract("ConfirmationAggregator", function () {
       const newConfirmations = 2;
       await expectRevert(
         this.aggregator.connect(bobAccount).setMinConfirmations(newConfirmations),
-        "onlyAdmin: bad role"
+        "AdminBadRole()"
       );
     });
 
@@ -142,7 +142,7 @@ contract("ConfirmationAggregator", function () {
       const newConfirmations = 2;
       await expectRevert(
         this.aggregator.connect(bobAccount).setExcessConfirmations(newConfirmations),
-        "onlyAdmin: bad role"
+        "AdminBadRole()"
       );
     });
 
@@ -150,21 +150,21 @@ contract("ConfirmationAggregator", function () {
       const newConfirmations = 2;
       await expectRevert(
         this.aggregator.connect(bobAccount).setThreshold(newConfirmations),
-        "onlyAdmin: bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject adding the new oracle if called by the non-admin", async function () {
       await expectRevert(
         this.aggregator.connect(bobAccount).addOracles([devid], [eve], [false]),
-        "onlyAdmin: bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject removing the new oracle if called by the non-admin", async function () {
       await expectRevert(
         this.aggregator.connect(bobAccount).updateOracle(devid, false, false),
-        "onlyAdmin: bad role"
+        "AdminBadRole()"
       );
     });
   });
@@ -228,7 +228,7 @@ contract("ConfirmationAggregator", function () {
       const submission = "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
       await expectRevert(
         this.aggregator.connect(devidAccount).submit(submission),
-        "onlyOracle: bad role"
+        "OracleBadRole()"
       );
     });
 
@@ -236,7 +236,7 @@ contract("ConfirmationAggregator", function () {
       const submission = "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
       await expectRevert(
         this.aggregator.connect(devidAccount).submit(submission),
-        "onlyOracle: bad role"
+        "OracleBadRole()"
       );
     });
 
@@ -244,7 +244,7 @@ contract("ConfirmationAggregator", function () {
       const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
       await expectRevert(
         this.aggregator.connect(bobAccount).submit(submission),
-        "submit: submitted already"
+        "SubmittedAlready()"
       );
     });
 
@@ -252,7 +252,7 @@ contract("ConfirmationAggregator", function () {
       const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
       await expectRevert(
         this.aggregator.connect(bobAccount).submit(submission),
-        "submit: submitted already"
+        "SubmittedAlready()"
       );
     });
   });

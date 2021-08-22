@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -14,14 +14,36 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     address[] public oracleAddresses;
     mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
 
+    /* ========== ERRORS ========== */
+
+    error AdminBadRole();
+    error OracleBadRole();
+    error DeBridgeGateBadRole();
+
+    error OraclesAdminAccessDenied();
+
+    error OracleAlreadyExist();
+    error OracleNotFound();
+
+    error IncorrectParams();
+
+    error GreaterThanZero();
+
+    error SubmittedAlready();
+
+    error DeployNotConfirmed();
+    error DeployNotFound();
+    error DeployedAlready();
+    error SubmissionNotConfirmed();
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyAdmin() {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "onlyAdmin: bad role");
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
         _;
     }
     modifier onlyOracle() {
-        require(getOracleInfo[msg.sender].isValid, "onlyOracle: bad role");
+        if (!getOracleInfo[msg.sender].isValid) revert OracleBadRole();
         _;
     }
 
@@ -40,7 +62,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @param _oracle Oracle address.
     /// @param _newOracleAdmin New oracle address.
     function updateOracleAdmin(address _oracle, address _newOracleAdmin) external {
-        require(getOracleInfo[_oracle].admin == msg.sender, "only callable by admin");
+        if (getOracleInfo[_oracle].admin != msg.sender) revert OraclesAdminAccessDenied();
         getOracleInfo[_oracle].admin = _newOracleAdmin;
         emit UpdateOracleAdmin(_oracle, _newOracleAdmin);
     }
@@ -50,7 +72,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Confirmation info.
     function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
-        require(_minConfirmations > 0, "Must be greater than zero");
+        if (_minConfirmations == 0) revert GreaterThanZero();
         minConfirmations = _minConfirmations;
     }
 
@@ -65,7 +87,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     ) external onlyAdmin {
         for (uint256 i = 0; i < _oracles.length; i++) {
             OracleInfo storage oracleInfo = getOracleInfo[_oracles[i]];
-            require(!oracleInfo.exist, "Already exist");
+            if (oracleInfo.exist) revert OracleAlreadyExist();
 
             oracleAddresses.push(_oracles[i]);
 
@@ -91,10 +113,11 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         bool _isValid,
         bool _required
     ) external onlyAdmin {
-        require(_isValid || (!_isValid && !_required), "Need to disable required");
+        //If oracle is invalid, it must be not required
+        if(!_isValid && _required) revert IncorrectParams();
 
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
-        require(oracleInfo.exist, "Not exist");
+        if (!oracleInfo.exist) revert OracleNotFound();
 
         oracleInfo.isValid = _isValid;
 
@@ -112,7 +135,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @param _admin new admin address.
     function updateOracleAdminByOwner(address _oracle, address _admin) external onlyAdmin {
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
-        require(oracleInfo.exist, "Not exist");
+        if (!oracleInfo.exist) revert OracleNotFound();
         oracleInfo.admin = _admin;
         emit UpdateOracleAdminByOwner(_oracle, _admin);
     }

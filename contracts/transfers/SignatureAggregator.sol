@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/ISignatureAggregator.sol";
@@ -14,6 +14,10 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
     mapping(bytes32 => SubmissionInfo) public getSubmissionInfo; // mint id => submission info
+
+    /* ========== ERRORS ========== */
+
+    error SenderSignatureMismatch();
 
     /* ========== CONSTRUCTOR  ========== */
 
@@ -37,12 +41,12 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        require(!debridgeInfo.approved, "deployAsset: submitted already");
-        require(!debridgeInfo.hasVerified[msg.sender], "deployAsset: submitted already");
+
+        if (debridgeInfo.hasVerified[msg.sender]) revert SubmittedAlready();
 
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
-        require(msg.sender == oracle, "onlyOracle: bad role");
+        if (msg.sender != oracle) revert SenderSignatureMismatch();
 
         debridgeInfo.confirmations += 1;
         debridgeInfo.nativeAddress = _tokenAddress;
@@ -67,7 +71,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         override
         onlyOracle
     {
-        require(_submissionIds.length == _signatures.length, "arguments count mismatch");
+        if (_submissionIds.length != _signatures.length) revert IncorrectParams();
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i], _signatures[i]);
         }
@@ -85,10 +89,13 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @param _signature Oracle's signature.
     function _submit(bytes32 _submissionId, bytes memory _signature) internal {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
-        require(!submissionInfo.hasVerified[msg.sender], "submit: submitted already");
+        if (submissionInfo.hasVerified[msg.sender]) revert SubmittedAlready();
+
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
-        require(msg.sender == oracle, "onlyOracle: bad role");
+
+        if (msg.sender != oracle) revert SenderSignatureMismatch();
+
         submissionInfo.confirmations += 1;
         submissionInfo.signatures.push(_signature);
         submissionInfo.hasVerified[msg.sender] = true;

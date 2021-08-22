@@ -219,14 +219,14 @@ contract("DeBridgeGate light mode", function () {
     it("should reject setting Verifier if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
 
     it("should reject setting defi controller if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bobAccount).setDefiController(ZERO_ADDRESS),
-        "bad role"
+        "AdminBadRole()"
       );
     });
   });
@@ -321,7 +321,7 @@ contract("DeBridgeGate light mode", function () {
             from: alice,
           }
         ),
-        "not confirmed by req oracles"
+        "NotConfirmedByRequiredOracles()"
       );
     });
 
@@ -357,7 +357,7 @@ contract("DeBridgeGate light mode", function () {
             from: alice,
           }
         ),
-        "not confirmed"
+        "DeployNotConfirmed()"
       );
     });
   });
@@ -440,7 +440,7 @@ contract("DeBridgeGate light mode", function () {
           value: toWei("0.1"),
           from: alice,
         }),
-        "send: amount mismatch"
+        "AmountMismatch()"
       );
     });
 
@@ -456,7 +456,7 @@ contract("DeBridgeGate light mode", function () {
           value: amount,
           from: alice,
         }),
-        "wrong targed chain"
+        "WrongTargedChain()"
       );
     });
   });
@@ -561,7 +561,7 @@ contract("DeBridgeGate light mode", function () {
           //will call IConfirmationAggregator
           from: alice,
         }),
-        "not confirmed"
+        "SubmissionNotConfirmed()"
       );
     });
 
@@ -572,8 +572,7 @@ contract("DeBridgeGate light mode", function () {
         this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, this.signatures, {
           from: alice,
         }),
-        // "not confirmed"
-        "not confirmed by req oracles"
+        "NotConfirmedByRequiredOracles()"
       );
     });
 
@@ -583,7 +582,7 @@ contract("DeBridgeGate light mode", function () {
         this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
           from: alice,
         }),
-        "submission already used"
+        "SubmissionUsed()"
       );
     });
   });
@@ -644,7 +643,7 @@ contract("DeBridgeGate light mode", function () {
         this.debridge.burn(debridgeId, receiver, amount, 42, deadline, signature, false, 0, {
           from: alice,
         }),
-        "wrong chain"
+        "WrongChain()"
       );
     });
 
@@ -754,7 +753,7 @@ contract("DeBridgeGate light mode", function () {
         this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, currentSignatures, {
           from: alice,
         }),
-        "not confirmed by req oracles"
+        "NotConfirmedByRequiredOracles()"
       );
     });
 
@@ -838,8 +837,7 @@ contract("DeBridgeGate light mode", function () {
             from: alice,
           }
         ),
-        "not confirmed by req oracles"
-        // "not confirmed"
+        "NotConfirmedByRequiredOracles()"
       );
     });
 
@@ -848,7 +846,7 @@ contract("DeBridgeGate light mode", function () {
         this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, this.ethSignatures, {
           from: alice,
         }),
-        "submission already used"
+        "SubmissionUsed()"
       );
     });
   });
