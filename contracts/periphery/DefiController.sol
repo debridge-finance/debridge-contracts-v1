@@ -104,7 +104,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
             strategy.strategyToken
         );
 
-        if (currentReserves + _amount >= maxStrategyReserves) revert ExceedMaxStrategyReserves();
+        if (currentReserves + _amount > maxStrategyReserves) revert ExceedMaxStrategyReserves();
 
         // Get tokens from Gate
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
@@ -210,9 +210,9 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         address _strategyToken
     ) external onlyAdmin {
         if (
-            !(_maxReservesBps == 0 ||
-                (_maxReservesBps > STRATEGY_RESERVES_DELTA_BPS &&
-                    BPS_DENOMINATOR >= _maxReservesBps))
+            _maxReservesBps != 0 &&
+                (_maxReservesBps <= STRATEGY_RESERVES_DELTA_BPS ||
+                    BPS_DENOMINATOR < _maxReservesBps)
         ) revert InvalidMaxReservesBps();
 
         // require(_maxReservesBps == 0 ||

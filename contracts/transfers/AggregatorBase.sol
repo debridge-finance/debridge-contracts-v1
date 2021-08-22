@@ -113,7 +113,8 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         bool _isValid,
         bool _required
     ) external onlyAdmin {
-        if (!(_isValid || (!_isValid && !_required))) revert IncorrectParams();
+        //If oracle is invalid, it must be not required
+        if(!_isValid && _required) revert IncorrectParams();
 
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         if (!oracleInfo.exist) revert OracleNotFound();

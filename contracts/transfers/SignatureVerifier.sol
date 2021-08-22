@@ -253,7 +253,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         }
 
         if (v < 27) v += 27;
-        if (!(v == 27 || v == 28)) revert SignatureInvalidV();
+        if (v != 27 && v != 28) revert SignatureInvalidV();
     }
 
     function _countSignatures(bytes memory _signatures) internal pure returns (uint256) {

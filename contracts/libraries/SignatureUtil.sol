@@ -34,6 +34,6 @@ library SignatureUtil {
         }
         if (v < 27) v += 27;
 
-        if (!(v == 27 || v == 28)) revert SignatureInvalidV();
+        if (v != 27 && v != 28) revert SignatureInvalidV();
     }
 }

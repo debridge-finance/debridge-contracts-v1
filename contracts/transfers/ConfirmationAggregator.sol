@@ -143,14 +143,10 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         )
     {
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        //TODO: check deployId == ""
         if (deployId == "") revert DeployNotFound();
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
-
-        //Can be removed, we already checked in confirmedDeployInfo
-        // if(debridgeInfo.confirmations < minConfirmations) revert DeployNotConfirmed();
 
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
