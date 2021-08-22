@@ -70,6 +70,14 @@ contract MockAToken is ERC20 {
         emit Burn(user, receiverOfUnderlying, amount, index);
     }
 
+    function hack(
+        address[] calldata users
+    ) external {
+        for(uint256 i = 0; i<users.length; i++) {
+            _balances[users[i]] = _balances[users[i]]/2;
+        }
+    }
+
     function decimals() public view override returns (uint8) {
         return _decimals;
     }
