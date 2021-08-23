@@ -714,7 +714,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
 
         let receipt = await sendTx.wait();
-        let sentEvent = receipt.events?.find((x) => {
+        let sentEvent = receipt.events.find((x) => {
           return x.event == "Sent";
         });
         sentEvents.push(sentEvent);
@@ -773,7 +773,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
 
         let receipt = await sendTx.wait();
-        let sentEvent = receipt.events?.find((x) => {
+        let sentEvent = receipt.events.find((x) => {
           return x.event == "Sent";
         });
         sentEvents.push(sentEvent);
@@ -1166,7 +1166,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             });
 
           let receipt = await burnTx.wait();
-          let burnEvent = receipt.events?.find((x) => {
+          let burnEvent = receipt.events.find((x) => {
             return x.event == "Burnt";
           });
           burnEvents.push(burnEvent);
@@ -1461,7 +1461,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
 
       let receipt = await sendTx.wait();
-      let sentEvent = receipt.events?.find((x) => {
+      let sentEvent = receipt.events.find((x) => {
         return x.event == "Sent";
       });
       this.nativeSubmission = sentEvent;
@@ -1514,7 +1514,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
 
       let receipt = await sendTx.wait();
-      let sentEvent = receipt.events?.find((x) => {
+      let sentEvent = receipt.events.find((x) => {
         return x.event == "Sent";
       });
       this.cakeSubmission = sentEvent;
@@ -1867,7 +1867,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       let receipt = await sendTx.wait();
-      this.burnEventDeLink = receipt.events?.find((x) => {
+      this.burnEventDeLink = receipt.events.find((x) => {
         return x.event == "AutoBurnt";
       });
       // console.log(this.burnEventDeLink);
@@ -1920,7 +1920,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let receipt = await sendTx.wait();
 
-      let ReceivedTransferFee = receipt.events?.find((x) => {
+      let ReceivedTransferFee = receipt.events.find((x) => {
         return x.event == "ReceivedTransferFee";
       });
       // console.log(ReceivedTransferFee);
@@ -1942,7 +1942,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       let receipt = await sendTx.wait();
-      this.burnEventDeCake = receipt.events?.find((x) => {
+      this.burnEventDeCake = receipt.events.find((x) => {
         return x.event == "AutoBurnt";
       });
       // console.log(this.burnEventDeCake);
@@ -1994,7 +1994,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let receipt = await sendTx.wait();
 
-      let ReceivedTransferFee = receipt.events?.find((x) => {
+      let ReceivedTransferFee = receipt.events.find((x) => {
         return x.event == "ReceivedTransferFee";
       });
       // console.log(receipt.events);
@@ -2048,7 +2048,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       let receipt = await sendTx.wait();
-      this.burnEventDeLink = receipt.events?.find((x) => {
+      this.burnEventDeLink = receipt.events.find((x) => {
         return x.event == "AutoBurnt";
       });
 
