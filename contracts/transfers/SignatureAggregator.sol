@@ -44,9 +44,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
         if (debridgeInfo.hasVerified[msg.sender]) revert SubmittedAlready();
 
-        (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
-        address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
-        if (msg.sender != oracle) revert SenderSignatureMismatch();
+        _checkSignature(_signature, deployId);
 
         debridgeInfo.confirmations += 1;
         debridgeInfo.nativeAddress = _tokenAddress;
@@ -91,10 +89,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
         if (submissionInfo.hasVerified[msg.sender]) revert SubmittedAlready();
 
-        (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
-        address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
-
-        if (msg.sender != oracle) revert SenderSignatureMismatch();
+        _checkSignature(_signature, _submissionId);
 
         submissionInfo.confirmations += 1;
         submissionInfo.signatures.push(_signature);
@@ -124,5 +119,13 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
     /// @return Oracles signatures.
     function getSubmissionSignatures(bytes32 _submissionId) external view returns (bytes[] memory) {
         return getSubmissionInfo[_submissionId].signatures;
+    }
+
+    /* ========== INTERNAL ========== */
+
+    function _checkSignature(bytes memory _signature, bytes32 _message) internal view {
+        (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
+        address oracle = ecrecover(_message.getUnsignedMsg(), v, r, s);
+        if (msg.sender != oracle) revert SenderSignatureMismatch();
     }
 }
