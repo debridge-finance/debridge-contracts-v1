@@ -41,7 +41,7 @@ contract("DeBridgeGate light mode", function () {
     fei = feiAccount.address;
     devid = devidAccount.address;
 
-    const Debridge = await ethers.getContractFactory("DeBridgeGate", alice);
+    const Debridge = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator", alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
@@ -185,7 +185,12 @@ contract("DeBridgeGate light mode", function () {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       devid,
-    ]);
+      1 //overrideChainId
+    ],
+    {
+      initializer: "initializeMock",
+      kind: "transparent",
+    });
 
     await this.debridge.deployed();
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();

@@ -38,7 +38,7 @@ contract("DeBridgeGate full mode", function () {
 
     const WETH9 = await deployments.getArtifact("WETH9");
     this.WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
-    this.DeBridgeGate = await ethers.getContractFactory("DeBridgeGate", alice);
+    this.DeBridgeGate = await ethers.getContractFactory("MockDeBridgeGate", alice);
   });
 
   beforeEach(async function () {
@@ -71,7 +71,12 @@ contract("DeBridgeGate full mode", function () {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       devid.address,
-    ]);
+      1 //overrideChainId
+    ],
+    {
+      initializer: "initializeMock",
+      kind: "transparent",
+    });
     await this.debridge.deployed();
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
