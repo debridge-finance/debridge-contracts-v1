@@ -88,6 +88,10 @@ contract("DeBridgeGate full mode", function () {
 
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice.address);
+
+
+    const DEBRIDGE_GATE_ROLE = await this.callProxy.DEBRIDGE_GATE_ROLE();
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridge.address);
   });
 
   it("Check init params", async function () {
@@ -188,20 +192,20 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should set CallProxy if called by the admin and emits CallProxyUpdated", async function () {
-      const callProxyBefore = await this.debridge.callProxy();
+      const callProxyBefore = await this.debridge.callProxyAddresses(0);
 
-      const setCallProxyTx = await this.debridge.setCallProxy(devid.address, {
+      const setCallProxyTx = await this.debridge.setCallProxy(0, devid.address, {
         from: alice.address,
       });
 
-      const callProxyAfter = await this.debridge.callProxy();
+      const callProxyAfter = await this.debridge.callProxyAddresses(0);
 
       expect(callProxyBefore).not.equal(callProxyAfter);
       expect(devid.address).to.equal(callProxyAfter);
 
       await expect(setCallProxyTx)
         .to.emit(this.debridge, "CallProxyUpdated")
-        .withArgs(devid.address);
+        .withArgs(0, devid.address);
     });
 
     it("should update flash fee if called by the admin", async function () {
@@ -288,7 +292,7 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should reject setting CallProxy if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).setCallProxy(ZERO_ADDRESS), "AdminBadRole()");
+      await expectRevert(this.debridge.connect(bob).setCallProxy(0, ZERO_ADDRESS), "AdminBadRole()");
     });
 
     it("should reject stopping (pausing) all transfers if called buy the non-gov-monitoring", async function () {

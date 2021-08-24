@@ -323,6 +323,11 @@ contract("DeBridgeGate real pipeline mode", function () {
       hecoChainId,
       this.wethHECO.address
     );
+
+    const DEBRIDGE_GATE_ROLE = await this.callProxy.DEBRIDGE_GATE_ROLE();
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeBSC.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeHECO.address);
   });
   context("Configure contracts", () => {
     it("Check init contract params", async function () {
