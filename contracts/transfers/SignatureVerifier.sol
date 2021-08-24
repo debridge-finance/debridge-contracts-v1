@@ -29,7 +29,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     error NotConfirmedByRequiredOracles();
     error NotConfirmedThreshold();
-
+    error SubmissionNotConfirmed();
     error DuplicateSignatures();
 
     /* ========== MODIFIERS ========== */
@@ -184,9 +184,9 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             uint256 nativeChainId
         )
     {
+        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         if (deployId == "") revert DeployNotFound();
-        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
 

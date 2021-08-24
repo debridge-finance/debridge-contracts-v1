@@ -73,10 +73,10 @@ contract DeBridgeGate is
     error WrongTargedChain();
     error WrongArgument();
 
-    error AmountTooHigh();
+    error TransferAmountTooHigh();
 
     error NotSupportedFixedFee();
-    error AmountNotCoverFees();
+    error TransferAmountNotCoverFees();
 
     error SubmissionUsed();
     error SubmissionNotConfirmed();
@@ -909,7 +909,7 @@ contract DeBridgeGate is
         }
         if (debridge.chainId != getChainId()) revert WrongChain();
         if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
-        if (_amount > debridge.maxAmount) revert AmountTooHigh();
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
             if (_amount != msg.value) revert AmountMismatch();
@@ -944,7 +944,7 @@ contract DeBridgeGate is
         if (!debridge.exist) revert DebridgeNotFound();
         if (debridge.chainId == getChainId()) revert WrongChain();
         if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
-        if (_amount > debridge.maxAmount) revert AmountTooHigh();
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         if (_permit.length > 0) {
             //First dealine, next is signature
@@ -980,7 +980,7 @@ contract DeBridgeGate is
                 chainSupportInfo.fixedNativeFee -
                     (chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps) /
                     BPS_DENOMINATOR
-            ) revert AmountNotCoverFees();
+            ) revert TransferAmountNotCoverFees();
             bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
             getDebridgeFeeInfo[nativeDebridgeId].collectedFees += msg.value;
             emit CollectedFee(nativeDebridgeId, _referralCode, msg.value);
@@ -992,7 +992,7 @@ contract DeBridgeGate is
             transferFee -
             (transferFee * discountInfo.discountTransferBps) /
             BPS_DENOMINATOR;
-        if (_amount < transferFee) revert AmountNotCoverFees();
+        if (_amount < transferFee) revert TransferAmountNotCoverFees();
         debridgeFee.collectedFees += transferFee;
         emit CollectedFee(_debridgeId, _referralCode, transferFee);
         _amount -= transferFee;

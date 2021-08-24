@@ -1540,7 +1540,7 @@ contract("DeBridgeGate full mode", function () {
                       value: amount,
                       from: alice.address,
                     }),
-                    "AmountTooHigh()"
+                    "TransferAmountTooHigh()"
                   );
                 });
 

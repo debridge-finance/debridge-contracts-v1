@@ -142,12 +142,11 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
             uint256 nativeChainId
         )
     {
+        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
         bytes32 deployId = confirmedDeployInfo[_debridgeId];
         if (deployId == "") revert DeployNotFound();
 
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
-
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
         WrappedAsset wrappedAsset = new WrappedAsset(
