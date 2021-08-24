@@ -27,14 +27,11 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
 
     error IncorrectParams();
 
-    error GreaterThanZero();
-
     error SubmittedAlready();
 
     error DeployNotConfirmed();
     error DeployNotFound();
     error DeployedAlready();
-    error SubmissionNotConfirmed();
 
     /* ========== MODIFIERS ========== */
 
@@ -72,7 +69,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Confirmation info.
     function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
-        if (_minConfirmations == 0) revert GreaterThanZero();
+        if (_minConfirmations == 0) revert IncorrectParams();
         minConfirmations = _minConfirmations;
     }
 

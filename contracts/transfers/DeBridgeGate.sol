@@ -72,10 +72,10 @@ contract DeBridgeGate is
     error WrongTargedChain();
     error WrongArgument();
 
-    error AmountTooHigh();
+    error TransferAmountTooHigh();
 
     error NotSupportedFixedFee();
-    error AmountNotCoverFees();
+    error TransferAmountNotCoverFees();
 
     error SubmissionUsed();
     error SubmissionNotConfirmed();
@@ -642,7 +642,7 @@ contract DeBridgeGate is
     function withdrawFee(bytes32 _debridgeId) external payable nonReentrant onlyWorker {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        if (!debridge.exist) revert DebridgeNotFound();
 
         //Amount for transfer to treasure
         uint256 amount = debridgeFee.collectedFees +
@@ -887,7 +887,7 @@ contract DeBridgeGate is
         }
         if (debridge.chainId != getChainId()) revert WrongChain();
         if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
-        if (_amount > debridge.maxAmount) revert AmountTooHigh();
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
             if (_amount != msg.value) revert AmountMismatch();
@@ -918,10 +918,10 @@ contract DeBridgeGate is
         bool _useAssetFee
     ) internal returns (uint256) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        if (!debridge.exist) revert DebridgeNotFound();
         if (debridge.chainId == getChainId()) revert WrongChain();
         if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
-        if (_amount > debridge.maxAmount) revert AmountTooHigh();
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
         IWrappedAsset wrappedAsset = IWrappedAsset(debridge.tokenAddress);
         if (_signature.length > 0) {
             (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
@@ -954,7 +954,7 @@ contract DeBridgeGate is
                 chainSupportInfo.fixedNativeFee -
                     (chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps) /
                     BPS_DENOMINATOR
-            ) revert AmountNotCoverFees();
+            ) revert TransferAmountNotCoverFees();
 
             getDebridgeFeeInfo[getDebridgeId(getChainId(), address(0))].collectedFees += msg.value;
         }
@@ -965,7 +965,7 @@ contract DeBridgeGate is
             transferFee -
             (transferFee * discountInfo.discountTransferBps) /
             BPS_DENOMINATOR;
-        if (_amount < transferFee) revert AmountNotCoverFees();
+        if (_amount < transferFee) revert TransferAmountNotCoverFees();
         debridgeFee.collectedFees += transferFee;
         _amount -= transferFee;
         return _amount;
@@ -990,7 +990,7 @@ contract DeBridgeGate is
         _markAsUsed(_submissionId);
 
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        if (!debridge.exist) revert DebridgeNotFound();
         if (debridge.chainId == getChainId()) revert WrongChain();
 
         if (_executionFee > 0) {
