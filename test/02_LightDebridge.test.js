@@ -203,6 +203,9 @@ contract("DeBridgeGate light mode", function () {
       fixedNativeFee,
       fixedNativeFee,
     ]);
+
+    const DEBRIDGE_GATE_ROLE = await this.callProxy.DEBRIDGE_GATE_ROLE();
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridge.address);
   });
 
   context("Test setting configurations by different users", () => {

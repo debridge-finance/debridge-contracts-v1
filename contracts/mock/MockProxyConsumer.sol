@@ -27,11 +27,13 @@ contract MockProxyConsumer {
             status = ICallProxy(callProxy).call{value: msg.value}(
                 _fallbackAddress,
                 _receiver,
-                _data
+                _data,
+                0,
+                ""
             );
         } else {
             IERC20(_token).transfer(callProxy, msg.value);
-            status = ICallProxy(callProxy).callERC20(_token, _fallbackAddress, _receiver, _data);
+            status = ICallProxy(callProxy).callERC20(_token, _fallbackAddress, _receiver, _data, 0, "");
         }
         lastOperationStatus = status;
     }

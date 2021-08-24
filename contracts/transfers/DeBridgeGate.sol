@@ -36,16 +36,17 @@ contract DeBridgeGate is
     uint256 public constant BPS_DENOMINATOR = 10000;
     bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to withdraw fee
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
+    uint256 public constant PROXY_WITH_SENDER_FLAG = 100; //Flag to call proxy with sender contract
 
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
-    address public callProxy; // proxy to execute user's calls
     address public treasury; //address of treasury
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    uint16 public flashFeeBps; // fee in basis points (1/10000)
-    uint16 public collectRewardBps; // reward BPS that user will receive for collect reawards
+    uint256 public flashFeeBps; // fee in basis points (1/10000)
+    uint256 public collectRewardBps; // reward BPS that user will receive for collect reawards
     uint256 public nonce; //outgoing submissions count
 
+    mapping(uint256 => address) public callProxyAddresses; // proxy to execute user's calls
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
@@ -147,7 +148,7 @@ contract DeBridgeGate is
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
 
-        callProxy = _callProxy;
+        callProxyAddresses[0] = _callProxy;
         defiController = _defiController;
         excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -188,8 +189,7 @@ contract DeBridgeGate is
             debridgeId,
             _chainIdTo,
             _amount,
-            _receiver,
-            nonce
+            _receiver
         );
         emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
         nonce++;
@@ -249,8 +249,7 @@ contract DeBridgeGate is
             _debridgeId,
             _chainIdTo,
             _amount,
-            _receiver,
-            nonce
+            _receiver
         );
         emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
         nonce++;
@@ -587,9 +586,9 @@ contract DeBridgeGate is
 
     /// @dev Set proxy address.
     /// @param _address Address of the proxy that executes external calls.
-    function setCallProxy(address _address) external onlyAdmin {
-        callProxy = _address;
-        emit CallProxyUpdated(_address);
+    function setCallProxy(uint256 version, address _address) external onlyAdmin {
+        callProxyAddresses[version] = _address;
+        emit CallProxyUpdated(version, _address);
     }
 
     /// @dev Add support for the asset.
@@ -1028,12 +1027,17 @@ contract DeBridgeGate is
             IWrappedAsset(debridge.tokenAddress).mint(msg.sender, _executionFee);
         }
         if (_data.length > 0) {
-            IWrappedAsset(debridge.tokenAddress).mint(callProxy, _amount);
-            bool status = ICallProxy(callProxy).callERC20(
+            address callProxyAddress = _reservedFlag == PROXY_WITH_SENDER_FLAG
+                ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
+                : callProxyAddresses[0];
+            IWrappedAsset(debridge.tokenAddress).mint(callProxyAddress, _amount);
+            bool status = ICallProxy(callProxyAddress).callERC20(
                 debridge.tokenAddress,
                 _fallbackAddress,
                 _receiver,
-                _data
+                _data,
+                _reservedFlag,
+                _nativeSender
             );
             emit AutoRequestExecuted(_submissionId, status);
         } else {
@@ -1070,12 +1074,18 @@ contract DeBridgeGate is
             IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _executionFee);
         }
         if (_data.length > 0) {
-            IERC20(debridge.tokenAddress).safeTransfer(callProxy, _amount);
-            bool status = ICallProxy(callProxy).callERC20(
+            address callProxyAddress = _reservedFlag == PROXY_WITH_SENDER_FLAG
+                ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
+                : callProxyAddresses[0];
+
+            IERC20(debridge.tokenAddress).safeTransfer(callProxyAddress, _amount);
+            bool status = ICallProxy(callProxyAddress).callERC20(
                 debridge.tokenAddress,
                 _fallbackAddress,
                 _receiver,
-                _data
+                _data,
+                _reservedFlag,
+                _nativeSender
             );
             emit AutoRequestExecuted(_submissionId, status);
         } else {
@@ -1132,12 +1142,11 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         uint256 _chainIdTo,
         uint256 _amount,
-        bytes memory _receiver,
-        uint256 _nonce
+        bytes memory _receiver
     ) private view returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(_debridgeId, getChainId(), _chainIdTo, _amount, _receiver, _nonce)
+                abi.encodePacked(_debridgeId, getChainId(), _chainIdTo, _amount, _receiver, nonce)
             );
     }
 
