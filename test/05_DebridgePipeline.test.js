@@ -41,6 +41,9 @@ let claimEvents = [];
 const nativeBSCDebridgeId = "0x8ca679b0f7e259a80b1066b4253c3fdc0d9bdbb15c926fd2a5eab0335bf1f745";
 const nativeETHDebridgeId = "0x6ac1b981b4452354ad8bd156fe151bcb91252dea9ed7232af4d0e64b50c09dcf";
 
+const referralCode = 555;
+const zeroFlag = 0;
+
 contract("DeBridgeGate real pipeline mode", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
@@ -320,6 +323,11 @@ contract("DeBridgeGate real pipeline mode", function () {
       hecoChainId,
       this.wethHECO.address
     );
+
+    const DEBRIDGE_GATE_ROLE = await this.callProxy.DEBRIDGE_GATE_ROLE();
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeBSC.address);
+    await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeHECO.address);
   });
   context("Configure contracts", () => {
     it("Check init contract params", async function () {
@@ -706,7 +714,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           amount,
           chainIdTo,
           false,
-          0,
+          referralCode,
           {
             value: amount,
             from: alice,
@@ -765,7 +773,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           amount,
           chainIdTo,
           false,
-          0,
+          referralCode,
           {
             value: supportedChainInfo.fixedNativeFee,
             from: alice,
@@ -810,7 +818,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = bscChainId;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
             value: toWei("0.1"),
             from: alice,
           }),
@@ -824,7 +832,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = 9999;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
             value: amount,
             from: alice,
           }),
@@ -1007,7 +1015,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
       const newBalance = toBN(await wrappedAsset.balanceOf(this.nativeSubmission.args.receiver));
 
-      const submissionId = await this.debridgeBSC.getSubmisionId(
+      const submissionId = await this.debridgeBSC.getSubmissionId(
         this.debridgeWethId,
         ethChainId,
         bscChainId,
@@ -1054,7 +1062,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const debridgeInfo = await this.debridgeBSC.getDebridge(this.linkDebridgeId);
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
       const newBalance = toBN(await wrappedAsset.balanceOf(this.linkSubmission.args.receiver));
-      const submissionId = await this.debridgeBSC.getSubmisionId(
+      const submissionId = await this.debridgeBSC.getSubmissionId(
         this.linkDebridgeId,
         ethChainId,
         bscChainId,
@@ -1142,9 +1150,11 @@ contract("DeBridgeGate real pipeline mode", function () {
           const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
           const balance = toBN(await wrappedAsset.balanceOf(bob));
+          // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
           const deadline = toBN(MAX_UINT256);
+          const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
           const supportedChainInfo = await this.debridgeBSC.getChainSupport(chainIdTo);
-          const signature = await permit(
+          const permitSignature = await permit(
             wrappedAsset,
             bob,
             this.debridgeBSC.address,
@@ -1161,7 +1171,17 @@ contract("DeBridgeGate real pipeline mode", function () {
           );
           let burnTx = await this.debridgeBSC
             .connect(bobAccount)
-            .burn(debridgeId, receiver, amount, chainIdTo, deadline, signature, false, 0, {
+            .burn(
+              debridgeId,
+              receiver,
+              amount,
+              chainIdTo,
+              //deadline + signature;
+              //                                      remove first 0x
+              deadlineHex + permitSignature.substring(2, permitSignature.length),
+              false,
+              referralCode,
+            {
               value: fixedNativeFeeWithDiscount,
             });
 
@@ -1194,18 +1214,16 @@ contract("DeBridgeGate real pipeline mode", function () {
       it("should reject burning from current chain", async function () {
         const receiver = bob;
         const amount = toBN(toWei("1"));
-        const deadline = 0;
-        const signature = "0x";
+        const permit = "0x";
         await expectRevert(
           this.debridgeETH.burn(
             this.debridgeWethId,
             receiver,
             amount,
             ethChainId,
-            deadline,
-            signature,
+            permit,
             false,
-            0,
+            referralCode,
             {
               from: alice,
             }
@@ -1573,7 +1591,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
       const newBalance = toBN(await wrappedAsset.balanceOf(this.nativeSubmission.args.receiver));
 
-      const submissionId = await this.debridgeHECO.getSubmisionId(
+      const submissionId = await this.debridgeHECO.getSubmissionId(
         this.debridgeWethBSCId,
         bscChainId,
         hecoChainId,
@@ -1618,7 +1636,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
       const newBalance = toBN(await wrappedAsset.balanceOf(this.cakeSubmission.args.receiver));
-      const submissionId = await this.debridgeHECO.getSubmisionId(
+      const submissionId = await this.debridgeHECO.getSubmissionId(
         this.cakeDebridgeId,
         bscChainId,
         hecoChainId,
@@ -1639,9 +1657,11 @@ contract("DeBridgeGate real pipeline mode", function () {
       const debridgeInfo = await this.debridgeHECO.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
+      // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
       const deadline = toBN(MAX_UINT256);
+      const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
       const supportedChainInfo = await this.debridgeHECO.getChainSupport(chainIdTo);
-      const signature = await permit(
+      const permitSignature = await permit(
         wrappedAsset,
         bob,
         this.debridgeHECO.address,
@@ -1653,9 +1673,21 @@ contract("DeBridgeGate real pipeline mode", function () {
       // fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS));
       let burnTx = await this.debridgeHECO
         .connect(bobAccount)
-        .burn(debridgeId, receiver, amount, chainIdTo, deadline, signature, false, 0, {
+        .burn(
+          debridgeId,
+          receiver,
+          amount,
+          chainIdTo,
+          //deadline + signature;
+          //                                      remove first 0x
+          deadlineHex + permitSignature.substring(2, permitSignature.length),
+          false,
+          referralCode,
+        {
           value: fixedNativeFeeWithDiscount,
         });
+        const newBalance = toBN(await wrappedAsset.balanceOf(bob));
+        assert.equal(balance.sub(amount).toString(), newBalance.toString());
     });
   });
 
@@ -1913,6 +1945,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         currentBurnEvent.args.fallbackAddress,
         currentBurnEvent.args.claimFee,
         currentBurnEvent.args.data,
+        currentBurnEvent.args.reservedFlag,
+        currentBurnEvent.args.nativeSender,
         {
           from: alice,
         }
@@ -1987,6 +2021,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         currentBurnEvent.args.fallbackAddress,
         currentBurnEvent.args.claimFee,
         currentBurnEvent.args.data,
+        currentBurnEvent.args.reservedFlag,
+        currentBurnEvent.args.nativeSender,
         {
           from: alice,
         }

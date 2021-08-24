@@ -82,8 +82,7 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        uint256 _deadline,
-        bytes memory _signature,
+        bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode
     ) external payable;
@@ -120,6 +119,7 @@ interface IDeBridgeGate {
         uint256 _executionFee,
         bytes memory _data,
         bool _useAssetFee,
+        uint8 _reservedFlag,
         uint32 _referralCode
     ) external payable;
 
@@ -140,7 +140,9 @@ interface IDeBridgeGate {
         bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
-        bytes memory _data
+        bytes memory _data,
+        uint8 _reservedFlag,
+        bytes memory _nativeSender
     ) external;
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -159,9 +161,9 @@ interface IDeBridgeGate {
         bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
-        uint256 _deadline,
-        bytes memory _signature,
+        bytes memory _permit,
         bool _useAssetFee,
+        uint8 _reservedFlag,
         uint32 _referralCode
     ) external payable;
 
@@ -179,7 +181,9 @@ interface IDeBridgeGate {
         bytes memory _signatures,
         address _fallbackAddress,
         uint256 _executionFee,
-        bytes memory _data
+        bytes memory _data,
+        uint8 _reservedFlag,
+        bytes memory _nativeSender
     ) external;
 
     function flash(
@@ -212,7 +216,8 @@ interface IDeBridgeGate {
         uint256 chainIdTo,
         uint32 referralCode
     ); // emited once the native tokens are locked to be sent to the other chain
-    event AutoSent(
+
+   event AutoSent(
         bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
@@ -222,9 +227,17 @@ interface IDeBridgeGate {
         uint256 claimFee,
         bytes fallbackAddress,
         bytes data,
-        uint32 referralCode
-    ); // emited once the native tokens are locked to be sent to the other chain
-    event Minted(bytes32 submissionId, uint256 amount, address receiver, bytes32 debridgeId); // emited once the wrapped tokens are minted on the current chain
+        uint32 referralCode,
+        uint8 reservedFlag,
+        address nativeSender
+    );
+
+    event Minted(
+        bytes32 submissionId,
+        uint256 amount,
+        address receiver,
+        bytes32 debridgeId); // emited once the wrapped tokens are minted on the current chain
+
     event AutoMinted(
         bytes32 submissionId,
         uint256 amount,
@@ -234,6 +247,7 @@ interface IDeBridgeGate {
         address fallbackAddress,
         bytes data
     ); // emited once the wrapped tokens are minted on the current chain
+
     event Burnt(
         bytes32 submissionId,
         bytes32 debridgeId,
@@ -243,6 +257,7 @@ interface IDeBridgeGate {
         uint256 chainIdTo,
         uint32 referralCode
     ); // emited once the wrapped tokens are sent to the contract
+
     event AutoBurnt(
         bytes32 submissionId,
         bytes32 debridgeId,
@@ -253,9 +268,17 @@ interface IDeBridgeGate {
         uint256 claimFee,
         bytes fallbackAddress,
         bytes data,
-        uint32 referralCode
+        uint32 referralCode,
+        uint8 reservedFlag,
+        address nativeSender
     ); // emited once the wrapped tokens are sent to the contract
-    event Claimed(bytes32 submissionId, uint256 amount, address receiver, bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
+
+    event Claimed(
+        bytes32 submissionId,
+        uint256 amount,
+        address receiver,
+        bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
+
     event AutoClaimed(
         bytes32 submissionId,
         uint256 amount,
@@ -265,6 +288,7 @@ interface IDeBridgeGate {
         address fallbackAddress,
         bytes data
     ); // emited once the tokens are withdrawn on native chain
+
     event PairAdded(
         bytes32 indexed debridgeId,
         address indexed tokenAddress,
@@ -272,9 +296,9 @@ interface IDeBridgeGate {
         uint256 maxAmount,
         uint16 minReservesBps
     ); // emited when new asset is supported
-    event ChainSupportUpdated(uint256 chainId, bool _isSupported); // Emits when the asset is allowed/disallowed to be transferred to the chain.
+    event ChainSupportUpdated(uint256 chainId, bool isSupported); // Emits when the asset is allowed/disallowed to be transferred to the chain.
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
-    event CallProxyUpdated(address callProxy); // emited when the new call proxy set
+    event CallProxyUpdated(uint256 version, address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(bytes32 submissionId, bool success); // emited when the new call proxy set
 
     event Blocked(bytes32 submissionId); //Block submission
@@ -287,6 +311,8 @@ interface IDeBridgeGate {
         uint256 amount,
         uint256 paid
     );
+
+    event CollectedFee(bytes32 debridgeId, uint32 referralCode, uint256 fee);
 
     event ReceivedTransferFee(bytes32 debridgeId, uint256 amount);
 }

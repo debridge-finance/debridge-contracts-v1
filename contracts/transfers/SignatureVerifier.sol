@@ -31,7 +31,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     error NotConfirmedThreshold();
     error SubmissionNotConfirmed();
     error DuplicateSignatures();
-    error SignatureInvalidV();
 
     /* ========== MODIFIERS ========== */
 
@@ -88,7 +87,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint256 signaturesCount = _countSignatures(_signatures);
         address[] memory validators = new address[](signaturesCount);
         for (uint256 i = 0; i < signaturesCount; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = _parseSignature(_signatures, i);
+            (bytes32 r, bytes32 s, uint8 v) = _signatures.parseSignature(i * 65);
             address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
             if (getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
@@ -130,7 +129,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint256 signaturesCount = _countSignatures(_signatures);
         address[] memory validators = new address[](signaturesCount);
         for (uint256 i = 0; i < signaturesCount; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = _parseSignature(_signatures, i);
+            (bytes32 r, bytes32 s, uint8 v) = _signatures.parseSignature(i * 65);
             address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
             if (getOracleInfo[oracle].isValid) {
                 for (uint256 k = 0; k < i; k++) {
@@ -236,25 +235,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== INTERNAL ========== */
 
-    function _parseSignature(bytes memory _signatures, uint256 _pos)
-        internal
-        pure
-        returns (
-            bytes32 r,
-            bytes32 s,
-            uint8 v
-        )
-    {
-        uint256 offset = _pos * 65;
-        assembly {
-            r := mload(add(_signatures, add(32, offset)))
-            s := mload(add(_signatures, add(64, offset)))
-            v := and(mload(add(_signatures, add(65, offset))), 0xff)
-        }
 
-        if (v < 27) v += 27;
-        if (v != 27 && v != 28) revert SignatureInvalidV();
-    }
 
     function _countSignatures(bytes memory _signatures) internal pure returns (uint256) {
         return _signatures.length % 65 == 0 ? _signatures.length / 65 : 0;
