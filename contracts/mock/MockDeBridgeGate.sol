@@ -69,6 +69,26 @@ contract MockDeBridgeGate is DeBridgeGate {
     }
 
 
+    /// @dev Calculate submission id.
+    /// @param _debridgeId Asset identifier.
+    /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
+    /// @param _chainIdTo Chain identifier of the chain where tokens are sent to.
+    /// @param _receiver Receiver address.
+    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _nonce Submission id.
+    function getSubmissionId(
+        bytes32 _debridgeId,
+        uint256 _chainIdFrom,
+        uint256 _chainIdTo,
+        uint256 _amount,
+        address _receiver,
+        uint256 _nonce
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(_debridgeId, _chainIdFrom, _chainIdTo, _amount, _receiver, _nonce)
+            );
+    }
 
     // function getEncodePackedFROM(
     //     bytes memory _nativeSender,

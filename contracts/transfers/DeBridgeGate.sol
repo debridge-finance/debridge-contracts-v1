@@ -174,22 +174,24 @@ contract DeBridgeGate is
         bool _useAssetFee,
         uint32 _referralCode
     ) external payable override whenNotPaused {
-        (uint256 newAmount, bytes32 debridgeId) = _send(
+        bytes32 debridgeId;
+        // the amount will be reduced by the protocol fee
+        (_amount, debridgeId) = _send(
             _tokenAddress,
             _amount,
             _chainIdTo,
             _useAssetFee,
             _referralCode
         );
-        bytes32 sentId = getbSubmissionId(
+
+        bytes32 sentId = getSubmissionIdTo(
             debridgeId,
-            getChainId(),
             _chainIdTo,
-            newAmount,
+            _amount,
             _receiver,
             nonce
         );
-        emit Sent(sentId, debridgeId, newAmount, _receiver, nonce, _chainIdTo, _referralCode);
+        emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
         nonce++;
     }
 
@@ -206,10 +208,9 @@ contract DeBridgeGate is
         uint256 _nonce,
         bytes memory _signatures
     ) external override whenNotPaused {
-        bytes32 submissionId = getSubmissionId(
+        bytes32 submissionId = getSubmissionIdFrom(
             _debridgeId,
             _chainIdFrom,
-            getChainId(),
             _amount,
             _receiver,
             _nonce
@@ -241,10 +242,11 @@ contract DeBridgeGate is
         bool _useAssetFee,
         uint32 _referralCode
     ) external payable override whenNotPaused {
+        // the amount will be reduced by the protocol fee
         _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _referralCode);
-        bytes32 burntId = getbSubmissionId(
+
+        bytes32 burntId = getSubmissionIdTo(
             _debridgeId,
-            getChainId(),
             _chainIdTo,
             _amount,
             _receiver,
@@ -268,10 +270,9 @@ contract DeBridgeGate is
         uint256 _nonce,
         bytes memory _signatures
     ) external override whenNotPaused {
-        bytes32 submissionId = getSubmissionId(
+        bytes32 submissionId = getSubmissionIdFrom(
             _debridgeId,
             _chainIdFrom,
-            getChainId(),
             _amount,
             _receiver,
             _nonce
@@ -305,7 +306,9 @@ contract DeBridgeGate is
         uint8 _reservedFlag,
         uint32 _referralCode
     ) external payable override whenNotPaused {
-        (uint256 newAmount, bytes32 debridgeId) = _send(
+        bytes32 debridgeId;
+        // the amount will be reduced by the protocol fee
+        (_amount, debridgeId) = _send(
             _tokenAddress,
             _amount,
             _chainIdTo,
@@ -313,14 +316,14 @@ contract DeBridgeGate is
             _referralCode
         );
         if (_amount < _executionFee) revert ProposedFeeTooHigh();
-        newAmount -= _executionFee;
+        _amount -= _executionFee;
 
         emit AutoSent(
             // //Avoid Stack too deep  error
             getAutoSubmissionIdTo(
                 debridgeId,
                 _chainIdTo,
-                newAmount,
+                _amount,
                 _receiver,
                 _fallbackAddress,
                 _executionFee,
@@ -328,7 +331,7 @@ contract DeBridgeGate is
                 _reservedFlag
             ),
             debridgeId,
-            newAmount,
+            _amount,
             _receiver,
             nonce,
             _chainIdTo,
@@ -428,10 +431,13 @@ contract DeBridgeGate is
         uint8 _reservedFlag,
         uint32 _referralCode
     ) external payable override whenNotPaused {
+        // the amount will be reduced by the protocol fee
         _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _reservedFlag);
         if (_amount < _executionFee) revert ProposedFeeTooHigh();
         _amount -= _executionFee;
-        bytes32 burntId = getAutoSubmissionIdTo(
+
+        emit AutoBurnt(
+            getAutoSubmissionIdTo(
                 _debridgeId,
                 _chainIdTo,
                 _amount,
@@ -440,9 +446,7 @@ contract DeBridgeGate is
                 _executionFee,
                 _data,
                 _reservedFlag
-            );
-        emit AutoBurnt(
-            burntId,
+            ),
             _debridgeId,
             _amount,
             _receiver,
@@ -1108,35 +1112,32 @@ contract DeBridgeGate is
     /// @dev Calculate submission id.
     /// @param _debridgeId Asset identifier.
     /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
-    /// @param _chainIdTo Chain identifier of the chain where tokens are sent to.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
-    function getSubmissionId(
+    function getSubmissionIdFrom(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
-        uint256 _chainIdTo,
         uint256 _amount,
         address _receiver,
         uint256 _nonce
-    ) public pure returns (bytes32) {
+    ) public view returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(_debridgeId, _chainIdFrom, _chainIdTo, _amount, _receiver, _nonce)
+                abi.encodePacked(_debridgeId, _chainIdFrom, getChainId(), _amount, _receiver, _nonce)
             );
     }
 
-    function getbSubmissionId(
+    function getSubmissionIdTo(
         bytes32 _debridgeId,
-        uint256 _chainIdFrom,
         uint256 _chainIdTo,
         uint256 _amount,
         bytes memory _receiver,
         uint256 _nonce
-    ) private pure returns (bytes32) {
+    ) private view returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(_debridgeId, _chainIdFrom, _chainIdTo, _amount, _receiver, _nonce)
+                abi.encodePacked(_debridgeId, getChainId(), _chainIdTo, _amount, _receiver, _nonce)
             );
     }
 

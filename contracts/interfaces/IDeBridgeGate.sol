@@ -273,7 +273,12 @@ interface IDeBridgeGate {
         address nativeSender
     ); // emited once the wrapped tokens are sent to the contract
 
-    event Claimed(bytes32 submissionId, uint256 amount, address receiver, bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
+    event Claimed(
+        bytes32 submissionId,
+        uint256 amount,
+        address receiver,
+        bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
+
     event AutoClaimed(
         bytes32 submissionId,
         uint256 amount,
@@ -307,7 +312,7 @@ interface IDeBridgeGate {
         uint256 paid
     );
 
-    event CollectedFee(bytes32 debridgeId, uint32 _referralCode, uint256 _fee);
+    event CollectedFee(bytes32 debridgeId, uint32 referralCode, uint256 fee);
 
     event ReceivedTransferFee(bytes32 debridgeId, uint256 amount);
 }
