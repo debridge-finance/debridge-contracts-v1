@@ -26,16 +26,7 @@ library SignatureUtil {
         )
     {
         if (_signature.length != 65) revert SignatureInvalidLength();
-        assembly {
-            r := mload(add(_signature, 32))
-            s := mload(add(_signature, 64))
-            v := and(mload(add(_signature, 65)), 0xff)
-            //the same
-            // v := byte(0, mload(add(_signature, 96)))
-        }
-        if (v < 27) v += 27;
-
-        if (v != 27 && v != 28) revert SignatureInvalidV();
+        return parseSignature(_signature, 0);
     }
 
     function parseSignature(bytes memory _signatures, uint256 offset)
@@ -57,15 +48,11 @@ library SignatureUtil {
         if (v != 27 && v != 28) revert SignatureInvalidV();
     }
 
-    function toUint256(bytes memory _bytes, uint256 _offset) internal pure returns (uint256) {
+    function toUint256(bytes memory _bytes, uint256 _offset) internal pure returns (uint256 result) {
         if (_bytes.length < _offset + 32) revert WrongArgumentLength();
 
-        uint256 tempUint;
-
         assembly {
-            tempUint := mload(add(add(_bytes, 0x20), _offset))
+            result := mload(add(add(_bytes, 0x20), _offset))
         }
-
-        return tempUint;
     }
 }
