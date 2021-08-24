@@ -4,14 +4,13 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../periphery/CallProxy.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IWETH.sol";
 
-contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
+contract FeeProxy is AccessControl, IFeeProxy {
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -208,10 +207,10 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy {
             treasuryAddresses[_nativeChain], //_fallbackAddress,
             0, //_executionFee,
             abi.encodeWithSelector(DONATEFEES_SELECTOR, _debridgeId, _amount), //_data,
-            0, //_deadline,
-            "", //_signature,
+            "", //_deadline + _signature,
             false, //_useAssetFee,
-            0
+            0, //_reservedFlag
+            0 //_referralCode
         );
     }
 

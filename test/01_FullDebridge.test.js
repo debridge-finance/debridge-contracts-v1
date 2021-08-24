@@ -22,6 +22,7 @@ const fixedNativeFee = toWei("0.00001");
 const isSupported = true;
 const supportedChainIds = [42, 56];
 const excessConfirmations = 7; //Confirmations count in case of excess activity.
+const referralCode = 555;
 
 contract("DeBridgeGate full mode", function () {
   before(async function () {
@@ -578,7 +579,7 @@ contract("DeBridgeGate full mode", function () {
 
                 debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
 
-                submissionId = await this.debridge.getSubmisionId(
+                submissionId = await this.debridge.getSubmissionId(
                   debridgeId,
                   chainId,
                   currentChainId,
@@ -708,7 +709,7 @@ contract("DeBridgeGate full mode", function () {
                       const debridge = await this.debridge.getDebridge(debridgeId);
                       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
                       const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
-                      const submissionId = await this.debridge.getSubmisionId(
+                      const submissionId = await this.debridge.getSubmissionId(
                         debridgeId,
                         chainId,
                         currentChainId,
@@ -755,7 +756,7 @@ contract("DeBridgeGate full mode", function () {
                           expect(discount).to.equal(discountFromContract.discountFixBps);
                         });
 
-                        it("should burning when the amount is suficient", async function () {
+                        it("should burning with permit when the amount is suficient", async function () {
                           const chainIdTo = 56;
                           const receiver = alice.address;
                           const amount = toBN(toWei("1"));
@@ -771,8 +772,10 @@ contract("DeBridgeGate full mode", function () {
                           const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
                           const balance = toBN(await wrappedAsset.balanceOf(bob.address));
                           const deadline = toBN(MAX_UINT256);
+
+                          const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
                           const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-                          const signature = await permit(
+                          const permitSignature = await permit(
                             wrappedAsset,
                             bob.address,
                             this.debridge.address,
@@ -794,10 +797,11 @@ contract("DeBridgeGate full mode", function () {
                               alice.address,
                               amount,
                               chainIdTo,
-                              deadline,
-                              signature,
+                              //deadline + signature;
+                              //                                      remove first 0x
+                              deadlineHex + permitSignature.substring(2, permitSignature.length),
                               false,
-                              0,
+                              referralCode,
                               {
                                 value: fixedNativeFeeWithDiscount,
                               }
@@ -838,8 +842,9 @@ contract("DeBridgeGate full mode", function () {
                           const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
                           const balance = toBN(await wrappedAsset.balanceOf(bob.address));
                           const deadline = toBN(MAX_UINT256);
+                          const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
                           const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-                          const signature = await permit(
+                          const permitSignature = await permit(
                             wrappedAsset,
                             bob.address,
                             this.debridge.address,
@@ -866,10 +871,11 @@ contract("DeBridgeGate full mode", function () {
                               alice.address,
                               amount,
                               chainIdTo,
-                              deadline,
-                              signature,
+                              //deadline + signature;
+                              //                                       remove first 0x
+                              deadlineHex + permitSignature.substring(2, permitSignature.length),
                               true,
-                              0
+                              referralCode
                             );
                           const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             this.nativeDebridgeId
@@ -901,18 +907,16 @@ contract("DeBridgeGate full mode", function () {
                             chainId,
                             tokenAddress
                           );
-                          const deadline = 0;
-                          const signature = "0x";
+                          const permit = "0x";
                           await expectRevert(
                             this.debridge.burn(
                               debridgeId,
                               receiver,
                               amount,
                               42,
-                              deadline,
-                              signature,
+                              permit,
                               false,
-                              0,
+                              referralCode,
                               {
                                 from: alice.address,
                               }
@@ -949,7 +953,7 @@ contract("DeBridgeGate full mode", function () {
                   chainId,
                   this.mockToken.address
                 );
-                curentChainSubmissionId = await this.debridge.getSubmisionId(
+                curentChainSubmissionId = await this.debridge.getSubmissionId(
                   this.wethDebridgeId,
                   chainIdFrom,
                   chainId,
@@ -957,7 +961,7 @@ contract("DeBridgeGate full mode", function () {
                   receiver,
                   nonce
                 );
-                outsideChainSubmissionId = await this.debridge.getSubmisionId(
+                outsideChainSubmissionId = await this.debridge.getSubmissionId(
                   outsideDebridgeId,
                   chainIdFrom,
                   56,
@@ -965,7 +969,7 @@ contract("DeBridgeGate full mode", function () {
                   receiver,
                   nonce
                 );
-                erc20SubmissionId = await this.debridge.getSubmisionId(
+                erc20SubmissionId = await this.debridge.getSubmissionId(
                   erc20DebridgeId,
                   chainIdFrom,
                   chainId,
@@ -1040,7 +1044,7 @@ contract("DeBridgeGate full mode", function () {
                 });
 
                 it("should reject when the submission is blocked", async function () {
-                  const cuurentChainSubmission = await this.debridge.getSubmisionId(
+                  const cuurentChainSubmission = await this.debridge.getSubmissionId(
                     this.wethDebridgeId,
                     chainIdFrom,
                     chainId,
@@ -1101,7 +1105,7 @@ contract("DeBridgeGate full mode", function () {
                 });
                 describe("should unblock the submission by admin", function () {
                   beforeEach(async function () {
-                    const cuurentChainSubmission = await this.debridge.getSubmisionId(
+                    const cuurentChainSubmission = await this.debridge.getSubmissionId(
                       this.wethDebridgeId,
                       chainIdFrom,
                       chainId,
@@ -1149,7 +1153,7 @@ contract("DeBridgeGate full mode", function () {
                       .div(BPS)
                       .add(toBN(supportedChainInfo.fixedNativeFee));
                     feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
-                    await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+                    await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
                       value: amount,
                       from: alice.address,
                     });
@@ -1186,7 +1190,7 @@ contract("DeBridgeGate full mode", function () {
                     let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
                     fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
 
-                    await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+                    await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
                       value: supportedChainInfo.fixedNativeFee,
                       from: alice.address,
                     });
@@ -1246,7 +1250,7 @@ contract("DeBridgeGate full mode", function () {
                       }
                     );
                     const newBalance = toBN(await this.mockToken.balanceOf(receiver));
-                    const submissionId = await this.debridge.getSubmisionId(
+                    const submissionId = await this.debridge.getSubmissionId(
                       erc20DebridgeId,
                       chainIdFrom,
                       await this.debridge.getChainId(),
@@ -1319,7 +1323,7 @@ contract("DeBridgeGate full mode", function () {
                         }
                       );
                       const newReceivebalance = toBN(await this.weth.balanceOf(receiver));
-                      const submissionId = await this.debridge.getSubmisionId(
+                      const submissionId = await this.debridge.getSubmissionId(
                         this.wethDebridgeId,
                         chainIdFrom,
                         await this.debridge.getChainId(),
@@ -1401,7 +1405,7 @@ contract("DeBridgeGate full mode", function () {
                     .div(BPS)
                     .add(toBN(supportedChainInfo.fixedNativeFee));
                   feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
-                  await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+                  await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
                     value: amount,
                     from: alice.address,
                   });
@@ -1434,7 +1438,7 @@ contract("DeBridgeGate full mode", function () {
                   );
                   let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
                   fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
-                  await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+                  await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
                     value: supportedChainInfo.fixedNativeFee,
                     from: alice.address,
                   });
@@ -1484,7 +1488,7 @@ contract("DeBridgeGate full mode", function () {
                     [chainIdTo],
                     [supportedChainInfo.fixedNativeFee]
                   );
-                  await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, true, 0, {
+                  await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, true, referralCode, {
                     value: supportedChainInfo.fixedNativeFee,
                     from: alice.address,
                   });
@@ -1523,7 +1527,7 @@ contract("DeBridgeGate full mode", function () {
                   );
 
                   await expectRevert(
-                    this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+                    this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
                       value: amount,
                       from: alice.address,
                     }),
@@ -1555,7 +1559,7 @@ contract("DeBridgeGate full mode", function () {
                   const chainIdTo = chainId;
                   const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
                   await expectRevert(
-                    this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+                    this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
                       value: amount,
                       from: alice.address,
                     }),
@@ -1574,7 +1578,7 @@ contract("DeBridgeGate full mode", function () {
                     const chainIdTo = 42;
 
                     await expectRevert(
-                      this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
+                      this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
                         value: amount,
                         from: alice.address,
                       }),

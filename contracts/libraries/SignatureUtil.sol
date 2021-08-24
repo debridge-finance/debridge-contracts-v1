@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 library SignatureUtil {
     /* ========== ERRORS ========== */
 
+    error WrongArgumentLength();
     error SignatureInvalidLength();
     error SignatureInvalidV();
 
@@ -35,5 +36,36 @@ library SignatureUtil {
         if (v < 27) v += 27;
 
         if (v != 27 && v != 28) revert SignatureInvalidV();
+    }
+
+    function parseSignature(bytes memory _signatures, uint256 offset)
+        internal
+        pure
+        returns (
+            bytes32 r,
+            bytes32 s,
+            uint8 v
+        )
+    {
+        assembly {
+            r := mload(add(_signatures, add(32, offset)))
+            s := mload(add(_signatures, add(64, offset)))
+            v := and(mload(add(_signatures, add(65, offset))), 0xff)
+        }
+
+        if (v < 27) v += 27;
+        if (v != 27 && v != 28) revert SignatureInvalidV();
+    }
+
+    function toUint256(bytes memory _bytes, uint256 _offset) internal pure returns (uint256) {
+        if (_bytes.length < _offset + 32) revert WrongArgumentLength();
+
+        uint256 tempUint;
+
+        assembly {
+            tempUint := mload(add(add(_bytes, 0x20), _offset))
+        }
+
+        return tempUint;
     }
 }
