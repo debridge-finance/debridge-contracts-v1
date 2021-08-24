@@ -67,4 +67,64 @@ contract MockDeBridgeGate is DeBridgeGate {
     function getChainId() public view override returns (uint256 cid) {
         return chainId;
     }
+
+
+
+    // function getEncodePackedFROM(
+    //     bytes memory _nativeSender,
+    //     bytes32 _debridgeId,
+    //     uint256 _chainIdFrom,
+    //     uint256 _amount,
+    //     address _receiver,
+    //     uint256 _nonce,//hello
+    //     address _fallbackAddress,
+    //     uint256 _executionFee,
+    //     bytes memory _data
+    // ) public view returns (bytes memory) {
+    //     return
+    //             abi.encodePacked(
+    //                 // To avoid error:
+    //                 // Variable value0 is 1 slot(s) too deep inside the stack.
+    //                 abi.encodePacked(
+    //                     //TODO: ALARM CHECK that we have the same abi.encodePacked from and TO getAutoSubmissionIdTo
+    //                     _nativeSender,
+    //                     _debridgeId,
+    //                     _chainIdFrom
+    //                 ),
+    //                 getChainId(),//_chainIdTo,
+    //                 _amount,
+    //                 _receiver,
+    //                 _nonce,
+    //                 _fallbackAddress,
+    //                 _executionFee,
+    //                 _data
+    //             );
+    // }
+
+    // function getEncodePackedTO(
+    //     bytes32 _debridgeId,
+    //     uint256 _chainIdTo,
+    //     uint256 _amount,
+    //     bytes memory _receiver,
+    //     // uint256 _nonce,
+    //     bytes memory _fallbackAddress,
+    //     uint256 _executionFee,
+    //     bytes memory _data
+    // ) public view returns  (bytes memory) {
+    //     return
+    //             abi.encodePacked(
+    //                 address(this), // only for test
+    //                 // msg.sender,
+    //                 _debridgeId,
+    //                 getChainId(),
+    //                 _chainIdTo,
+    //                 _amount,
+    //                 _receiver,
+    //                 nonce, //_nonce,
+    //                 _fallbackAddress,
+    //                 _executionFee,
+    //                 _data
+    //             );
+    // }
+
 }
