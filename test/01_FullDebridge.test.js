@@ -216,14 +216,6 @@ contract("DeBridgeGate full mode", function () {
       expect(await this.debridge.flashFeeBps()).to.equal(newFlashFee);
     });
 
-    it("should update amount collectRewardBps if called by the admin", async function () {
-      const newcollectRewardBps = 20;
-
-      await this.debridge.updateCollectRewardBps(newcollectRewardBps);
-
-      expect(await this.debridge.collectRewardBps()).to.equal(newcollectRewardBps);
-    });
-
     it("should update address treasury if called by the admin", async function () {
       const treasuryAddressBefore = await this.debridge.treasury();
 
@@ -307,9 +299,6 @@ contract("DeBridgeGate full mode", function () {
       await expectRevert(this.debridge.connect(bob).updateFlashFee(20), "AdminBadRole");
     });
 
-    it("should reject setting amount collectRewardBps if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).updateCollectRewardBps(20), "AdminBadRole()");
-    });
 
     it("should reject setting address treasury if called by the non-admin", async function () {
       await expectRevert(this.debridge.connect(bob).updateTreasury(ZERO_ADDRESS), "AdminBadRole()");
@@ -429,10 +418,14 @@ contract("DeBridgeGate full mode", function () {
 
       context("with feeProxy", async function () {
         beforeEach(async function () {
-          const FeeProxy = await ethers.getContractFactory("FeeProxy");
-          this.feeProxy = await FeeProxy.deploy(
-            this.linkToken.address,
-            this.uniswapFactory.address
+          const FeeProxyFactory = await ethers.getContractFactory("FeeProxy");
+
+          this.feeProxy = await upgrades.deployProxy(
+            FeeProxyFactory,
+            [
+              this.linkToken.address,
+              this.uniswapFactory.address
+            ]
           );
           await this.debridge.setFeeProxy(this.feeProxy.address);
         });

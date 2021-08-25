@@ -1195,11 +1195,9 @@ contract("DeBridgeGate real pipeline mode", function () {
             });
 
           let receipt = await burnTx.wait();
-          console.log(receipt);
           let burnEvent = receipt.events.find((x) => {
             return x.event == "Burnt";
           });
-          console.log(burnEvent);
           burnEvents.push(burnEvent);
 
           const newNativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
@@ -1913,20 +1911,24 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       let receipt = await sendTx.wait();
-      console.log(receipt);
-      this.burnEventDeLink = receipt.events.find((x) => {
-        return x.event == "Burnt"; //"AutoBurnt";
-      });
-      console.log(this.burnEventDeLink);
+      //Don't working because events from second contract
+      //https://ethereum.stackexchange.com/questions/48335/transaction-receipt-contains-all-log-entries-but-only-the-last-two-are-decoded/48389#48389
+      // this.burnEventDeLink = receipt.events.find((x) => {
+      //   return x.event == "Burnt"; //"AutoBurnt";
+      // });
+
+      this.burnEventDeLink = (await this.debridgeBSC.queryFilter(
+        this.debridgeBSC.filters.Burnt(),
+        receipt.blockNumber))[0];
 
       const newBalance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
       const diffBalance = balance.sub(newBalance);
       const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.linkDebridgeId);
-      console.log("diffBalance.toString() ",diffBalance.toString());
-      console.log("debridgeFeeInfo.collectedFees ",debridgeFeeInfo.collectedFees.toString());
-      console.log("debridgeFeeInfo.withdrawnFees ",debridgeFeeInfo.withdrawnFees.toString());
-      console.log("newDebridgeFeeInfo.collectedFees ",newDebridgeFeeInfo.collectedFees.toString());
-      console.log("newDebridgeFeeInfo.withdrawnFees ",newDebridgeFeeInfo.withdrawnFees.toString());
+      // console.log("diffBalance.toString() ",diffBalance.toString());
+      // console.log("debridgeFeeInfo.collectedFees ",debridgeFeeInfo.collectedFees.toString());
+      // console.log("debridgeFeeInfo.withdrawnFees ",debridgeFeeInfo.withdrawnFees.toString());
+      // console.log("newDebridgeFeeInfo.collectedFees ",newDebridgeFeeInfo.collectedFees.toString());
+      // console.log("newDebridgeFeeInfo.withdrawnFees ",newDebridgeFeeInfo.withdrawnFees.toString());
       assert.equal(diffBalance.toString(), debridgeFeeInfo.collectedFees.toString());
       assert.equal(0, debridgeFeeInfo.withdrawnFees.toString());
       assert.equal(
@@ -1979,15 +1981,8 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let receipt = await sendTx.wait();
       const balanceAfter = toBN(await this.linkToken.balanceOf(this.feeProxyETH.address));
-      console.log("gt "+currentBurnEvent.args.amount.toNumber()>0);
       expect(currentBurnEvent.args.amount.toNumber()>0).ok;
-      assert.gt(currentBurnEvent.args.amount);
       assert.equal(currentBurnEvent.args.amount.toString(), balanceAfter.sub(balance).toString());
-      let ReceivedTransferFee = receipt.events.find((x) => {
-        return x.event == "ReceivedTransferFee";
-      });
-      // console.log(ReceivedTransferFee);
-      // console.log("amount " + ReceivedTransferFee.args.amount.toString());
     });
 
     it("should withdraw fee of ERC20 token (HECO network, deCake) if it is called by the worker", async function () {
@@ -2005,9 +2000,16 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       let receipt = await sendTx.wait();
-      this.burnEventDeCake = receipt.events.find((x) => {
-        return x.event == "Burnt"; //"AutoBurnt";
-      });
+      //Don't working because events from second contract
+      //https://ethereum.stackexchange.com/questions/48335/transaction-receipt-contains-all-log-entries-but-only-the-last-two-are-decoded/48389#48389
+
+      // this.burnEventDeCake = receipt.events.find((x) => {
+      //   return x.event == "Burnt"; //"AutoBurnt";
+      // });
+      this.burnEventDeCake = (await this.debridgeHECO.queryFilter(
+        this.debridgeHECO.filters.Burnt(),
+        receipt.blockNumber))[0];
+
       // console.log(this.burnEventDeCake);
       const newDebridgeFeeInfo = await this.debridgeHECO.getDebridgeFeeInfo(this.cakeDebridgeId);
       // console.log("diffBalance.toString() ",diffBalance.toString());
@@ -2038,20 +2040,20 @@ contract("DeBridgeGate real pipeline mode", function () {
         .submit(currentBurnEvent.args.submissionId);
 
       const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-      const balance = toBN(await this.cakeToken.balanceOf(this.debridgeBSC.address));
+      const balance = toBN(await this.cakeToken.balanceOf(this.feeProxyBSC.address));
 
-      let sendTx = await this.debridgeBSC.autoClaim(
+      let sendTx = await this.debridgeBSC.claim(
         debridgeId,
         chainFrom,
         currentBurnEvent.args.receiver,
         currentBurnEvent.args.amount,
         currentBurnEvent.args.nonce,
         [],
-        currentBurnEvent.args.fallbackAddress,
-        currentBurnEvent.args.claimFee,
-        currentBurnEvent.args.data,
-        currentBurnEvent.args.reservedFlag,
-        currentBurnEvent.args.nativeSender,
+        // currentBurnEvent.args.fallbackAddress,
+        // currentBurnEvent.args.claimFee,
+        // currentBurnEvent.args.data,
+        // currentBurnEvent.args.reservedFlag,
+        // currentBurnEvent.args.nativeSender,
         {
           from: alice,
         }
@@ -2067,7 +2069,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log("amount " + ReceivedTransferFee.args.amount.toString());
 
       const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-      const newBalance = toBN(await this.cakeToken.balanceOf(this.debridgeBSC.address));
+      const newBalance = toBN(await this.cakeToken.balanceOf(this.feeProxyBSC.address));
 
       // console.log("cakeToken "+ this.cakeToken.address);
       // console.log("this.debridgeBSC "+ this.debridgeBSC.address);
@@ -2079,12 +2081,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log("Proxy fee balance  "+(await this.cakeToken.balanceOf(this.feeProxyBSC.address)).toString());
 
       //Balnce cake on debridgeGate will be the same, Cake only transfered to CallProxy and back to collected fee
-      assert.equal(balance.toString(), newBalance.toString());
-
-      assert.equal(
-        debridgeFeeInfo.donatedFees.add(currentBurnEvent.args.amount).toString(),
-        newDebridgeFeeInfo.donatedFees.toString()
-      );
+      assert.equal(currentBurnEvent.args.amount.toString(), newBalance.sub(balance).toString());
 
       assert.equal(
         debridgeFeeInfo.collectedFees.toString(),
