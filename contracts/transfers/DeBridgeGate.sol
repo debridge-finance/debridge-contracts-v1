@@ -221,7 +221,8 @@ contract DeBridgeGate is
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
         _mint(submissionId, _debridgeId, _receiver, _amount, address(0), 0, "", 0, "");
-        emit Minted(submissionId, _amount, _receiver, _debridgeId);
+
+        emit Minted(submissionId, _debridgeId, _amount, _receiver, _nonce, _chainIdFrom);
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -277,7 +278,8 @@ contract DeBridgeGate is
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
         _claim(submissionId, _debridgeId, _receiver, _amount, address(0), 0, "", 0, "");
-        emit Claimed(submissionId, _amount, _receiver, _debridgeId);
+
+        emit Claimed(submissionId, _debridgeId, _amount, _receiver, nonce, _chainIdFrom);
     }
 
     /* ========== AUTO send, mint, burn, claim ========== */
@@ -394,14 +396,19 @@ contract DeBridgeGate is
             _reservedFlag,
             _nativeSender
         );
+
         emit AutoMinted(
             submissionId,
+            _debridgeId,
             _amount,
             _receiver,
-            _debridgeId,
+            _nonce,
+            // _chainIdFrom,
             _executionFee,
             _fallbackAddress,
-            _data
+            _data,
+            _reservedFlag
+            // _nativeSender
         );
     }
 
@@ -502,14 +509,19 @@ contract DeBridgeGate is
             _reservedFlag,
             _nativeSender
         );
+
         emit AutoClaimed(
             submissionId,
+            _debridgeId,
             _amount,
             _receiver,
-            _debridgeId,
+            _nonce,
+            // _chainIdFrom,
             _executionFee,
             _fallbackAddress,
-            _data
+            _data,
+            _reservedFlag
+            // _nativeSender
         );
     }
 
@@ -1128,7 +1140,6 @@ contract DeBridgeGate is
                     // To avoid error:
                     // Variable value0 is 1 slot(s) too deep inside the stack.
                     abi.encodePacked(
-                        //TODO: ALARM CHECK that we have the same abi.encodePacked from and TO
                         _nativeSender,
                         _debridgeId,
                         _chainIdFrom

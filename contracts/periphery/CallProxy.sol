@@ -37,7 +37,7 @@ contract CallProxy is AccessControl, ICallProxy {
         bytes memory _data,
         uint8 _reservedFlag,
         bytes memory _nativeSender
-    ) external payable override onlyGateRole 
+    ) external payable override onlyGateRole
       returns (bool _result) {
 
         // Add last argument is sender from original network
@@ -76,6 +76,9 @@ contract CallProxy is AccessControl, ICallProxy {
             IERC20(_token).safeTransfer(_reserveAddress, amount);
         }
     }
+
+    //gnosis
+    //https://github.com/gnosis/MultiSigWallet/blob/ca981359cf5acd6a1f9db18e44777e45027df5e0/contracts/MultiSigWallet.sol#L244-L261
 
     function externalCall(
         address destination,

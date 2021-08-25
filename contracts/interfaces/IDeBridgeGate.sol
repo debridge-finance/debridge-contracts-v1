@@ -241,18 +241,25 @@ interface IDeBridgeGate {
 
     event Minted(
         bytes32 submissionId,
+        bytes32 debridgeId,
         uint256 amount,
         address receiver,
-        bytes32 debridgeId); // emited once the wrapped tokens are minted on the current chain
+        uint256 nonce,
+        uint256 chainIdFrom
+    ); // emited once the wrapped tokens are minted on the current chain
 
     event AutoMinted(
         bytes32 submissionId,
+        bytes32 debridgeId,
         uint256 amount,
         address receiver,
-        bytes32 debridgeId,
+        uint256 nonce,
+        // uint256 chainIdFrom,
         uint256 claimFee,
         address fallbackAddress,
-        bytes data
+        bytes data,
+        uint8 reservedFlag
+        // bytes nativeSender
     ); // emited once the wrapped tokens are minted on the current chain
 
     event Burnt(
@@ -282,18 +289,24 @@ interface IDeBridgeGate {
 
     event Claimed(
         bytes32 submissionId,
+        bytes32 debridgeId,
         uint256 amount,
         address receiver,
-        bytes32 debridgeId); // emited once the tokens are withdrawn on native chain
+        uint256 nonce,
+        uint256 chainIdFrom); // emited once the tokens are withdrawn on native chain
 
     event AutoClaimed(
         bytes32 submissionId,
+        bytes32 debridgeId,
         uint256 amount,
         address receiver,
-        bytes32 debridgeId,
+        uint256 nonce,
+        // uint256 chainIdFrom,
         uint256 claimFee,
         address fallbackAddress,
-        bytes data
+        bytes data,
+        uint8 reservedFlag
+        // bytes nativeSender
     ); // emited once the tokens are withdrawn on native chain
 
     event PairAdded(
