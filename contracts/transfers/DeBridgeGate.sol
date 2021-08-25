@@ -10,7 +10,6 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/IWrappedAsset.sol";
 import "../interfaces/ISignatureVerifier.sol";
-import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IDefiController.sol";
@@ -34,7 +33,6 @@ contract DeBridgeGate is
     // Basis points or bps equal to 1/10000
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
-    bytes32 public constant WORKER_ROLE = keccak256("WORKER_ROLE"); // role allowed to withdraw fee
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
     uint256 public constant PROXY_WITH_SENDER_FLAG = 100; //Flag to call proxy with sender contract
 
@@ -43,7 +41,6 @@ contract DeBridgeGate is
     address public treasury; //address of treasury
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint256 public flashFeeBps; // fee in basis points (1/10000)
-    uint256 public collectRewardBps; // reward BPS that user will receive for collect reawards
     uint256 public nonce; //outgoing submissions count
 
     mapping(uint256 => address) public callProxyAddresses; // proxy to execute user's calls
@@ -58,12 +55,12 @@ contract DeBridgeGate is
     mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
 
     IDefiController public defiController; // proxy to use the locked assets in Defi protocols
-    IFeeProxy public feeProxy; // proxy to convert the collected fees into Link's
+    address public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
 
     /* ========== ERRORS ========== */
 
-    error WorkerBadRole();
+    error FeeProxyBadRole();
     error DefiControllerBadRole();
     error AdminBadRole();
     error GovMonitoringBadRole();
@@ -96,8 +93,8 @@ contract DeBridgeGate is
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyWorker() {
-        if (!hasRole(WORKER_ROLE, msg.sender)) revert WorkerBadRole();
+    modifier onlyFeeProxy() {
+        if (feeProxy != msg.sender) revert FeeProxyBadRole();
         _;
     }
 
@@ -131,7 +128,7 @@ contract DeBridgeGate is
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
-        IFeeProxy _feeProxy,
+        address _feeProxy,
         IDefiController _defiController,
         address _treasury
     ) public initializer {
@@ -174,7 +171,7 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         bool _useAssetFee,
         uint32 _referralCode
-    ) external payable override whenNotPaused {
+    ) external payable override nonReentrant whenNotPaused {
         bytes32 debridgeId;
         // the amount will be reduced by the protocol fee
         (_amount, debridgeId) = _send(
@@ -207,7 +204,7 @@ contract DeBridgeGate is
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures
-    ) external override whenNotPaused {
+    ) external override nonReentrant whenNotPaused {
         bytes32 submissionId = getSubmissionIdFrom(
             _debridgeId,
             _chainIdFrom,
@@ -241,7 +238,7 @@ contract DeBridgeGate is
         bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode
-    ) external payable override whenNotPaused {
+    ) external payable override nonReentrant whenNotPaused {
         // the amount will be reduced by the protocol fee
         _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _referralCode);
 
@@ -268,7 +265,7 @@ contract DeBridgeGate is
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures
-    ) external override whenNotPaused {
+    ) external override nonReentrant whenNotPaused {
         bytes32 submissionId = getSubmissionIdFrom(
             _debridgeId,
             _chainIdFrom,
@@ -304,7 +301,7 @@ contract DeBridgeGate is
         bool _useAssetFee,
         uint8 _reservedFlag,
         uint32 _referralCode
-    ) external payable override whenNotPaused {
+    ) external payable override nonReentrant whenNotPaused {
         bytes32 debridgeId;
         // the amount will be reduced by the protocol fee
         (_amount, debridgeId) = _send(
@@ -364,7 +361,7 @@ contract DeBridgeGate is
         bytes memory _data,
         uint8 _reservedFlag,
         bytes memory _nativeSender
-    ) external override whenNotPaused {
+    ) external override nonReentrant whenNotPaused {
 
         bytes32 submissionId = getAutoSubmissionIdFrom(
             _nativeSender,
@@ -429,7 +426,7 @@ contract DeBridgeGate is
         bool _useAssetFee,
         uint8 _reservedFlag,
         uint32 _referralCode
-    ) external payable override whenNotPaused {
+    ) external payable override nonReentrant whenNotPaused {
         // the amount will be reduced by the protocol fee
         _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _reservedFlag);
         if (_amount < _executionFee) revert ProposedFeeTooHigh();
@@ -478,7 +475,7 @@ contract DeBridgeGate is
         bytes memory _data,
         uint8 _reservedFlag,
         bytes memory _nativeSender
-    ) external override whenNotPaused {
+    ) external override nonReentrant whenNotPaused {
         bytes32 submissionId = getAutoSubmissionIdFrom(
             _nativeSender,
             _debridgeId,
@@ -524,7 +521,8 @@ contract DeBridgeGate is
     )
         external
         override
-        nonReentrant // noDelegateCall
+        nonReentrant whenNotPaused
+        // noDelegateCall
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         if (!getDebridge[debridgeId].exist) revert DebridgeNotFound();
@@ -641,69 +639,32 @@ contract DeBridgeGate is
         _unpause();
     }
 
-    /// @dev donate fees (called by proxy)
-    /// @param _debridgeId Asset identifier.
-    /// @param _amount amount for transfer.
-    function donateFees(bytes32 _debridgeId, uint256 _amount) external nonReentrant {
-        DebridgeInfo memory debridge = getDebridge[_debridgeId];
-        if (!debridge.exist) revert DebridgeNotFound();
-
-        IERC20 token = IERC20(debridge.tokenAddress);
-        uint256 balanceBefore = token.balanceOf(address(this));
-        token.safeTransferFrom(msg.sender, address(this), _amount);
-        // Received real amount
-        _amount = token.balanceOf(address(this)) - balanceBefore;
-
-        getDebridgeFeeInfo[_debridgeId].donatedFees += _amount;
-        emit ReceivedTransferFee(_debridgeId, _amount);
-    }
-
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
-    function withdrawFee(bytes32 _debridgeId) external payable nonReentrant onlyWorker {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+    function withdrawFee(bytes32 _debridgeId) external override nonReentrant onlyFeeProxy {
+        DebridgeInfo memory debridge = getDebridge[_debridgeId];
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
 
         //Amount for transfer to treasure
-        uint256 amount = debridgeFee.collectedFees +
-            debridgeFee.donatedFees -
-            debridgeFee.withdrawnFees;
+        uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
         debridgeFee.withdrawnFees += amount;
-        //Reward amount for user
-        uint256 rewardAmount = (amount * collectRewardBps) / BPS_DENOMINATOR;
-        amount -= rewardAmount;
 
-        IERC20(debridge.tokenAddress).safeTransfer(address(feeProxy), amount);
-        if (rewardAmount > 0) {
-            IERC20(debridge.tokenAddress).safeTransfer(msg.sender, rewardAmount);
-        }
-
-        feeProxy.transferToTreasury{value: msg.value}(
-            _debridgeId,
-            debridge.tokenAddress,
-            debridge.chainId
-        );
+        IERC20(debridge.tokenAddress).safeTransfer(feeProxy, amount);
+        emit WithdrawnFee(_debridgeId, amount);
     }
 
     /// @dev Withdraw native fees.
-    function withdrawNativeFee() external payable nonReentrant onlyWorker {
+    function withdrawNativeFee() external override nonReentrant onlyFeeProxy {
         bytes32 debridgeId = getDebridgeId(getChainId(), address(0));
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[debridgeId];
 
         //Amount for transfer to treasure
-        uint256 amount = debridgeFee.collectedFees +
-            debridgeFee.donatedFees -
-            debridgeFee.withdrawnFees;
-
+        uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
         debridgeFee.withdrawnFees += amount;
-        //Reward amount for user
-        uint256 rewardAmount = (amount * collectRewardBps) / BPS_DENOMINATOR;
-        if (rewardAmount > 0) {
-            amount -= rewardAmount;
-            payable(msg.sender).transfer(rewardAmount);
-        }
-        feeProxy.transferNativeToTreasury{value: msg.value + amount}(debridgeId, msg.value);
+
+        payable(feeProxy).transfer(amount);
+        emit WithdrawnFee(debridgeId, amount);
     }
 
     /// @dev Request the assets to be used in defi protocol.
@@ -747,7 +708,7 @@ contract DeBridgeGate is
 
     /// @dev Set fee converter proxy.
     /// @param _feeProxy Fee proxy address.
-    function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin {
+    function setFeeProxy(address _feeProxy) external onlyAdmin {
         feeProxy = _feeProxy;
     }
 
@@ -768,12 +729,7 @@ contract DeBridgeGate is
         flashFeeBps = _flashFeeBps;
     }
 
-    /// @dev Update transfer reward BPS.
-    /// @param _collectRewardBps new reward in BPS
-    function updateCollectRewardBps(uint16 _collectRewardBps) external onlyAdmin {
-        if (_collectRewardBps > BPS_DENOMINATOR) revert WrongArgument();
-        collectRewardBps = _collectRewardBps;
-    }
+
 
     /// @dev Update discount.
     /// @param _address customer address
@@ -1222,6 +1178,14 @@ contract DeBridgeGate is
                     _reservedFlag
                 )
             );
+    }
+
+    function getNativeTokenInfo(address currentTokenAddress)
+        external view override
+        returns (uint256 chainId, bytes memory nativeAddress)
+    {
+        TokenInfo memory tokenInfo = getNativeInfo[currentTokenAddress];
+        return (tokenInfo.chainId, tokenInfo.nativeAddress);
     }
 
     function getChainId() public view virtual returns (uint256 cid) {

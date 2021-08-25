@@ -3,7 +3,6 @@ const { ZERO_ADDRESS, permit } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
-const MockFeeProxy = artifacts.require("MockFeeProxy");
 const CallProxy = artifacts.require("CallProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
@@ -79,6 +78,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     const DeBridgeGateFactory = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const SignatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
+    const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
 
     this.amountThreshols = toWei("1000");
     this.minConfirmations = 5;
@@ -117,30 +117,39 @@ contract("DeBridgeGate real pipeline mode", function () {
     this.uniswapFactoryHECO = await UniswapV2Factory.deploy(carol);
 
     //-------Deploy FeeProxy contracts
-    this.feeProxyETH = await MockFeeProxy.new(
-      // this.linkToken.address,
-      this.uniswapFactoryETH.address,
-      this.wethETH.address,
+    this.feeProxyETH = await upgrades.deployProxy(
+      MockFeeProxyFactory,
+      [
+        this.uniswapFactoryETH.address,
+        this.wethETH.address
+      ],
       {
-        from: alice,
+        initializer: "initializeMock",
+        kind: "transparent",
       }
     );
 
-    this.feeProxyBSC = await MockFeeProxy.new(
-      // this.linkToken.address,
-      this.uniswapFactoryBSC.address,
-      this.wethBSC.address,
+    this.feeProxyBSC = await upgrades.deployProxy(
+      MockFeeProxyFactory,
+      [
+        this.uniswapFactoryBSC.address,
+        this.wethBSC.address
+      ],
       {
-        from: alice,
+        initializer: "initializeMock",
+        kind: "transparent",
       }
     );
 
-    this.feeProxyHECO = await MockFeeProxy.new(
-      // this.linkToken.address,
-      this.uniswapFactoryHECO.address,
-      this.wethHECO.address,
+    this.feeProxyHECO = await upgrades.deployProxy(
+      MockFeeProxyFactory,
+      [
+        this.uniswapFactoryHECO.address,
+        this.wethHECO.address,
+      ],
       {
-        from: alice,
+        initializer: "initializeMock",
+        kind: "transparent",
       }
     );
 
@@ -1186,9 +1195,11 @@ contract("DeBridgeGate real pipeline mode", function () {
             });
 
           let receipt = await burnTx.wait();
+          console.log(receipt);
           let burnEvent = receipt.events.find((x) => {
             return x.event == "Burnt";
           });
+          console.log(burnEvent);
           burnEvents.push(burnEvent);
 
           const newNativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
@@ -1788,65 +1799,70 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log(reserve2[0].toString(), reserve2[1].toString());
       // console.log(reserve3[0].toString(), reserve3[1].toString());
 
-      const WORKER_ROLE = await this.debridgeETH.WORKER_ROLE();
-      await this.debridgeETH.grantRole(WORKER_ROLE, worker);
-      await this.debridgeBSC.grantRole(WORKER_ROLE, worker);
-      await this.debridgeHECO.grantRole(WORKER_ROLE, worker);
+      const WORKER_ROLE = await this.feeProxyETH.WORKER_ROLE();
+      await this.feeProxyETH.grantRole(WORKER_ROLE, worker);
+      await this.feeProxyBSC.grantRole(WORKER_ROLE, worker);
+      await this.feeProxyHECO.grantRole(WORKER_ROLE, worker);
+
+
+      await this.feeProxyETH.grantRole(WORKER_ROLE, worker);
+      await this.feeProxyBSC.grantRole(WORKER_ROLE, worker);
+      await this.feeProxyHECO.grantRole(WORKER_ROLE, worker);
     });
 
-    it("FeeProxy should set DebridgeGateAddresses it is called by the admin", async function () {
-      assert.equal(null, await this.feeProxyETH.debridgeGateAddresses(bscChainId));
-      assert.equal(null, await this.feeProxyBSC.debridgeGateAddresses(ethChainId));
+    it("FeeProxy should set FeeProxyAddress it is called by the admin", async function () {
+      assert.equal("0x", await this.feeProxyETH.feeProxyAddresses(bscChainId));
+      assert.equal("0x", await this.feeProxyBSC.feeProxyAddresses(ethChainId));
 
-      await this.feeProxyETH.setDebridgeGateAddresses(
+      await this.feeProxyETH.setFeeProxyAddress(
         bscChainId,
-        this.debridgeBSC.address.toString()
+        this.feeProxyBSC.address.toString()
       );
-      await this.feeProxyETH.setDebridgeGateAddresses(
+      await this.feeProxyETH.setFeeProxyAddress(
         ethChainId,
-        this.debridgeETH.address.toString()
+        this.feeProxyETH.address.toString()
       );
       await this.feeProxyETH.setTreasury(ethChainId, treasury);
       await this.feeProxyETH.setTreasury(bscChainId, treasury);
       await this.feeProxyETH.setTreasury(hecoChainId, treasury);
       assert.equal(
-        this.debridgeBSC.address.toLowerCase(),
-        await this.feeProxyETH.debridgeGateAddresses(bscChainId)
+        this.feeProxyBSC.address.toLowerCase(),
+        await this.feeProxyETH.feeProxyAddresses(bscChainId)
       );
       assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(ethChainId));
       assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(bscChainId));
       assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(hecoChainId));
 
-      await this.feeProxyBSC.setDebridgeGateAddresses(
+      await this.feeProxyBSC.setFeeProxyAddress(
         ethChainId,
-        this.debridgeETH.address.toString()
+        this.feeProxyETH.address.toString()
       );
       await this.feeProxyBSC.setTreasury(ethChainId, treasury);
       await this.feeProxyBSC.setTreasury(bscChainId, treasury);
       await this.feeProxyBSC.setTreasury(hecoChainId, treasury);
       assert.equal(
-        this.debridgeETH.address.toLowerCase(),
-        await this.feeProxyBSC.debridgeGateAddresses(ethChainId)
+        this.feeProxyETH.address.toLowerCase(),
+        await this.feeProxyBSC.feeProxyAddresses(ethChainId)
       );
 
-      await this.feeProxyHECO.setDebridgeGateAddresses(
+      await this.feeProxyHECO.setFeeProxyAddress(
         bscChainId,
-        this.debridgeBSC.address.toString()
+        this.feeProxyBSC.address.toString()
       );
       assert.equal(
-        this.debridgeBSC.address.toLowerCase(),
-        await this.feeProxyHECO.debridgeGateAddresses(bscChainId)
+        this.feeProxyBSC.address.toLowerCase(),
+        await this.feeProxyHECO.feeProxyAddresses(bscChainId)
       );
-      await this.feeProxyHECO.setDebridgeGateAddresses(
+      await this.feeProxyHECO.setFeeProxyAddress(
         ethChainId,
-        this.debridgeETH.address.toString()
+        this.feeProxyETH.address.toString()
       );
       await this.feeProxyHECO.setTreasury(ethChainId, treasury);
       await this.feeProxyHECO.setTreasury(bscChainId, treasury);
       await this.feeProxyHECO.setTreasury(hecoChainId, treasury);
       assert.equal(
-        this.debridgeETH.address.toLowerCase(),
-        await this.feeProxyHECO.debridgeGateAddresses(ethChainId)
+        this.feeProxyETH.address.toLowerCase(),
+        await this.feeProxyHECO.feeProxyAddresses(ethChainId)
       );
     });
 
@@ -1885,33 +1901,32 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should withdraw fee of ERC20 token (BSC network, deLink) if it is called by the worker", async function () {
       await this.debridgeBSC.updateFeeDiscount(this.feeProxyBSC.address, 10000, 10000);
-
+      const debridgeInfo = await this.debridgeBSC.getDebridge(this.linkDebridgeId);
       const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.linkDebridgeId);
       const balance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
 
       const supportedChainInfo = await this.debridgeBSC.getChainSupport(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
-      // console.log(`fixedFee: ${fixedFee.toString()}`);
-      // console.log(`debridgeInfo.collectedFees: ${debridgeInfo.collectedFees.toString()}`);
 
-      let sendTx = await this.debridgeBSC.connect(workerAccount).withdrawFee(this.linkDebridgeId, {
+      let sendTx = await this.feeProxyBSC.connect(workerAccount).withdrawFee(debridgeInfo.tokenAddress, {
         value: fixedFee,
       });
 
       let receipt = await sendTx.wait();
+      console.log(receipt);
       this.burnEventDeLink = receipt.events.find((x) => {
-        return x.event == "AutoBurnt";
+        return x.event == "Burnt"; //"AutoBurnt";
       });
-      // console.log(this.burnEventDeLink);
+      console.log(this.burnEventDeLink);
 
       const newBalance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
       const diffBalance = balance.sub(newBalance);
       const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.linkDebridgeId);
-      // console.log("diffBalance.toString() ",diffBalance.toString());
-      // console.log("debridgeInfo.collectedFees ",debridgeInfo.collectedFees.toString());
-      // console.log("debridgeInfo.withdrawnFees ",debridgeInfo.withdrawnFees.toString());
-      // console.log("newDebridgeInfo.collectedFees ",newDebridgeInfo.collectedFees.toString());
-      // console.log("newDebridgeInfo.withdrawnFees ",newDebridgeInfo.withdrawnFees.toString());
+      console.log("diffBalance.toString() ",diffBalance.toString());
+      console.log("debridgeFeeInfo.collectedFees ",debridgeFeeInfo.collectedFees.toString());
+      console.log("debridgeFeeInfo.withdrawnFees ",debridgeFeeInfo.withdrawnFees.toString());
+      console.log("newDebridgeFeeInfo.collectedFees ",newDebridgeFeeInfo.collectedFees.toString());
+      console.log("newDebridgeFeeInfo.withdrawnFees ",newDebridgeFeeInfo.withdrawnFees.toString());
       assert.equal(diffBalance.toString(), debridgeFeeInfo.collectedFees.toString());
       assert.equal(0, debridgeFeeInfo.withdrawnFees.toString());
       assert.equal(
@@ -1935,25 +1950,39 @@ contract("DeBridgeGate real pipeline mode", function () {
         signatures += currentSignature.substring(2, currentSignature.length);
       }
 
-      let sendTx = await this.debridgeETH.autoClaim(
+      const balance = toBN(await this.linkToken.balanceOf(this.feeProxyETH.address));
+    //   function claim(
+    //     bytes32 _debridgeId,
+    //     uint256 _chainIdFrom,
+    //     address _receiver,
+    //     uint256 _amount,
+    //     uint256 _nonce,
+    //     bytes memory _signatures
+    // )
+
+      let sendTx = await this.debridgeETH.claim(
         currentBurnEvent.args.debridgeId,
         chainFrom,
         currentBurnEvent.args.receiver,
         currentBurnEvent.args.amount,
         currentBurnEvent.args.nonce,
         signatures,
-        currentBurnEvent.args.fallbackAddress,
-        currentBurnEvent.args.claimFee,
-        currentBurnEvent.args.data,
-        currentBurnEvent.args.reservedFlag,
-        currentBurnEvent.args.nativeSender,
+        // currentBurnEvent.args.fallbackAddress,
+        // currentBurnEvent.args.claimFee,
+        // currentBurnEvent.args.data,
+        // currentBurnEvent.args.reservedFlag,
+        // currentBurnEvent.args.nativeSender,
         {
           from: alice,
         }
       );
 
       let receipt = await sendTx.wait();
-
+      const balanceAfter = toBN(await this.linkToken.balanceOf(this.feeProxyETH.address));
+      console.log("gt "+currentBurnEvent.args.amount.toNumber()>0);
+      expect(currentBurnEvent.args.amount.toNumber()>0).ok;
+      assert.gt(currentBurnEvent.args.amount);
+      assert.equal(currentBurnEvent.args.amount.toString(), balanceAfter.sub(balance).toString());
       let ReceivedTransferFee = receipt.events.find((x) => {
         return x.event == "ReceivedTransferFee";
       });
@@ -1963,7 +1992,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should withdraw fee of ERC20 token (HECO network, deCake) if it is called by the worker", async function () {
       await this.debridgeHECO.updateFeeDiscount(this.feeProxyHECO.address, 10000, 10000);
-
+      const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
       const debridgeFeeInfo = await this.debridgeHECO.getDebridgeFeeInfo(this.cakeDebridgeId);
 
       const supportedChainInfo = await this.debridgeHECO.getChainSupport(ethChainId);
@@ -1971,13 +2000,13 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log(`fixedFee: ${fixedFee.toString()}`);
       // console.log(`debridgeInfo.collectedFees: ${debridgeInfo.collectedFees.toString()}`);
 
-      let sendTx = await this.debridgeHECO.connect(workerAccount).withdrawFee(this.cakeDebridgeId, {
+      let sendTx = await this.feeProxyHECO.connect(workerAccount).withdrawFee(debridgeInfo.tokenAddress, {
         value: fixedFee,
       });
 
       let receipt = await sendTx.wait();
       this.burnEventDeCake = receipt.events.find((x) => {
-        return x.event == "AutoBurnt";
+        return x.event == "Burnt"; //"AutoBurnt";
       });
       // console.log(this.burnEventDeCake);
       const newDebridgeFeeInfo = await this.debridgeHECO.getDebridgeFeeInfo(this.cakeDebridgeId);
@@ -2070,7 +2099,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should withdraw fee of ERC20 token (ETH network, Link) if it is called by the worker", async function () {
       await this.debridgeETH.updateFeeDiscount(this.feeProxyETH.address, 10000, 10000);
-
+      const debridgeInfo = await this.debridgeETH.getDebridge(this.linkDebridgeId);
       const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.linkDebridgeId);
       const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
 
@@ -2078,14 +2107,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       const fixedFee = supportedChainInfo.fixedNativeFee;
 
       const balanceETHTreasury = toBN(await this.wethETH.balanceOf(treasury));
-      // console.log("this.debridgeETH.feeProxy()" + await this.debridgeETH.feeProxy());
-      let sendTx = await this.debridgeETH.connect(workerAccount).withdrawFee(this.linkDebridgeId, {
+
+      let sendTx = await this.feeProxyETH.connect(workerAccount).withdrawFee(debridgeInfo.tokenAddress, {
         value: fixedFee,
       });
 
       let receipt = await sendTx.wait();
       this.burnEventDeLink = receipt.events.find((x) => {
-        return x.event == "AutoBurnt";
+        return x.event == "Burnt"; //"AutoBurnt";
       });
 
       const newBalanceETHTreasury = toBN(await this.wethETH.balanceOf(treasury));
@@ -2105,20 +2134,30 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should reject withdrawing fee by non-worker", async function () {
       await expectRevert(
-        this.debridgeBSC.connect(bobAccount).withdrawFee(this.linkDebridgeId),
+        this.feeProxyBSC.connect(bobAccount).withdrawFee("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"),
         "WorkerBadRole()"
+      );
+
+      await expectRevert(
+        this.feeProxyBSC.connect(bobAccount).withdrawNativeFee(),
+        "WorkerBadRole()"
+      );
+
+      await expectRevert(
+        this.debridgeBSC.connect(bobAccount).withdrawFee(this.linkDebridgeId),
+        "FeeProxyBadRole()"
       );
     });
 
-    it("should reject withdrawing fees if the token not from current chain", async function () {
-      const fakeDebridgeId = await this.debridgeBSC.getDebridgeId(
-        999,
-        "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"
-      );
-      await expectRevert(
-        this.debridgeBSC.connect(workerAccount).withdrawFee(fakeDebridgeId),
-        "DebridgeNotFound()"
-      );
-    });
+    // it("should reject withdrawing fees if the token not from current chain", async function () {
+    //   const fakeDebridgeId = await this.debridgeBSC.getDebridgeId(
+    //     999,
+    //     "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"
+    //   );
+    //   await expectRevert(
+    //     this.feeProxyBSC.connect(workerAccount).withdrawFee("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"),
+    //     "DebridgeNotFound()"
+    //   );
+    // });
   });
 });

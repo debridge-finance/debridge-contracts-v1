@@ -21,7 +21,7 @@ contract MockDeBridgeGate is DeBridgeGate {
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
-        IFeeProxy _feeProxy,
+        address _feeProxy,
         IDefiController _defiController,
         address _treasury,
         uint256 overrideChainId

@@ -21,7 +21,6 @@ interface IDeBridgeGate {
 
     struct DebridgeFeeInfo {
         uint256 collectedFees; // total collected fees
-        uint256 donatedFees; // total donated fees
         uint256 withdrawnFees; // fees that already withdrawn
         mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
     }
@@ -205,6 +204,17 @@ interface IDeBridgeGate {
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount) external;
 
+    /// @dev Withdraw fees.
+    /// @param _debridgeId Asset identifier.
+    function withdrawFee(bytes32 _debridgeId) external;
+
+    /// @dev Withdraw native fees.
+    function withdrawNativeFee() external;
+
+    function getNativeTokenInfo(address currentTokenAddress)
+        external view
+        returns (uint256 chainId, bytes memory nativeAddress);
+
     /* ========== EVENTS ========== */
 
     event Sent(
@@ -313,6 +323,5 @@ interface IDeBridgeGate {
     );
 
     event CollectedFee(bytes32 debridgeId, uint32 referralCode, uint256 fee);
-
-    event ReceivedTransferFee(bytes32 debridgeId, uint256 amount);
+    event WithdrawnFee(bytes32 debridgeId, uint256 fee);
 }

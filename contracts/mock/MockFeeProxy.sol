@@ -6,7 +6,11 @@ import "../periphery/FeeProxy.sol";
 contract MockFeeProxy is FeeProxy {
     uint256 chainId;
 
-    constructor(IUniswapV2Factory _uniswapFactory, IWETH _weth) FeeProxy(_uniswapFactory, _weth) {}
+    function initializeMock(
+       IUniswapV2Factory _uniswapFactory, IWETH _weth
+    ) public initializer {
+        FeeProxy.initialize(_uniswapFactory, _weth);
+    }
 
     /// @dev override chain id (BSC/HECO)
     function overrideChainId(uint256 _chainId) external onlyAdmin {
