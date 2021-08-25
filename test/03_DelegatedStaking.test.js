@@ -149,11 +149,13 @@ contract("DelegatedStaking", function() {
     await this.mockYearnController.deployed();
 
     this.timelock = 1;
+    this.slashingTreasuryAddress = alice;
     this.mockPriceConsumer = await MockPriceConsumer.new();
     this.DelegatedStaking = await ethers.getContractFactory("DelegatedStaking");
     this.delegatedStaking = await upgrades.deployProxy(this.DelegatedStaking, [
         this.timelock,
-        this.mockPriceConsumer.address
+        this.mockPriceConsumer.address,
+        this.slashingTreasuryAddress
     ]);
     await this.delegatedStaking.deployed();
 
