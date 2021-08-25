@@ -189,7 +189,6 @@ contract("DeBridgeGate full with auto", function () {
       fixedNativeFee,
     ]);
 
-
     const DEBRIDGE_GATE_ROLE = await this.callProxy.DEBRIDGE_GATE_ROLE();
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridge.address);
   });
@@ -539,7 +538,9 @@ contract("DeBridgeGate full with auto", function () {
       );
       await this.confirmationAggregator.connect(bobAccount).submit(burnAutoSubmissionId);
 
-      let submissionInfo = await this.confirmationAggregator.getSubmissionInfo(burnAutoSubmissionId);
+      let submissionInfo = await this.confirmationAggregator.getSubmissionInfo(
+        burnAutoSubmissionId
+      );
       let submissionConfirmations = await this.confirmationAggregator.getSubmissionConfirmations(
         burnAutoSubmissionId
       );
@@ -649,26 +650,24 @@ contract("DeBridgeGate full with auto", function () {
         bobPrivKey
       );
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
-      await this.debridge
-        .connect(bobAccount)
-        .autoBurn(
-          debridgeId,
-          receiver,
-          amount,
-          chainIdTo,
-          reserveAddress,
-          claimFee,
-          data,
-          //deadline + signature;
-          //                                      remove first 0x
-          deadlineHex + permitSignature.substring(2, permitSignature.length),
-          false,
-          zeroFlag,
-          referralCode,
-          {
-            value: supportedChainInfo.fixedNativeFee,
-          }
-        );
+      await this.debridge.connect(bobAccount).autoBurn(
+        debridgeId,
+        receiver,
+        amount,
+        chainIdTo,
+        reserveAddress,
+        claimFee,
+        data,
+        //deadline + signature;
+        //                                      remove first 0x
+        deadlineHex + permitSignature.substring(2, permitSignature.length),
+        false,
+        zeroFlag,
+        referralCode,
+        {
+          value: supportedChainInfo.fixedNativeFee,
+        }
+      );
       const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
         this.nativeDebridgeId
       );
@@ -790,19 +789,19 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.wethDebridgeId);
       const balance = toBN(await this.weth.balanceOf(receiver));
 
-    //   function autoClaim(
-    //     bytes32 _debridgeId,
-    //     uint256 _chainIdFrom,
-    //     address _receiver,
-    //     uint256 _amount,
-    //     uint256 _nonce,
-    //     bytes memory _signatures,
-    //     address _fallbackAddress,
-    //     uint256 _executionFee,
-    //     bytes memory _data,
-    //     uint8 _reservedFlag,
-    //     bytes memory _nativeSender
-    // )
+      //   function autoClaim(
+      //     bytes32 _debridgeId,
+      //     uint256 _chainIdFrom,
+      //     address _receiver,
+      //     uint256 _amount,
+      //     uint256 _nonce,
+      //     bytes memory _signatures,
+      //     address _fallbackAddress,
+      //     uint256 _executionFee,
+      //     bytes memory _data,
+      //     uint8 _reservedFlag,
+      //     bytes memory _nativeSender
+      // )
 
       await this.debridge.autoClaim(
         this.wethDebridgeId,
@@ -873,7 +872,7 @@ contract("DeBridgeGate full with auto", function () {
         reserveAddress,
         claimFee,
         data,
-        zeroFlag,
+        zeroFlag
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(submissionId);
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(erc20DebridgeId);

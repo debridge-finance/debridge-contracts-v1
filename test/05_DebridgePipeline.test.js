@@ -119,10 +119,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     //-------Deploy FeeProxy contracts
     this.feeProxyETH = await upgrades.deployProxy(
       MockFeeProxyFactory,
-      [
-        this.uniswapFactoryETH.address,
-        this.wethETH.address
-      ],
+      [this.uniswapFactoryETH.address, this.wethETH.address],
       {
         initializer: "initializeMock",
         kind: "transparent",
@@ -131,10 +128,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     this.feeProxyBSC = await upgrades.deployProxy(
       MockFeeProxyFactory,
-      [
-        this.uniswapFactoryBSC.address,
-        this.wethBSC.address
-      ],
+      [this.uniswapFactoryBSC.address, this.wethBSC.address],
       {
         initializer: "initializeMock",
         kind: "transparent",
@@ -143,10 +137,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     this.feeProxyHECO = await upgrades.deployProxy(
       MockFeeProxyFactory,
-      [
-        this.uniswapFactoryHECO.address,
-        this.wethHECO.address,
-      ],
+      [this.uniswapFactoryHECO.address, this.wethHECO.address],
       {
         initializer: "initializeMock",
         kind: "transparent",
@@ -1178,21 +1169,20 @@ contract("DeBridgeGate real pipeline mode", function () {
           fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
             toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
           );
-          let burnTx = await this.debridgeBSC
-            .connect(bobAccount)
-            .burn(
-              debridgeId,
-              receiver,
-              amount,
-              chainIdTo,
-              //deadline + signature;
-              //                                      remove first 0x
-              deadlineHex + permitSignature.substring(2, permitSignature.length),
-              false,
-              referralCode,
+          let burnTx = await this.debridgeBSC.connect(bobAccount).burn(
+            debridgeId,
+            receiver,
+            amount,
+            chainIdTo,
+            //deadline + signature;
+            //                                      remove first 0x
+            deadlineHex + permitSignature.substring(2, permitSignature.length),
+            false,
+            referralCode,
             {
               value: fixedNativeFeeWithDiscount,
-            });
+            }
+          );
 
           let receipt = await burnTx.wait();
           let burnEvent = receipt.events.find((x) => {
@@ -1680,23 +1670,22 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
       // fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS));
-      let burnTx = await this.debridgeHECO
-        .connect(bobAccount)
-        .burn(
-          debridgeId,
-          receiver,
-          amount,
-          chainIdTo,
-          //deadline + signature;
-          //                                      remove first 0x
-          deadlineHex + permitSignature.substring(2, permitSignature.length),
-          false,
-          referralCode,
+      let burnTx = await this.debridgeHECO.connect(bobAccount).burn(
+        debridgeId,
+        receiver,
+        amount,
+        chainIdTo,
+        //deadline + signature;
+        //                                      remove first 0x
+        deadlineHex + permitSignature.substring(2, permitSignature.length),
+        false,
+        referralCode,
         {
           value: fixedNativeFeeWithDiscount,
-        });
-        const newBalance = toBN(await wrappedAsset.balanceOf(bob));
-        assert.equal(balance.sub(amount).toString(), newBalance.toString());
+        }
+      );
+      const newBalance = toBN(await wrappedAsset.balanceOf(bob));
+      assert.equal(balance.sub(amount).toString(), newBalance.toString());
     });
   });
 
@@ -1802,7 +1791,6 @@ contract("DeBridgeGate real pipeline mode", function () {
       await this.feeProxyBSC.grantRole(WORKER_ROLE, worker);
       await this.feeProxyHECO.grantRole(WORKER_ROLE, worker);
 
-
       await this.feeProxyETH.grantRole(WORKER_ROLE, worker);
       await this.feeProxyBSC.grantRole(WORKER_ROLE, worker);
       await this.feeProxyHECO.grantRole(WORKER_ROLE, worker);
@@ -1812,14 +1800,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal("0x", await this.feeProxyETH.feeProxyAddresses(bscChainId));
       assert.equal("0x", await this.feeProxyBSC.feeProxyAddresses(ethChainId));
 
-      await this.feeProxyETH.setFeeProxyAddress(
-        bscChainId,
-        this.feeProxyBSC.address.toString()
-      );
-      await this.feeProxyETH.setFeeProxyAddress(
-        ethChainId,
-        this.feeProxyETH.address.toString()
-      );
+      await this.feeProxyETH.setFeeProxyAddress(bscChainId, this.feeProxyBSC.address.toString());
+      await this.feeProxyETH.setFeeProxyAddress(ethChainId, this.feeProxyETH.address.toString());
       await this.feeProxyETH.setTreasury(ethChainId, treasury);
       await this.feeProxyETH.setTreasury(bscChainId, treasury);
       await this.feeProxyETH.setTreasury(hecoChainId, treasury);
@@ -1831,10 +1813,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(bscChainId));
       assert.equal(treasury.toLowerCase(), await this.feeProxyETH.treasuryAddresses(hecoChainId));
 
-      await this.feeProxyBSC.setFeeProxyAddress(
-        ethChainId,
-        this.feeProxyETH.address.toString()
-      );
+      await this.feeProxyBSC.setFeeProxyAddress(ethChainId, this.feeProxyETH.address.toString());
       await this.feeProxyBSC.setTreasury(ethChainId, treasury);
       await this.feeProxyBSC.setTreasury(bscChainId, treasury);
       await this.feeProxyBSC.setTreasury(hecoChainId, treasury);
@@ -1843,18 +1822,12 @@ contract("DeBridgeGate real pipeline mode", function () {
         await this.feeProxyBSC.feeProxyAddresses(ethChainId)
       );
 
-      await this.feeProxyHECO.setFeeProxyAddress(
-        bscChainId,
-        this.feeProxyBSC.address.toString()
-      );
+      await this.feeProxyHECO.setFeeProxyAddress(bscChainId, this.feeProxyBSC.address.toString());
       assert.equal(
         this.feeProxyBSC.address.toLowerCase(),
         await this.feeProxyHECO.feeProxyAddresses(bscChainId)
       );
-      await this.feeProxyHECO.setFeeProxyAddress(
-        ethChainId,
-        this.feeProxyETH.address.toString()
-      );
+      await this.feeProxyHECO.setFeeProxyAddress(ethChainId, this.feeProxyETH.address.toString());
       await this.feeProxyHECO.setTreasury(ethChainId, treasury);
       await this.feeProxyHECO.setTreasury(bscChainId, treasury);
       await this.feeProxyHECO.setTreasury(hecoChainId, treasury);
@@ -1906,9 +1879,11 @@ contract("DeBridgeGate real pipeline mode", function () {
       const supportedChainInfo = await this.debridgeBSC.getChainSupport(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
 
-      let sendTx = await this.feeProxyBSC.connect(workerAccount).withdrawFee(debridgeInfo.tokenAddress, {
-        value: fixedFee,
-      });
+      let sendTx = await this.feeProxyBSC
+        .connect(workerAccount)
+        .withdrawFee(debridgeInfo.tokenAddress, {
+          value: fixedFee,
+        });
 
       let receipt = await sendTx.wait();
       //Don't working because events from second contract
@@ -1917,9 +1892,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       //   return x.event == "Burnt"; //"AutoBurnt";
       // });
 
-      this.burnEventDeLink = (await this.debridgeBSC.queryFilter(
-        this.debridgeBSC.filters.Burnt(),
-        receipt.blockNumber))[0];
+      this.burnEventDeLink = (
+        await this.debridgeBSC.queryFilter(this.debridgeBSC.filters.Burnt(), receipt.blockNumber)
+      )[0];
 
       const newBalance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
       const diffBalance = balance.sub(newBalance);
@@ -1953,14 +1928,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       }
 
       const balance = toBN(await this.linkToken.balanceOf(this.feeProxyETH.address));
-    //   function claim(
-    //     bytes32 _debridgeId,
-    //     uint256 _chainIdFrom,
-    //     address _receiver,
-    //     uint256 _amount,
-    //     uint256 _nonce,
-    //     bytes memory _signatures
-    // )
+      //   function claim(
+      //     bytes32 _debridgeId,
+      //     uint256 _chainIdFrom,
+      //     address _receiver,
+      //     uint256 _amount,
+      //     uint256 _nonce,
+      //     bytes memory _signatures
+      // )
 
       let sendTx = await this.debridgeETH.claim(
         currentBurnEvent.args.debridgeId,
@@ -1981,7 +1956,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let receipt = await sendTx.wait();
       const balanceAfter = toBN(await this.linkToken.balanceOf(this.feeProxyETH.address));
-      expect(currentBurnEvent.args.amount.toNumber()>0).ok;
+      expect(currentBurnEvent.args.amount.toNumber() > 0).ok;
       assert.equal(currentBurnEvent.args.amount.toString(), balanceAfter.sub(balance).toString());
     });
 
@@ -1995,9 +1970,11 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log(`fixedFee: ${fixedFee.toString()}`);
       // console.log(`debridgeInfo.collectedFees: ${debridgeInfo.collectedFees.toString()}`);
 
-      let sendTx = await this.feeProxyHECO.connect(workerAccount).withdrawFee(debridgeInfo.tokenAddress, {
-        value: fixedFee,
-      });
+      let sendTx = await this.feeProxyHECO
+        .connect(workerAccount)
+        .withdrawFee(debridgeInfo.tokenAddress, {
+          value: fixedFee,
+        });
 
       let receipt = await sendTx.wait();
       //Don't working because events from second contract
@@ -2006,9 +1983,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       // this.burnEventDeCake = receipt.events.find((x) => {
       //   return x.event == "Burnt"; //"AutoBurnt";
       // });
-      this.burnEventDeCake = (await this.debridgeHECO.queryFilter(
-        this.debridgeHECO.filters.Burnt(),
-        receipt.blockNumber))[0];
+      this.burnEventDeCake = (
+        await this.debridgeHECO.queryFilter(this.debridgeHECO.filters.Burnt(), receipt.blockNumber)
+      )[0];
 
       // console.log(this.burnEventDeCake);
       const newDebridgeFeeInfo = await this.debridgeHECO.getDebridgeFeeInfo(this.cakeDebridgeId);
@@ -2105,9 +2082,11 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       const balanceETHTreasury = toBN(await this.wethETH.balanceOf(treasury));
 
-      let sendTx = await this.feeProxyETH.connect(workerAccount).withdrawFee(debridgeInfo.tokenAddress, {
-        value: fixedFee,
-      });
+      let sendTx = await this.feeProxyETH
+        .connect(workerAccount)
+        .withdrawFee(debridgeInfo.tokenAddress, {
+          value: fixedFee,
+        });
 
       let receipt = await sendTx.wait();
       this.burnEventDeLink = receipt.events.find((x) => {
@@ -2131,7 +2110,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should reject withdrawing fee by non-worker", async function () {
       await expectRevert(
-        this.feeProxyBSC.connect(bobAccount).withdrawFee("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"),
+        this.feeProxyBSC
+          .connect(bobAccount)
+          .withdrawFee("0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c"),
         "WorkerBadRole()"
       );
 
