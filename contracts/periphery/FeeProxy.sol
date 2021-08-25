@@ -5,14 +5,14 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IWETH.sol";
-import "hardhat/console.sol";
 
-contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
+contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeable, IFeeProxy {
     using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -24,7 +24,6 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
 
     IDeBridgeGate public debridgeGate;
     IUniswapV2Factory public uniswapFactory;
-    // uint256 public collectRewardBps; // reward BPS that user will receive for collect reawards
 
     mapping(uint256 => bytes) public feeProxyAddresses; //Addresses of fee proxy addresses in each chain
     mapping(uint256 => bytes) public treasuryAddresses;
@@ -95,14 +94,11 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
     /// @dev Transfer tokens to native chain and then create swap to deETH
     /// and transfer reward to Ethereum network.
     function withdrawFee(address _tokenAddress)
-        external payable override onlyWorker
+        external payable override onlyWorker whenNotPaused
     {
-        console.log("transferToTreasury   %s ", _tokenAddress);
-
         (uint256 nativeChain, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(_tokenAddress);
-        bytes32 debridgeId = getDebridgeId(nativeChain, nativeAddress);
+        bytes32 debridgeId = getbDebridgeId(nativeChain, nativeAddress);
 
-        console.log("nativeChain   %s ", nativeChain);
         uint256 chainId = getChainId();
         if (feeProxyAddresses[nativeChain].length == 0) revert EmptyFeeProxyAddress(nativeChain);
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
@@ -111,7 +107,6 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
 
         debridgeGate.withdrawFee(debridgeId);
         uint256 amount = IERC20(_tokenAddress).balanceOf(address(this));
-        console.log("amount   %s ", amount);
         // original token chain is the same as contract chain
         if (chainId == nativeChain) {
             //Reward is token (DBR, LINK, WETH, deDBT, deLINK, deETH)
@@ -155,20 +150,20 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
 
     /// @dev Swap native tokens to deETH and then transfer reward to Ethereum network.
     function withdrawNativeFee()
-        external payable override onlyWorker
+        external payable override onlyWorker whenNotPaused
     {
         uint256 chainId = getChainId();
         //DebridgeId of weth in ethereum network
         //TODO: can be set as contstant
         (, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(deEthToken);
-        bytes32 wethEthNetworkDebridgeId = getDebridgeId(ETH_CHAINID, nativeAddress);
+        bytes32 wethEthNetworkDebridgeId = getbDebridgeId(ETH_CHAINID, nativeAddress);
         if (feeProxyAddresses[chainId].length == 0) revert EmptyFeeProxyAddress(chainId);
 
         // TODO: treasuryAddresses can keep only for ETH network
         // if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
         // address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
-        debridgeGate.withdrawNativeFee();
+        debridgeGate.withdrawFee(getDebridgeId(chainId, address(0)));
         uint256 amount = address(this).balance - msg.value;
 
 
@@ -198,16 +193,8 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
         }
     }
 
-    // /// @dev Update transfer reward BPS.
-    // /// @param _collectRewardBps new reward in BPS
-    // function updateCollectRewardBps(uint16 _collectRewardBps) external onlyAdmin {
-    //     if (_collectRewardBps > BPS_DENOMINATOR) revert WrongArgument();
-    //     collectRewardBps = _collectRewardBps;
-    // }
-
-    // we need to accept ETH sends to unwrap WETH
+    // accept ETH
     receive() external payable {
-        // assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
     }
 
      /* ========== VIEW FUNCTIONS  ========== */
@@ -215,7 +202,11 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getDebridgeId(uint256 _chainId, bytes memory _tokenAddress) public pure returns (bytes32) {
+    function getbDebridgeId(uint256 _chainId, bytes memory _tokenAddress) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_chainId, _tokenAddress));
+    }
+
+     function getDebridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
@@ -229,20 +220,14 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, IFeeProxy {
         uint256 _nativeChain,
         uint256 _nativeFixFee
     ) private {
-        // if (treasuryAddresses[_nativeChain].length == 0) revert EmptyTreasuryAddress(_nativeChain);
-        console.log("_erc20Token   %s _amount  %s", _erc20Token, _amount);
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
         debridgeGate.burn{value: _nativeFixFee}(
             _debridgeId,
             feeProxyAddresses[_nativeChain], //_receiver,
             _amount,
             _nativeChain, //_chainIdTo,
-            // treasuryAddresses[_nativeChain], //_fallbackAddress,
-            // 0, //_executionFee,
-            // "", //_data,
             "", //_deadline + _signature,
             false, //_useAssetFee,
-            // 0, //_reservedFlag
             0 //_referralCode
         );
     }

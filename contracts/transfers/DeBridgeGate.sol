@@ -642,29 +642,23 @@ contract DeBridgeGate is
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external override nonReentrant onlyFeeProxy {
-        DebridgeInfo memory debridge = getDebridge[_debridgeId];
+        bool nativeFee = _debridgeId == getDebridgeId(getChainId(), address(0));
+
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        if (!debridge.exist) revert DebridgeNotFound();
-
-        //Amount for transfer to treasure
+        // Amount for transfer to treasure
         uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
         debridgeFee.withdrawnFees += amount;
 
-        IERC20(debridge.tokenAddress).safeTransfer(feeProxy, amount);
+        if (amount == 0) revert NotEnoughReserves();
+
+        if (nativeFee) {
+            payable(feeProxy).transfer(amount);
+        } else {
+            // don't need this check as we check that amount is not zero
+            // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+            IERC20(getDebridge[_debridgeId].tokenAddress).safeTransfer(feeProxy, amount);
+        }
         emit WithdrawnFee(_debridgeId, amount);
-    }
-
-    /// @dev Withdraw native fees.
-    function withdrawNativeFee() external override nonReentrant onlyFeeProxy {
-        bytes32 debridgeId = getDebridgeId(getChainId(), address(0));
-        DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[debridgeId];
-
-        //Amount for transfer to treasure
-        uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
-        debridgeFee.withdrawnFees += amount;
-
-        payable(feeProxy).transfer(amount);
-        emit WithdrawnFee(debridgeId, amount);
     }
 
     /// @dev Request the assets to be used in defi protocol.

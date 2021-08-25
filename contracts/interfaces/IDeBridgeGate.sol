@@ -208,9 +208,6 @@ interface IDeBridgeGate {
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external;
 
-    /// @dev Withdraw native fees.
-    function withdrawNativeFee() external;
-
     function getNativeTokenInfo(address currentTokenAddress)
         external view
         returns (uint256 chainId, bytes memory nativeAddress);
