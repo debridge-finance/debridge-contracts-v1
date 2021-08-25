@@ -46,6 +46,7 @@ contract("DeBridgeGate full with auto", function () {
     eve = eveAccount.address;
     fei = feiAccount.address;
     devid = devidAccount.address;
+    mockDefiControllerAddress = fei;
 
     reserveAddress = devid;
     const Debridge = await ethers.getContractFactory("DeBridgeGate", alice);
@@ -58,7 +59,6 @@ contract("DeBridgeGate full with auto", function () {
       alice
     );
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
-    const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
 
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -134,7 +134,6 @@ contract("DeBridgeGate full with auto", function () {
     this.callProxy = await CallProxy.new({
       from: alice,
     });
-    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     const maxAmount = toWei("1000000");
     const fixedNativeFee = toWei("0.00001");
     const isSupported = true;
@@ -213,7 +212,7 @@ contract("DeBridgeGate full with auto", function () {
     });
 
     it("should set defi controller if called by the admin", async function () {
-      const defiController = this.defiController.address;
+      const defiController = mockDefiControllerAddress;
       await this.debridge.setDefiController(defiController, {
         from: alice,
       });

@@ -6,7 +6,6 @@ const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const CallProxy = artifacts.require("CallProxy");
-const DefiController = artifacts.require("DefiController");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
 const MAX = web3.utils.toTwosComplement(-1);
@@ -40,11 +39,11 @@ contract("DeBridgeGate light mode", function () {
     eve = eveAccount.address;
     fei = feiAccount.address;
     devid = devidAccount.address;
+    mockDefiControllerAddress = fei;
 
     const Debridge = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator", alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
-    const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
 
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
@@ -140,7 +139,6 @@ contract("DeBridgeGate light mode", function () {
       from: alice,
     });
 
-    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     this.callProxy = await CallProxy.new({
       from: alice,
     });
@@ -221,7 +219,7 @@ contract("DeBridgeGate light mode", function () {
     });
 
     it("should set defi controller if called by the admin", async function () {
-      const defiController = this.defiController.address;
+      const defiController = mockDefiControllerAddress;
       await this.debridge.setDefiController(defiController, {
         from: alice,
       });

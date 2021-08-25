@@ -61,6 +61,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     treasury = devid;
     worker = alice;
     workerAccount = aliceAccount;
+    mockDefiControllerAddress = fei;
 
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
@@ -77,7 +78,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     );
     const DeBridgeGateFactory = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const SignatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier", alice);
-    const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
     const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
 
     this.amountThreshols = toWei("1000");
@@ -158,7 +158,6 @@ contract("DeBridgeGate real pipeline mode", function () {
       from: alice,
     });
     //-------Deploy defiController contracts
-    this.defiControllerETH = await upgrades.deployProxy(DefiControllerFactory, []);
 
     //-------Deploy confirmation aggregator contracts
     //   function initialize(
@@ -232,7 +231,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         ],
         this.wethETH.address,
         this.feeProxyETH.address,
-        this.defiControllerETH.address,
+        mockDefiControllerAddress,
         treasury,
         ethChainId, //overrideChainId
       ],
@@ -371,7 +370,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(treasury, await this.debridgeBSC.treasury());
       assert.equal(treasury, await this.debridgeHECO.treasury());
 
-      assert.equal(this.defiControllerETH.address, await this.debridgeETH.defiController());
+      assert.equal(mockDefiControllerAddress, await this.debridgeETH.defiController());
       assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());
       assert.equal(ZERO_ADDRESS, await this.debridgeHECO.defiController());
 
