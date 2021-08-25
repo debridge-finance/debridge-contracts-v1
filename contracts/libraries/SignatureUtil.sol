@@ -48,7 +48,11 @@ library SignatureUtil {
         if (v != 27 && v != 28) revert SignatureInvalidV();
     }
 
-    function toUint256(bytes memory _bytes, uint256 _offset) internal pure returns (uint256 result) {
+    function toUint256(bytes memory _bytes, uint256 _offset)
+        internal
+        pure
+        returns (uint256 result)
+    {
         if (_bytes.length < _offset + 32) revert WrongArgumentLength();
 
         assembly {

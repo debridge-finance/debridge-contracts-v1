@@ -235,8 +235,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== INTERNAL ========== */
 
-
-
     function _countSignatures(bytes memory _signatures) internal pure returns (uint256) {
         return _signatures.length % 65 == 0 ? _signatures.length / 65 : 0;
     }

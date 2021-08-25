@@ -33,7 +33,14 @@ contract MockProxyConsumer {
             );
         } else {
             IERC20(_token).transfer(callProxy, msg.value);
-            status = ICallProxy(callProxy).callERC20(_token, _fallbackAddress, _receiver, _data, 0, "");
+            status = ICallProxy(callProxy).callERC20(
+                _token,
+                _fallbackAddress,
+                _receiver,
+                _data,
+                0,
+                ""
+            );
         }
         lastOperationStatus = status;
     }

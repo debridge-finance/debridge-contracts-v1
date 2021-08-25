@@ -182,12 +182,7 @@ contract DeBridgeGate is
             _referralCode
         );
 
-        bytes32 sentId = getSubmissionIdTo(
-            debridgeId,
-            _chainIdTo,
-            _amount,
-            _receiver
-        );
+        bytes32 sentId = getSubmissionIdTo(debridgeId, _chainIdTo, _amount, _receiver);
         emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
         nonce++;
     }
@@ -243,12 +238,7 @@ contract DeBridgeGate is
         // the amount will be reduced by the protocol fee
         _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _referralCode);
 
-        bytes32 burntId = getSubmissionIdTo(
-            _debridgeId,
-            _chainIdTo,
-            _amount,
-            _receiver
-        );
+        bytes32 burntId = getSubmissionIdTo(_debridgeId, _chainIdTo, _amount, _receiver);
         emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
         nonce++;
     }
@@ -364,7 +354,6 @@ contract DeBridgeGate is
         uint8 _reservedFlag,
         bytes memory _nativeSender
     ) external override nonReentrant whenNotPaused {
-
         bytes32 submissionId = getAutoSubmissionIdFrom(
             _nativeSender,
             _debridgeId,
@@ -530,11 +519,7 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         bytes memory _data
-    )
-        external
-        override
-        nonReentrant whenNotPaused
-        // noDelegateCall
+    ) external override nonReentrant whenNotPaused // noDelegateCall
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         if (!getDebridge[debridgeId].exist) revert DebridgeNotFound();
@@ -733,8 +718,6 @@ contract DeBridgeGate is
         flashFeeBps = _flashFeeBps;
     }
 
-
-
     /// @dev Update discount.
     /// @param _address customer address
     /// @param _discountFixBps  fix discount in BPS
@@ -882,7 +865,13 @@ contract DeBridgeGate is
             // Received real amount
             _amount = token.balanceOf(address(this)) - balanceBefore;
         }
-        _amount = _processFeeForTransfer(debridgeId, _amount, _chainIdTo, _useAssetFee, _referralCode);
+        _amount = _processFeeForTransfer(
+            debridgeId,
+            _amount,
+            _chainIdTo,
+            _useAssetFee,
+            _referralCode
+        );
         debridge.balance += _amount;
         return (_amount, debridgeId);
     }
@@ -913,7 +902,13 @@ contract DeBridgeGate is
             wrappedAsset.permit(msg.sender, address(this), _amount, deadline, v, r, s);
         }
         wrappedAsset.transferFrom(msg.sender, address(this), _amount);
-        _amount = _processFeeForTransfer(_debridgeId, _amount, _chainIdTo, _useAssetFee, _referralCode);
+        _amount = _processFeeForTransfer(
+            _debridgeId,
+            _amount,
+            _chainIdTo,
+            _useAssetFee,
+            _referralCode
+        );
         wrappedAsset.burn(_amount);
         debridge.balance -= _amount;
         return _amount;
@@ -1094,7 +1089,14 @@ contract DeBridgeGate is
     ) public view returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(_debridgeId, _chainIdFrom, getChainId(), _amount, _receiver, _nonce)
+                abi.encodePacked(
+                    _debridgeId,
+                    _chainIdFrom,
+                    getChainId(),
+                    _amount,
+                    _receiver,
+                    _nonce
+                )
             );
     }
 
@@ -1137,12 +1139,8 @@ contract DeBridgeGate is
                 abi.encodePacked(
                     // To avoid error:
                     // Variable value0 is 1 slot(s) too deep inside the stack.
-                    abi.encodePacked(
-                        _nativeSender,
-                        _debridgeId,
-                        _chainIdFrom
-                    ),
-                    getChainId(),//_chainIdTo,
+                    abi.encodePacked(_nativeSender, _debridgeId, _chainIdFrom),
+                    getChainId(), //_chainIdTo,
                     _amount,
                     _receiver,
                     _nonce,
@@ -1153,7 +1151,6 @@ contract DeBridgeGate is
                 )
             );
     }
-
 
     function getAutoSubmissionIdTo(
         bytes32 _debridgeId,
@@ -1184,7 +1181,9 @@ contract DeBridgeGate is
     }
 
     function getNativeTokenInfo(address currentTokenAddress)
-        external view override
+        external
+        view
+        override
         returns (uint256 chainId, bytes memory nativeAddress)
     {
         TokenInfo memory tokenInfo = getNativeInfo[currentTokenAddress];

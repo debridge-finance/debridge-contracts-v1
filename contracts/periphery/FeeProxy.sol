@@ -58,9 +58,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize(
-        IUniswapV2Factory _uniswapFactory, IWETH _weth
-    ) public initializer {
+    function initialize(IUniswapV2Factory _uniswapFactory, IWETH _weth) public initializer {
         uniswapFactory = _uniswapFactory;
         weth = _weth;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -92,19 +90,16 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         deEthToken = _deEthToken;
     }
 
-    function setFeeProxyAddress(uint256 _chainId, bytes memory _address)
-        external
-        onlyAdmin
-    {
+    function setFeeProxyAddress(uint256 _chainId, bytes memory _address) external onlyAdmin {
         feeProxyAddresses[_chainId] = _address;
     }
 
     /// @dev Transfer tokens to native chain and then create swap to deETH
     /// and transfer reward to Ethereum network.
-    function withdrawFee(address _tokenAddress)
-        external payable override onlyWorker whenNotPaused
-    {
-        (uint256 nativeChain, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(_tokenAddress);
+    function withdrawFee(address _tokenAddress) external payable override onlyWorker whenNotPaused {
+        (uint256 nativeChain, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(
+            _tokenAddress
+        );
         bytes32 debridgeId = getbDebridgeId(nativeChain, nativeAddress);
 
         uint256 chainId = getChainId();
@@ -140,13 +135,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
                     _swap(address(weth), deEthToken, address(this));
                     //transfer deETH to Ethereum
                     uint256 deEthAmount = IERC20(deEthToken).balanceOf(address(this));
-                    _burnTransfer(
-                        debridgeId,
-                        deEthToken,
-                        deEthAmount,
-                        ETH_CHAINID,
-                        msg.value
-                    );
+                    _burnTransfer(debridgeId, deEthToken, deEthAmount, ETH_CHAINID, msg.value);
                 }
             }
         }
@@ -157,9 +146,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     }
 
     /// @dev Swap native tokens to deETH and then transfer reward to Ethereum network.
-    function withdrawNativeFee()
-        external payable override onlyWorker whenNotPaused
-    {
+    function withdrawNativeFee() external payable override onlyWorker whenNotPaused {
         uint256 chainId = getChainId();
         //DebridgeId of weth in ethereum network
         //TODO: can be set as contstant
@@ -173,7 +160,6 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         // address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
         debridgeGate.withdrawFee(getDebridgeId(chainId, address(0)));
         uint256 amount = address(this).balance - msg.value;
-
 
         //reward is native token (ETH/BNB/HT)
         //If we are in Ethereum chain
@@ -202,19 +188,22 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     }
 
     // accept ETH
-    receive() external payable {
-    }
+    receive() external payable {}
 
-     /* ========== VIEW FUNCTIONS  ========== */
+    /* ========== VIEW FUNCTIONS  ========== */
 
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
-    function getbDebridgeId(uint256 _chainId, bytes memory _tokenAddress) public pure returns (bytes32) {
+    function getbDebridgeId(uint256 _chainId, bytes memory _tokenAddress)
+        public
+        pure
+        returns (bytes32)
+    {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
-     function getDebridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
+    function getDebridgeId(uint256 _chainId, address _tokenAddress) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 

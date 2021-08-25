@@ -209,7 +209,8 @@ interface IDeBridgeGate {
     function withdrawFee(bytes32 _debridgeId) external;
 
     function getNativeTokenInfo(address currentTokenAddress)
-        external view
+        external
+        view
         returns (uint256 chainId, bytes memory nativeAddress);
 
     /* ========== EVENTS ========== */
@@ -224,7 +225,7 @@ interface IDeBridgeGate {
         uint32 referralCode
     ); // emited once the native tokens are locked to be sent to the other chain
 
-   event AutoSent(
+    event AutoSent(
         bytes32 submissionId,
         bytes32 debridgeId,
         uint256 amount,
@@ -293,7 +294,8 @@ interface IDeBridgeGate {
         uint256 amount,
         address receiver,
         uint256 nonce,
-        uint256 chainIdFrom); // emited once the tokens are withdrawn on native chain
+        uint256 chainIdFrom
+    ); // emited once the tokens are withdrawn on native chain
 
     event AutoClaimed(
         bytes32 submissionId,

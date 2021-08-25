@@ -37,11 +37,9 @@ contract CallProxy is AccessControl, ICallProxy {
         bytes memory _data,
         uint8 _reservedFlag,
         bytes memory _nativeSender
-    ) external payable override onlyGateRole
-      returns (bool _result) {
-
+    ) external payable override onlyGateRole returns (bool _result) {
         // Add last argument is sender from original network
-        if(_reservedFlag == PROXY_WITH_SENDER_FLAG) {
+        if (_reservedFlag == PROXY_WITH_SENDER_FLAG) {
             _data = abi.encodePacked(_data, _nativeSender);
         }
 
@@ -58,15 +56,13 @@ contract CallProxy is AccessControl, ICallProxy {
         bytes memory _data,
         uint8 _reservedFlag,
         bytes memory _nativeSender
-    ) external override onlyGateRole
-      returns (bool _result)
-    {
+    ) external override onlyGateRole returns (bool _result) {
         uint256 amount = IERC20(_token).balanceOf(address(this));
         IERC20(_token).safeApprove(_receiver, 0);
         IERC20(_token).safeApprove(_receiver, amount);
 
         // Add last argument is sender from original network
-        if(_reservedFlag == PROXY_WITH_SENDER_FLAG) {
+        if (_reservedFlag == PROXY_WITH_SENDER_FLAG) {
             _data = abi.encodePacked(_data, _nativeSender);
         }
 

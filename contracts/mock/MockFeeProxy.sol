@@ -6,9 +6,7 @@ import "../periphery/FeeProxy.sol";
 contract MockFeeProxy is FeeProxy {
     uint256 chainId;
 
-    function initializeMock(
-       IUniswapV2Factory _uniswapFactory, IWETH _weth
-    ) public initializer {
+    function initializeMock(IUniswapV2Factory _uniswapFactory, IWETH _weth) public initializer {
         FeeProxy.initialize(_uniswapFactory, _weth);
     }
 
