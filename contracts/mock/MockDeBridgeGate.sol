@@ -68,7 +68,6 @@ contract MockDeBridgeGate is DeBridgeGate {
         return chainId;
     }
 
-
     /// @dev Calculate submission id.
     /// @param _debridgeId Asset identifier.
     /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
@@ -146,5 +145,4 @@ contract MockDeBridgeGate is DeBridgeGate {
     //                 _data
     //             );
     // }
-
 }

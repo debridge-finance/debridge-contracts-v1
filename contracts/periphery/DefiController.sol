@@ -211,8 +211,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
     ) external onlyAdmin {
         if (
             _maxReservesBps != 0 &&
-                (_maxReservesBps <= STRATEGY_RESERVES_DELTA_BPS ||
-                    BPS_DENOMINATOR < _maxReservesBps)
+            (_maxReservesBps <= STRATEGY_RESERVES_DELTA_BPS || BPS_DENOMINATOR < _maxReservesBps)
         ) revert InvalidMaxReservesBps();
 
         // require(_maxReservesBps == 0 ||

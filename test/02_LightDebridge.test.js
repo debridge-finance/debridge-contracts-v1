@@ -163,34 +163,37 @@ contract("DeBridgeGate light mode", function () {
     //     address _treasury
     // )
 
-    this.debridge = await upgrades.deployProxy(Debridge, [
-      this.excessConfirmations,
-      this.signatureVerifier.address.toString(),
-      this.confirmationAggregator.address.toString(),
-      this.callProxy.address.toString(),
-      supportedChainIds,
+    this.debridge = await upgrades.deployProxy(
+      Debridge,
       [
-        {
-          transferFeeBps,
-          fixedNativeFee,
-          isSupported,
-        },
-        {
-          transferFeeBps,
-          fixedNativeFee,
-          isSupported,
-        },
+        this.excessConfirmations,
+        this.signatureVerifier.address.toString(),
+        this.confirmationAggregator.address.toString(),
+        this.callProxy.address.toString(),
+        supportedChainIds,
+        [
+          {
+            transferFeeBps,
+            fixedNativeFee,
+            isSupported,
+          },
+          {
+            transferFeeBps,
+            fixedNativeFee,
+            isSupported,
+          },
+        ],
+        this.weth.address,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        devid,
+        1, //overrideChainId
       ],
-      this.weth.address,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      devid,
-      1 //overrideChainId
-    ],
-    {
-      initializer: "initializeMock",
-      kind: "transparent",
-    });
+      {
+        initializer: "initializeMock",
+        kind: "transparent",
+      }
+    );
 
     await this.debridge.deployed();
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
@@ -621,20 +624,20 @@ contract("DeBridgeGate light mode", function () {
         bobPrivKey
       );
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
-      await this.debridge
-        .connect(bobAccount)
-        .burn(debridgeId,
-          receiver,
-          amount,
-          chainIdTo,
-          //deadline + signature;
-          //                                      remove first 0x
-          deadlineHex + permitSignature.substring(2, permitSignature.length),
-          false,
-          referralCode,
-          {
+      await this.debridge.connect(bobAccount).burn(
+        debridgeId,
+        receiver,
+        amount,
+        chainIdTo,
+        //deadline + signature;
+        //                                      remove first 0x
+        deadlineHex + permitSignature.substring(2, permitSignature.length),
+        false,
+        referralCode,
+        {
           value: supportedChainInfo.fixedNativeFee,
-        });
+        }
+      );
       const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
         this.nativeDebridgeId
       );
