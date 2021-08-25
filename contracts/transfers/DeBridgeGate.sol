@@ -642,8 +642,6 @@ contract DeBridgeGate is
     /// @dev Withdraw fees.
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external override nonReentrant onlyFeeProxy {
-        bool nativeFee = _debridgeId == getDebridgeId(getChainId(), address(0));
-
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
         // Amount for transfer to treasure
         uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
@@ -651,7 +649,7 @@ contract DeBridgeGate is
 
         if (amount == 0) revert NotEnoughReserves();
 
-        if (nativeFee) {
+        if (_debridgeId == getDebridgeId(getChainId(), address(0))) {
             payable(feeProxy).transfer(amount);
         } else {
             // don't need this check as we check that amount is not zero
