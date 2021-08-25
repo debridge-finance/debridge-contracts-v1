@@ -68,6 +68,14 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     /* ========== FUNCTIONS  ========== */
 
+    function pause() external onlyAdmin {
+        _pause();
+    }
+
+    function unpause() external onlyAdmin whenPaused {
+        _unpause();
+    }
+
     function setUniswapFactory(IUniswapV2Factory _uniswapFactory) external onlyAdmin {
         uniswapFactory = _uniswapFactory;
     }
@@ -267,15 +275,13 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         amountOut = numerator / denominator;
     }
 
-    function toAddress(bytes memory _bytes) internal pure returns (address) {
+    function toAddress(bytes memory _bytes) internal pure returns (address result) {
         if (_bytes.length != 20) revert CantConvertAddress();
-        address tempAddress;
-
+        // if address was packed using abi.encodedPacked then it's needed
+        // to pad left to get the correct bytes back div by 0x1.... is like doing >> 96
         assembly {
-            tempAddress := div(mload(add(_bytes, 0x20)), 0x1000000000000000000000000)
+            result := div(mload(add(_bytes, 0x20)), 0x1000000000000000000000000)
         }
-
-        return tempAddress;
     }
 
     function getChainId() public view virtual returns (uint256 cid) {
