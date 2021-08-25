@@ -68,6 +68,14 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     /* ========== FUNCTIONS  ========== */
 
+    function pause() external onlyAdmin {
+        _pause();
+    }
+
+    function unpause() external onlyAdmin whenPaused {
+        _unpause();
+    }
+
     function setUniswapFactory(IUniswapV2Factory _uniswapFactory) external onlyAdmin {
         uniswapFactory = _uniswapFactory;
     }
