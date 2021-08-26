@@ -1,6 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { toWei, fromWei, toBN } = web3.utils;
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const { toWei } = web3.utils;
 
 
 function parseHexString(str) { 
