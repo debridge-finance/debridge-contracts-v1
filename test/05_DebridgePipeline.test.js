@@ -43,6 +43,7 @@ const nativeETHDebridgeId = "0x6ac1b981b4452354ad8bd156fe151bcb91252dea9ed7232af
 const referralCode = 555;
 const zeroFlag = 0;
 
+const discountsValues = [0, 5000, 10000];
 contract("DeBridgeGate real pipeline mode", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
@@ -667,21 +668,7 @@ contract("DeBridgeGate real pipeline mode", function () {
   //   assert.equal(await this.debridgeETH.excessConfirmations(), newExcessConfirmations);
   // });
 
-  for (let i = 0; i <= 2; i++) {
-    let discount = 0;
-    switch (i) {
-      case 0:
-        discount = 0;
-        break;
-      case 1:
-        discount = 5000; //50%
-        break;
-      case 2:
-        discount = 10000; //100%
-        break;
-      default:
-        discount = 0;
-    }
+  discountsValues.forEach(discount => {
     context(`Test send method from ETH to BSC. discount: ${(discount * 100) / BPS}%`, () => {
       it(`set discount ${(discount * 100) / BPS}% fee for customer alice`, async function () {
         await this.debridgeETH.updateFeeDiscount(alice, discount, discount);
@@ -840,7 +827,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
       });
     });
-  }
+  });
 
   context("Test mint method (BSC network)", () => {
     before(async function () {
@@ -984,6 +971,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should mint (deETH) when the submission is approved", async function () {
       const balance = toBN("0");
+      const receiver = this.nativeSubmission.args.receiver;
 
       //   function mint(
       //     address _tokenAddress,
@@ -1003,7 +991,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       await this.debridgeBSC.mint(
         this.debridgeWethId,
         ethChainId,
-        this.nativeSubmission.args.receiver,
+        receiver,
         this.nativeSubmission.args.amount,
         this.nativeSubmission.args.nonce,
         [],
@@ -1013,14 +1001,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-      const newBalance = toBN(await wrappedAsset.balanceOf(this.nativeSubmission.args.receiver));
+      const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
 
       const submissionId = await this.debridgeBSC.getSubmissionId(
         this.debridgeWethId,
         ethChainId,
         bscChainId,
         this.nativeSubmission.args.amount,
-        this.nativeSubmission.args.receiver,
+        receiver,
         this.nativeSubmission.args.nonce
       );
       const isSubmissionUsed = await this.debridgeBSC.isSubmissionUsed(submissionId);
@@ -1115,21 +1103,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
   });
 
-  for (let i = 0; i <= 2; i++) {
-    let discount = 0;
-    switch (i) {
-      case 0:
-        discount = 0;
-        break;
-      case 1:
-        discount = 5000; //50%
-        break;
-      case 2:
-        discount = 10000; //100%
-        break;
-      default:
-        discount = 0;
-    }
+  discountsValues.forEach(discount => {
     context(`Test burn method (BSC network) discount: ${(discount * 100) / BPS}%`, () => {
       before(async function () {});
 
@@ -1231,7 +1205,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
       });
     });
-  }
+  });
 
   context("Test claim method (ETH network)", () => {
     before(async function () {
