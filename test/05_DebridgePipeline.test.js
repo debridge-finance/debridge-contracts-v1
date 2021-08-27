@@ -1,5 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permit } = require("./utils.spec");
+const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -1124,16 +1124,13 @@ contract("DeBridgeGate real pipeline mode", function () {
           const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
           const balance = toBN(await wrappedAsset.balanceOf(bob));
-          // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
-          const deadline = toBN(MAX_UINT256);
-          const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
           const supportedChainInfo = await this.debridgeBSC.getChainSupport(chainIdTo);
-          const permitSignature = await permit(
+          const permitParameter = await permitWithDeadline(
             wrappedAsset,
             bob,
             this.debridgeBSC.address,
             amount,
-            deadline,
+            toBN(MAX_UINT256),
             bobPrivKey
           );
           const nativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
@@ -1148,9 +1145,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             receiver,
             amount,
             chainIdTo,
-            //deadline + signature;
-            //                                      remove first 0x
-            deadlineHex + permitSignature.substring(2, permitSignature.length),
+            permitParameter,
             false,
             referralCode,
             {
@@ -1631,15 +1626,13 @@ contract("DeBridgeGate real pipeline mode", function () {
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
       // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
-      const deadline = toBN(MAX_UINT256);
-      const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
       const supportedChainInfo = await this.debridgeHECO.getChainSupport(chainIdTo);
-      const permitSignature = await permit(
+      const permitParameter = await permitWithDeadline(
         wrappedAsset,
         bob,
         this.debridgeHECO.address,
         amount,
-        deadline,
+        toBN(MAX_UINT256),
         bobPrivKey
       );
       let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
@@ -1649,9 +1642,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
-        //deadline + signature;
-        //                                      remove first 0x
-        deadlineHex + permitSignature.substring(2, permitSignature.length),
+        permitParameter,
         false,
         referralCode,
         {
