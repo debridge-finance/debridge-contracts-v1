@@ -227,25 +227,16 @@ contract("DeBridgeGate real pipeline mode", function () {
     );
 
     this.debridgeBSC = await upgrades.deployProxy(
+
+    );
+
+    this.debridgeBSC = await upgrades.deployProxy(
       DeBridgeGateFactory,
       [
         this.excessConfirmations,
         ZERO_ADDRESS,
         this.confirmationAggregatorBSC.address,
         this.callProxy.address.toString(),
-        [ethChainId, hecoChainId], //supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeETH,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeHT,
-            isSupported,
-          },
-        ],
         this.wethBSC.address,
         this.feeProxyBSC.address,
         ZERO_ADDRESS,
@@ -264,19 +255,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         ZERO_ADDRESS,
         this.confirmationAggregatorHECO.address,
         this.callProxy.address.toString(),
-        [ethChainId, bscChainId], //supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeETH,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeBNB,
-            isSupported,
-          },
-        ],
         this.wethHECO.address,
         this.feeProxyHECO.address,
         ZERO_ADDRESS,
@@ -288,6 +266,37 @@ contract("DeBridgeGate real pipeline mode", function () {
       }
     );
 
+    await this.debridgeETH.updateChainSupport(
+      [bscChainId, hecoChainId],
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeBNB,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeHT,
+          isSupported,
+        },
+      ]
+    );
+
+    await this.debridgeBSC.updateChainSupport(
+      [ethChainId, bscChainId], //supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeETH,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeBNB,
+          isSupported,
+        },
+      ]
+    )
     await this.signatureVerifierETH.setDebridgeAddress(this.debridgeETH.address);
 
     this.linkDebridgeId = await this.debridgeETH.getDebridgeId(ethChainId, this.linkToken.address);

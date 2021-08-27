@@ -68,6 +68,22 @@ contract("DeBridgeGate full mode", function () {
     );
     await this.debridge.deployed();
 
+    await this.debridge.updateChainSupport(
+      supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+      ]
+    );
+
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
     await this.debridge.updateAssetFixedFees(this.wethDebridgeId, supportedChainIds, [
@@ -359,6 +375,7 @@ contract("DeBridgeGate full mode", function () {
 
       it("flash increases balances and counters of received funds", async function () {
         const amount = toBN(1000);
+        await this.debridge.updateFlashFee(10); //set 0.1%
         const flashFeeBps = await this.debridge.flashFeeBps();
         const fee = amount.mul(flashFeeBps).div(BPS);
         const chainId = await this.debridge.getChainId();
@@ -381,6 +398,7 @@ contract("DeBridgeGate full mode", function () {
         const paidAfter = newDebridgeFeeInfo.collectedFees;
         const balanceReceiverAfter = await this.mockToken.balanceOf(alice.address);
 
+        expect("10").to.equal(flashFeeBps.toString());
         expect(toBN(paidBefore).add(fee)).to.equal(toBN(newDebridgeFeeInfo.collectedFees));
         expect(toBN(balanceReceiverBefore).add(amount)).to.equal(toBN(balanceReceiverAfter));
       });

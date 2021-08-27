@@ -142,7 +142,6 @@ contract DeBridgeGate is
 
         weth = _weth;
         feeProxy = _feeProxy;
-        flashFeeBps = 10;
     }
 
     /* ========== send, mint, burn, claim ========== */
@@ -683,7 +682,6 @@ contract DeBridgeGate is
     /// @dev Set fee converter proxy.
     /// @param _feeProxy Fee proxy address.
     function setFeeProxy(address _feeProxy) external onlyAdmin {
-        if (_feeProxy == address(0)) revert WrongArgument();
         feeProxy = _feeProxy;
     }
 

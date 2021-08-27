@@ -167,6 +167,7 @@ contract("DeBridgeGate light mode", function () {
         this.signatureVerifier.address.toString(),
         this.confirmationAggregator.address.toString(),
         this.callProxy.address.toString(),
+        this.weth.address,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
         1, //overrideChainId
@@ -178,6 +179,23 @@ contract("DeBridgeGate light mode", function () {
     );
 
     await this.debridge.deployed();
+
+    await this.debridge.updateChainSupport(
+      supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+      ]
+    );
+
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
