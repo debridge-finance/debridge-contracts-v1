@@ -1,4 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
+const { assert } = require("hardhat");
 const { toWei } = web3.utils;
 
 
@@ -147,7 +148,6 @@ contract("SignatureAggregator", function () {
     it("should submit identifier by the oracle", async function () {
       const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
       const signature = await bobAccount.signMessage(parseHexString(submission));
-      console.log(bobAccount.address);
 
       await this.aggregator.connect(bobAccount).submit(submission, signature);
       const confirmations = await this.aggregator.getSubmissionConfirmations(submission);
@@ -207,7 +207,13 @@ contract("SignatureAggregator", function () {
         .connect(aliceAccount)
         .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signature);
       
-      console.log(await this.aggregator.getDeployInfo(deployId));
+      const deployInfo = await this.aggregator.getDeployInfo(deployId);
+      assert.equal(deployInfo.confirmations, 1);
+      assert.equal(deployInfo.chainId, chainId);
+      assert.equal(deployInfo.decimals, decimals);
+      assert.equal(deployInfo.name, name);
+      assert.equal(deployInfo.symbol, symbol);
+      assert.equal(deployInfo.nativeAddress, tokenAddress);
     });
 
     it("should reject if called by the non-oracle", async function () {
