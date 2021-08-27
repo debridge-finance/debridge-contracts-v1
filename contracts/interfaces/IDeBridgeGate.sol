@@ -227,11 +227,11 @@ interface IDeBridgeGate {
 
     event AutoSent(
         bytes32 submissionId,
-        bytes32 indexed debridgeId,
+        bytes32 debridgeId,
         uint256 amount,
-        bytes indexed receiver,
+        bytes receiver,
         uint256 nonce,
-        uint256 indexed chainIdTo,
+        uint256 chainIdTo,
         uint256 claimFee,
         bytes fallbackAddress,
         bytes data,
@@ -275,11 +275,11 @@ interface IDeBridgeGate {
 
     event AutoBurnt(
         bytes32 submissionId,
-        bytes32 indexed debridgeId,
+        bytes32 debridgeId,
         uint256 amount,
-        bytes indexed receiver,
+        bytes receiver,
         uint256 nonce,
-        uint256 indexed chainIdTo,
+        uint256 chainIdTo,
         uint256 claimFee,
         bytes fallbackAddress,
         bytes data,
