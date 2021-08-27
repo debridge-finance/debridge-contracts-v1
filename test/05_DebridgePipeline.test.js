@@ -1,5 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permit } = require("./utils.spec");
+const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -43,6 +43,7 @@ const nativeETHDebridgeId = "0x6ac1b981b4452354ad8bd156fe151bcb91252dea9ed7232af
 const referralCode = 555;
 const zeroFlag = 0;
 
+const discountsValues = [0, 5000, 10000];
 contract("DeBridgeGate real pipeline mode", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
@@ -328,6 +329,16 @@ contract("DeBridgeGate real pipeline mode", function () {
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeBSC.address);
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeHECO.address);
+
+    this.non_evm_receivers = [
+      // SOL
+      web3.utils.utf8ToHex('CuieVDEDtLo7FypA9SbLM9saXFdb1dsshEkyErMqkRQq'),
+      // BTC
+      web3.utils.utf8ToHex('qrg6smtqa4swuj4lk5v0x5m2hyanr8hgm5s68ztfdv'),
+      // BTC long
+      web3.utils.utf8ToHex('bc1qgdjqv0av3q56jvd82tkdjpy7gdp9ut8tlqmgrpmv24sq90ecnvqqjwvw97'),
+    ]
+
   });
   context("Configure contracts", () => {
     it("Check init contract params", async function () {
@@ -667,21 +678,7 @@ contract("DeBridgeGate real pipeline mode", function () {
   //   assert.equal(await this.debridgeETH.excessConfirmations(), newExcessConfirmations);
   // });
 
-  for (let i = 0; i <= 2; i++) {
-    let discount = 0;
-    switch (i) {
-      case 0:
-        discount = 0;
-        break;
-      case 1:
-        discount = 5000; //50%
-        break;
-      case 2:
-        discount = 10000; //100%
-        break;
-      default:
-        discount = 0;
-    }
+  discountsValues.forEach(discount => {
     context(`Test send method from ETH to BSC. discount: ${(discount * 100) / BPS}%`, () => {
       it(`set discount ${(discount * 100) / BPS}% fee for customer alice`, async function () {
         await this.debridgeETH.updateFeeDiscount(alice, discount, discount);
@@ -839,8 +836,29 @@ contract("DeBridgeGate real pipeline mode", function () {
           "WrongTargedChain()"
         );
       });
+
+      it("should support non EVM receiver parameter", async function () {
+        const amount = toBN(toWei("1"));
+        for (const receiver of this.non_evm_receivers) {
+          const tx = await this.debridgeETH.send(
+            ZERO_ADDRESS,
+            receiver,
+            amount,
+            bscChainId,
+            false,
+            referralCode,
+            {
+              value: amount,
+              from: alice,
+            }
+          );
+          let receipt = await tx.wait();
+          let event = receipt.events.find((x) => x.event == "Sent");
+          assert.equal(event.args.receiver, receiver);
+        }
+      });
     });
-  }
+  });
 
   context("Test mint method (BSC network)", () => {
     before(async function () {
@@ -984,6 +1002,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should mint (deETH) when the submission is approved", async function () {
       const balance = toBN("0");
+      const receiver = this.nativeSubmission.args.receiver;
 
       //   function mint(
       //     address _tokenAddress,
@@ -1003,7 +1022,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       await this.debridgeBSC.mint(
         this.debridgeWethId,
         ethChainId,
-        this.nativeSubmission.args.receiver,
+        receiver,
         this.nativeSubmission.args.amount,
         this.nativeSubmission.args.nonce,
         [],
@@ -1013,14 +1032,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-      const newBalance = toBN(await wrappedAsset.balanceOf(this.nativeSubmission.args.receiver));
+      const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
 
       const submissionId = await this.debridgeBSC.getSubmissionId(
         this.debridgeWethId,
         ethChainId,
         bscChainId,
         this.nativeSubmission.args.amount,
-        this.nativeSubmission.args.receiver,
+        receiver,
         this.nativeSubmission.args.nonce
       );
       const isSubmissionUsed = await this.debridgeBSC.isSubmissionUsed(submissionId);
@@ -1115,21 +1134,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
   });
 
-  for (let i = 0; i <= 2; i++) {
-    let discount = 0;
-    switch (i) {
-      case 0:
-        discount = 0;
-        break;
-      case 1:
-        discount = 5000; //50%
-        break;
-      case 2:
-        discount = 10000; //100%
-        break;
-      default:
-        discount = 0;
-    }
+  discountsValues.forEach(discount => {
     context(`Test burn method (BSC network) discount: ${(discount * 100) / BPS}%`, () => {
       before(async function () {});
 
@@ -1150,16 +1155,13 @@ contract("DeBridgeGate real pipeline mode", function () {
           const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
           const balance = toBN(await wrappedAsset.balanceOf(bob));
-          // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
-          const deadline = toBN(MAX_UINT256);
-          const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
           const supportedChainInfo = await this.debridgeBSC.getChainSupport(chainIdTo);
-          const permitSignature = await permit(
+          const permitParameter = await permitWithDeadline(
             wrappedAsset,
             bob,
             this.debridgeBSC.address,
             amount,
-            deadline,
+            toBN(MAX_UINT256),
             bobPrivKey
           );
           const nativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
@@ -1174,9 +1176,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             receiver,
             amount,
             chainIdTo,
-            //deadline + signature;
-            //                                      remove first 0x
-            deadlineHex + permitSignature.substring(2, permitSignature.length),
+            permitParameter,
             false,
             referralCode,
             {
@@ -1230,8 +1230,45 @@ contract("DeBridgeGate real pipeline mode", function () {
           "WrongChain()"
         );
       });
+
+      it("should support non EVM receiver parameter", async function () {
+        const amount = toBN(toWei("0.1"));
+        const debridgeId = this.debridgeWethId;
+        const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
+        const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
+        const supportedChainInfo = await this.debridgeBSC.getChainSupport(ethChainId);
+        let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
+        fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
+          toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
+        );
+        for (const receiver of this.non_evm_receivers) {
+          const permitParameter = await permitWithDeadline(
+            wrappedAsset,
+            bob,
+            this.debridgeBSC.address,
+            amount,
+            toBN(MAX_UINT256),
+            bobPrivKey
+          );
+          const tx = await this.debridgeBSC.connect(bobAccount).burn(
+            debridgeId,
+            receiver,
+            amount,
+            ethChainId,
+            permitParameter,
+            false,
+            referralCode,
+            {
+              value: fixedNativeFeeWithDiscount,
+            }
+          );
+          let receipt = await tx.wait();
+          let event = receipt.events.find((x) => x.event == "Burnt");
+          assert.equal(event.args.receiver, receiver);
+        }
+      });
     });
-  }
+  });
 
   context("Test claim method (ETH network)", () => {
     before(async function () {
@@ -1657,15 +1694,13 @@ contract("DeBridgeGate real pipeline mode", function () {
       const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
       // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
-      const deadline = toBN(MAX_UINT256);
-      const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
       const supportedChainInfo = await this.debridgeHECO.getChainSupport(chainIdTo);
-      const permitSignature = await permit(
+      const permitParameter = await permitWithDeadline(
         wrappedAsset,
         bob,
         this.debridgeHECO.address,
         amount,
-        deadline,
+        toBN(MAX_UINT256),
         bobPrivKey
       );
       let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
@@ -1675,9 +1710,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
-        //deadline + signature;
-        //                                      remove first 0x
-        deadlineHex + permitSignature.substring(2, permitSignature.length),
+        permitParameter,
         false,
         referralCode,
         {
