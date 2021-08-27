@@ -576,6 +576,7 @@ contract DeBridgeGate is
     /// @dev Set proxy address.
     /// @param _address Address of the proxy that executes external calls.
     function setCallProxy(uint256 version, address _address) external onlyAdmin {
+        if (_address == address(0)) revert WrongArgument();
         callProxyAddresses[version] = _address;
         emit CallProxyUpdated(version, _address);
     }
@@ -590,6 +591,7 @@ contract DeBridgeGate is
         uint16 _minReservesBps,
         uint256 _amountThreshold
     ) external onlyAdmin {
+        if (_minReservesBps > BPS_DENOMINATOR) revert WrongArgument();
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.maxAmount = _maxAmount;
         debridge.minReservesBps = _minReservesBps;
