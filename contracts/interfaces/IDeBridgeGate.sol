@@ -217,21 +217,21 @@ interface IDeBridgeGate {
 
     event Sent(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        bytes receiver,
+        bytes indexed receiver,
         uint256 nonce,
-        uint256 chainIdTo,
+        uint256 indexed chainIdTo,
         uint32 referralCode
     ); // emited once the native tokens are locked to be sent to the other chain
 
     event AutoSent(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        bytes receiver,
+        bytes indexed receiver,
         uint256 nonce,
-        uint256 chainIdTo,
+        uint256 indexed chainIdTo,
         uint256 claimFee,
         bytes fallbackAddress,
         bytes data,
@@ -242,20 +242,20 @@ interface IDeBridgeGate {
 
     event Minted(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        address receiver,
+        address indexed receiver,
         uint256 nonce,
-        uint256 chainIdFrom
+        uint256 indexed chainIdFrom
     ); // emited once the wrapped tokens are minted on the current chain
 
     event AutoMinted(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        address receiver,
+        address indexed receiver,
         uint256 nonce,
-        // uint256 chainIdFrom,
+        // uint256 indexed chainIdFrom,
         uint256 claimFee,
         address fallbackAddress,
         bytes data,
@@ -265,21 +265,21 @@ interface IDeBridgeGate {
 
     event Burnt(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        bytes receiver,
+        bytes indexed receiver,
         uint256 nonce,
-        uint256 chainIdTo,
+        uint256 indexed chainIdTo,
         uint32 referralCode
     ); // emited once the wrapped tokens are sent to the contract
 
     event AutoBurnt(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        bytes receiver,
+        bytes indexed receiver,
         uint256 nonce,
-        uint256 chainIdTo,
+        uint256 indexed chainIdTo,
         uint256 claimFee,
         bytes fallbackAddress,
         bytes data,
@@ -290,20 +290,20 @@ interface IDeBridgeGate {
 
     event Claimed(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        address receiver,
+        address indexed receiver,
         uint256 nonce,
-        uint256 chainIdFrom
+        uint256 indexed chainIdFrom
     ); // emited once the tokens are withdrawn on native chain
 
     event AutoClaimed(
         bytes32 submissionId,
-        bytes32 debridgeId,
+        bytes32 indexed debridgeId,
         uint256 amount,
-        address receiver,
+        address indexed receiver,
         uint256 nonce,
-        // uint256 chainIdFrom,
+        // uint256 indexed chainIdFrom,
         uint256 claimFee,
         address fallbackAddress,
         bytes data,
@@ -328,8 +328,8 @@ interface IDeBridgeGate {
 
     event Flash(
         address sender,
-        address tokenAddress,
-        address receiver,
+        address indexed tokenAddress,
+        address indexed receiver,
         uint256 amount,
         uint256 paid
     );
