@@ -96,19 +96,19 @@ contract DelegatedStaking is AccessControl, Initializable {
     IPriceConsumer public priceConsumer;
 
     /* Events */
-    event Staked(address oracle, address staker, address indexedcollateral, uint256 indexed amount);
-    event UnstakeRequested(address oracle, address indexedcollateral, address indexed receipient, uint256 indexed amount);
+    event Staked(address oracle, address staker, address indexed collateral, uint256 amount);
+    event UnstakeRequested(address oracle, address indexed collateral, address indexed recipient, uint256 amount);
     event UnstakeExecuted(address oracle, uint256 withdrawalId);
     event UnstakeCancelled(address oracle, uint256 withdrawalId);
     event UnstakePaused(address oracle, uint256 withdrawalId, uint256 timestamp);
     event UnstakeResumed(address oracle, uint256 withdrawalId, uint256 timestamp);
-    event Liquidated(address oracle, address indexedcollateral, uint256 indexed amount);
-    event DepositedToStrategy(address oracle, uint256 indexed amount, address indexed strategy, address indexedcollateral);
-    event WithdrawnFromStrategy(address oracle, uint256 indexed amount, address indexed strategy, address indexedcollateral);
-    event EmergencyWithdrawnFromStrategy(uint256 indexed amount, address indexed strategy, address indexedcollateral);
-    event RecoveredFromEmergency(address oracle, uint256 indexed amount, address indexed strategy, address indexedcollateral);
-    event RewardsDistributed(address oracle, address indexedcollateral, uint256 indexed amount);
-    event WithdrawnFunds(address recipient, address indexedcollateral, uint256 indexed amount);
+    event Liquidated(address oracle, address indexed collateral, uint256 amount);
+    event DepositedToStrategy(address oracle, uint256 amount, address indexed strategy, address indexed collateral);
+    event WithdrawnFromStrategy(address oracle, uint256 amount, address indexed strategy, address indexed collateral);
+    event EmergencyWithdrawnFromStrategy(uint256 amount, address indexed strategy, address indexed collateral);
+    event RecoveredFromEmergency(address oracle, uint256 amount, address indexed strategy, address indexed collateral);
+    event RewardsDistributed(address oracle, address indexed collateral, uint256 amount);
+    event WithdrawnFunds(address indexed recipient, address indexed collateral, uint256 amount);
     event TransferRequested(address delegator, uint256 transferId);
     event TransferExecuted(address delegator, uint256 transferId);
 
