@@ -204,8 +204,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
-    //     uint256[] memory _supportedChainIds,
-    //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
@@ -217,19 +215,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.signatureVerifierETH.address,
         ZERO_ADDRESS,
         this.callProxy.address.toString(),
-        [bscChainId, hecoChainId],
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeBNB,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeHT,
-            isSupported,
-          },
-        ],
         this.wethETH.address,
         this.feeProxyETH.address,
         this.defiControllerETH.address,

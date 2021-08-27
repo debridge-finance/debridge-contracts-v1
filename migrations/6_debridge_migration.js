@@ -51,8 +51,6 @@ module.exports = async function(deployer, network) {
         SignatureVerifier.address.toString(),
         ZERO_ADDRESS, //ConfirmationAggregator.address.toString(),
         CallProxy.address.toString(),
-        debridgeInitParams.supportedChains,
-        debridgeInitParams.chainSupportInfo,
         DefiController.address.toString(),
         weth,
         FeeProxy.address.toString(),
