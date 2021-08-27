@@ -1,7 +1,10 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { assert } = require("hardhat");
 const { toWei } = web3.utils;
+const { solidity } = require("ethereum-waffle");
+const chai = require("chai");
 
+chai.use(solidity);
+const { assert, expect } = chai;
 
 function parseHexString(str) { 
   var result = [];
@@ -151,6 +154,8 @@ contract("SignatureAggregator", function () {
       await this.aggregator.connect(bobAccount).submit(submission, signature);
       const confirmations = await this.aggregator.getSubmissionConfirmations(submission);
       assert.equal(confirmations[0], 1);
+      const signatures = await this.aggregator.getSubmissionSignatures(submission);
+      expect(signatures).to.be.includes(signature);
     });
 
     it("should submit identifier by the second oracle", async function () {
@@ -160,6 +165,8 @@ contract("SignatureAggregator", function () {
       await this.aggregator.connect(aliceAccount).submit(submission, signature);
       const confirmations = await this.aggregator.getSubmissionConfirmations(submission);
       assert.equal(confirmations[0], 2);
+      const signatures = await this.aggregator.getSubmissionSignatures(submission);
+      expect(signatures).to.be.includes(signature);
     });
 
     it("should submit identifier by the extra oracle", async function () {
@@ -169,6 +176,8 @@ contract("SignatureAggregator", function () {
       await this.aggregator.connect(eveAccount).submit(submission, signature);
       const confirmations = await this.aggregator.getSubmissionConfirmations(submission);
       assert.equal(confirmations[0], 3);
+      const signatures = await this.aggregator.getSubmissionSignatures(submission);
+      expect(signatures).to.be.includes(signature);
     });
 
     it("should reject submition of identifier if called by the non-admin", async function () {
