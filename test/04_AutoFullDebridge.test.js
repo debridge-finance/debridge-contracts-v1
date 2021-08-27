@@ -151,7 +151,6 @@ contract("DeBridgeGate full with auto", function () {
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
 
     this.debridge = await upgrades.deployProxy(Debridge, [
@@ -175,7 +174,6 @@ contract("DeBridgeGate full with auto", function () {
       this.weth.address,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      devid,
     ]);
     await this.debridge.deployed();
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();

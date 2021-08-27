@@ -160,7 +160,6 @@ contract("DeBridgeGate light mode", function () {
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
 
     this.debridge = await upgrades.deployProxy(
@@ -186,7 +185,6 @@ contract("DeBridgeGate light mode", function () {
         this.weth.address,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
-        devid,
         1, //overrideChainId
       ],
       {

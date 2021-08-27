@@ -12,7 +12,6 @@ contract MockDeBridgeGate is DeBridgeGate {
     /// @param _signatureVerifier Aggregator address to verify signatures
     /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    /// @param _treasury Address to collect a fee
     function initializeMock(
         uint8 _excessConfirmations,
         address _signatureVerifier,
@@ -23,7 +22,6 @@ contract MockDeBridgeGate is DeBridgeGate {
         IWETH _weth,
         address _feeProxy,
         IDefiController _defiController,
-        address _treasury,
         uint256 overrideChainId
     ) public initializer {
         // DeBridgeGate.initialize(_excessConfirmations,
@@ -34,8 +32,7 @@ contract MockDeBridgeGate is DeBridgeGate {
         // _chainSupportInfo,
         // _weth,
         // _feeProxy,
-        // _defiController,
-        // _treasury);
+        // _defiController);
 
         chainId = overrideChainId;
         _addAsset(
@@ -58,7 +55,6 @@ contract MockDeBridgeGate is DeBridgeGate {
 
         weth = _weth;
         feeProxy = _feeProxy;
-        treasury = _treasury;
 
         flashFeeBps = 10;
     }

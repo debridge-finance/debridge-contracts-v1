@@ -209,7 +209,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
     this.debridgeETH = await upgrades.deployProxy(
       DeBridgeGateFactory,
@@ -234,7 +233,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.wethETH.address,
         this.feeProxyETH.address,
         this.defiControllerETH.address,
-        treasury,
         ethChainId, //overrideChainId
       ],
       {
@@ -266,7 +264,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.wethBSC.address,
         this.feeProxyBSC.address,
         ZERO_ADDRESS,
-        treasury,
         bscChainId, //overrideChainId
       ],
       {
@@ -298,7 +295,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.wethHECO.address,
         this.feeProxyHECO.address,
         ZERO_ADDRESS,
-        treasury,
         hecoChainId, //overrideChainId
       ],
       {
@@ -378,9 +374,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(this.feeProxyBSC.address, await this.debridgeBSC.feeProxy());
       assert.equal(this.feeProxyHECO.address, await this.debridgeHECO.feeProxy());
 
-      assert.equal(treasury, await this.debridgeETH.treasury());
-      assert.equal(treasury, await this.debridgeBSC.treasury());
-      assert.equal(treasury, await this.debridgeHECO.treasury());
+      // assert.equal(treasury, await this.debridgeETH.treasury());
+      // assert.equal(treasury, await this.debridgeBSC.treasury());
+      // assert.equal(treasury, await this.debridgeHECO.treasury());
 
       assert.equal(this.defiControllerETH.address, await this.debridgeETH.defiController());
       assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());

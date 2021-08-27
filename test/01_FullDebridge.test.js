@@ -72,7 +72,6 @@ contract("DeBridgeGate full mode", function () {
         this.weth.address,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
-        devid.address,
         1, //overrideChainId
       ],
       {
@@ -98,7 +97,7 @@ contract("DeBridgeGate full mode", function () {
 
   it("Check init params", async function () {
     expect(this.weth.address).to.equal(await this.debridge.weth());
-    expect(devid.address).to.equal(await this.debridge.treasury());
+    // expect(devid.address).to.equal(await this.debridge.treasury());
     expect(excessConfirmations.toString()).to.equal(
       (await this.debridge.excessConfirmations()).toString()
     );
@@ -218,15 +217,15 @@ contract("DeBridgeGate full mode", function () {
       expect(await this.debridge.flashFeeBps()).to.equal(newFlashFee);
     });
 
-    it("should update address treasury if called by the admin", async function () {
-      const treasuryAddressBefore = await this.debridge.treasury();
+    // it("should update address treasury if called by the admin", async function () {
+    //   const treasuryAddressBefore = await this.debridge.treasury();
 
-      await this.debridge.updateTreasury(ZERO_ADDRESS);
-      const treasuryAddressAfter = await this.debridge.treasury();
+    //   await this.debridge.updateTreasury(ZERO_ADDRESS);
+    //   const treasuryAddressAfter = await this.debridge.treasury();
 
-      assert.notEqual(treasuryAddressAfter, treasuryAddressBefore);
-      assert.equal(ZERO_ADDRESS, treasuryAddressAfter);
-    });
+    //   assert.notEqual(treasuryAddressAfter, treasuryAddressBefore);
+    //   assert.equal(ZERO_ADDRESS, treasuryAddressAfter);
+    // });
 
     it("should reject setting aggregator if called by the non-admin", async function () {
       await expectRevert(this.debridge.connect(bob).setAggregator(ZERO_ADDRESS), "AdminBadRole()");
@@ -304,9 +303,9 @@ contract("DeBridgeGate full mode", function () {
       await expectRevert(this.debridge.connect(bob).updateFlashFee(20), "AdminBadRole");
     });
 
-    it("should reject setting address treasury if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).updateTreasury(ZERO_ADDRESS), "AdminBadRole()");
-    });
+    // it("should reject setting address treasury if called by the non-admin", async function () {
+    //   await expectRevert(this.debridge.connect(bob).updateTreasury(ZERO_ADDRESS), "AdminBadRole()");
+    // });
   });
 
   context("with LINK and DBR assets", async function () {

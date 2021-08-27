@@ -38,7 +38,6 @@ contract DeBridgeGate is
 
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
-    address public treasury; //address of treasury
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
@@ -119,7 +118,6 @@ contract DeBridgeGate is
     /// @param _signatureVerifier Aggregator address to verify signatures
     /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
     /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    /// @param _treasury Address to collect a fee
     function initialize(
         uint8 _excessConfirmations,
         address _signatureVerifier,
@@ -129,8 +127,7 @@ contract DeBridgeGate is
         ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
         address _feeProxy,
-        IDefiController _defiController,
-        address _treasury
+        IDefiController _defiController
     ) public initializer {
         _addAsset(
             getDebridgeId(getChainId(), address(_weth)),
@@ -152,8 +149,6 @@ contract DeBridgeGate is
 
         weth = _weth;
         feeProxy = _feeProxy;
-        treasury = _treasury;
-
         flashFeeBps = 10;
     }
 
@@ -732,10 +727,6 @@ contract DeBridgeGate is
         DiscountInfo storage discountInfo = feeDiscount[_address];
         discountInfo.discountFixBps = _discountFixBps;
         discountInfo.discountTransferBps = _discountTransferBps;
-    }
-
-    function updateTreasury(address _address) external onlyAdmin {
-        treasury = _address;
     }
 
     // we need to accept ETH sends to unwrap WETH

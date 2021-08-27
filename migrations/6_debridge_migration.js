@@ -26,12 +26,11 @@ module.exports = async function(deployer, network) {
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
     await deployProxy(
       DeBridgeGate,
       [
-        debridgeInitParams.excessConfirmations,    
+        debridgeInitParams.excessConfirmations,
         ZERO_ADDRESS, //SignatureVerifier.address.toString(),
         ConfirmationAggregator.address.toString(),
         CallProxy.address.toString(),
@@ -53,7 +52,7 @@ module.exports = async function(deployer, network) {
       DeBridgeGate,
       [
         debridgeInitParams.excessConfirmations,
-        SignatureVerifier.address.toString(),        
+        SignatureVerifier.address.toString(),
         ZERO_ADDRESS, //ConfirmationAggregator.address.toString(),
         CallProxy.address.toString(),
         debridgeInitParams.supportedChains,
