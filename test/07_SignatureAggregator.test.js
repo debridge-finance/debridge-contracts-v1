@@ -140,7 +140,6 @@ contract("SignatureAggregator", function () {
     before(async function () {
       const amount = toWei("100");
       await this.linkToken.connect(aliceAccount).mint(alice, amount);
-      await this.dbrToken.connect(aliceAccount).mint(alice, amount);
     });
   });
 
