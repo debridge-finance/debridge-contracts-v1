@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 /// @title Callback for IDeBridgeGate#flash
 /// @notice Any contract that calls IDeBridgeGate#flash must implement this interface
