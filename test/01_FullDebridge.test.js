@@ -56,19 +56,6 @@ contract("DeBridgeGate full mode", function () {
         ZERO_ADDRESS,
         ZERO_ADDRESS,
         this.callProxy.address,
-        supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-        ],
         this.weth.address,
         ZERO_ADDRESS,
         ZERO_ADDRESS,

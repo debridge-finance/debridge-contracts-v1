@@ -155,8 +155,6 @@ contract("DeBridgeGate light mode", function () {
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
-    //     uint256[] memory _supportedChainIds,
-    //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
@@ -169,20 +167,6 @@ contract("DeBridgeGate light mode", function () {
         this.signatureVerifier.address.toString(),
         this.confirmationAggregator.address.toString(),
         this.callProxy.address.toString(),
-        supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-        ],
-        this.weth.address,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
         1, //overrideChainId

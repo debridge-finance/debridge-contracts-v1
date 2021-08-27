@@ -146,8 +146,6 @@ contract("DeBridgeGate full with auto", function () {
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
-    //     uint256[] memory _supportedChainIds,
-    //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
