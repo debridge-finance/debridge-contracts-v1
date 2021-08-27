@@ -329,6 +329,16 @@ contract("DeBridgeGate real pipeline mode", function () {
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeBSC.address);
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeHECO.address);
+
+    this.non_evm_receivers = [
+      // SOL
+      web3.utils.utf8ToHex('CuieVDEDtLo7FypA9SbLM9saXFdb1dsshEkyErMqkRQq'),
+      // BTC
+      web3.utils.utf8ToHex('qrg6smtqa4swuj4lk5v0x5m2hyanr8hgm5s68ztfdv'),
+      // BTC long
+      web3.utils.utf8ToHex('bc1qgdjqv0av3q56jvd82tkdjpy7gdp9ut8tlqmgrpmv24sq90ecnvqqjwvw97'),
+    ]
+
   });
   context("Configure contracts", () => {
     it("Check init contract params", async function () {
@@ -826,6 +836,27 @@ contract("DeBridgeGate real pipeline mode", function () {
           "WrongTargedChain()"
         );
       });
+
+      it("should support non EVM receiver parameter", async function () {
+        const amount = toBN(toWei("1"));
+        for (const receiver of this.non_evm_receivers) {
+          const tx = await this.debridgeETH.send(
+            ZERO_ADDRESS,
+            receiver,
+            amount,
+            bscChainId,
+            false,
+            referralCode,
+            {
+              value: amount,
+              from: alice,
+            }
+          );
+          let receipt = await tx.wait();
+          let event = receipt.events.find((x) => x.event == "Sent");
+          assert.equal(event.args.receiver, receiver);
+        }
+      });
     });
   });
 
@@ -1198,6 +1229,43 @@ contract("DeBridgeGate real pipeline mode", function () {
           ),
           "WrongChain()"
         );
+      });
+
+      it("should support non EVM receiver parameter", async function () {
+        const amount = toBN(toWei("0.1"));
+        const debridgeId = this.debridgeWethId;
+        const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
+        const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
+        const supportedChainInfo = await this.debridgeBSC.getChainSupport(ethChainId);
+        let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
+        fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
+          toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
+        );
+        for (const receiver of this.non_evm_receivers) {
+          const permitParameter = await permitWithDeadline(
+            wrappedAsset,
+            bob,
+            this.debridgeBSC.address,
+            amount,
+            toBN(MAX_UINT256),
+            bobPrivKey
+          );
+          const tx = await this.debridgeBSC.connect(bobAccount).burn(
+            debridgeId,
+            receiver,
+            amount,
+            ethChainId,
+            permitParameter,
+            false,
+            referralCode,
+            {
+              value: fixedNativeFeeWithDiscount,
+            }
+          );
+          let receipt = await tx.wait();
+          let event = receipt.events.find((x) => x.event == "Burnt");
+          assert.equal(event.args.receiver, receiver);
+        }
       });
     });
   });
