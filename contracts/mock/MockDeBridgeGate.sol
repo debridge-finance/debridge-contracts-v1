@@ -21,7 +21,7 @@ contract MockDeBridgeGate is DeBridgeGate {
         ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
         address _feeProxy,
-        IDefiController _defiController,
+        address _defiController,
         uint256 overrideChainId
     ) public initializer {
         // DeBridgeGate.initialize(_excessConfirmations,
