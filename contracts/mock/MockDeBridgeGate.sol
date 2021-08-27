@@ -11,14 +11,11 @@ contract MockDeBridgeGate is DeBridgeGate {
     /// @dev Constructor that initializes the most important configurations.
     /// @param _signatureVerifier Aggregator address to verify signatures
     /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
-    /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
     function initializeMock(
         uint8 _excessConfirmations,
         address _signatureVerifier,
         address _confirmationAggregator,
         address _callProxy,
-        uint256[] memory _supportedChainIds,
-        ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
         address _feeProxy,
         address _defiController,
@@ -28,8 +25,6 @@ contract MockDeBridgeGate is DeBridgeGate {
         // _signatureVerifier,
         // _confirmationAggregator,
         // _callProxy,
-        // _supportedChainIds,
-        // _chainSupportInfo,
         // _weth,
         // _feeProxy,
         // _defiController);
@@ -41,9 +36,6 @@ contract MockDeBridgeGate is DeBridgeGate {
             abi.encodePacked(address(_weth)),
             chainId
         );
-        for (uint256 i = 0; i < _supportedChainIds.length; i++) {
-            getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
-        }
 
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
