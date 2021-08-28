@@ -15,8 +15,13 @@ interface ISignatureVerifier {
 
     /* ========== EVENTS ========== */
 
-    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by the only oracle
-    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
+    event Confirmed(
+        bytes32 indexed submissionId,
+        address indexed operator); // emitted once the submission is confirmed by the only oracle
+
+    event DeployConfirmed(
+        bytes32 indexed deployId,
+        address indexed operator); // emitted once the submission is confirmed by one oracle
 
     /* ========== FUNCTIONS ========== */
 

@@ -17,6 +17,6 @@ interface IAggregatorBase {
     event UpdateOracle(address oracle, bool required, bool isValid); // update oracle by admin
     event UpdateOracleAdmin(address oracle, address admin); // update oracle by oracle's admin
     event UpdateOracleAdminByOwner(address oracle, address admin); // update oracle by admin
-    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
-    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
+    event DeployApproved(bytes32 indexed deployId); // emitted once the submission is confirmed by min required aount of oracles
+    event SubmissionApproved(bytes32 indexed submissionId); // emitted once the submission is confirmed by min required aount of oracles
 }
