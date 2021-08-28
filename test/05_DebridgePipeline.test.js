@@ -227,10 +227,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     );
 
     this.debridgeBSC = await upgrades.deployProxy(
-
-    );
-
-    this.debridgeBSC = await upgrades.deployProxy(
       DeBridgeGateFactory,
       [
         this.excessConfirmations,
@@ -283,6 +279,22 @@ contract("DeBridgeGate real pipeline mode", function () {
     );
 
     await this.debridgeBSC.updateChainSupport(
+      [ethChainId, hecoChainId], //supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeETH,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeHT,
+          isSupported,
+        },
+      ],
+    )
+
+    await this.debridgeHECO.updateChainSupport(
       [ethChainId, bscChainId], //supportedChainIds,
       [
         {

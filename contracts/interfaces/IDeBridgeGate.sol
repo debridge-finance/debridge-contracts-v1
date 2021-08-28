@@ -219,7 +219,7 @@ interface IDeBridgeGate {
         bytes32 submissionId,
         bytes32 indexed debridgeId,
         uint256 amount,
-        bytes indexed receiver,
+        bytes receiver,
         uint256 nonce,
         uint256 indexed chainIdTo,
         uint32 referralCode
@@ -267,7 +267,7 @@ interface IDeBridgeGate {
         bytes32 submissionId,
         bytes32 indexed debridgeId,
         uint256 amount,
-        bytes indexed receiver,
+        bytes receiver,
         uint256 nonce,
         uint256 indexed chainIdTo,
         uint32 referralCode
