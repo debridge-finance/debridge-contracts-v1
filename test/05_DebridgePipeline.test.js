@@ -204,12 +204,9 @@ contract("DeBridgeGate real pipeline mode", function () {
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
-    //     uint256[] memory _supportedChainIds,
-    //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
     this.debridgeETH = await upgrades.deployProxy(
       DeBridgeGateFactory,
@@ -218,23 +215,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.signatureVerifierETH.address,
         ZERO_ADDRESS,
         this.callProxy.address.toString(),
-        [bscChainId, hecoChainId],
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeBNB,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeHT,
-            isSupported,
-          },
-        ],
         this.wethETH.address,
         this.feeProxyETH.address,
         this.defiControllerETH.address,
-        treasury,
         ethChainId, //overrideChainId
       ],
       {
@@ -250,23 +233,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         ZERO_ADDRESS,
         this.confirmationAggregatorBSC.address,
         this.callProxy.address.toString(),
-        [ethChainId, hecoChainId], //supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeETH,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeHT,
-            isSupported,
-          },
-        ],
         this.wethBSC.address,
         this.feeProxyBSC.address,
         ZERO_ADDRESS,
-        treasury,
         bscChainId, //overrideChainId
       ],
       {
@@ -282,23 +251,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         ZERO_ADDRESS,
         this.confirmationAggregatorHECO.address,
         this.callProxy.address.toString(),
-        [ethChainId, bscChainId], //supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeETH,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee: fixedNativeFeeBNB,
-            isSupported,
-          },
-        ],
         this.wethHECO.address,
         this.feeProxyHECO.address,
         ZERO_ADDRESS,
-        treasury,
         hecoChainId, //overrideChainId
       ],
       {
@@ -307,6 +262,53 @@ contract("DeBridgeGate real pipeline mode", function () {
       }
     );
 
+    await this.debridgeETH.updateChainSupport(
+      [bscChainId, hecoChainId],
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeBNB,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeHT,
+          isSupported,
+        },
+      ]
+    );
+
+    await this.debridgeBSC.updateChainSupport(
+      [ethChainId, hecoChainId], //supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeETH,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeHT,
+          isSupported,
+        },
+      ],
+    )
+
+    await this.debridgeHECO.updateChainSupport(
+      [ethChainId, bscChainId], //supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeETH,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee: fixedNativeFeeBNB,
+          isSupported,
+        },
+      ]
+    )
     await this.signatureVerifierETH.setDebridgeAddress(this.debridgeETH.address);
 
     this.linkDebridgeId = await this.debridgeETH.getDebridgeId(ethChainId, this.linkToken.address);
@@ -378,9 +380,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(this.feeProxyBSC.address, await this.debridgeBSC.feeProxy());
       assert.equal(this.feeProxyHECO.address, await this.debridgeHECO.feeProxy());
 
-      assert.equal(treasury, await this.debridgeETH.treasury());
-      assert.equal(treasury, await this.debridgeBSC.treasury());
-      assert.equal(treasury, await this.debridgeHECO.treasury());
+      // assert.equal(treasury, await this.debridgeETH.treasury());
+      // assert.equal(treasury, await this.debridgeBSC.treasury());
+      // assert.equal(treasury, await this.debridgeHECO.treasury());
 
       assert.equal(this.defiControllerETH.address, await this.debridgeETH.defiController());
       assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());

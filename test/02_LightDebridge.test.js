@@ -155,12 +155,9 @@ contract("DeBridgeGate light mode", function () {
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
-    //     uint256[] memory _supportedChainIds,
-    //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
 
     this.debridge = await upgrades.deployProxy(
@@ -170,23 +167,9 @@ contract("DeBridgeGate light mode", function () {
         this.signatureVerifier.address.toString(),
         this.confirmationAggregator.address.toString(),
         this.callProxy.address.toString(),
-        supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-        ],
         this.weth.address,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
-        devid,
         1, //overrideChainId
       ],
       {
@@ -196,6 +179,23 @@ contract("DeBridgeGate light mode", function () {
     );
 
     await this.debridge.deployed();
+
+    await this.debridge.updateChainSupport(
+      supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+      ]
+    );
+
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());

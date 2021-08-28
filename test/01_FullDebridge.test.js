@@ -56,23 +56,9 @@ contract("DeBridgeGate full mode", function () {
         ZERO_ADDRESS,
         ZERO_ADDRESS,
         this.callProxy.address,
-        supportedChainIds,
-        [
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-          {
-            transferFeeBps,
-            fixedNativeFee,
-            isSupported,
-          },
-        ],
         this.weth.address,
         ZERO_ADDRESS,
         ZERO_ADDRESS,
-        devid.address,
         1, //overrideChainId
       ],
       {
@@ -81,6 +67,22 @@ contract("DeBridgeGate full mode", function () {
       }
     );
     await this.debridge.deployed();
+
+    await this.debridge.updateChainSupport(
+      supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+      ]
+    );
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
@@ -98,7 +100,7 @@ contract("DeBridgeGate full mode", function () {
 
   it("Check init params", async function () {
     expect(this.weth.address).to.equal(await this.debridge.weth());
-    expect(devid.address).to.equal(await this.debridge.treasury());
+    // expect(devid.address).to.equal(await this.debridge.treasury());
     expect(excessConfirmations.toString()).to.equal(
       (await this.debridge.excessConfirmations()).toString()
     );
@@ -218,15 +220,15 @@ contract("DeBridgeGate full mode", function () {
       expect(await this.debridge.flashFeeBps()).to.equal(newFlashFee);
     });
 
-    it("should update address treasury if called by the admin", async function () {
-      const treasuryAddressBefore = await this.debridge.treasury();
+    // it("should update address treasury if called by the admin", async function () {
+    //   const treasuryAddressBefore = await this.debridge.treasury();
 
-      await this.debridge.updateTreasury(ZERO_ADDRESS);
-      const treasuryAddressAfter = await this.debridge.treasury();
+    //   await this.debridge.updateTreasury(ZERO_ADDRESS);
+    //   const treasuryAddressAfter = await this.debridge.treasury();
 
-      assert.notEqual(treasuryAddressAfter, treasuryAddressBefore);
-      assert.equal(ZERO_ADDRESS, treasuryAddressAfter);
-    });
+    //   assert.notEqual(treasuryAddressAfter, treasuryAddressBefore);
+    //   assert.equal(ZERO_ADDRESS, treasuryAddressAfter);
+    // });
 
     it("should reject setting aggregator if called by the non-admin", async function () {
       await expectRevert(this.debridge.connect(bob).setAggregator(ZERO_ADDRESS), "AdminBadRole()");
@@ -304,9 +306,9 @@ contract("DeBridgeGate full mode", function () {
       await expectRevert(this.debridge.connect(bob).updateFlashFee(20), "AdminBadRole");
     });
 
-    it("should reject setting address treasury if called by the non-admin", async function () {
-      await expectRevert(this.debridge.connect(bob).updateTreasury(ZERO_ADDRESS), "AdminBadRole()");
-    });
+    // it("should reject setting address treasury if called by the non-admin", async function () {
+    //   await expectRevert(this.debridge.connect(bob).updateTreasury(ZERO_ADDRESS), "AdminBadRole()");
+    // });
   });
 
   context("with LINK and DBR assets", async function () {
@@ -373,6 +375,7 @@ contract("DeBridgeGate full mode", function () {
 
       it("flash increases balances and counters of received funds", async function () {
         const amount = toBN(1000);
+        await this.debridge.updateFlashFee(10); //set 0.1%
         const flashFeeBps = await this.debridge.flashFeeBps();
         const fee = amount.mul(flashFeeBps).div(BPS);
         const chainId = await this.debridge.getChainId();
@@ -395,6 +398,7 @@ contract("DeBridgeGate full mode", function () {
         const paidAfter = newDebridgeFeeInfo.collectedFees;
         const balanceReceiverAfter = await this.mockToken.balanceOf(alice.address);
 
+        expect("10").to.equal(flashFeeBps.toString());
         expect(toBN(paidBefore).add(fee)).to.equal(toBN(newDebridgeFeeInfo.collectedFees));
         expect(toBN(balanceReceiverBefore).add(amount)).to.equal(toBN(balanceReceiverAfter));
       });

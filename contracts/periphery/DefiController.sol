@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -49,11 +49,11 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         address strategyToken
     );
 
-    event UpdateStrategy(address strategy, bool isEnabled, uint16 maxReservesBps);
+    event UpdateStrategy(address indexed strategy, bool isEnabled, uint16 maxReservesBps);
 
-    event DepositToStrategy(address strategy, uint256 amount);
+    event DepositToStrategy(address indexed strategy, uint256 indexed amount);
 
-    event WithdrawFromStrategy(address strategy, uint256 amount);
+    event WithdrawFromStrategy(address indexed strategy, uint256 indexed amount);
 
     /* ========== ERRORS ========== */
 

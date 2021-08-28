@@ -146,12 +146,9 @@ contract("DeBridgeGate full with auto", function () {
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
-    //     uint256[] memory _supportedChainIds,
-    //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
 
     this.debridge = await upgrades.deployProxy(Debridge, [
@@ -159,6 +156,13 @@ contract("DeBridgeGate full with auto", function () {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       this.callProxy.address.toString(),
+      this.weth.address,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+    ]);
+    await this.debridge.deployed();
+
+    await this.debridge.updateChainSupport(
       supportedChainIds,
       [
         {
@@ -171,13 +175,9 @@ contract("DeBridgeGate full with auto", function () {
           fixedNativeFee,
           isSupported,
         },
-      ],
-      this.weth.address,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      devid,
-    ]);
-    await this.debridge.deployed();
+      ]
+    );
+
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.confirmationAggregator.setDebridgeAddress(this.debridge.address.toString());
