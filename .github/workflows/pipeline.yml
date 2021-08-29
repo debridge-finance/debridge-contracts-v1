@@ -81,6 +81,9 @@ jobs:
       
     - name: Test PriceConsumer
       run: yarn test test/06_PriceConsumer.test.js
+    
+    - name: Test SignatureAggregator
+      run: yarn test test/07_SignatureAggregator.test.js
 
     - name: Test DefiController
       run: yarn test test/DefiController.test.js
