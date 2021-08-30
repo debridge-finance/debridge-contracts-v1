@@ -429,8 +429,8 @@ contract("DeBridgeGate full mode", function () {
           const FeeProxyFactory = await ethers.getContractFactory("FeeProxy");
 
           this.feeProxy = await upgrades.deployProxy(FeeProxyFactory, [
-            this.linkToken.address,
             this.uniswapFactory.address,
+            this.weth.address,
           ]);
           await this.debridge.setFeeProxy(this.feeProxy.address);
         });
