@@ -23,9 +23,13 @@
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       }
     ],
-    "type": "light"
+    "deploy":{
+      "DBR": true,
+      "SignatureVerifier": true,
+      "SignatureAggregator": true
+    }
   },
-  "kovantest": {
+  "kovan": {
     "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "minConfirmations": 1,
     "confirmationThreshold": "20",
@@ -49,7 +53,11 @@
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       }
     ],
-    "type": "light"
+    "deploy":{
+      "DBR": true,
+      "SignatureVerifier": true,
+      "SignatureAggregator": true
+    }
   },
   "hecotest": {
     "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
@@ -75,7 +83,11 @@
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       }
     ],
-    "type": "full"
+    "deploy":{
+      "DBR": true,
+      "SignatureVerifier": true,
+      "SignatureAggregator": false
+    }
   },
   "bsctest": {
     "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
@@ -101,7 +113,11 @@
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       }
     ],
-    "type": "full"
+    "deploy":{
+      "DBR": true,
+      "SignatureVerifier": true,
+      "SignatureAggregator": false
+    }
   },
   "development": {
     "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
@@ -127,6 +143,10 @@
         "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
       }
     ],
-    "type": "light"
+    "deploy":{
+      "DBR": true,
+      "SignatureVerifier": true,
+      "SignatureAggregator": true
+    }
   }
 }
