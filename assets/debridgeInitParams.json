@@ -1,6 +1,5 @@
 {
   "test": {
-    "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
@@ -22,11 +21,12 @@
     "deploy":{
       "DBR": true,
       "SignatureVerifier": true,
-      "SignatureAggregator": true
+      "SignatureAggregator": true,
+      "ConfirmationAggregator": true,
+      "DefiController": true
     }
   },
   "kovan": {
-    "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
@@ -48,11 +48,12 @@
     "deploy":{
       "DBR": true,
       "SignatureVerifier": true,
-      "SignatureAggregator": true
+      "SignatureAggregator": true,
+      "ConfirmationAggregator": true,
+      "DefiController": true
     }
   },
   "hecotest": {
-    "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
@@ -74,11 +75,12 @@
     "deploy":{
       "DBR": true,
       "SignatureVerifier": true,
-      "SignatureAggregator": false
+      "SignatureAggregator": false,
+      "ConfirmationAggregator": false,
+      "DefiController": false
     }
   },
   "bsctest": {
-    "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
@@ -100,11 +102,12 @@
     "deploy":{
       "DBR": true,
       "SignatureVerifier": true,
-      "SignatureAggregator": false
+      "SignatureAggregator": false,
+      "ConfirmationAggregator": false,
+      "DefiController": false
     }
   },
   "development": {
-    "treasury": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
@@ -126,7 +129,9 @@
     "deploy":{
       "DBR": true,
       "SignatureVerifier": true,
-      "SignatureAggregator": true
+      "SignatureAggregator": true,
+      "ConfirmationAggregator": true,
+      "DefiController": true
     }
   }
 }

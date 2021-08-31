@@ -1,20 +1,16 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
 const { ethers, upgrades } = require("hardhat");
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const { ZERO_ADDRESS } = require("./utils");
 
-module.exports = async function({ getNamedAccounts,
-  deployments,
-  getChainId,
-  network,
-  }) {
-  const {deploy} = deployments;
+module.exports = async function({getNamedAccounts, deployments, network}) {
+  const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const networkName = network.name;
   const deployInitParams = debridgeInitParams[networkName];
 
-  if (deployInitParams.deploy.SignatureVerifier)
+  if (deployInitParams.deploy.ConfirmationAggregator)
   {
-    //   function initialize(
+    // function initialize(
     //     uint8 _minConfirmations,
     //     uint8 _confirmationThreshold,
     //     uint8 _excessConfirmations,
@@ -22,10 +18,9 @@ module.exports = async function({ getNamedAccounts,
     //     address _debridgeAddress
     // )
 
-    const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", deployer);
+    const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator", deployer);
 
-    //TODO: set _debridgeAddress after deploy Gate
-    const signatureVerifierInstance = await upgrades.deployProxy(SignatureVerifier, [
+    const confirmationAggregatorInstance = await upgrades.deployProxy(ConfirmationAggregator, [
       deployInitParams.minConfirmations,
       deployInitParams.confirmationThreshold,
       deployInitParams.excessConfirmations,
@@ -33,10 +28,10 @@ module.exports = async function({ getNamedAccounts,
       ZERO_ADDRESS
     ]);
 
-    await signatureVerifierInstance.deployed();
-    console.log("SignatureVerifier: " + signatureVerifierInstance.address);
+    await confirmationAggregatorInstance.deployed();
+    console.log("ConfirmationAggregator: " + confirmationAggregatorInstance.address);
 
-    //Transform oracles to array
+    // Transform oracles to array
     let oracleAddresses = [];
     let oracleAdmins = [];
     let required = [];
@@ -51,14 +46,18 @@ module.exports = async function({ getNamedAccounts,
     //   address[] memory _admins,
     //   bool[] memory _required
     // )
-    await signatureVerifierInstance.addOracles(oracleAddresses, oracleAdmins, required);
     console.log("add oracles:");
     console.log(oracleAddresses);
     console.log("add oracles admins:");
     console.log(oracleAdmins);
     console.log("add oracles required:");
     console.log(required);
+
+    await confirmationAggregatorInstance.addOracles(
+      oracleAddresses,
+      oracleAdmins,
+      required);
   }
 };
 
-module.exports.tags = ["3_SignatureVerifier"]
+module.exports.tags = ["04_ConfirmationAggregator"]

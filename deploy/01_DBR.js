@@ -1,14 +1,9 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
 
-module.exports = async function({ getNamedAccounts,
-  deployments,
-  getChainId,
-  network,
-  }) {
+module.exports = async function({getNamedAccounts, deployments, network}) {
   const {deploy} = deployments;
   const { deployer } = await getNamedAccounts();
-  const networkName = network.name;
-  const deployInitParams = debridgeInitParams[networkName];
+  const deployInitParams = debridgeInitParams[network.name];
 
   // constructor(
   //   string memory _name,
@@ -21,10 +16,17 @@ module.exports = async function({ getNamedAccounts,
   {
     await deploy("WrappedAsset", {
       from: deployer,
+      args: [
+        "Debridge token",
+        "DBR",
+        18,
+        deployer,
+        [deployer],
+      ],
+      deterministicDeployment: true,
       log: true,
-      args:["Debridge token", "DBR", 18, deployer, [deployer]]
     });
   }
 };
 
-module.exports.tags = ["1_DBR"]
+module.exports.tags = ["01_DBR"]

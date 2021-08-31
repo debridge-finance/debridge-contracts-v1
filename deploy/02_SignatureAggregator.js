@@ -1,15 +1,10 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
 const { ethers, upgrades } = require("hardhat");
 
-module.exports = async function({ getNamedAccounts,
-  deployments,
-  getChainId,
-  network,
-  }) {
-  const {deploy} = deployments;
+module.exports = async function({getNamedAccounts, deployments, network}) {
+  // const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  const networkName = network.name;
-  const deployInitParams = debridgeInitParams[networkName];
+  const deployInitParams = debridgeInitParams[network.name];
 
   if (deployInitParams.deploy.SignatureAggregator)
   {
@@ -24,7 +19,7 @@ module.exports = async function({ getNamedAccounts,
     await signatureAggregatorInstance.deployed();
     console.log("SignatureAggregator: " + signatureAggregatorInstance.address);
 
-    //Transform oracles to array
+    // Transform oracles to array
     let oracleAddresses = [];
     let oracleAdmins = [];
     let required = [];
@@ -39,14 +34,18 @@ module.exports = async function({ getNamedAccounts,
     //   address[] memory _admins,
     //   bool[] memory _required
     // )
-    await signatureAggregatorInstance.addOracles(oracleAddresses, oracleAdmins, required);
     console.log("add oracles:");
     console.log(oracleAddresses);
     console.log("add oracles admins:");
     console.log(oracleAdmins);
     console.log("add oracles required:");
     console.log(required);
+
+    await signatureAggregatorInstance.addOracles(
+      oracleAddresses,
+      oracleAdmins,
+      required);
   }
 };
 
-module.exports.tags = ["2_SignatureAggregator"]
+module.exports.tags = ["02_SignatureAggregator"]
