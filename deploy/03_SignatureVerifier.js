@@ -2,7 +2,6 @@ const debridgeInitParams = require("../assets/debridgeInitParams");
 const { ethers, upgrades } = require("hardhat");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
-  const { deploy, execute } = deployments;
   const { deployer } = await getNamedAccounts();
   const networkName = network.name;
   const deployInitParams = debridgeInitParams[networkName];

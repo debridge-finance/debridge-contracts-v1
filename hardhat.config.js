@@ -73,16 +73,16 @@ module.exports = {
     },
     development: {
       url: "http://127.0.0.1:8545",
-      accounts: {mnemonic:process.env.MNEMONIC},
+      accounts: {mnemonic:process.env.MNEMONIC}
     },
     test: {
       url: "http://127.0.0.1:8545",
       accounts: {mnemonic:process.env.MNEMONIC},
     },
     kovan: {
-      url: "https://kovan.infura.io/v3/" + process.env.INFURA_ID,
+      url: "https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      gasPrice: 5e9,
+      // gasPrice: 2e9,
       gas: 6.9e6,
       chainId: 42
     },
@@ -92,10 +92,16 @@ module.exports = {
       chainId: 97
     },
     hecotest: {
-      url: "wss://ws-testnet.hecochain.com/",
+      url: "https://http-testnet.hecochain.com/",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      gasPrice: 1e9,
+      // gasPrice: 1e9,
       chainId: 256
+    },
+    arethtest: {
+      url: "https://rinkeby.arbitrum.io/rpc",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      // gasPrice: 1e9,
+      chainId: 421611
     },
     bsc: {
       url: "https://bsc-dataseed.binance.org/",
@@ -105,7 +111,7 @@ module.exports = {
       chainId: 56
     },
     mainnet: {
-      url: "https://mainnet.infura.io/v3/" + process.env.INFURA_ID,
+      url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       gasPrice: 51e9,
       gas: 6.9e6,

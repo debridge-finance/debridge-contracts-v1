@@ -9,9 +9,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   if (!deployInitParams) return;
 
   const weth = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
-  const uniswapFactory = deployInitParams.UniswapFactory || (await deployments.get("UniswapV2Factory")).address;
+  const uniswapFactory = deployInitParams.external.UniswapFactory || (await deployments.get("UniswapV2Factory")).address;
 
   const FeeProxy = await ethers.getContractFactory("FeeProxy", deployer);
+  console.log("weth: " + weth);
+  console.log("uniswapFactory: " + uniswapFactory);
+
   const feeProxyInstance = await upgrades.deployProxy(FeeProxy, [
     uniswapFactory,
     weth,

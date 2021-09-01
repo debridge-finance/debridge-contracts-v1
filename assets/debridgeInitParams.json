@@ -26,62 +26,95 @@
       "DefiController": true
     },
     "external": {
-      "WETH": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-      "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
-    }
+      "WETH": "",
+      "UniswapFactory": ""
+    },
+    "supportedChains": [42, 97],
+    "fixedNativeFee": ["100000000000000", "100000000000000"],
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      }
+    ]
   },
   "kovan": {
-    "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
+    "wrappedAssetAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [
       {
-        "address": "0xbf6166fa3ef227ed400b1708fa478dcae38969ac",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x0022798ad168952c1da80157c0314d5c64f87e22",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       },
       {
-        "address": "0x84065e1a83df795e550564481ae84941318c1df8",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       },
       {
-        "address": "0xdd5d7c57b1de6c49277243628a187dc071455fef",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x2b4e172043527a9435f31688fef6f3589356d1aa",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       }
     ],
     "deploy":{
       "DBR": true,
       "SignatureVerifier": true,
-      "SignatureAggregator": true,
-      "ConfirmationAggregator": true,
-      "DefiController": true
+      "SignatureAggregator": false,
+      "ConfirmationAggregator": false,
+      "DefiController": false
     },
     "external": {
       "WETH": "",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
-    }
+    },
+    "supportedChains": [97, 256, 421611],
+    "fixedNativeFee": ["100000000000000", "100000000000000", "100000000000000"],
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      }
+    ]
   },
   "hecotest": {
-    "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
+    "wrappedAssetAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [
       {
-        "address": "0xbf6166fa3ef227ed400b1708fa478dcae38969ac",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x0022798ad168952c1da80157c0314d5c64f87e22",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       },
       {
-        "address": "0x84065e1a83df795e550564481ae84941318c1df8",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       },
       {
-        "address": "0xdd5d7c57b1de6c49277243628a187dc071455fef",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x2b4e172043527a9435f31688fef6f3589356d1aa",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       }
     ],
     "deploy":{
-      "DBR": true,
+      "DBR": false,
       "SignatureVerifier": true,
       "SignatureAggregator": false,
       "ConfirmationAggregator": false,
@@ -89,30 +122,49 @@
     },
     "external": {
       "WETH": "",
-      "UniswapFactory": "0x4fDbE004745c62934C5170c931768Ed1Cc8ceC99"
-    }
+      "UniswapFactory": ""
+    },
+    "supportedChains": [97, 42, 421611],
+    "fixedNativeFee": ["100000000000000", "100000000000000", "100000000000000"],
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      }
+    ]
   },
   "bsctest": {
-    "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
+    "wrappedAssetAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [
       {
-        "address": "0xbf6166fa3ef227ed400b1708fa478dcae38969ac",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x0022798ad168952c1da80157c0314d5c64f87e22",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       },
       {
-        "address": "0x84065e1a83df795e550564481ae84941318c1df8",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       },
       {
-        "address": "0xdd5d7c57b1de6c49277243628a187dc071455fef",
-        "admin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0"
+        "address": "0x2b4e172043527a9435f31688fef6f3589356d1aa",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
       }
     ],
     "deploy":{
-      "DBR": true,
+      "DBR": false,
       "SignatureVerifier": true,
       "SignatureAggregator": false,
       "ConfirmationAggregator": false,
@@ -120,8 +172,77 @@
     },
     "external": {
       "WETH": "",
-      "UniswapFactory": "0x07E5b90f3761015Ee0BA6e20Ea45652C6Bf5Ce00"
-    }
+      "UniswapFactory": ""
+    },
+    "supportedChains": [256, 42, 421611],
+    "fixedNativeFee": ["100000000000000", "100000000000000", "100000000000000"],
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      }
+    ]
+  },
+  "arethtest": {
+    "wrappedAssetAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "minConfirmations": 2,
+    "confirmationThreshold": 3,
+    "excessConfirmations": 3,
+    "oracles": [
+      {
+        "address": "0x0022798ad168952c1da80157c0314d5c64f87e22",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
+      },
+      {
+        "address": "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
+      },
+      {
+        "address": "0x2b4e172043527a9435f31688fef6f3589356d1aa",
+        "admin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23"
+      }
+    ],
+    "deploy":{
+      "DBR": false,
+      "SignatureVerifier": true,
+      "SignatureAggregator": true,
+      "ConfirmationAggregator": false,
+      "DefiController": false
+    },
+    "external": {
+      "WETH": "",
+      "UniswapFactory": ""
+    },
+    "supportedChains": [256, 42, 97],
+    "fixedNativeFee": ["100000000000000", "100000000000000", "100000000000000"],
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      }
+    ]
   },
   "development": {
     "wrappedAssetAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
@@ -152,6 +273,20 @@
     "external": {
       "WETH": "",
       "UniswapFactory": ""
-    }
+    },
+    "supportedChains": [42, 97],
+    "fixedNativeFee": ["100000000000000", "100000000000000"],
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "100000000000000",
+        "transferFeeBps": "50",
+        "isSupported": true
+      }
+    ]
   }
 }
