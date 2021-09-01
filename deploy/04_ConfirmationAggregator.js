@@ -1,12 +1,12 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
 const { ethers, upgrades } = require("hardhat");
-const { ZERO_ADDRESS } = require("./utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const networkName = network.name;
   const deployInitParams = debridgeInitParams[networkName];
+  if (!deployInitParams) return;
 
   if (deployInitParams.deploy.ConfirmationAggregator)
   {
@@ -25,7 +25,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
       deployInitParams.confirmationThreshold,
       deployInitParams.excessConfirmations,
       deployInitParams.wrappedAssetAdmin,
-      ZERO_ADDRESS
+      ethers.constants.AddressZero,
     ]);
 
     await confirmationAggregatorInstance.deployed();

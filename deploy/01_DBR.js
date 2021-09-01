@@ -1,9 +1,10 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
-  const {deploy} = deployments;
+  const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
+  if (!deployInitParams) return;
 
   // constructor(
   //   string memory _name,
@@ -12,8 +13,8 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //   address _admin,
   //   address[] memory _minters
   // )
-  if (deployInitParams.deploy.DBR)
-  {
+
+  if (deployInitParams.deploy.DBR) {
     await deploy("WrappedAsset", {
       from: deployer,
       args: [
@@ -23,7 +24,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
         deployer,
         [deployer],
       ],
-      deterministicDeployment: true,
+      // deterministicDeployment: true,
       log: true,
     });
   }

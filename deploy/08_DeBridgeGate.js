@@ -1,10 +1,10 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
-const { getWeth, ZERO_ADDRESS } = require("./utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   // const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
+  if (!deployInitParams) return;
 
   // function initialize(
   //   uint8 _excessConfirmations,
@@ -16,55 +16,56 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //   address _defiController
   // )
 
+  // TODO: fix getting already deployed contracts
   let signatureVerifier;
   if (deployInitParams.deploy.SignatureVerifier) {
-    signatureVerifier = await deployments.getArtifact('SignatureVerifier');
+    signatureVerifier = await deployments.get("SignatureVerifier");
   }
   let confirmationAggregator;
   if (deployInitParams.deploy.ConfirmationAggregator) {
-    confirmationAggregator = await deployments.getArtifact('ConfirmationAggregator');
+    confirmationAggregator = await deployments.get('ConfirmationAggregator');
   }
-  const callProxy = await deployments.getArtifact('CallProxy');
-  const weth = await getWeth(deployer, network.name);
-  const feeProxy = await deployments.getArtifact('FeeProxy');
-  const defiController = await deployments.getArtifact('DefiController');
+  const callProxy = await deployments.get('CallProxy');
+  const weth = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
+  const feeProxy = await deployments.get('FeeProxy');
+  const defiController = await deployments.get('DefiController');
 
-  console.log(feeProxy);
+  // const DeBridgeGate = await ethers.getContractFactory("DeBridgeGate", deployer);
+  // const deBridgeGateInstance = await upgrades.deployProxy(DeBridgeGate, [
+  //   deployInitParams.excessConfirmations,
+  //   signatureVerifier ? signatureVerifier.address : ethers.constants.AddressZero,
+  //   confirmationAggregator ? confirmationAggregator.address : ethers.constants.AddressZero,
+  //   callProxy.address,
+  //   weth,
+  //   feeProxy.address,
+  //   defiController.address,
+  // ]);
 
+  // await deBridgeGateInstance.deployed();
+  // console.log("DeBridgeGate: " + deBridgeGateInstance.address);
 
-  const DeBridgeGate = await ethers.getContractFactory("DeBridgeGate", deployer);
-  const deBridgeGateInstance = await upgrades.deployProxy(DeBridgeGate, [
-    deployInitParams.excessConfirmations,
-    signatureVerifier ? signatureVerifier.address : ZERO_ADDRESS,
-    confirmationAggregator ? confirmationAggregator.address : ZERO_ADDRESS,
-    callProxy.address,
-    weth.address,
-    feeProxy.address,
-    defiController.address,
-  ]);
-
-  await deBridgeGateInstance.deployed();
-  console.log("DeBridgeGate: " + deBridgeGateInstance.address);
+  console.log('Deploying DeBridgeGate with params');
   console.log({
     excessConfirmations: deployInitParams.excessConfirmations,
-    signatureVerifier: signatureVerifier ? signatureVerifier.address : ZERO_ADDRESS,
-    confirmationAggregator: confirmationAggregator ? confirmationAggregator.address : ZERO_ADDRESS,
+    signatureVerifier: signatureVerifier ? signatureVerifier.address : ethers.constants.AddressZero,
+    confirmationAggregator: confirmationAggregator ? confirmationAggregator.address : ethers.constants.AddressZero,
     callProxy: callProxy.address,
-    weth: weth.address,
+    weth: weth,
     feeProxy: feeProxy.address,
     defiController: defiController.address,
   })
 
   // TODO: call updateChainSupport
 
-  if (deployInitParams.deploy.SignatureVerifier) {
-    signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
-  }
-  if (deployInitParams.deploy.ConfirmationAggregator) {
-    confirmationAggregator.setDebridgeAddress(deBridgeGateInstance.address);
-  }
+  // TODO: call setDebridgeAddress
+  // if (deployInitParams.deploy.SignatureVerifier) {
+  //   signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
+  // }
+  // if (deployInitParams.deploy.ConfirmationAggregator) {
+  //   confirmationAggregator.setDebridgeAddress(deBridgeGateInstance.address);
+  // }
 };
 
 module.exports.tags = ["08_DeBridgeGate"]
 // TODO: set dependencies
-module.exports.dependencies = ['Token'];
+module.exports.dependencies = ['07_DefiController'];

@@ -1,17 +1,15 @@
-// const debridgeInitParams = require("../assets/debridgeInitParams");
+const debridgeInitParams = require("../assets/debridgeInitParams");
 const { ethers, upgrades } = require("hardhat");
-const { getWeth, getUniswapFactory } = require("./utils");
 
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   // const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  // const deployInitParams = debridgeInitParams[network.name];
+  const deployInitParams = debridgeInitParams[network.name];
+  if (!deployInitParams) return;
 
-  const weth = await getWeth(deployer, network.name);
-  const uniswapFactory = await getUniswapFactory(deployer, network.name);
-  console.log("weth: " + weth);
-  console.log("uniswapFactory: " + uniswapFactory);
+  const weth = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
+  const uniswapFactory = deployInitParams.UniswapFactory || (await deployments.get("UniswapV2Factory")).address;
 
   const FeeProxy = await ethers.getContractFactory("FeeProxy", deployer);
   const feeProxyInstance = await upgrades.deployProxy(FeeProxy, [

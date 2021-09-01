@@ -1,12 +1,12 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
 const { ethers, upgrades } = require("hardhat");
-const { ZERO_ADDRESS } = require("./utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
-  // const { deploy } = deployments;
+  const { deploy, execute } = deployments;
   const { deployer } = await getNamedAccounts();
   const networkName = network.name;
   const deployInitParams = debridgeInitParams[networkName];
+  if (!deployInitParams) return;
 
   if (deployInitParams.deploy.SignatureVerifier)
   {
@@ -25,38 +25,59 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
       deployInitParams.confirmationThreshold,
       deployInitParams.excessConfirmations,
       deployInitParams.wrappedAssetAdmin,
-      ZERO_ADDRESS
+      ethers.constants.AddressZero
     ]);
 
     await signatureVerifierInstance.deployed();
+
+    // const deployResult = await deploy('SignatureVerifier', {
+    //   from: deployer,
+    //   proxy: {
+    //     proxyContract:'OpenZeppelinTransparentProxy',
+    //     viaAdminContract: 'ProxyAdmin',
+    //     execute: {
+    //       methodName: 'initialize',
+    //       args: [
+    //         deployInitParams.minConfirmations,
+    //         deployInitParams.confirmationThreshold,
+    //         deployInitParams.excessConfirmations,
+    //         deployInitParams.wrappedAssetAdmin,
+    //         ethers.constants.AddressZero,
+    //       ],
+    //     },
+    //   },
+    //   log: true,
+    // });
+    // console.log(deployResult);
+    // console.log(deployResult.contract);
+
     console.log("SignatureVerifier: " + signatureVerifierInstance.address);
 
-    // Transform oracles to array
-    let oracleAddresses = [];
-    let oracleAdmins = [];
-    let required = [];
-    for (let oracle of deployInitParams.oracles) {
-      oracleAddresses.push(oracle.address);
-      oracleAdmins.push(oracle.admin);
-      required.push(false);
-    }
+    // if (deployResult.newlyDeployed) {
+
+      // Transform oracles to array
+    let oracleAddresses = deployInitParams.oracles.map(o => o.address);
+    let oracleAdmins = deployInitParams.oracles.map(o => o.admin);
+    let required = deployInitParams.oracles.map(o => false);
 
     // function addOracles(
     //   address[] memory _oracles,
     //   address[] memory _admins,
     //   bool[] memory _required
     // )
-    console.log("add oracles:");
-    console.log(oracleAddresses);
-    console.log("add oracles admins:");
-    console.log(oracleAdmins);
-    console.log("add oracles required:");
-    console.log(required);
 
-    await signatureVerifierInstance.addOracles(
+    console.log("add non required oracles:");
+    console.log(deployInitParams.oracles);
+
+    await signatureVerifierInstance.contract.addOracles(
       oracleAddresses,
       oracleAdmins,
       required);
+
+    // await execute('SignatureVerifier', {from: deployer, log: true},
+    //   'addOracles', oracleAddresses, oracleAdmins, required
+    // );
+    // }
   }
 };
 

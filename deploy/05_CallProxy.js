@@ -1,15 +1,16 @@
-// const debridgeInitParams = require("../assets/debridgeInitParams");
+const debridgeInitParams = require("../assets/debridgeInitParams");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  // const deployInitParams = debridgeInitParams[network.name];
+  const deployInitParams = debridgeInitParams[network.name];
+  if (!deployInitParams) return;
 
   // deploy CallProxy
   const callProxyInstance = await deploy('CallProxy', {
     from: deployer,
     args: [],
-    deterministicDeployment: true,
+    // deterministicDeployment: true,
     log: true,
   });
   console.log("CallProxy: " + callProxyInstance.address);
