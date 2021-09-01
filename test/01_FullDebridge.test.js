@@ -3,7 +3,6 @@ const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
-const CallProxy = artifacts.require("CallProxy");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
@@ -39,12 +38,11 @@ contract("DeBridgeGate full mode", function () {
     const WETH9 = await deployments.getArtifact("WETH9");
     this.WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
     this.DeBridgeGate = await ethers.getContractFactory("MockDeBridgeGate", alice);
+    this.CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
   });
 
   beforeEach(async function () {
-    this.callProxy = await CallProxy.new({
-      from: alice.address,
-    });
+    this.callProxy = await upgrades.deployProxy(this.CallProxyFactory, []);
 
     //-------Deploy weth contracts
     this.weth = await this.WETH9Factory.deploy();

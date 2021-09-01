@@ -6,13 +6,9 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  // deploy CallProxy
-  const callProxyInstance = await deploy('CallProxy', {
-    from: deployer,
-    args: [],
-    // deterministicDeployment: true,
-    log: true,
-  });
+  const CallProxy = await ethers.getContractFactory("CallProxy", deployer);
+  const callProxyInstance = await upgrades.deployProxy(CallProxy, []);
+  await callProxyInstance.deployed();
   console.log("CallProxy: " + callProxyInstance.address);
 };
 
