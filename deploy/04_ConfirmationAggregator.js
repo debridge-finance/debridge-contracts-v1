@@ -32,27 +32,18 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     console.log("ConfirmationAggregator: " + confirmationAggregatorInstance.address);
 
     // Transform oracles to array
-    let oracleAddresses = [];
-    let oracleAdmins = [];
-    let required = [];
-    for (let oracle of deployInitParams.oracles) {
-      oracleAddresses.push(oracle.address);
-      oracleAdmins.push(oracle.admin);
-      required.push(false);
-    }
+    let oracleAddresses = deployInitParams.oracles.map(o => o.address);
+    let oracleAdmins = deployInitParams.oracles.map(o => o.admin);
+    let required = deployInitParams.oracles.map(o => false);
+
+    console.log("add non required oracles:");
+    console.log(deployInitParams.oracles);
 
     // function addOracles(
     //   address[] memory _oracles,
     //   address[] memory _admins,
     //   bool[] memory _required
     // )
-    console.log("add oracles:");
-    console.log(oracleAddresses);
-    console.log("add oracles admins:");
-    console.log(oracleAdmins);
-    console.log("add oracles required:");
-    console.log(required);
-
     await confirmationAggregatorInstance.addOracles(
       oracleAddresses,
       oracleAdmins,

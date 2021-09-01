@@ -55,10 +55,13 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
     // if (deployResult.newlyDeployed) {
 
-      // Transform oracles to array
+    // Transform oracles to array
     let oracleAddresses = deployInitParams.oracles.map(o => o.address);
     let oracleAdmins = deployInitParams.oracles.map(o => o.admin);
     let required = deployInitParams.oracles.map(o => false);
+
+    console.log("add non required oracles:");
+    console.log(deployInitParams.oracles);
 
     // function addOracles(
     //   address[] memory _oracles,
@@ -66,10 +69,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     //   bool[] memory _required
     // )
 
-    console.log("add non required oracles:");
-    console.log(deployInitParams.oracles);
-
-    await signatureVerifierInstance.contract.addOracles(
+    await signatureVerifierInstance.addOracles(
       oracleAddresses,
       oracleAdmins,
       required);
