@@ -1,9 +1,7 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
-const { ethers, upgrades } = require("hardhat");
-
+const { deployProxy } = require("./utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
-  // const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
@@ -11,16 +9,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const weth = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
   const uniswapFactory = deployInitParams.external.UniswapFactory || (await deployments.get("UniswapV2Factory")).address;
 
-  const FeeProxy = await ethers.getContractFactory("FeeProxy", deployer);
-  console.log("weth: " + weth);
-  console.log("uniswapFactory: " + uniswapFactory);
-
-  const feeProxyInstance = await upgrades.deployProxy(FeeProxy, [
-    uniswapFactory,
-    weth,
-  ]);
-  await feeProxyInstance.deployed();
-  console.log("FeeProxy: " + feeProxyInstance.address);
+  await deployProxy("FeeProxy", deployer, [uniswapFactory, weth], true);
 };
 
 module.exports.tags = ["06_FeeProxy"]

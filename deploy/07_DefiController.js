@@ -1,4 +1,5 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
+const { deployProxy } = require("./utils");
 
 module.exports = async function({ getNamedAccounts, deployments, network}) {
   // const { deploy } = deployments;
@@ -7,10 +8,7 @@ module.exports = async function({ getNamedAccounts, deployments, network}) {
   if (!deployInitParams) return;
 
   if (deployInitParams.deploy.DefiController) {
-    const DefiController = await ethers.getContractFactory("DefiController", deployer);
-    const defiControllerInstance = await upgrades.deployProxy(DefiController, []);
-    await defiControllerInstance.deployed();
-    console.log("DefiController: " + defiControllerInstance.address);
+    await deployProxy("DefiController", deployer, [], true);
   }
 };
 

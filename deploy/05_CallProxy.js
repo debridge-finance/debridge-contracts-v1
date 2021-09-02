@@ -1,14 +1,12 @@
 const debridgeInitParams = require("../assets/debridgeInitParams");
+const { deployProxy } = require("./utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const CallProxy = await ethers.getContractFactory("CallProxy", deployer);
-  const callProxyInstance = await upgrades.deployProxy(CallProxy, []);
-  await callProxyInstance.deployed();
-  console.log("CallProxy: " + callProxyInstance.address);
+  await deployProxy("CallProxy", deployer, [], true);
 };
 
 module.exports.tags = ["05_CallProxy"]
