@@ -6,7 +6,7 @@ const { modules } = require("web3");
 // empty deploy function to prevent migration errors
 module.exports = async function () { }
 
-const PROXIES_STORE = 'deploy/.proxies.json'
+const PROXIES_STORE = 'deploy/proxies.json'
 
 // store structure
 // {
