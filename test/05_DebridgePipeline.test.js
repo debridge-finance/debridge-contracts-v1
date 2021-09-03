@@ -3,7 +3,6 @@ const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
-const CallProxy = artifacts.require("CallProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
@@ -78,6 +77,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     );
     const DeBridgeGateFactory = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const SignatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier", alice);
+    const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
     const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
 
@@ -155,9 +155,8 @@ contract("DeBridgeGate real pipeline mode", function () {
     // console.log(`feeProxyHECO: ${this.feeProxyHECO.address.toString()}`);
 
     //-------Deploy callProxy contracts
-    this.callProxy = await CallProxy.new({
-      from: alice,
-    });
+    this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
+
     //-------Deploy defiController contracts
     this.defiControllerETH = await upgrades.deployProxy(DefiControllerFactory, []);
 

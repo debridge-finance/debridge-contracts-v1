@@ -5,8 +5,6 @@ const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
-const CallProxy = artifacts.require("CallProxy");
-const DefiController = artifacts.require("DefiController");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
 const MAX = web3.utils.toTwosComplement(-1);
@@ -45,7 +43,7 @@ contract("DeBridgeGate light mode", function () {
     const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator", alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
-
+    const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
@@ -141,9 +139,7 @@ contract("DeBridgeGate light mode", function () {
     });
 
     this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
-    this.callProxy = await CallProxy.new({
-      from: alice,
-    });
+    this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
     const maxAmount = toWei("100000000000");
     const fixedNativeFee = toWei("0.00001");
     const isSupported = true;
