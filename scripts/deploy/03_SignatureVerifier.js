@@ -1,6 +1,6 @@
-const debridgeInitParams = require("../assets/debridgeInitParams");
+const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { ethers } = require("hardhat");
-const { deployProxy } = require("./utils");
+const { deployProxy } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();

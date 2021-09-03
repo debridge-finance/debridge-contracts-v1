@@ -1,4 +1,4 @@
-const debridgeInitParams = require("../assets/debridgeInitParams");
+const debridgeInitParams = require("../../assets/debridgeInitParams");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deploy } = deployments;

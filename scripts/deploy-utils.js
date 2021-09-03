@@ -1,27 +1,25 @@
 const fs = require("fs");
 const hre = require("hardhat");
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
-const { modules } = require("web3");
 
-// empty deploy function to prevent migration errors
-module.exports = async function () { }
+const PROXIES_STORE = 'scripts/proxies.json'
 
-const PROXIES_STORE = 'deploy/proxies.json'
-
-// store structure
-// {
-//     network_name: {
-//         implementation_bytecode_hash: [
-//             // proxy 1
-//             {
-//                 address: '',
-//                 txhash: '',
-//                 args_hash: '',
-//                 signer: '',
-//             }
-//         ],
-//     }
-// }
+/**
+store structure
+{
+    network_name: {
+        implementation_bytecode_hash: [
+            // proxy 1
+            {
+                address: '',
+                txhash: '',
+                args_hash: '',
+                signer: '',
+            }
+        ],
+    }
+}
+*/
 
 async function _readStore() {
   try {
@@ -45,9 +43,15 @@ async function _updateStore(store) {
   await fs.promises.writeFile(PROXIES_STORE, JSON.stringify(store, null, 2));
 }
 
+function hashJSONArgs(args) {
+  const argsBytes = hre.ethers.utils.toUtf8Bytes(JSON.stringify(args));
+  return hre.ethers.utils.keccak256(argsBytes);
+}
+
 async function saveProxyDeployment(Factory, instance, args) {
   let store = await _readStore();
   const bytecodeHash = hre.ethers.utils.keccak256(Factory.bytecode);
+  const argsHash = hashJSONArgs(args);
 
   if (!(hre.network.name in store)) {
     store[hre.network.name] = {};
@@ -61,7 +65,7 @@ async function saveProxyDeployment(Factory, instance, args) {
     store[hre.network.name][bytecodeHash].push({
       address: instance.address,
       txhash: instance.deployTransaction.hash,
-      args_hash: hre.ethers.utils.keccak256(args),
+      args_hash: argsHash,
       signer: Factory.signer.address,
     });
     await _updateStore(store);
@@ -87,7 +91,7 @@ async function deleteProxyDeployment(Factory, proxy_address) {
   }
 }
 
-module.exports.deployProxy = async (contractName, deployer, args, reuseProxy) => {
+async function deployProxy(contractName, deployer, args, reuseProxy) {
   console.log(`\n*** Deploying proxy for ${contractName} ***`);
   console.log('\tSigner: ', deployer);
   console.log('\tArgs: ', args);
@@ -96,7 +100,7 @@ module.exports.deployProxy = async (contractName, deployer, args, reuseProxy) =>
   const Factory = await hre.ethers.getContractFactory(contractName, deployer);
 
   if (reuseProxy) {
-    let deployedProxies = await module.exports.getDeployedProxies(Factory, args);
+    let deployedProxies = await getDeployedProxies(Factory, args);
     console.log('\tFound deployed proxies: ', deployedProxies.length);
 
     while (deployedProxies.length) {
@@ -134,7 +138,7 @@ module.exports.deployProxy = async (contractName, deployer, args, reuseProxy) =>
   }
 }
 
-module.exports.getDeployedProxies = async (Factory, args) => {
+async function getDeployedProxies(Factory, args) {
   const store = await _readStore();
   const bytecodeHash = hre.ethers.utils.keccak256(Factory.bytecode);
 
@@ -147,8 +151,8 @@ module.exports.getDeployedProxies = async (Factory, args) => {
 
       if (args) {
         // filter by args
-        const args_hash = hre.ethers.utils.keccak256(args);
-        proxies = proxies.filter(i => i.args_hash === args_hash)
+        const argsHash = hashJSONArgs(args);
+        proxies = proxies.filter(i => i.args_hash === argsHash)
       }
 
       return proxies;
@@ -157,12 +161,18 @@ module.exports.getDeployedProxies = async (Factory, args) => {
   return []
 }
 
-module.exports.getLastDeployedProxy = async (contractName, deployer, args) => {
+async function getLastDeployedProxy(contractName, deployer, args) {
   const Factory = await hre.ethers.getContractFactory(contractName, deployer);
-  const proxies = await module.exports.getDeployedProxies(Factory, deployer, args);
+  const proxies = await getDeployedProxies(Factory, args);
   if (proxies.length) {
     const proxyAddress = proxies.pop().address;
     return await Factory.attach(proxyAddress);
   }
   throw `No deployed proxy found for "${contractName}"`;
 }
+
+module.exports = {
+  deployProxy,
+  getDeployedProxies,
+  getLastDeployedProxy
+};

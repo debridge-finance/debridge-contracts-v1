@@ -1,5 +1,5 @@
-const debridgeInitParams = require("../assets/debridgeInitParams");
-const { deployProxy } = require("./utils");
+const debridgeInitParams = require("../../assets/debridgeInitParams");
+const { deployProxy } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();

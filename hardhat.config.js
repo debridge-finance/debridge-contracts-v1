@@ -22,7 +22,8 @@ module.exports = {
     sources: "./contracts",
     tests: "./test",
     cache: "./cache",
-    artifacts: "./artifacts"
+    artifacts: "./artifacts",
+    deploy: "./scripts/deploy"
   },
   /**
    * Networks define how you connect to your ethereum client and let you set the
