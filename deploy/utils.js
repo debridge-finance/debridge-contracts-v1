@@ -61,7 +61,7 @@ async function saveProxyDeployment(Factory, instance, args) {
     store[hre.network.name][bytecodeHash].push({
       address: instance.address,
       txhash: instance.deployTransaction.hash,
-      // args_hash: hre.ethers.utils.keccak256(args),
+      args_hash: hre.ethers.utils.keccak256(args),
       signer: Factory.signer.address,
     });
     await _updateStore(store);
@@ -147,8 +147,8 @@ module.exports.getDeployedProxies = async (Factory, args) => {
 
       if (args) {
         // filter by args
-        // const args_hash = hre.ethers.utils.keccak256(args);
-        // proxies = proxies.filter(i => i.args_hash === args_hash)
+        const args_hash = hre.ethers.utils.keccak256(args);
+        proxies = proxies.filter(i => i.args_hash === args_hash)
       }
 
       return proxies;
