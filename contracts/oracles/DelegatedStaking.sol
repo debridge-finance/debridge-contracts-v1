@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -24,7 +24,7 @@ library DelegatedStakingHelper {
     {
         return _amount * _totalShares / _totalAmount;
     }
-    
+
     /**
      * @dev Calculates amount from shares
      * @param _shares number of shares
@@ -219,7 +219,20 @@ contract DelegatedStaking is AccessControl, Initializable {
     IPriceConsumer public priceConsumer;
     address slashingTreasury;
 
-    /* Events */
+    /* ========== ERRORS ========== */
+
+    error AdminBadRole();
+    error WrongArgument();
+
+    /* ========== MODIFIERS ========== */
+
+    modifier onlyAdmin() {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
+        _;
+    }
+
+    /* ========== Events ========== */
+
     event Staked(address validator, address delegator, address collateral, uint256 amount);
     event UnstakeRequested(address validator, address delegator, address collateral, address receipient, uint256 shares);
     event UnstakeExecuted(address delegator, uint256 withdrawalId);
@@ -325,7 +338,7 @@ contract DelegatedStaking is AccessControl, Initializable {
             - delegation.locked,
             _shares
         );
-        
+
         uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
         uint256 delegatorCollateral = DelegatedStakingHelper._calculateFromShares(
             _shares, validatorCollateral.stakedAmount,
@@ -335,7 +348,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         delegation.shares -= _shares;
         validatorCollateral.stakedAmount -= delegatorCollateral;
         validatorCollateral.shares -= _shares;
-        
+
         // recalculate passed rewards with new share amount
         delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
                         delegation.shares,
@@ -468,7 +481,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         uint256 stakeTokenAmount = DelegatedStakingHelper._calculateFromShares(
             _shares, strategy.totalReserves, strategy.totalShares
         );
-        
+
         { // scope to avoid stack too deep errors
             DelegatedStakingHelper._validateGtE(delegation.strategyShares[_strategy], _shares);
             delegation.strategyShares[_strategy] -= _shares;
@@ -777,7 +790,7 @@ contract DelegatedStaking is AccessControl, Initializable {
             validatorCollateral.stakedAmount -= slashedAmount;
             collateral.confiscatedFunds += slashedAmount;
             collateral.totalLocked -= slashedAmount;
-            totalSlashed += slashedAmount;            
+            totalSlashed += slashedAmount;
 
             IERC20(_collateral).safeTransfer(slashingTreasury, totalSlashed);
             emit Liquidated(_validator, _collateral, totalSlashed);
@@ -1110,7 +1123,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         }
         return collateralDependencyRewards;
     }
-    
+
     /**
      * @dev Calculates accumulated tokens per share for collateral that has rewards in rewardCollateral
      * @param _validator address of validator
@@ -1173,7 +1186,7 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Get USD amount of validator collateral
      * @param _validator Address of validator
      * @param _collateral Address of collateral
-     * @return USD amount with decimals 18 
+     * @return USD amount with decimals 18
      */
     function getPoolUSDAmount(address _validator, address _collateral) public view returns(uint256) {
         uint256 collateralPrice;
@@ -1289,13 +1302,13 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function getStrategyStakes(address _strategy, address _stakeToken) external view returns(uint256, uint256, uint256) {
         return (
-            strategies[_strategy][_stakeToken].totalReserves, 
+            strategies[_strategy][_stakeToken].totalReserves,
             strategies[_strategy][_stakeToken].totalShares,
             strategies[_strategy][_stakeToken].rewards
         );
     }
 
-    /** 
+    /**
      * @dev Get accumulated tokens per share
      * @param _validator Validator address
      * @param _collateral Collateral address
@@ -1336,14 +1349,5 @@ contract DelegatedStaking is AccessControl, Initializable {
         return getValidatorInfo[_validator].collateralPools[_stakeToken].delegation[_delegator].strategyShares[_strategy];
     }
 
-    /* modifiers */
 
-    function _isAuthorised() internal view {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "onlyAdmin");
-    }
-
-    modifier onlyAdmin() {
-        _isAuthorised();
-        _;
-    }
 }
