@@ -53,6 +53,7 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode
     ) external payable;
@@ -117,6 +118,7 @@ interface IDeBridgeGate {
         bytes memory _fallbackAddress,
         uint256 _executionFee,
         bytes memory _data,
+        bytes memory _permit,
         bool _useAssetFee,
         uint8 _reservedFlag,
         uint32 _referralCode
