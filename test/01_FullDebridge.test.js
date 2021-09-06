@@ -362,6 +362,7 @@ contract("DeBridgeGate full mode", function () {
           alice.address,
           amount,
           chainIdTo,
+          "0x",
           false,
           0,
           {
@@ -1150,6 +1151,7 @@ contract("DeBridgeGate full mode", function () {
                       receiver,
                       amount,
                       chainIdTo,
+                      "0x",
                       false,
                       referralCode,
                       {
@@ -1195,6 +1197,7 @@ contract("DeBridgeGate full mode", function () {
                       receiver,
                       amount,
                       chainIdTo,
+                      "0x",
                       false,
                       referralCode,
                       {
@@ -1418,6 +1421,7 @@ contract("DeBridgeGate full mode", function () {
                     receiver,
                     amount,
                     chainIdTo,
+                    "0x",
                     false,
                     referralCode,
                     {
@@ -1459,6 +1463,7 @@ contract("DeBridgeGate full mode", function () {
                     receiver,
                     amount,
                     chainIdTo,
+                    "0x",
                     false,
                     referralCode,
                     {
@@ -1517,6 +1522,7 @@ contract("DeBridgeGate full mode", function () {
                     receiver,
                     amount,
                     chainIdTo,
+                    "0x",
                     true,
                     referralCode,
                     {
@@ -1564,6 +1570,7 @@ contract("DeBridgeGate full mode", function () {
                       receiver,
                       amount,
                       chainIdTo,
+                      "0x",
                       false,
                       referralCode,
                       {
@@ -1583,10 +1590,18 @@ contract("DeBridgeGate full mode", function () {
                   const chainIdTo = 42;
                   const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
                   await expectRevert(
-                    this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, 0, {
-                      value: toWei("0.1"),
-                      from: alice.address,
-                    }),
+                    this.debridge.send(
+                      tokenAddress,
+                      receiver,
+                      amount,
+                      chainIdTo,
+                      "0x",
+                      false,
+                      0,
+                      {
+                        value: toWei("0.1"),
+                        from: alice.address,
+                      }),
                     "AmountMismatch()"
                   );
                 });
@@ -1604,6 +1619,7 @@ contract("DeBridgeGate full mode", function () {
                       receiver,
                       amount,
                       chainIdTo,
+                      "0x",
                       false,
                       referralCode,
                       {
@@ -1631,6 +1647,7 @@ contract("DeBridgeGate full mode", function () {
                         receiver,
                         amount,
                         chainIdTo,
+                        "0x",
                         false,
                         referralCode,
                         {

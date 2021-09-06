@@ -386,10 +386,18 @@ contract("DeBridgeGate light mode", function () {
         .mul(amount)
         .div(BPS)
         .add(toBN(supportedChainInfo.fixedNativeFee));
-      await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-        value: amount,
-        from: alice,
-      });
+      await this.debridge.send(
+        tokenAddress,
+        receiver,
+        amount,
+        chainIdTo,
+        "0x",
+        false,
+        referralCode,
+        {
+          value: amount,
+          from: alice,
+        });
       const newBalance = toBN(await this.weth.balanceOf(this.debridge.address));
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeWethId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
@@ -417,10 +425,18 @@ contract("DeBridgeGate light mode", function () {
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
-      await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-        value: supportedChainInfo.fixedNativeFee,
-        from: alice,
-      });
+      await this.debridge.send(
+        tokenAddress,
+        receiver,
+        amount,
+        chainIdTo,
+        "0x",
+        false,
+        referralCode,
+        {
+          value: supportedChainInfo.fixedNativeFee,
+          from: alice,
+        });
       const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
         this.nativeDebridgeId
       );
@@ -445,10 +461,18 @@ contract("DeBridgeGate light mode", function () {
       const chainIdTo = 42;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-          value: toWei("0.1"),
-          from: alice,
-        }),
+        this.debridge.send(
+          tokenAddress,
+          receiver,
+          amount,
+          chainIdTo,
+          "0x",
+          false,
+          referralCode,
+          {
+            value: toWei("0.1"),
+            from: alice,
+          }),
         "AmountMismatch()"
       );
     });
@@ -461,10 +485,18 @@ contract("DeBridgeGate light mode", function () {
       const chainIdTo = chainId;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-          value: amount,
-          from: alice,
-        }),
+        this.debridge.send(
+          tokenAddress,
+          receiver,
+          amount,
+          chainIdTo,
+          "0x",
+          false,
+          referralCode,
+          {
+            value: amount,
+            from: alice,
+          }),
         "WrongTargedChain()"
       );
     });

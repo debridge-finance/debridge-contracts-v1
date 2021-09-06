@@ -711,6 +711,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           receiver,
           amount,
           chainIdTo,
+          "0x",
           false,
           referralCode,
           {
@@ -770,6 +771,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           receiver,
           amount,
           chainIdTo,
+          "0x",
           false,
           referralCode,
           {
@@ -816,10 +818,18 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = bscChainId;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-            value: toWei("0.1"),
-            from: alice,
-          }),
+          this.debridgeETH.send(
+            tokenAddress,
+            receiver,
+            amount,
+            chainIdTo,
+            "0x",
+            false,
+            referralCode,
+            {
+              value: toWei("0.1"),
+              from: alice,
+            }),
           "AmountMismatch()"
         );
       });
@@ -830,10 +840,18 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = 9999;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-            value: amount,
-            from: alice,
-          }),
+          this.debridgeETH.send(
+            tokenAddress,
+            receiver,
+            amount,
+            chainIdTo,
+            "0x",
+            false,
+            referralCode,
+            {
+              value: amount,
+              from: alice,
+            }),
           "WrongTargedChain()"
         );
       });
@@ -846,6 +864,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             receiver,
             amount,
             bscChainId,
+            "0x",
             false,
             referralCode,
             {
@@ -1507,6 +1526,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
+        "0x",
         false,
         0,
         {
@@ -1560,6 +1580,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
+        "0x",
         false,
         0,
         {
