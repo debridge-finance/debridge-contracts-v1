@@ -1,10 +1,9 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permit } = require("./utils.spec");
+const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
-const CallProxy = artifacts.require("CallProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
@@ -59,6 +58,7 @@ contract("DeBridgeGate full with auto", function () {
       alice
     );
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
+    const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
 
     this.mockToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
@@ -131,9 +131,7 @@ contract("DeBridgeGate full with auto", function () {
     this.feeProxy = await FeeProxy.new(this.linkToken.address, this.uniswapFactory.address, {
       from: alice,
     });
-    this.callProxy = await CallProxy.new({
-      from: alice,
-    });
+    this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
     const maxAmount = toWei("1000000");
     const fixedNativeFee = toWei("0.00001");
     const isSupported = true;
@@ -145,12 +143,9 @@ contract("DeBridgeGate full with auto", function () {
     //     address _signatureVerifier,
     //     address _confirmationAggregator,
     //     address _callProxy,
-    //     uint256[] memory _supportedChainIds,
-    //     ChainSupportInfo[] memory _chainSupportInfo,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
     //     IDefiController _defiController,
-    //     address _treasury
     // )
 
     this.debridge = await upgrades.deployProxy(Debridge, [
@@ -158,6 +153,13 @@ contract("DeBridgeGate full with auto", function () {
       ZERO_ADDRESS,
       ZERO_ADDRESS,
       this.callProxy.address.toString(),
+      this.weth.address,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+    ]);
+    await this.debridge.deployed();
+
+    await this.debridge.updateChainSupport(
       supportedChainIds,
       [
         {
@@ -170,13 +172,9 @@ contract("DeBridgeGate full with auto", function () {
           fixedNativeFee,
           isSupported,
         },
-      ],
-      this.weth.address,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      devid,
-    ]);
-    await this.debridge.deployed();
+      ]
+    );
+
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.confirmationAggregator.setDebridgeAddress(this.debridge.address.toString());
@@ -637,15 +635,13 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
       const balance = toBN(await wrappedAsset.balanceOf(bob));
-      const deadline = toBN(MAX_UINT256);
-      const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
-      const permitSignature = await permit(
+      const permitParameter = await permitWithDeadline(
         wrappedAsset,
         bob,
         this.debridge.address,
         amount,
-        deadline,
+        toBN(MAX_UINT256),
         bobPrivKey
       );
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
@@ -657,9 +653,7 @@ contract("DeBridgeGate full with auto", function () {
         reserveAddress,
         claimFee,
         data,
-        //deadline + signature;
-        //                                      remove first 0x
-        deadlineHex + permitSignature.substring(2, permitSignature.length),
+        permitParameter,
         false,
         zeroFlag,
         referralCode,

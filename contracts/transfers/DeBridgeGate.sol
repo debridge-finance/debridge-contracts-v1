@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -12,7 +12,6 @@ import "../interfaces/IWrappedAsset.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
-import "../interfaces/IDefiController.sol";
 import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
@@ -38,7 +37,6 @@ contract DeBridgeGate is
 
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
-    address public treasury; //address of treasury
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
@@ -54,7 +52,7 @@ contract DeBridgeGate is
 
     mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
 
-    IDefiController public defiController; // proxy to use the locked assets in Defi protocols
+    address public defiController; // proxy to use the locked assets in Defi protocols
     address public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
 
@@ -99,7 +97,7 @@ contract DeBridgeGate is
     }
 
     modifier onlyDefiController() {
-        if (address(defiController) != msg.sender) revert DefiControllerBadRole();
+        if (defiController != msg.sender) revert DefiControllerBadRole();
         _;
     }
 
@@ -118,19 +116,14 @@ contract DeBridgeGate is
     /// @dev Constructor that initializes the most important configurations.
     /// @param _signatureVerifier Aggregator address to verify signatures
     /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
-    /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    /// @param _treasury Address to collect a fee
     function initialize(
         uint8 _excessConfirmations,
         address _signatureVerifier,
         address _confirmationAggregator,
         address _callProxy,
-        uint256[] memory _supportedChainIds,
-        ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
         address _feeProxy,
-        IDefiController _defiController,
-        address _treasury
+        address _defiController
     ) public initializer {
         _addAsset(
             getDebridgeId(getChainId(), address(_weth)),
@@ -138,9 +131,6 @@ contract DeBridgeGate is
             abi.encodePacked(address(_weth)),
             getChainId()
         );
-        for (uint256 i = 0; i < _supportedChainIds.length; i++) {
-            getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
-        }
 
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
@@ -152,9 +142,6 @@ contract DeBridgeGate is
 
         weth = _weth;
         feeProxy = _feeProxy;
-        treasury = _treasury;
-
-        flashFeeBps = 10;
     }
 
     /* ========== send, mint, burn, claim ========== */
@@ -582,6 +569,7 @@ contract DeBridgeGate is
     /// @dev Set proxy address.
     /// @param _address Address of the proxy that executes external calls.
     function setCallProxy(uint256 version, address _address) external onlyAdmin {
+        if (_address == address(0)) revert WrongArgument();
         callProxyAddresses[version] = _address;
         emit CallProxyUpdated(version, _address);
     }
@@ -596,6 +584,7 @@ contract DeBridgeGate is
         uint16 _minReservesBps,
         uint256 _amountThreshold
     ) external onlyAdmin {
+        if (_minReservesBps > BPS_DENOMINATOR) revert WrongArgument();
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         debridge.maxAmount = _maxAmount;
         debridge.minReservesBps = _minReservesBps;
@@ -616,13 +605,8 @@ contract DeBridgeGate is
 
     /// @dev Set defi controoler.
     /// @param _defiController Defi controller address address.
-    function setDefiController(IDefiController _defiController) external onlyAdmin {
+    function setDefiController(address _defiController) external onlyAdmin {
         // TODO: claim all the reserves before
-        // loop lockedInStrategies
-        // defiController.claimReserve(
-        //     _debridge.tokenAddress,
-        //     requestedReserves
-        // );
         defiController = _defiController;
     }
 
@@ -672,7 +656,7 @@ contract DeBridgeGate is
         if (minReserves + _amount > IERC20(_tokenAddress).balanceOf(address(this)))
             revert NotEnoughReserves();
 
-        IERC20(_tokenAddress).safeTransfer(address(defiController), _amount);
+        IERC20(_tokenAddress).safeTransfer(defiController, _amount);
         debridge.lockedInStrategies += _amount;
     }
 
@@ -688,7 +672,7 @@ contract DeBridgeGate is
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
         IERC20(debridge.tokenAddress).safeTransferFrom(
-            address(defiController),
+            defiController,
             address(this),
             _amount
         );
@@ -714,7 +698,8 @@ contract DeBridgeGate is
 
     /// @dev Update flash fees.
     /// @param _flashFeeBps new fee in BPS
-    function updateFlashFee(uint16 _flashFeeBps) external onlyAdmin {
+    function updateFlashFee(uint256 _flashFeeBps) external onlyAdmin {
+        if (_flashFeeBps > BPS_DENOMINATOR) revert WrongArgument();
         flashFeeBps = _flashFeeBps;
     }
 
@@ -727,15 +712,13 @@ contract DeBridgeGate is
         uint16 _discountFixBps,
         uint16 _discountTransferBps
     ) external onlyAdmin {
-        if (_discountFixBps > BPS_DENOMINATOR) revert WrongArgument();
-        if (_discountTransferBps > BPS_DENOMINATOR) revert WrongArgument();
+        if (_address == address(0) ||
+            _discountFixBps > BPS_DENOMINATOR ||
+            _discountTransferBps > BPS_DENOMINATOR
+        ) revert WrongArgument();
         DiscountInfo storage discountInfo = feeDiscount[_address];
         discountInfo.discountFixBps = _discountFixBps;
         discountInfo.discountTransferBps = _discountTransferBps;
-    }
-
-    function updateTreasury(address _address) external onlyAdmin {
-        treasury = _address;
     }
 
     // we need to accept ETH sends to unwrap WETH

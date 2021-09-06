@@ -45,3 +45,12 @@ module.exports.permit = async (token, owner, spender, value, deadline, privKey) 
     signature.v.toString(16)
   );
 };
+
+
+module.exports.permitWithDeadline = async (token, owner, spender, value, deadline, privKey) => {
+  // return combined deadline + signature for passing to burn methods;
+  const permitSignature = await module.exports.permit(token, owner, spender, value, deadline, privKey);
+  const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
+  //                                    remove first 0x
+  return deadlineHex + permitSignature.substring(2, permitSignature.length);
+}

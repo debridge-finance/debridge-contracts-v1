@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity 0.8.7;
 
 import "../transfers/DeBridgeGate.sol";
 
@@ -11,31 +11,23 @@ contract MockDeBridgeGate is DeBridgeGate {
     /// @dev Constructor that initializes the most important configurations.
     /// @param _signatureVerifier Aggregator address to verify signatures
     /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
-    /// @param _supportedChainIds Chain ids where native token of the current chain can be wrapped.
-    /// @param _treasury Address to collect a fee
     function initializeMock(
         uint8 _excessConfirmations,
         address _signatureVerifier,
         address _confirmationAggregator,
         address _callProxy,
-        uint256[] memory _supportedChainIds,
-        ChainSupportInfo[] memory _chainSupportInfo,
         IWETH _weth,
         address _feeProxy,
-        IDefiController _defiController,
-        address _treasury,
+        address _defiController,
         uint256 overrideChainId
     ) public initializer {
         // DeBridgeGate.initialize(_excessConfirmations,
         // _signatureVerifier,
         // _confirmationAggregator,
         // _callProxy,
-        // _supportedChainIds,
-        // _chainSupportInfo,
         // _weth,
         // _feeProxy,
-        // _defiController,
-        // _treasury);
+        // _defiController);
 
         chainId = overrideChainId;
         _addAsset(
@@ -44,9 +36,6 @@ contract MockDeBridgeGate is DeBridgeGate {
             abi.encodePacked(address(_weth)),
             chainId
         );
-        for (uint256 i = 0; i < _supportedChainIds.length; i++) {
-            getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
-        }
 
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
@@ -58,7 +47,6 @@ contract MockDeBridgeGate is DeBridgeGate {
 
         weth = _weth;
         feeProxy = _feeProxy;
-        treasury = _treasury;
 
         flashFeeBps = 10;
     }

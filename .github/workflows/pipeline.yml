@@ -20,6 +20,8 @@ jobs:
       TEST_BSC_PROVIDER: https://bsc-dataseed.binance.org/
       TEST_ORACLE_KEYS: ${{ secrets.TEST_ORACLE_KEYS}}
       MNEMONIC: ${{ secrets.MNEMONIC}}
+      DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY}}
+      DEPLOYER_ACCOUNT: ${{ secrets.DEPLOYER_ACCOUNT}}
       FORCE_COLOR: true
 
     steps:
@@ -81,6 +83,9 @@ jobs:
       
     - name: Test PriceConsumer
       run: yarn test test/06_PriceConsumer.test.js
+    
+    - name: Test SignatureAggregator
+      run: yarn test test/07_SignatureAggregator.test.js
 
     - name: Test DefiController
       run: yarn test test/DefiController.test.js
