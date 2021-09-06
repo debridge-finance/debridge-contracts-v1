@@ -1,5 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
+const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -15,6 +15,7 @@ function toBN(number) {
   return BigNumber.from(number.toString());
 }
 
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 const MAX = web3.utils.toTwosComplement(-1);
 const alicePrivKey = "0x512aba028561d58c914fdcb31cc7f4dd9a433cb3672eb9eaf44302eb097ec3bc";
 const bobPrivKey = "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";

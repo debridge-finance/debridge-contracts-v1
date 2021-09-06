@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { ZERO_ADDRESS } = require("./utils.spec");
+
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 
 contract("AaveController (AaveInteractor)", function () {
   before(async function () {

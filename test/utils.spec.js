@@ -1,9 +1,8 @@
-module.exports.ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-module.exports.DEFAULT_ADMIN_ROLE = ethers.utils.hexZeroPad(0, 32);
-module.exports.WORKER_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("WORKER_ROLE"));
-
 const { ecsign } = require("ethereumjs-util");
 const { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack } = require("ethers/lib/utils");
+
+module.exports.DEFAULT_ADMIN_ROLE = ethers.utils.hexZeroPad(0, 32);
+module.exports.WORKER_ROLE = ethers.utils.keccak256(toUtf8Bytes("WORKER_ROLE"));
 
 module.exports.permit = async (token, owner, spender, value, deadline, privKey) => {
   let nonce = await token.nonces(owner);

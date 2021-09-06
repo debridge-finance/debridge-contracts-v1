@@ -1,5 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
+const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -12,6 +12,7 @@ function toBN(number) {
   return BigNumber.from(number.toString());
 }
 
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 const bobPrivKey = "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
 const transferFeeBps = 50;

@@ -1,6 +1,6 @@
 const Web3 = require("web3");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
+const { permitWithDeadline } = require("./utils.spec");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
@@ -17,6 +17,7 @@ function toBN(number) {
   return BigNumber.from(number.toString());
 }
 
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 const transferFeeBps = 50;
 const minReservesBps = 3000;
 const BPS = toBN(10000);
