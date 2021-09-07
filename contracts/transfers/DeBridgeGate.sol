@@ -411,7 +411,7 @@ contract DeBridgeGate is
         uint32 _referralCode
     ) external payable override nonReentrant whenNotPaused {
         // the amount will be reduced by the protocol fee
-        _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _reservedFlag);
+        _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _referralCode);
         if (_amount < _executionFee) revert ProposedFeeTooHigh();
         _amount -= _executionFee;
 
