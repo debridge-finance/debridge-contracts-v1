@@ -41,6 +41,27 @@ interface IDeBridgeGate {
         uint16 discountTransferBps; // transfer % discount in BPS
     }
 
+    /// @param executionFee Fee paid to the transaction executor.
+    /// @param data Chain id of the target chain.
+    /// @param fallbackAddress Receiver of the tokens if the call fails.
+    struct SubmissionAutoParamsTo {
+        uint256 executionFee;
+        uint8 reservedFlag;
+        bytes fallbackAddress;
+        bytes data;
+    }
+
+    /// @param executionFee Fee paid to the transaction executor.
+    /// @param data Chain id of the target chain.
+    /// @param fallbackAddress Receiver of the tokens if the call fails.
+    struct SubmissionAutoParamsFrom {
+        uint256 executionFee;
+        uint8 reservedFlag;
+        address fallbackAddress;
+        bytes data;
+        bytes nativeSender;
+    }
+
     /* ========== FUNCTIONS ========== */
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
@@ -53,8 +74,13 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        // bytes memory _fallbackAddress,
+        // uint256 _executionFee,
+        // bytes memory _data,
         bool _useAssetFee,
-        uint32 _referralCode
+        // uint8 _reservedFlag,
+        uint32 _referralCode,
+        bytes memory _autoParams
     ) external payable;
 
     /// @dev Mints wrapped asset on the current chain.
@@ -68,7 +94,13 @@ interface IDeBridgeGate {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures
+        bytes memory _signatures,
+        // address _fallbackAddress,
+        // uint256 _executionFee,
+        // bytes memory _data,
+        // uint8 _reservedFlag,
+        // bytes memory _nativeSender
+        bytes memory _autoParams
     ) external;
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -81,9 +113,14 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        // bytes memory _fallbackAddress,
+        // uint256 _executionFee,
+        // bytes memory _data,
         bytes memory _permit,
         bool _useAssetFee,
-        uint32 _referralCode
+        // uint8 _reservedFlag,
+        uint32 _referralCode,
+        bytes memory _autoParams
     ) external payable;
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -91,98 +128,19 @@ interface IDeBridgeGate {
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
-
     function claim(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures
-    ) external;
-
-    /// @dev Locks asset on the chain and enables minting on the other chain.
-    /// @param _tokenAddress Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount to be transfered (note: the fee can be applyed).
-    /// @param _chainIdTo Chain id of the target chain.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    function autoSend(
-        address _tokenAddress,
-        bytes memory _receiver,
-        uint256 _amount,
-        uint256 _chainIdTo,
-        bytes memory _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        bool _useAssetFee,
-        uint8 _reservedFlag,
-        uint32 _referralCode
-    ) external payable;
-
-    /// @dev Mints wrapped asset on the current chain.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    /// @param _nonce Submission id.
-    /// @param _signatures Array of oracles signatures.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    function autoMint(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
         bytes memory _signatures,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag,
-        bytes memory _nativeSender
-    ) external;
-
-    /// @dev Burns wrapped asset and allowss to claim it on the other chain.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _chainIdTo Chain id of the target chain.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    function autoBurn(
-        bytes32 _debridgeId,
-        bytes memory _receiver,
-        uint256 _amount,
-        uint256 _chainIdTo,
-        bytes memory _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        bytes memory _permit,
-        bool _useAssetFee,
-        uint8 _reservedFlag,
-        uint32 _referralCode
-    ) external payable;
-
-    /// @dev Unlock the asset on the current chain and transfer to receiver.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _nonce Submission id.
-    function autoClaim(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes memory _signatures,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag,
-        bytes memory _nativeSender
+        // address _fallbackAddress,
+        // uint256 _executionFee,
+        // bytes memory _data,
+        // uint8 _reservedFlag,
+        // bytes memory _nativeSender
+        bytes memory _autoParams
     ) external;
 
     function flash(
@@ -222,23 +180,14 @@ interface IDeBridgeGate {
         bytes receiver,
         uint256 nonce,
         uint256 indexed chainIdTo,
-        uint32 referralCode
-    ); // emited once the native tokens are locked to be sent to the other chain
-
-    event AutoSent(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 amount,
-        bytes receiver,
-        uint256 nonce,
-        uint256 chainIdTo,
-        uint256 claimFee,
-        bytes fallbackAddress,
-        bytes data,
+        // uint256 claimFee,
+        // bytes fallbackAddress,
+        // bytes data,
         uint32 referralCode,
-        uint8 reservedFlag,
+        // uint8 reservedFlag,
+        SubmissionAutoParamsTo autoParams,
         address nativeSender
-    );
+    ); // emited once the native tokens are locked to be sent to the other chain
 
     event Minted(
         bytes32 submissionId,
@@ -246,21 +195,13 @@ interface IDeBridgeGate {
         uint256 amount,
         address indexed receiver,
         uint256 nonce,
-        uint256 indexed chainIdFrom
-    ); // emited once the wrapped tokens are minted on the current chain
-
-    event AutoMinted(
-        bytes32 submissionId,
-        bytes32 indexed debridgeId,
-        uint256 amount,
-        address indexed receiver,
-        uint256 nonce,
-        // uint256 indexed chainIdFrom,
-        uint256 claimFee,
-        address fallbackAddress,
-        bytes data,
-        uint8 reservedFlag
+        uint256 indexed chainIdFrom,
+        // uint256 claimFee,
+        // address fallbackAddress,
+        // bytes data,
+        // uint8 reservedFlag
         // bytes nativeSender
+        SubmissionAutoParamsFrom autoParams
     ); // emited once the wrapped tokens are minted on the current chain
 
     event Burnt(
@@ -270,21 +211,12 @@ interface IDeBridgeGate {
         bytes receiver,
         uint256 nonce,
         uint256 indexed chainIdTo,
-        uint32 referralCode
-    ); // emited once the wrapped tokens are sent to the contract
-
-    event AutoBurnt(
-        bytes32 submissionId,
-        bytes32 debridgeId,
-        uint256 amount,
-        bytes receiver,
-        uint256 nonce,
-        uint256 chainIdTo,
-        uint256 claimFee,
-        bytes fallbackAddress,
-        bytes data,
         uint32 referralCode,
-        uint8 reservedFlag,
+        // uint256 claimFee,
+        // bytes fallbackAddress,
+        // bytes data,
+        // uint8 reservedFlag,
+        SubmissionAutoParamsTo autoParams,
         address nativeSender
     ); // emited once the wrapped tokens are sent to the contract
 
@@ -294,21 +226,13 @@ interface IDeBridgeGate {
         uint256 amount,
         address indexed receiver,
         uint256 nonce,
-        uint256 indexed chainIdFrom
-    ); // emited once the tokens are withdrawn on native chain
-
-    event AutoClaimed(
-        bytes32 submissionId,
-        bytes32 indexed debridgeId,
-        uint256 amount,
-        address indexed receiver,
-        uint256 nonce,
-        // uint256 indexed chainIdFrom,
-        uint256 claimFee,
-        address fallbackAddress,
-        bytes data,
-        uint8 reservedFlag
+        uint256 indexed chainIdFrom,
+        // uint256 claimFee,
+        // address fallbackAddress,
+        // bytes data,
+        // uint8 reservedFlag
         // bytes nativeSender
+        SubmissionAutoParamsFrom autoParams
     ); // emited once the tokens are withdrawn on native chain
 
     event PairAdded(

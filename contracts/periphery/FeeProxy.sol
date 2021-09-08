@@ -225,7 +225,8 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
             _nativeChain, //_chainIdTo,
             "", //_deadline + _signature,
             false, //_useAssetFee,
-            0 //_referralCode
+            0, //_referralCode
+            "" // _autoParams
         );
     }
 
