@@ -158,7 +158,7 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         bool _useAssetFee,
         uint32 _referralCode,
-        bytes memory _autoParams
+        bytes calldata _autoParams
     ) external payable override nonReentrant whenNotPaused {
         bytes32 debridgeId;
         // the amount will be reduced by the protocol fee
@@ -213,7 +213,7 @@ contract DeBridgeGate is
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures,
-        bytes memory _autoParams
+        bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
@@ -269,7 +269,7 @@ contract DeBridgeGate is
         bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode,
-        bytes memory _autoParams
+        bytes calldata _autoParams
     ) external payable override nonReentrant whenNotPaused {
         // the amount will be reduced by the protocol fee
         _amount = _burn(
@@ -324,7 +324,7 @@ contract DeBridgeGate is
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures,
-        bytes memory _autoParams
+        bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
 
         SubmissionAutoParamsFrom memory autoParams;
