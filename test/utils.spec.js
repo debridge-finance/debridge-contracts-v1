@@ -54,3 +54,35 @@ module.exports.permitWithDeadline = async (token, owner, spender, value, deadlin
   //                                    remove first 0x
   return deadlineHex + permitSignature.substring(2, permitSignature.length);
 }
+
+
+module.exports.packSubmissionAutoParamsTo = async (executionFee, reservedFlag, fallbackAddress, data) => {
+  const autoParams = {executionFee, reservedFlag, fallbackAddress, data};
+  const packed = ethers.utils.defaultAbiCoder.encode([{
+    type: "tuple",
+    name: "SubmissionAutoParamsTo",
+    components: [
+      { name: "executionFee", type: 'uint256' },
+      { name: "reservedFlag", type: 'uint8' },
+      { name: "fallbackAddress", type:'bytes' },
+      { name: "data", type:'bytes' },
+    ]}],
+  [ autoParams ]);
+  return packed;
+}
+
+module.exports.packSubmissionAutoParamsFrom = async (executionFee, reservedFlag, fallbackAddress, data, nativeSender) => {
+  const autoParams = {executionFee, reservedFlag, fallbackAddress, data, nativeSender};
+  const packed = ethers.utils.defaultAbiCoder.encode([{
+    type: "tuple",
+    name: "SubmissionAutoParamsFrom",
+    components: [
+      { name: "executionFee", type: 'uint256' },
+      { name: "reservedFlag", type: 'uint8' },
+      { name: "fallbackAddress", type:'address' },
+      { name: "data", type:'bytes' },
+      { name: "nativeSender", type:'bytes' },
+    ]}],
+  [ autoParams ]);
+  return packed;
+}
