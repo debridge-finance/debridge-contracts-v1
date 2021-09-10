@@ -74,11 +74,7 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        // bytes memory _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
         bool _useAssetFee,
-        // uint8 _reservedFlag,
         uint32 _referralCode,
         bytes memory _autoParams
     ) external payable;
@@ -95,11 +91,6 @@ interface IDeBridgeGate {
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures,
-        // address _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
-        // uint8 _reservedFlag,
-        // bytes memory _nativeSender
         bytes memory _autoParams
     ) external;
 
@@ -113,12 +104,8 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        // bytes memory _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
         bytes memory _permit,
         bool _useAssetFee,
-        // uint8 _reservedFlag,
         uint32 _referralCode,
         bytes memory _autoParams
     ) external payable;
@@ -135,11 +122,6 @@ interface IDeBridgeGate {
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures,
-        // address _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
-        // uint8 _reservedFlag,
-        // bytes memory _nativeSender
         bytes memory _autoParams
     ) external;
 
@@ -180,11 +162,7 @@ interface IDeBridgeGate {
         bytes receiver,
         uint256 nonce,
         uint256 indexed chainIdTo,
-        // uint256 claimFee,
-        // bytes fallbackAddress,
-        // bytes data,
         uint32 referralCode,
-        // uint8 reservedFlag,
         SubmissionAutoParamsTo autoParams,
         address nativeSender
     ); // emited once the native tokens are locked to be sent to the other chain
@@ -196,11 +174,6 @@ interface IDeBridgeGate {
         address indexed receiver,
         uint256 nonce,
         uint256 indexed chainIdFrom,
-        // uint256 claimFee,
-        // address fallbackAddress,
-        // bytes data,
-        // uint8 reservedFlag
-        // bytes nativeSender
         SubmissionAutoParamsFrom autoParams
     ); // emited once the wrapped tokens are minted on the current chain
 
@@ -212,10 +185,6 @@ interface IDeBridgeGate {
         uint256 nonce,
         uint256 indexed chainIdTo,
         uint32 referralCode,
-        // uint256 claimFee,
-        // bytes fallbackAddress,
-        // bytes data,
-        // uint8 reservedFlag,
         SubmissionAutoParamsTo autoParams,
         address nativeSender
     ); // emited once the wrapped tokens are sent to the contract
@@ -227,11 +196,6 @@ interface IDeBridgeGate {
         address indexed receiver,
         uint256 nonce,
         uint256 indexed chainIdFrom,
-        // uint256 claimFee,
-        // address fallbackAddress,
-        // bytes data,
-        // uint8 reservedFlag
-        // bytes nativeSender
         SubmissionAutoParamsFrom autoParams
     ); // emited once the tokens are withdrawn on native chain
 

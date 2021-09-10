@@ -213,11 +213,6 @@ contract DeBridgeGate is
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures,
-        // address _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
-        // uint8 _reservedFlag,
-        // bytes memory _nativeSender
         bytes memory _autoParams
     ) external override nonReentrant whenNotPaused {
         SubmissionAutoParamsFrom memory autoParams;
@@ -226,16 +221,11 @@ contract DeBridgeGate is
             // TODO: validate autoparams
         }
         bytes32 submissionId = getSubmissionIdFrom(
-            // _nativeSender,
             _debridgeId,
             _chainIdFrom,
             _amount,
             _receiver,
             _nonce,
-            // _fallbackAddress,
-            // _executionFee,
-            // _data,
-            // _reservedFlag
             autoParams
         );
 
@@ -251,11 +241,6 @@ contract DeBridgeGate is
             _debridgeId,
             _receiver,
             _amount,
-            // _fallbackAddress,
-            // _executionFee,
-            // _data,
-            // _reservedFlag,
-            // _nativeSender
             autoParams
         );
 
@@ -266,11 +251,6 @@ contract DeBridgeGate is
             _receiver,
             _nonce,
             _chainIdFrom,
-            // _executionFee,
-            // _fallbackAddress,
-            // _data,
-            // _reservedFlag
-            // _nativeSender
             autoParams
         );
     }
@@ -286,12 +266,8 @@ contract DeBridgeGate is
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
-        // bytes memory _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
         bytes memory _permit,
         bool _useAssetFee,
-        // uint8 _reservedFlag,
         uint32 _referralCode,
         bytes memory _autoParams
     ) external payable override nonReentrant whenNotPaused {
@@ -348,11 +324,6 @@ contract DeBridgeGate is
         uint256 _amount,
         uint256 _nonce,
         bytes memory _signatures,
-        // address _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
-        // uint8 _reservedFlag,
-        // bytes memory _nativeSender
         bytes memory _autoParams
     ) external override nonReentrant whenNotPaused {
 
@@ -363,16 +334,11 @@ contract DeBridgeGate is
         }
 
         bytes32 submissionId = getSubmissionIdFrom(
-            // _nativeSender,
             _debridgeId,
             _chainIdFrom,
             _amount,
             _receiver,
             _nonce,
-            // _fallbackAddress,
-            // _executionFee,
-            // _data,
-            // _reservedFlag
             autoParams
         );
 
@@ -383,11 +349,6 @@ contract DeBridgeGate is
             _debridgeId,
             _receiver,
             _amount,
-            // _fallbackAddress,
-            // _executionFee,
-            // _data,
-            // _reservedFlag,
-            // _nativeSender
             autoParams
         );
 
@@ -398,11 +359,6 @@ contract DeBridgeGate is
             _receiver,
             _nonce,
             _chainIdFrom,
-            // _executionFee,
-            // _fallbackAddress,
-            // _data,
-            // _reservedFlag
-            // _nativeSender
             autoParams
         );
     }
@@ -852,11 +808,6 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        // address _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
-        // uint8 _reservedFlag,
-        // bytes memory _nativeSender
         SubmissionAutoParamsFrom memory _autoParams
     ) internal {
         _markAsUsed(_submissionId);
@@ -897,11 +848,6 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        // address _fallbackAddress,
-        // uint256 _executionFee,
-        // bytes memory _data,
-        // uint8 _reservedFlag,
-        // bytes memory _nativeSender
         SubmissionAutoParamsFrom memory _autoParams
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
