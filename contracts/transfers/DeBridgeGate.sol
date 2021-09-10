@@ -183,8 +183,7 @@ contract DeBridgeGate is
             _chainIdTo,
             _amount,
             _receiver,
-            autoParams,
-            _autoParams.length > 0
+            autoParams
         );
 
         emit Sent(
@@ -294,8 +293,7 @@ contract DeBridgeGate is
             _chainIdTo,
             _amount,
             _receiver,
-            autoParams,
-            _autoParams.length > 0
+            autoParams
         );
 
         emit Burnt(
@@ -919,16 +917,19 @@ contract DeBridgeGate is
         uint256 _nonce,
         SubmissionAutoParamsFrom memory _autoParams
     ) public view returns (bytes32) {
-        if (_autoParams.nativeSender.length > 0) {
+        bytes memory packedSubmission = abi.encodePacked(
+            _debridgeId,
+            _chainIdFrom,
+            getChainId(),
+            _amount,
+            _receiver,
+            _nonce
+        );
+        if (_autoParams.data.length > 0) {
             // auto submission
             return keccak256(
                 abi.encodePacked(
-                    _debridgeId,
-                    _chainIdFrom,
-                    getChainId(),
-                    _amount,
-                    _receiver,
-                    _nonce,
+                    packedSubmission,
                     _autoParams.fallbackAddress,
                     _autoParams.executionFee,
                     _autoParams.data,
@@ -938,16 +939,7 @@ contract DeBridgeGate is
             );
         }
         // regular submission
-        return keccak256(
-            abi.encodePacked(
-                _debridgeId,
-                _chainIdFrom,
-                getChainId(),
-                _amount,
-                _receiver,
-                _nonce
-            )
-        );
+        return keccak256(packedSubmission);
     }
 
     function getSubmissionIdTo(
@@ -955,40 +947,31 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         uint256 _amount,
         bytes memory _receiver,
-        SubmissionAutoParamsTo memory autoParams,
-        bool isAutoSubmission
+        SubmissionAutoParamsTo memory _autoParams
     ) private view returns (bytes32) {
-        // TODO: determine auto submissions without bool parameter
-        if (isAutoSubmission) {
-            // auto submissions
+        bytes memory packedSubmission = abi.encodePacked(
+            _debridgeId,
+            getChainId(),
+            _chainIdTo,
+            _amount,
+            _receiver,
+            nonce
+        );
+        if (_autoParams.data.length > 0) {
+            // auto submission
             return keccak256(
                 abi.encodePacked(
-                    _debridgeId,
-                    getChainId(),
-                    _chainIdTo,
-                    _amount,
-                    _receiver,
-                    nonce,
-                    autoParams.fallbackAddress,
-                    autoParams.executionFee,
-                    autoParams.data,
-                    autoParams.reservedFlag,
+                    packedSubmission,
+                    _autoParams.fallbackAddress,
+                    _autoParams.executionFee,
+                    _autoParams.data,
+                    _autoParams.reservedFlag,
                     msg.sender
                 )
             );
         }
-
         // regular submission
-        return keccak256(
-            abi.encodePacked(
-                _debridgeId,
-                getChainId(),
-                _chainIdTo,
-                _amount,
-                _receiver,
-                nonce
-            )
-        );
+        return keccak256(packedSubmission);
     }
 
     function getNativeTokenInfo(address currentTokenAddress)
