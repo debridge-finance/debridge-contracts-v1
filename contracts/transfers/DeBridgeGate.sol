@@ -925,7 +925,7 @@ contract DeBridgeGate is
             _receiver,
             _nonce
         );
-        if (_autoParams.data.length > 0) {
+        if (_autoParams.nativeSender.length > 0) {
             // auto submission
             return keccak256(
                 abi.encodePacked(
@@ -957,7 +957,7 @@ contract DeBridgeGate is
             _receiver,
             nonce
         );
-        if (_autoParams.data.length > 0) {
+        if (_autoParams.data.length > 0 || _autoParams.executionFee > 0) {
             // auto submission
             return keccak256(
                 abi.encodePacked(
