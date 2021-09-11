@@ -67,6 +67,7 @@ contract DeBridgeGate is
     error WrongChain();
     error WrongTargedChain();
     error WrongArgument();
+    error WrongAutoArgument();
 
     error TransferAmountTooHigh();
 
@@ -170,13 +171,8 @@ contract DeBridgeGate is
             _referralCode
         );
 
-        SubmissionAutoParamsTo memory autoParams;
-        if (_autoParams.length > 0) {
-            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
-            // TODO: validate autoparams
-            if (_amount < autoParams.executionFee) revert ProposedFeeTooHigh();
-            _amount -= autoParams.executionFee;
-        }
+        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
+        _amount -= autoParams.executionFee;
 
         bytes32 submissionId = getSubmissionIdTo(
             debridgeId,
@@ -217,7 +213,6 @@ contract DeBridgeGate is
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
             autoParams = abi.decode(_autoParams, (SubmissionAutoParamsFrom));
-            // TODO: validate autoparams
         }
         bytes32 submissionId = getSubmissionIdFrom(
             _debridgeId,
@@ -280,13 +275,8 @@ contract DeBridgeGate is
             _referralCode
         );
 
-        SubmissionAutoParamsTo memory autoParams;
-        if (_autoParams.length > 0) {
-            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
-            // TODO: validate autoparams
-            if (_amount < autoParams.executionFee) revert ProposedFeeTooHigh();
-            _amount -= autoParams.executionFee;
-        }
+        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
+        _amount -= autoParams.executionFee;
 
         bytes32 submissionId = getSubmissionIdTo(
             _debridgeId,
@@ -328,7 +318,6 @@ contract DeBridgeGate is
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
             autoParams = abi.decode(_autoParams, (SubmissionAutoParamsFrom));
-            // TODO: validate autoparams
         }
 
         bytes32 submissionId = getSubmissionIdFrom(
@@ -795,6 +784,17 @@ contract DeBridgeGate is
         emit CollectedFee(_debridgeId, _referralCode, transferFee);
         _amount -= transferFee;
         return _amount;
+    }
+
+    function _validateAutoParams(
+        bytes calldata _autoParams,
+        uint256 _amount
+    ) internal pure returns (SubmissionAutoParamsTo memory autoParams) {
+        if (_autoParams.length > 0) {
+            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
+            if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
+            if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
+        }
     }
 
     /// @dev Mints wrapped asset on the current chain.
