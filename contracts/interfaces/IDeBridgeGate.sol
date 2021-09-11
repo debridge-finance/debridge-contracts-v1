@@ -42,7 +42,6 @@ interface IDeBridgeGate {
     }
 
     /// @param executionFee Fee paid to the transaction executor.
-    /// @param data Chain id of the target chain.
     /// @param fallbackAddress Receiver of the tokens if the call fails.
     struct SubmissionAutoParamsTo {
         uint256 executionFee;
@@ -52,7 +51,6 @@ interface IDeBridgeGate {
     }
 
     /// @param executionFee Fee paid to the transaction executor.
-    /// @param data Chain id of the target chain.
     /// @param fallbackAddress Receiver of the tokens if the call fails.
     struct SubmissionAutoParamsFrom {
         uint256 executionFee;
