@@ -814,26 +814,13 @@ contract DeBridgeGate is
         if (!debridge.exist) revert DebridgeNotFound();
         if (debridge.chainId == getChainId()) revert WrongChain();
 
-        if (_autoParams.executionFee > 0) {
-            IWrappedAsset(debridge.tokenAddress).mint(msg.sender, _autoParams.executionFee);
-        }
-        if (_autoParams.data.length > 0) {
-            address callProxyAddress = _autoParams.reservedFlag == PROXY_WITH_SENDER_FLAG
-                ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
-                : callProxyAddresses[0];
-            IWrappedAsset(debridge.tokenAddress).mint(callProxyAddress, _amount);
-            bool status = ICallProxy(callProxyAddress).callERC20(
-                debridge.tokenAddress,
-                _autoParams.fallbackAddress,
-                _receiver,
-                _autoParams.data,
-                _autoParams.reservedFlag,
-                _autoParams.nativeSender
-            );
-            emit AutoRequestExecuted(_submissionId, status);
-        } else {
-            IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
-        }
+        _processTransferFrom(
+            _submissionId,
+            debridge.tokenAddress,
+            _amount,
+            _receiver,
+            _autoParams,
+            true);
         debridge.balance += _amount + _autoParams.executionFee;
     }
 
@@ -852,19 +839,37 @@ contract DeBridgeGate is
         if (debridge.chainId != getChainId()) revert WrongChain();
         _markAsUsed(_submissionId);
 
-        debridge.balance -= _amount;
+        debridge.balance -= _amount + _autoParams.executionFee;
 
+        _processTransferFrom(
+            _submissionId,
+            debridge.tokenAddress,
+            _amount,
+            _receiver,
+            _autoParams,
+            false);
+    }
+
+    function _processTransferFrom(
+        bytes32 _submissionId,
+        address _token,
+        uint256 _amount,
+        address _receiver,
+        SubmissionAutoParamsFrom memory _autoParams,
+        bool isMint
+    ) internal {
         if (_autoParams.executionFee > 0) {
-            IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _autoParams.executionFee);
+            _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isMint);
         }
         if (_autoParams.data.length > 0) {
             address callProxyAddress = _autoParams.reservedFlag == PROXY_WITH_SENDER_FLAG
                 ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
                 : callProxyAddresses[0];
 
-            IERC20(debridge.tokenAddress).safeTransfer(callProxyAddress, _amount);
+            _mintOrTransfer(_token, callProxyAddress, _amount, isMint);
+
             bool status = ICallProxy(callProxyAddress).callERC20(
-                debridge.tokenAddress,
+                _token,
                 _autoParams.fallbackAddress,
                 _receiver,
                 _autoParams.data,
@@ -873,7 +878,20 @@ contract DeBridgeGate is
             );
             emit AutoRequestExecuted(_submissionId, status);
         } else {
-            IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+            _mintOrTransfer(_token, _receiver, _amount, isMint);
+        }
+    }
+
+    function _mintOrTransfer(
+        address _token,
+        address _receiver,
+        uint256 _amount,
+        bool isMint
+    ) internal {
+        if (isMint) {
+            IWrappedAsset(_token).mint(_receiver, _amount);
+        } else {
+            IERC20(_token).safeTransfer(_receiver, _amount);
         }
     }
 
