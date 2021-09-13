@@ -1,7 +1,9 @@
 const { expect } = require("chai");
 const { cons } = require("fp-ts/lib/NonEmptyArray2v");
 const { ethers } = require("hardhat");
-const { ZERO_ADDRESS, DEFAULT_ADMIN_ROLE, WORKER_ROLE } = require("./utils.spec");
+const { DEFAULT_ADMIN_ROLE, WORKER_ROLE } = require("./utils.spec");
+
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 
 describe("DefiController", function () {
   const tokenSupply = 1000;

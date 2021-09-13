@@ -7,6 +7,7 @@ require("@nomiclabs/hardhat-truffle5");
 require('hardhat-deploy');
 require("@nomiclabs/hardhat-waffle");
 require('@openzeppelin/hardhat-upgrades');
+require('hardhat-contract-sizer');
 require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-solhint");
 require("prettier-plugin-solidity");

@@ -3,6 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -152,11 +153,13 @@ contract DeBridgeGate is
     /// @param _receiver Receiver address.
     /// @param _amount Amount to be transfered (note: the fee can be applyed).
     /// @param _chainIdTo Chain id of the target chain.
+    /// @param _permit deadline + signature for approving the spender by signature.
     function send(
         address _tokenAddress,
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode,
         bytes calldata _autoParams
@@ -167,6 +170,7 @@ contract DeBridgeGate is
             _tokenAddress,
             _amount,
             _chainIdTo,
+            _permit,
             _useAssetFee,
             _referralCode
         );
@@ -660,10 +664,12 @@ contract DeBridgeGate is
     /// @dev Locks asset on the chain and enables minting on the other chain.
     /// @param _amount Amount to be transfered (note: the fee can be applyed).
     /// @param _chainIdTo Chain id of the target chain.
+    /// @param _permit deadline + signature for approving the spender by signature.
     function _send(
         address _tokenAddress,
         uint256 _amount,
         uint256 _chainIdTo,
+        bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode
     ) internal returns (uint256 newAmount, bytes32 debridgeId) {
@@ -691,6 +697,19 @@ contract DeBridgeGate is
             weth.deposit{value: msg.value}();
             _useAssetFee = true;
         } else {
+            if (_permit.length > 0) {
+                // call permit before transfering token
+                uint256 deadline = _permit.toUint256(0);
+                (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
+                IERC20Permit(_tokenAddress).permit(
+                    msg.sender,
+                    address(this),
+                    _amount,
+                    deadline,
+                    v,
+                    r,
+                    s);
+            }
             IERC20 token = IERC20(_tokenAddress);
             uint256 balanceBefore = token.balanceOf(address(this));
             token.safeTransferFrom(msg.sender, address(this), _amount);

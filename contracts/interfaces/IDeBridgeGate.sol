@@ -72,6 +72,7 @@ interface IDeBridgeGate {
         bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode,
         bytes memory _autoParams

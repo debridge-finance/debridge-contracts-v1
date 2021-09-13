@@ -1,15 +1,13 @@
-const PERMIT_TYPEHASH = "0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9";
-
-module.exports.ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-module.exports.DEFAULT_ADMIN_ROLE = ethers.utils.hexZeroPad(0, 32);
-module.exports.WORKER_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("WORKER_ROLE"));
-
 const { ecsign } = require("ethereumjs-util");
 const { keccak256, defaultAbiCoder, toUtf8Bytes, solidityPack } = require("ethers/lib/utils");
+
+module.exports.DEFAULT_ADMIN_ROLE = ethers.utils.hexZeroPad(0, 32);
+module.exports.WORKER_ROLE = ethers.utils.keccak256(toUtf8Bytes("WORKER_ROLE"));
 
 module.exports.permit = async (token, owner, spender, value, deadline, privKey) => {
   let nonce = await token.nonces(owner);
   const DOMAIN_SEPARATOR = await token.DOMAIN_SEPARATOR();
+  const PERMIT_TYPEHASH = keccak256(toUtf8Bytes("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"));
   const digest = keccak256(
     solidityPack(
       ["bytes1", "bytes1", "bytes32", "bytes32"],
