@@ -1006,7 +1006,7 @@ contract DeBridgeGate is
         if (debridge.chainId != getChainId()) revert WrongChain();
         _markAsUsed(_submissionId);
 
-        debridge.balance -= _amount;
+        debridge.balance -= _amount + _executionFee;
 
         if (_executionFee > 0) {
             IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _executionFee);
