@@ -30,7 +30,7 @@ const hecoChainId = 256;
 contract("DeBridgeGate full with auto", function () {
   let reserveAddress;
   const claimFee = toBN(toWei("0"));
-  const data = "0x";
+  const data = [];
 
   before(async function () {
     this.signers = await ethers.getSigners();

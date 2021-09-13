@@ -73,7 +73,7 @@ describe("CallProxy", function () {
           const transferResult = await this.proxy.call(
             reserve.address,
             receiverContract.address,
-            "0x",
+            [],
             reservedFlag,
             nativeSender,
             {
@@ -367,7 +367,7 @@ describe("CallProxy", function () {
             brokenToken.address,
             reserve.address,
             receiver.address,
-            "0x",
+            [],
             reservedFlag,
             nativeSender
           )
@@ -418,7 +418,7 @@ describe("CallProxy", function () {
           this.token.address,
           reserve.address,
           receiver.address,
-          "0x",
+          [],
           reservedFlag,
           nativeSender
         );
@@ -947,7 +947,7 @@ describe("CallProxy", function () {
             brokenToken.address,
             receiver.address,
             reserve.address,
-            "0x",
+            [],
             {
               value: 1111,
             }
@@ -1002,7 +1002,7 @@ describe("CallProxy", function () {
           this.token.address,
           receiver.address,
           reserve.address,
-          "0x",
+          [],
           {
             value: 1111,
           }
