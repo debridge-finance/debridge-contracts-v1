@@ -1,5 +1,5 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
+const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -15,7 +15,9 @@ function toBN(number) {
   return BigNumber.from(number.toString());
 }
 
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 const MAX = web3.utils.toTwosComplement(-1);
+const alicePrivKey = "0x512aba028561d58c914fdcb31cc7f4dd9a433cb3672eb9eaf44302eb097ec3bc";
 const bobPrivKey = "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
 
 const transferFeeBps = 50;
@@ -711,6 +713,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           receiver,
           amount,
           chainIdTo,
+          "0x",
           false,
           referralCode,
           {
@@ -743,7 +746,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         // );
       });
 
-      it("should send ERC20 tokens", async function () {
+      it("should send ERC20 tokens without permit", async function () {
         const tokenAddress = this.linkToken.address;
         const chainId = await this.debridgeETH.chainId();
         const receiver = bob;
@@ -770,6 +773,85 @@ contract("DeBridgeGate real pipeline mode", function () {
           receiver,
           amount,
           chainIdTo,
+          "0x",
+          false,
+          referralCode,
+          {
+            value: supportedChainInfo.fixedNativeFee,
+            from: alice,
+          }
+        );
+
+        let receipt = await sendTx.wait();
+        let sentEvent = receipt.events.find((x) => {
+          return x.event == "Sent";
+        });
+        sentEvents.push(sentEvent);
+
+        const newNativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
+          this.nativeDebridgeIdETH
+        );
+        const newBalance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
+        const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+        assert.equal(balance.add(amount).toString(), newBalance.toString());
+        assert.equal(
+          debridgeFeeInfo.collectedFees.add(fees).toString(),
+          newDebridgeFeeInfo.collectedFees.toString()
+        );
+        assert.equal(
+          nativeDebridgeFeeInfo.collectedFees
+            .add(toBN(supportedChainInfo.fixedNativeFee))
+            .toString(),
+          newNativeDebridgeFeeInfo.collectedFees.toString()
+        );
+
+        //TODO: check that balance was increased
+        // assert.equal(
+        //   debridge.balance
+        //     .add(amount) - fee%
+        //     .toString(),
+        //     newDebridgeInfo.balance.toString()
+        // );
+      });
+
+      it("should send ERC20 tokens with permit", async function () {
+        const tokenAddress = this.linkToken.address;
+        const chainId = await this.debridgeETH.chainId();
+        const receiver = bob;
+        const amount = toBN(toWei("100"));
+        const chainIdTo = bscChainId;
+        await this.linkToken.mint(alice, amount, {
+          from: alice,
+        });
+        // await this.linkToken.approve(this.debridgeETH.address, amount, {
+        //   from: alice,
+        // });
+        const debridgeId = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
+
+        const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
+        const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+        const supportedChainInfo = await this.debridgeETH.getChainSupport(chainIdTo);
+        const nativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
+          this.nativeDebridgeIdETH
+        );
+        let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
+        fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
+
+        const permit = await permitWithDeadline(
+          this.linkToken,
+          alice,
+          this.debridgeETH.address,
+          amount,
+          toBN(MAX_UINT256),
+          alicePrivKey,
+        );
+
+        let sendTx = await this.debridgeETH.send(
+          tokenAddress,
+          receiver,
+          amount,
+          chainIdTo,
+          permit,
           false,
           referralCode,
           {
@@ -816,10 +898,18 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = bscChainId;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-            value: toWei("0.1"),
-            from: alice,
-          }),
+          this.debridgeETH.send(
+            tokenAddress,
+            receiver,
+            amount,
+            chainIdTo,
+            "0x",
+            false,
+            referralCode,
+            {
+              value: toWei("0.1"),
+              from: alice,
+            }),
           "AmountMismatch()"
         );
       });
@@ -830,10 +920,18 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("1"));
         const chainIdTo = 9999;
         await expectRevert(
-          this.debridgeETH.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-            value: amount,
-            from: alice,
-          }),
+          this.debridgeETH.send(
+            tokenAddress,
+            receiver,
+            amount,
+            chainIdTo,
+            "0x",
+            false,
+            referralCode,
+            {
+              value: amount,
+              from: alice,
+            }),
           "WrongTargedChain()"
         );
       });
@@ -846,6 +944,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             receiver,
             amount,
             bscChainId,
+            "0x",
             false,
             referralCode,
             {
@@ -1507,6 +1606,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
+        "0x",
         false,
         0,
         {
@@ -1560,6 +1660,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
+        "0x",
         false,
         0,
         {

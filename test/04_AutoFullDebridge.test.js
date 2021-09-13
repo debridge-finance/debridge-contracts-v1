@@ -1,11 +1,12 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
+const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
 const FeeProxy = artifacts.require("FeeProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
 const MAX = web3.utils.toTwosComplement(-1);
@@ -354,6 +355,7 @@ contract("DeBridgeGate full with auto", function () {
         reserveAddress,
         claimFee,
         data,
+        "0x",
         false,
         zeroFlag,
         referralCode,
@@ -397,6 +399,7 @@ contract("DeBridgeGate full with auto", function () {
         reserveAddress,
         claimFee,
         data,
+        "0x",
         false,
         zeroFlag,
         referralCode,
@@ -436,6 +439,7 @@ contract("DeBridgeGate full with auto", function () {
           reserveAddress,
           claimFee,
           data,
+          "0x",
           false,
           zeroFlag,
           referralCode,
@@ -463,6 +467,7 @@ contract("DeBridgeGate full with auto", function () {
           reserveAddress,
           claimFee,
           data,
+          "0x",
           false,
           zeroFlag,
           referralCode,

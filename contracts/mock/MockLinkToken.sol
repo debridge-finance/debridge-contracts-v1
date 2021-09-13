@@ -3,17 +3,19 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
+
 import "../interfaces/IERC677Receiver.sol";
 
-contract MockLinkToken is ERC20 {
+contract MockLinkToken is ERC20, ERC20Permit {
     uint8 private _decimals;
 
     constructor(
         string memory _name,
         string memory _symbol,
         uint8 _decimal
-    ) ERC20(_name, _symbol) {
+    ) ERC20(_name, _symbol) ERC20Permit(_name) {
         _decimals = _decimal;
     }
 
