@@ -45,7 +45,7 @@ interface IDeBridgeGate {
     /// @param fallbackAddress Receiver of the tokens if the call fails.
     struct SubmissionAutoParamsTo {
         uint256 executionFee;
-        uint8 reservedFlag;
+        uint256 flags;
         bytes fallbackAddress;
         bytes data;
     }
@@ -54,7 +54,7 @@ interface IDeBridgeGate {
     /// @param fallbackAddress Receiver of the tokens if the call fails.
     struct SubmissionAutoParamsFrom {
         uint256 executionFee;
-        uint8 reservedFlag;
+        uint256 flags;
         address fallbackAddress;
         bytes data;
         bytes nativeSender;

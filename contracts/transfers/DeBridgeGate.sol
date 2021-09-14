@@ -17,6 +17,7 @@ import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
+import "../libraries/Flags.sol";
 
 contract DeBridgeGate is
     Initializable,
@@ -27,6 +28,7 @@ contract DeBridgeGate is
 {
     using SafeERC20 for IERC20;
     using SignatureUtil for bytes;
+    using Flags for uint256;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -34,7 +36,6 @@ contract DeBridgeGate is
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
-    uint256 public constant PROXY_WITH_SENDER_FLAG = 100; //Flag to call proxy with sender contract
 
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
@@ -90,6 +91,7 @@ contract DeBridgeGate is
     error FeeNotPaid();
 
     error NotEnoughReserves();
+    error EthTransferFailed();
 
     /* ========== MODIFIERS ========== */
 
@@ -881,8 +883,8 @@ contract DeBridgeGate is
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isMint);
         }
         if (_autoParams.data.length > 0) {
-            address callProxyAddress = _autoParams.reservedFlag == PROXY_WITH_SENDER_FLAG
-                ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
+            address callProxyAddress = _autoParams.flags.getFlag(Flags.PROXY_WITH_SENDER)
+                ? callProxyAddresses[Flags.PROXY_WITH_SENDER]
                 : callProxyAddresses[0];
 
             _mintOrTransfer(_token, callProxyAddress, _amount, isMint);
@@ -892,10 +894,17 @@ contract DeBridgeGate is
                 _autoParams.fallbackAddress,
                 _receiver,
                 _autoParams.data,
-                _autoParams.reservedFlag,
+                _autoParams.flags,
                 _autoParams.nativeSender
             );
             emit AutoRequestExecuted(_submissionId, status);
+        } else if (!isMint
+            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+            && _token == address(weth)
+        ) {
+            // transferring WETH with unwrap flag
+            weth.withdraw(_amount);
+            _safeTransferETH(_receiver, _amount);
         } else {
             _mintOrTransfer(_token, _receiver, _amount, isMint);
         }
@@ -912,6 +921,16 @@ contract DeBridgeGate is
         } else {
             IERC20(_token).safeTransfer(_receiver, _amount);
         }
+    }
+
+    /*
+    * @dev transfer ETH to an address, revert if it fails.
+    * @param to recipient of the transfer
+    * @param value the amount to send
+    */
+    function _safeTransferETH(address to, uint256 value) internal {
+        (bool success, ) = to.call{value: value}(new bytes(0));
+        if (!success) revert EthTransferFailed();
     }
 
     /// @dev Mark submission as used.
