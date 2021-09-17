@@ -211,7 +211,7 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures,
+        bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
         SubmissionAutoParamsFrom memory autoParams;
@@ -315,7 +315,7 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures,
+        bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
 
@@ -597,7 +597,7 @@ contract DeBridgeGate is
         bytes32 _submissionId,
         bytes32 _debridgeId,
         uint256 _amount,
-        bytes memory _signatures
+        bytes calldata _signatures
     ) internal {
         if (isBlockedSubmission[_submissionId]) revert SubmissionBlocked();
         if (_signatures.length > 0) {
