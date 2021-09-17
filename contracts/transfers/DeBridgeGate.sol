@@ -897,7 +897,7 @@ contract DeBridgeGate is
                 _autoParams.flags,
                 _autoParams.nativeSender
             );
-            emit AutoRequestExecuted(_submissionId, status);
+            emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
         } else if (!isMint
             && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
             && _token == address(weth)
