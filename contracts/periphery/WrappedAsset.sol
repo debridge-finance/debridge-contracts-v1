@@ -14,6 +14,13 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public nonces; // transfer's counter
     uint8 internal _decimals;
+
+    /* ========== ERRORS ========== */
+
+    error AdminAddressDenied();
+
+    /* ========== MODIFIERS ========== */
+
     modifier onlyMinter() {
         require(hasRole(MINTER_ROLE, msg.sender), "onlyMinter: bad role");
         _;
@@ -33,6 +40,7 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
         _decimals = _tokenDecimals;
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
         for (uint256 i = 0; i < _minters.length; i++) {
+            if(_admin == _minters[i]) revert AdminAddressDenied();
             _setupRole(MINTER_ROLE, _minters[i]);
         }
         uint256 chainId;

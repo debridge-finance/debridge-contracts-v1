@@ -17,6 +17,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /* ========== ERRORS ========== */
 
     error AdminBadRole();
+    error AdminAddressDenied();
     error OracleBadRole();
     error DeBridgeGateBadRole();
 
@@ -39,6 +40,13 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
         _;
     }
+
+    // TODO: write test for onlyNonAdminAddress modifier
+    modifier onlyNonAdminAddress(address _address) {
+        if (hasRole(DEFAULT_ADMIN_ROLE, _address)) revert AdminAddressDenied();
+        _;
+    }
+
     modifier onlyOracle() {
         if (!getOracleInfo[msg.sender].isValid) revert OracleBadRole();
         _;
@@ -58,7 +66,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @dev Updates oracle's admin address.
     /// @param _oracle Oracle address.
     /// @param _newOracleAdmin New oracle address.
-    function updateOracleAdmin(address _oracle, address _newOracleAdmin) external {
+    function updateOracleAdmin(address _oracle, address _newOracleAdmin) external onlyNonAdminAddress(_newOracleAdmin) {
         if (getOracleInfo[_oracle].admin != msg.sender) revert OraclesAdminAccessDenied();
         getOracleInfo[_oracle].admin = _newOracleAdmin;
         emit UpdateOracleAdmin(_oracle, _newOracleAdmin);
@@ -83,6 +91,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         bool[] memory _required
     ) external onlyAdmin {
         for (uint256 i = 0; i < _oracles.length; i++) {
+            if (hasRole(DEFAULT_ADMIN_ROLE, _admins[i])) revert AdminAddressDenied();
             OracleInfo storage oracleInfo = getOracleInfo[_oracles[i]];
             if (oracleInfo.exist) revert OracleAlreadyExist();
 
@@ -130,7 +139,8 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @dev Update oracle admin.
     /// @param _oracle Oracle address.
     /// @param _admin new admin address.
-    function updateOracleAdminByOwner(address _oracle, address _admin) external onlyAdmin {
+    // TODO: write test for onlyNonAdminAddress modifier
+    function updateOracleAdminByOwner(address _oracle, address _admin) external onlyAdmin onlyNonAdminAddress(_admin) {
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         if (!oracleInfo.exist) revert OracleNotFound();
         oracleInfo.admin = _admin;

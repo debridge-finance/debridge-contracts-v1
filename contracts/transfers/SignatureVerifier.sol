@@ -208,7 +208,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
-    function setWrappedAssetAdmin(address _wrappedAssetAdmin) public onlyAdmin {
+    function setWrappedAssetAdmin(address _wrappedAssetAdmin) public onlyAdmin onlyNonAdminAddress(_wrappedAssetAdmin) {
         wrappedAssetAdmin = _wrappedAssetAdmin;
     }
 
