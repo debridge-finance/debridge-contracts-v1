@@ -713,9 +713,10 @@ contract("DeBridgeGate real pipeline mode", function () {
           receiver,
           amount,
           chainIdTo,
-          "0x",
+          [],
           false,
           referralCode,
+          [],
           {
             value: amount,
             from: alice,
@@ -773,9 +774,10 @@ contract("DeBridgeGate real pipeline mode", function () {
           receiver,
           amount,
           chainIdTo,
-          "0x",
+          [],
           false,
           referralCode,
+          [],
           {
             value: supportedChainInfo.fixedNativeFee,
             from: alice,
@@ -854,6 +856,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           permit,
           false,
           referralCode,
+          [],
           {
             value: supportedChainInfo.fixedNativeFee,
             from: alice,
@@ -903,9 +906,10 @@ contract("DeBridgeGate real pipeline mode", function () {
             receiver,
             amount,
             chainIdTo,
-            "0x",
+            [],
             false,
             referralCode,
+            [],
             {
               value: toWei("0.1"),
               from: alice,
@@ -925,9 +929,10 @@ contract("DeBridgeGate real pipeline mode", function () {
             receiver,
             amount,
             chainIdTo,
-            "0x",
+            [],
             false,
             referralCode,
+            [],
             {
               value: amount,
               from: alice,
@@ -944,9 +949,10 @@ contract("DeBridgeGate real pipeline mode", function () {
             receiver,
             amount,
             bscChainId,
-            "0x",
+            [],
             false,
             referralCode,
+            [],
             {
               value: amount,
               from: alice,
@@ -1006,6 +1012,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.nativeSubmission.args.receiver,
           this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
+          [],
           [],
           {
             from: alice,
@@ -1085,6 +1092,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
           [],
+          [],
           {
             from: alice,
           }
@@ -1125,6 +1133,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         this.nativeSubmission.args.amount,
         this.nativeSubmission.args.nonce,
+        [],
         [],
         {
           from: alice,
@@ -1174,6 +1183,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.linkSubmission.args.amount,
         this.linkSubmission.args.nonce,
         [],
+        [],
         {
           from: alice,
         }
@@ -1208,6 +1218,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.nativeSubmission.args.amount,
           wrongNonce,
           [],
+          [],
           {
             from: alice,
           }
@@ -1224,6 +1235,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.nativeSubmission.args.receiver,
           this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
+          [],
           [],
           {
             from: alice,
@@ -1279,6 +1291,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             permitParameter,
             false,
             referralCode,
+            [],
             {
               value: fixedNativeFeeWithDiscount,
             }
@@ -1313,16 +1326,16 @@ contract("DeBridgeGate real pipeline mode", function () {
       it("should reject burning from current chain", async function () {
         const receiver = bob;
         const amount = toBN(toWei("1"));
-        const permit = "0x";
         await expectRevert(
           this.debridgeETH.burn(
             this.debridgeWethId,
             receiver,
             amount,
             ethChainId,
-            permit,
+            [],
             false,
             referralCode,
+            [],
             {
               from: alice,
             }
@@ -1358,6 +1371,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             permitParameter,
             false,
             referralCode,
+            [],
             {
               value: fixedNativeFeeWithDiscount,
             }
@@ -1434,6 +1448,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
           this.nativeSignatures,
+          [],
           {
             from: alice,
           }
@@ -1470,6 +1485,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           amount,
           nonce,
           signaturesWithDublicate,
+          [],
           {
             from: alice,
           }
@@ -1493,6 +1509,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         amount,
         nonce,
         this.nativeSignatures,
+        [],
         {
           from: alice,
         }
@@ -1522,6 +1539,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         amount,
         nonce,
         this.linkSignatures,
+        [],
         {
           from: alice,
         }
@@ -1550,6 +1568,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           amount,
           wrongNonce,
           this.linkSignatures,
+          [],
           { from: alice }
         ),
         "NotConfirmedByRequiredOracles()"
@@ -1570,6 +1589,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           amount,
           nonce,
           this.linkSignatures,
+          [],
           { from: alice }
         ),
         "Submission"
@@ -1606,9 +1626,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
-        "0x",
+        [],
         false,
         0,
+        [],
         {
           value: amount,
           from: alice,
@@ -1660,9 +1681,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiver,
         amount,
         chainIdTo,
-        "0x",
+        [],
         false,
         0,
+        [],
         {
           value: supportedChainInfo.fixedNativeFee,
           from: alice,
@@ -1716,6 +1738,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.nativeSubmission.args.amount,
         this.nativeSubmission.args.nonce,
         [],
+        [],
         {
           from: alice,
         }
@@ -1764,6 +1787,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.cakeSubmission.args.receiver,
         this.cakeSubmission.args.amount,
         this.cakeSubmission.args.nonce,
+        [],
         [],
         {
           from: alice,
@@ -1815,6 +1839,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         permitParameter,
         false,
         referralCode,
+        [],
         {
           value: fixedNativeFeeWithDiscount,
         }
@@ -2079,6 +2104,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         currentBurnEvent.args.amount,
         currentBurnEvent.args.nonce,
         signatures,
+        [],
         // currentBurnEvent.args.fallbackAddress,
         // currentBurnEvent.args.claimFee,
         // currentBurnEvent.args.data,
@@ -2160,6 +2186,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         currentBurnEvent.args.receiver,
         currentBurnEvent.args.amount,
         currentBurnEvent.args.nonce,
+        [],
         [],
         // currentBurnEvent.args.fallbackAddress,
         // currentBurnEvent.args.claimFee,

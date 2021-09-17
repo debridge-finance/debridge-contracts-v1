@@ -392,9 +392,10 @@ contract("DeBridgeGate light mode", function () {
         receiver,
         amount,
         chainIdTo,
-        "0x",
+        [],
         false,
         referralCode,
+        [],
         {
           value: amount,
           from: alice,
@@ -431,9 +432,10 @@ contract("DeBridgeGate light mode", function () {
         receiver,
         amount,
         chainIdTo,
-        "0x",
+        [],
         false,
         referralCode,
+        [],
         {
           value: supportedChainInfo.fixedNativeFee,
           from: alice,
@@ -467,9 +469,10 @@ contract("DeBridgeGate light mode", function () {
           receiver,
           amount,
           chainIdTo,
-          "0x",
+          [],
           false,
           referralCode,
+          [],
           {
             value: toWei("0.1"),
             from: alice,
@@ -491,9 +494,10 @@ contract("DeBridgeGate light mode", function () {
           receiver,
           amount,
           chainIdTo,
-          "0x",
+          [],
           false,
           referralCode,
+          [],
           {
             value: amount,
             from: alice,
@@ -546,9 +550,17 @@ contract("DeBridgeGate light mode", function () {
       //     uint256 _nonce,
       //     bytes[] calldata _signatures
       // )
-      await this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
-        from: alice,
-      });
+      await this.debridge.mint(
+        debridgeId,
+        chainId,
+        receiver,
+        amount,
+        nonce,
+        this.signatures,
+        [],
+        {
+          from: alice,
+        });
       const debridge = await this.debridge.getDebridge(debridgeId);
       const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
 
@@ -599,10 +611,18 @@ contract("DeBridgeGate light mode", function () {
       const wrongnonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, [], {
-          //will call IConfirmationAggregator
-          from: alice,
-        }),
+        this.debridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          wrongnonce,
+          [],
+          [],
+          {
+            //will call IConfirmationAggregator
+            from: alice,
+          }),
         "SubmissionNotConfirmed()"
       );
     });
@@ -611,9 +631,17 @@ contract("DeBridgeGate light mode", function () {
       const wrongnonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, this.signatures, {
-          from: alice,
-        }),
+        this.debridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          wrongnonce,
+          this.signatures,
+          [],
+          {
+            from: alice,
+          }),
         "NotConfirmedByRequiredOracles()"
       );
     });
@@ -621,9 +649,17 @@ contract("DeBridgeGate light mode", function () {
     it("should reject minting twice", async function () {
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
-          from: alice,
-        }),
+        this.debridge.mint(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          this.signatures,
+          [],
+          {
+            from: alice,
+          }),
         "SubmissionUsed()"
       );
     });
@@ -658,6 +694,7 @@ contract("DeBridgeGate light mode", function () {
         permitParameter,
         false,
         referralCode,
+        [],
         {
           value: supportedChainInfo.fixedNativeFee,
         }
@@ -685,11 +722,19 @@ contract("DeBridgeGate light mode", function () {
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      const permit = "0x";
       await expectRevert(
-        this.debridge.burn(debridgeId, receiver, amount, 42, permit, false, referralCode, {
-          from: alice,
-        }),
+        this.debridge.burn(
+          debridgeId,
+          receiver,
+          amount,
+          42,
+          [],
+          false,
+          referralCode,
+          [],
+          {
+            from: alice,
+          }),
         "WrongChain()"
       );
     });
@@ -797,9 +842,17 @@ contract("DeBridgeGate light mode", function () {
         currentSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       await expectRevert(
-        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, currentSignatures, {
-          from: alice,
-        }),
+        this.debridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          currentSignatures,
+          [],
+          {
+            from: alice,
+          }),
         "NotConfirmedByRequiredOracles()"
       );
     });
@@ -814,6 +867,7 @@ contract("DeBridgeGate light mode", function () {
         amount,
         nonce,
         this.ethSignatures,
+        [],
         {
           from: alice,
         }
@@ -847,6 +901,7 @@ contract("DeBridgeGate light mode", function () {
         amount,
         nonce,
         this.erc20Signatures,
+        [],
         {
           from: alice,
         }
@@ -880,6 +935,7 @@ contract("DeBridgeGate light mode", function () {
           amount,
           wrongnonce,
           this.ethSignatures,
+          [],
           {
             from: alice,
           }
@@ -890,9 +946,17 @@ contract("DeBridgeGate light mode", function () {
 
     it("should reject claiming twice", async function () {
       await expectRevert(
-        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, this.ethSignatures, {
-          from: alice,
-        }),
+        this.debridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          this.ethSignatures,
+          [],
+          {
+            from: alice,
+          }),
         "SubmissionUsed()"
       );
     });

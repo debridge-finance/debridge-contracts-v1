@@ -68,6 +68,7 @@ contract DeBridgeGate is
     error WrongChain();
     error WrongTargedChain();
     error WrongArgument();
+    error WrongAutoArgument();
 
     error TransferAmountTooHigh();
 
@@ -160,7 +161,8 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         bytes memory _permit,
         bool _useAssetFee,
-        uint32 _referralCode
+        uint32 _referralCode,
+        bytes calldata _autoParams
     ) external payable override nonReentrant whenNotPaused {
         bytes32 debridgeId;
         // the amount will be reduced by the protocol fee
@@ -173,8 +175,28 @@ contract DeBridgeGate is
             _referralCode
         );
 
-        bytes32 sentId = getSubmissionIdTo(debridgeId, _chainIdTo, _amount, _receiver);
-        emit Sent(sentId, debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
+        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
+        _amount -= autoParams.executionFee;
+
+        bytes32 submissionId = getSubmissionIdTo(
+            debridgeId,
+            _chainIdTo,
+            _amount,
+            _receiver,
+            _autoParams
+        );
+
+        emit Sent(
+            submissionId,
+            debridgeId,
+            _amount,
+            _receiver,
+            nonce,
+            _chainIdTo,
+            _referralCode,
+            autoParams,
+            msg.sender
+        );
         nonce++;
     }
 
@@ -189,14 +211,20 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures
+        bytes calldata _signatures,
+        bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
+        SubmissionAutoParamsFrom memory autoParams;
+        if (_autoParams.length > 0) {
+            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsFrom));
+        }
         bytes32 submissionId = getSubmissionIdFrom(
             _debridgeId,
             _chainIdFrom,
             _amount,
             _receiver,
-            _nonce
+            _nonce,
+            _autoParams
         );
 
         _checkAndDeployAsset(
@@ -206,9 +234,23 @@ contract DeBridgeGate is
 
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
-        _mint(submissionId, _debridgeId, _receiver, _amount, address(0), 0, "", 0, "");
+        _mint(
+            submissionId,
+            _debridgeId,
+            _receiver,
+            _amount,
+            autoParams
+        );
 
-        emit Minted(submissionId, _debridgeId, _amount, _receiver, _nonce, _chainIdFrom);
+        emit Minted(
+            submissionId,
+            _debridgeId,
+            _amount,
+            _receiver,
+            _nonce,
+            _chainIdFrom,
+            autoParams
+        );
     }
 
     /// @dev Burns wrapped asset and allowss to claim it on the other chain.
@@ -224,225 +266,39 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         bytes memory _permit,
         bool _useAssetFee,
-        uint32 _referralCode
+        uint32 _referralCode,
+        bytes calldata _autoParams
     ) external payable override nonReentrant whenNotPaused {
         // the amount will be reduced by the protocol fee
-        _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _referralCode);
-
-        bytes32 burntId = getSubmissionIdTo(_debridgeId, _chainIdTo, _amount, _receiver);
-        emit Burnt(burntId, _debridgeId, _amount, _receiver, nonce, _chainIdTo, _referralCode);
-        nonce++;
-    }
-
-    /// @dev Unlock the asset on the current chain and transfer to receiver.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _nonce Submission id.
-
-    function claim(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes memory _signatures
-    ) external override nonReentrant whenNotPaused {
-        bytes32 submissionId = getSubmissionIdFrom(
+        _amount = _burn(
             _debridgeId,
-            _chainIdFrom,
-            _amount,
-            _receiver,
-            _nonce
-        );
-
-        _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
-
-        _claim(submissionId, _debridgeId, _receiver, _amount, address(0), 0, "", 0, "");
-
-        emit Claimed(submissionId, _debridgeId, _amount, _receiver, nonce, _chainIdFrom);
-    }
-
-    /* ========== AUTO send, mint, burn, claim ========== */
-
-    /// @dev Locks asset on the chain and enables minting on the other chain.
-    /// @param _tokenAddress Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount to be transfered (note: the fee can be applyed).
-    /// @param _chainIdTo Chain id of the target chain.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    /// @param _permit deadline + signature for approving the spender by signature.
-    function autoSend(
-        address _tokenAddress,
-        bytes memory _receiver,
-        uint256 _amount,
-        uint256 _chainIdTo,
-        bytes memory _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        bytes memory _permit,
-        bool _useAssetFee,
-        uint8 _reservedFlag,
-        uint32 _referralCode
-    ) external payable override nonReentrant whenNotPaused {
-        bytes32 debridgeId;
-        // the amount will be reduced by the protocol fee
-        (_amount, debridgeId) = _send(
-            _tokenAddress,
             _amount,
             _chainIdTo,
             _permit,
             _useAssetFee,
             _referralCode
         );
-        if (_amount < _executionFee) revert ProposedFeeTooHigh();
-        _amount -= _executionFee;
 
-        emit AutoSent(
-            // //Avoid Stack too deep  error
-            getAutoSubmissionIdTo(
-                debridgeId,
-                _chainIdTo,
-                _amount,
-                _receiver,
-                _fallbackAddress,
-                _executionFee,
-                _data,
-                _reservedFlag
-            ),
-            debridgeId,
-            _amount,
-            _receiver,
-            nonce,
+        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
+        _amount -= autoParams.executionFee;
+
+        bytes32 submissionId = getSubmissionIdTo(
+            _debridgeId,
             _chainIdTo,
-            _executionFee,
-            _fallbackAddress,
-            _data,
-            _referralCode,
-            _reservedFlag,
-            msg.sender
-        );
-        nonce++;
-    }
-
-    /// @dev Mints wrapped asset on the current chain.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    /// @param _nonce Submission id.
-    /// @param _signatures Array of oracles signatures.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    function autoMint(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes memory _signatures,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag,
-        bytes memory _nativeSender
-    ) external override nonReentrant whenNotPaused {
-        bytes32 submissionId = getAutoSubmissionIdFrom(
-            _nativeSender,
-            _debridgeId,
-            _chainIdFrom,
             _amount,
             _receiver,
-            _nonce,
-            _fallbackAddress,
-            _executionFee,
-            _data,
-            _reservedFlag
+            _autoParams
         );
 
-        _checkAndDeployAsset(
-            _debridgeId,
-            _signatures.length > 0 ? signatureVerifier : confirmationAggregator
-        );
-
-        _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
-
-        _mint(
+        emit Burnt(
             submissionId,
-            _debridgeId,
-            _receiver,
-            _amount,
-            _fallbackAddress,
-            _executionFee,
-            _data,
-            _reservedFlag,
-            _nativeSender
-        );
-
-        emit AutoMinted(
-            submissionId,
-            _debridgeId,
-            _amount,
-            _receiver,
-            _nonce,
-            // _chainIdFrom,
-            _executionFee,
-            _fallbackAddress,
-            _data,
-            _reservedFlag
-            // _nativeSender
-        );
-    }
-
-    /// @dev Burns wrapped asset and allowss to claim it on the other chain.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _chainIdTo Chain id of the target chain.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-    /// @param _permit deadline + signature for approving the spender by signature.
-    function autoBurn(
-        bytes32 _debridgeId,
-        bytes memory _receiver,
-        uint256 _amount,
-        uint256 _chainIdTo,
-        bytes memory _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        bytes memory _permit,
-        bool _useAssetFee,
-        uint8 _reservedFlag,
-        uint32 _referralCode
-    ) external payable override nonReentrant whenNotPaused {
-        // the amount will be reduced by the protocol fee
-        _amount = _burn(_debridgeId, _amount, _chainIdTo, _permit, _useAssetFee, _referralCode);
-        if (_amount < _executionFee) revert ProposedFeeTooHigh();
-        _amount -= _executionFee;
-
-        emit AutoBurnt(
-            getAutoSubmissionIdTo(
-                _debridgeId,
-                _chainIdTo,
-                _amount,
-                _receiver,
-                _fallbackAddress,
-                _executionFee,
-                _data,
-                _reservedFlag
-            ),
             _debridgeId,
             _amount,
             _receiver,
             nonce,
             _chainIdTo,
-            _executionFee,
-            _fallbackAddress,
-            _data,
             _referralCode,
-            _reservedFlag,
+            autoParams,
             msg.sender
         );
         nonce++;
@@ -453,30 +309,28 @@ contract DeBridgeGate is
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
-    function autoClaim(
+    function claim(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag,
-        bytes memory _nativeSender
+        bytes calldata _signatures,
+        bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
-        bytes32 submissionId = getAutoSubmissionIdFrom(
-            _nativeSender,
+
+        SubmissionAutoParamsFrom memory autoParams;
+        if (_autoParams.length > 0) {
+            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsFrom));
+        }
+
+        bytes32 submissionId = getSubmissionIdFrom(
             _debridgeId,
             _chainIdFrom,
             _amount,
             _receiver,
             _nonce,
-            _fallbackAddress,
-            _executionFee,
-            _data,
-            _reservedFlag
+            _autoParams
         );
 
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
@@ -486,25 +340,17 @@ contract DeBridgeGate is
             _debridgeId,
             _receiver,
             _amount,
-            _fallbackAddress,
-            _executionFee,
-            _data,
-            _reservedFlag,
-            _nativeSender
+            autoParams
         );
 
-        emit AutoClaimed(
+        emit Claimed(
             submissionId,
             _debridgeId,
             _amount,
             _receiver,
             _nonce,
-            // _chainIdFrom,
-            _executionFee,
-            _fallbackAddress,
-            _data,
-            _reservedFlag
-            // _nativeSender
+            _chainIdFrom,
+            autoParams
         );
     }
 
@@ -751,7 +597,7 @@ contract DeBridgeGate is
         bytes32 _submissionId,
         bytes32 _debridgeId,
         uint256 _amount,
-        bytes memory _signatures
+        bytes calldata _signatures
     ) internal {
         if (isBlockedSubmission[_submissionId]) revert SubmissionBlocked();
         if (_signatures.length > 0) {
@@ -959,23 +805,27 @@ contract DeBridgeGate is
         return _amount;
     }
 
+    function _validateAutoParams(
+        bytes calldata _autoParams,
+        uint256 _amount
+    ) internal pure returns (SubmissionAutoParamsTo memory autoParams) {
+        if (_autoParams.length > 0) {
+            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
+            if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
+            if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
+        }
+    }
+
     /// @dev Mints wrapped asset on the current chain.
     /// @param _submissionId Submission identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
     function _mint(
         bytes32 _submissionId,
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag,
-        bytes memory _nativeSender
+        SubmissionAutoParamsFrom memory _autoParams
     ) internal {
         _markAsUsed(_submissionId);
 
@@ -983,73 +833,84 @@ contract DeBridgeGate is
         if (!debridge.exist) revert DebridgeNotFound();
         if (debridge.chainId == getChainId()) revert WrongChain();
 
-        if (_executionFee > 0) {
-            IWrappedAsset(debridge.tokenAddress).mint(msg.sender, _executionFee);
-        }
-        if (_data.length > 0) {
-            address callProxyAddress = _reservedFlag == PROXY_WITH_SENDER_FLAG
-                ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
-                : callProxyAddresses[0];
-            IWrappedAsset(debridge.tokenAddress).mint(callProxyAddress, _amount);
-            bool status = ICallProxy(callProxyAddress).callERC20(
-                debridge.tokenAddress,
-                _fallbackAddress,
-                _receiver,
-                _data,
-                _reservedFlag,
-                _nativeSender
-            );
-            emit AutoRequestExecuted(_submissionId, status);
-        } else {
-            IWrappedAsset(debridge.tokenAddress).mint(_receiver, _amount);
-        }
-        debridge.balance += _amount + _executionFee;
+        _processTransferFrom(
+            _submissionId,
+            debridge.tokenAddress,
+            _amount,
+            _receiver,
+            _autoParams,
+            true);
+        debridge.balance += _amount + _autoParams.executionFee;
     }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
     /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
     function _claim(
         bytes32 _submissionId,
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag,
-        bytes memory _nativeSender
+        SubmissionAutoParamsFrom memory _autoParams
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (debridge.chainId != getChainId()) revert WrongChain();
         _markAsUsed(_submissionId);
 
-        debridge.balance -= _amount + _executionFee;
+        debridge.balance -= _amount + _autoParams.executionFee;
 
-        if (_executionFee > 0) {
-            IERC20(debridge.tokenAddress).safeTransfer(msg.sender, _executionFee);
+        _processTransferFrom(
+            _submissionId,
+            debridge.tokenAddress,
+            _amount,
+            _receiver,
+            _autoParams,
+            false);
+    }
+
+    function _processTransferFrom(
+        bytes32 _submissionId,
+        address _token,
+        uint256 _amount,
+        address _receiver,
+        SubmissionAutoParamsFrom memory _autoParams,
+        bool isMint
+    ) internal {
+        if (_autoParams.executionFee > 0) {
+            _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isMint);
         }
-        if (_data.length > 0) {
-            address callProxyAddress = _reservedFlag == PROXY_WITH_SENDER_FLAG
+        if (_autoParams.data.length > 0) {
+            address callProxyAddress = _autoParams.reservedFlag == PROXY_WITH_SENDER_FLAG
                 ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
                 : callProxyAddresses[0];
 
-            IERC20(debridge.tokenAddress).safeTransfer(callProxyAddress, _amount);
+            _mintOrTransfer(_token, callProxyAddress, _amount, isMint);
+
             bool status = ICallProxy(callProxyAddress).callERC20(
-                debridge.tokenAddress,
-                _fallbackAddress,
+                _token,
+                _autoParams.fallbackAddress,
                 _receiver,
-                _data,
-                _reservedFlag,
-                _nativeSender
+                _autoParams.data,
+                _autoParams.reservedFlag,
+                _autoParams.nativeSender
             );
             emit AutoRequestExecuted(_submissionId, status);
         } else {
-            IERC20(debridge.tokenAddress).safeTransfer(_receiver, _amount);
+            _mintOrTransfer(_token, _receiver, _amount, isMint);
+        }
+    }
+
+    function _mintOrTransfer(
+        address _token,
+        address _receiver,
+        uint256 _amount,
+        bool isMint
+    ) internal {
+        if (isMint) {
+            IWrappedAsset(_token).mint(_receiver, _amount);
+        } else {
+            IERC20(_token).safeTransfer(_receiver, _amount);
         }
     }
 
@@ -1079,7 +940,7 @@ contract DeBridgeGate is
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
-    /// @dev Calculate submission id.
+    /// @dev Calculate submission id for auto claimable transfer.
     /// @param _debridgeId Asset identifier.
     /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
     /// @param _receiver Receiver address.
@@ -1090,99 +951,54 @@ contract DeBridgeGate is
         uint256 _chainIdFrom,
         uint256 _amount,
         address _receiver,
-        uint256 _nonce
+        uint256 _nonce,
+        bytes calldata _autoParams
     ) public view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    _debridgeId,
-                    _chainIdFrom,
-                    getChainId(),
-                    _amount,
-                    _receiver,
-                    _nonce
-                )
+        bytes memory packedSubmission = abi.encodePacked(
+            _debridgeId,
+            _chainIdFrom,
+            getChainId(),
+            _amount,
+            _receiver,
+            _nonce
+        );
+        if (_autoParams.length > 0) {
+            // auto submission
+            return keccak256(
+                abi.encodePacked(packedSubmission, _autoParams)
             );
+        }
+        // regular submission
+        return keccak256(packedSubmission);
     }
 
     function getSubmissionIdTo(
         bytes32 _debridgeId,
         uint256 _chainIdTo,
         uint256 _amount,
-        bytes memory _receiver
-    ) private view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(_debridgeId, getChainId(), _chainIdTo, _amount, _receiver, nonce)
-            );
-    }
-
-    /// @dev Calculate submission id for auto claimable transfer.
-    /// @param _debridgeId Asset identifier.
-    /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _nonce Submission id.
-    /// @param _fallbackAddress Receiver of the tokens if the call fails.
-    /// @param _executionFee Fee paid to the transaction executor.
-    /// @param _data Chain id of the target chain.
-
-    function getAutoSubmissionIdFrom(
-        bytes memory _nativeSender,
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        uint256 _amount,
-        address _receiver,
-        uint256 _nonce,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag
-    ) public view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    // To avoid error:
-                    // Variable value0 is 1 slot(s) too deep inside the stack.
-                    abi.encodePacked(_nativeSender, _debridgeId, _chainIdFrom),
-                    getChainId(), //_chainIdTo,
-                    _amount,
-                    _receiver,
-                    _nonce,
-                    _fallbackAddress,
-                    _executionFee,
-                    _data,
-                    _reservedFlag
-                )
-            );
-    }
-
-    function getAutoSubmissionIdTo(
-        bytes32 _debridgeId,
-        uint256 _chainIdTo,
-        uint256 _amount,
         bytes memory _receiver,
-        bytes memory _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data,
-        uint8 _reservedFlag
+        bytes calldata _autoParams
     ) private view returns (bytes32) {
-        return
-            keccak256(
+        bytes memory packedSubmission = abi.encodePacked(
+            _debridgeId,
+            getChainId(),
+            _chainIdTo,
+            _amount,
+            _receiver,
+            nonce
+        );
+        if (_autoParams.length > 0) {
+            // auto submission
+            return keccak256(
                 abi.encodePacked(
-                    msg.sender,
-                    _debridgeId,
-                    getChainId(),
-                    _chainIdTo,
-                    _amount,
-                    _receiver,
-                    nonce, //_nonce,
-                    _fallbackAddress,
-                    _executionFee,
-                    _data,
-                    _reservedFlag
+                    packedSubmission,
+                    _autoParams,
+                    msg.sender
                 )
             );
+        }
+        // regular submission
+        return keccak256(packedSubmission);
     }
 
     function getNativeTokenInfo(address currentTokenAddress)
