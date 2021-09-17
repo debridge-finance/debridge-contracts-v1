@@ -516,7 +516,7 @@ contract("DeBridgeGate full with auto", function () {
       //   uint256 _amount,
       //   address _receiver,
       //   uint256 _nonce,
-      //   SubmissionAutoParamsFrom memory _autoParams
+      //   bytes calldata _autoParams
       // )
 
       burnAutoSubmissionId = await this.debridge.getSubmissionIdFrom(
@@ -525,13 +525,12 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        {
-          executionFee: claimFee,
-          reservedFlag: zeroFlag,
-          fallbackAddress: reserveAddress,
-          data: data,
-          nativeSender: nativeSender,
-        }
+        packSubmissionAutoParamsFrom(
+          claimFee,
+          zeroFlag,
+          reserveAddress,
+          data,
+          nativeSender),
       );
       await this.confirmationAggregator.connect(bobAccount).submit(burnAutoSubmissionId);
 
@@ -715,7 +714,7 @@ contract("DeBridgeGate full with auto", function () {
       //   uint256 _amount,
       //   address _receiver,
       //   uint256 _nonce,
-      //   SubmissionAutoParamsFrom memory _autoParams
+      //   bytes calldata _autoParams
       // )
 
       const currentChainSubmission = await this.debridge.getSubmissionIdFrom(
@@ -724,13 +723,12 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        {
-          executionFee: claimFee,
-          reservedFlag: zeroFlag,
-          fallbackAddress: reserveAddress,
-          data: data,
-          nativeSender: nativeSender,
-        },
+        packSubmissionAutoParamsFrom(
+          claimFee,
+          zeroFlag,
+          reserveAddress,
+          data,
+          nativeSender),
       );
       await this.confirmationAggregator.connect(bobAccount).submit(currentChainSubmission);
 
@@ -755,13 +753,12 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        {
-          executionFee: claimFee,
-          reservedFlag: zeroFlag,
-          fallbackAddress: reserveAddress,
-          data: data,
-          nativeSender: nativeSender,
-        },
+        packSubmissionAutoParamsFrom(
+          claimFee,
+          zeroFlag,
+          reserveAddress,
+          data,
+          nativeSender)
       );
       await this.confirmationAggregator.connect(bobAccount).submit(erc20Submission);
     });
@@ -801,13 +798,12 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        {
-          executionFee: claimFee,
-          reservedFlag: zeroFlag,
-          fallbackAddress: reserveAddress,
-          data: data,
-          nativeSender: nativeSender,
-        },
+        packSubmissionAutoParamsFrom(
+          claimFee,
+          zeroFlag,
+          reserveAddress,
+          data,
+          nativeSender),
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(submissionId);
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.wethDebridgeId);
@@ -842,13 +838,12 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        {
-          executionFee: claimFee,
-          reservedFlag: zeroFlag,
-          fallbackAddress: reserveAddress,
-          data: data,
-          nativeSender: nativeSender,
-        },
+        packSubmissionAutoParamsFrom(
+          claimFee,
+          zeroFlag,
+          reserveAddress,
+          data,
+          nativeSender),
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(submissionId);
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(erc20DebridgeId);
