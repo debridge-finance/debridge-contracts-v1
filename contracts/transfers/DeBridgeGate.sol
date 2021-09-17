@@ -500,6 +500,7 @@ contract DeBridgeGate is
         external
         override
         onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
@@ -520,6 +521,7 @@ contract DeBridgeGate is
         external
         override
         onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
