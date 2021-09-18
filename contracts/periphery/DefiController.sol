@@ -60,7 +60,6 @@ contract DefiController is Initializable, AccessControlUpgradeableNonAdmin, Paus
 
     error WorkerBadRole();
     error AdminBadRole();
-    error AdminAddressDenied();
     error StrategyNotFound();
     error StrategyAlreadyExists();
 
