@@ -510,8 +510,8 @@ contract DeBridgeGate is
         if (minReserves + _amount > IERC20(_tokenAddress).balanceOf(address(this)))
             revert NotEnoughReserves();
 
-        IERC20(_tokenAddress).safeTransfer(defiController, _amount);
         debridge.lockedInStrategies += _amount;
+        IERC20(_tokenAddress).safeTransfer(defiController, _amount);
     }
 
     /// @dev Return the assets that were used in defi protocol.
@@ -526,12 +526,12 @@ contract DeBridgeGate is
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
+        debridge.lockedInStrategies -= _amount;
         IERC20(debridge.tokenAddress).safeTransferFrom(
             defiController,
             address(this),
             _amount
         );
-        debridge.lockedInStrategies -= _amount;
     }
 
     /// @dev Set fee converter proxy.
