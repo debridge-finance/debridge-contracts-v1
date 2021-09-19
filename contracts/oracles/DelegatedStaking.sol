@@ -60,6 +60,11 @@ contract DelegatedStaking is Initializable,
     //TODO: add PAUSE for each users methods
     using SafeERC20 for IERC20;
 
+    struct RewardInfo {
+        uint256 totalAmount; // total rewards
+        uint256 distributed; // distributed rewards
+    }
+
     struct WithdrawalInfo {
         address delegator;
         uint256 amount; // amount of withdrawn token
@@ -80,7 +85,8 @@ contract DelegatedStaking is Initializable,
         uint256 shares; // delegator share of collateral tokens
         uint256 locked; // share locked by depositing to strategy
         mapping(address => uint256) strategyShares; // map strategy(aave/compound/yearn) for each collateral
-        uint256 passedRewards; // rewards per collateral address, calculated before stake
+        // obsolete
+        // uint256 passedRewards; // rewards per collateral address, calculated before stake
         uint256 accumulatedRewards; // info how many reward tokens  was earned
     }
 
@@ -93,8 +99,9 @@ contract DelegatedStaking is Initializable,
         uint256 accumulatedRewards; // how many reward tokens was earned
         //TODO: add method to withdraw validators rewards
         uint256 rewardsForWithdrawal; // how many reward tokens validator can withdrawal
-        uint256 accTokensPerShare; // how many reward tokens user will receive per one share
-        mapping(address => uint256) dependsAccTokensPerShare;
+        // obsolete
+        // uint256 accTokensPerShare; // how many reward tokens user will receive per one share
+        // mapping(address => uint256) dependsAccTokensPerShare;
     }
 
     struct ValidatorInfo {
@@ -129,6 +136,7 @@ contract DelegatedStaking is Initializable,
         bool isRecoverable;
     }
 
+    mapping(address => RewardInfo) public getRewardsInfo;
     mapping(address => ValidatorInfo) public getValidatorInfo; // validator address => validator details
     mapping(address => WithdrawalRequests) public getWithdrawalRequests; // validators address => withdrawal requests
 
@@ -203,6 +211,7 @@ contract DelegatedStaking is Initializable,
     event EmergencyWithdrawnFromStrategy(uint256 amount, address strategy, address collateral);
     event RecoveredFromEmergency(address validator, uint256 amount, address strategy, address collateral);
     event StrategyReset(address _strategy, address collateral);
+    event RewardsReceived(address token,  uint256 amount);
     event RewardsDistributed(address validator, address collateral, uint256 amount);
     event WithdrawSlashingTreasury(address collateral, uint256 amount);
     event UpdateSlashingTreasury(address newTreasury);
@@ -211,6 +220,7 @@ contract DelegatedStaking is Initializable,
     event EnableCollateral(address collateral, bool isEnabled);
     event UpdateCollateral(address collateral, uint256 maxStakeAmount);
     event UpdateRewardWeight(address validator, uint256 value);
+
     /* PUBLIC */
 
     /**
@@ -255,8 +265,10 @@ contract DelegatedStaking is Initializable,
             ? DelegatedStakingHelper._calculateShares(_amount, validatorCollateral.shares,
                 validatorCollateral.stakedAmount)
             : _amount;
-        //Update users passedRewards
-        uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
+
+        // obsolete
+        // //Update users passedRewards
+        // uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
 
         //Increase total collateral of the protocol for this asset
         collateral.totalLocked += _amount;
@@ -264,11 +276,13 @@ contract DelegatedStaking is Initializable,
         validatorCollateral.stakedAmount += _amount;
         validatorCollateral.shares += shares;
         delegator.shares += shares;
-        // accumulated token per share for current collateral
-        delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                        delegator.shares,
-                        validatorCollateral.accTokensPerShare)
-                        + dependencyRewards;
+
+        // obsolete
+        // // accumulated token per share for current collateral
+        // delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+        //                 delegator.shares,
+        //                 validatorCollateral.accTokensPerShare)
+        //                 + dependencyRewards;
 
         console.log("collateral %s", _collateral);
         console.log("validator %s", _validator);
@@ -278,8 +292,8 @@ contract DelegatedStaking is Initializable,
         console.log("validatorCollateral.stakedAmount %s", validatorCollateral.stakedAmount);
         console.log("validatorCollateral.shares %s",validatorCollateral.shares);
         console.log("delegator.shares %s", delegator.shares);
-        console.log("delegator.passedRewards %s", delegator.passedRewards);
-        console.log("dependencyRewards %s", dependencyRewards);
+        // console.log("delegator.passedRewards %s", delegator.passedRewards);
+        // console.log("dependencyRewards %s", dependencyRewards);
     }
 
     /**
@@ -304,9 +318,10 @@ contract DelegatedStaking is Initializable,
         WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
         DelegatorsInfo storage delegator = validatorCollateral.delegators[msg.sender];
 
-        //TODO: we need check it after update rewards shares
+        // obsolete
         // if (delegator.shares - delegator.locked < _shares) revert WrongAmount();
-        uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
+        // uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
+
         if (_shares> delegator.shares) {
             _shares= delegator.shares;
         }
@@ -323,12 +338,13 @@ contract DelegatedStaking is Initializable,
         validatorCollateral.stakedAmount -= withdrawTokenAmount;
         collaterals[_collateral].totalLocked -= withdrawTokenAmount;
 
-        //TODO: add test when we unstake all shares passedRewards must be set to zero
+        // obsolete
         // recalculate passed rewards with new share amount
-        delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                        delegator.shares,
-                        validatorCollateral.accTokensPerShare)
-                        + dependencyRewards;
+        // delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+        //                 delegator.shares,
+        //                 validatorCollateral.accTokensPerShare)
+        //                 + dependencyRewards;
+
         uint256 withdrawIndex = withdrawalRequests.count;
         uint256 timelock = block.timestamp + withdrawTimelock;
         WithdrawalInfo storage withdraw = withdrawalRequests.withdrawals[withdrawIndex];
@@ -664,89 +680,145 @@ contract DelegatedStaking is Initializable,
     // }
 
     /**
-     * @dev Distributes validator rewards to delegators
-     * @param _validator address of validator
-     * @param _collateral address of collateral
-     * @param _delegatorsAmount amount of token
+     * @dev stake collateral to validator.
+     * @param _token address of reward token
+     * @param _amount Amount to stake.
      */
-    function _distributeDelegatorRewards(address _validator, address _collateral, uint256 _delegatorsAmount) internal {
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        // All colaterals of the validator valued in usd
-        uint256 totalUSDAmount = getTotalUSDAmount(_validator);
-        console.log("_distributeDelegatorRewards  _validator %s collateral %s delegatorsAmount %s",_validator, _collateral, _delegatorsAmount);
-        for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            address currentCollateral = collateralAddresses[i];
-            //LINK pool | USDT pool
-            //1.6 link  |  0.4
-            // How many rewards each collateral receives
-            console.log("currentCollateral %s", currentCollateral);
-            uint256 accTokens = _delegatorsAmount *
-                getPoolUSDAmount(_validator, currentCollateral) /
-                totalUSDAmount;
-            console.log("getPoolUSDAmount %s", getPoolUSDAmount(_validator, currentCollateral));
-            console.log("totalUSDAmount %s", totalUSDAmount);
-            console.log("accTokens %s",accTokens);
+    function sendRewards(
+        address _token,
+        uint256 _amount
+    ) external nonReentrant whenNotPaused {
+        if (!collaterals[_token].isEnabled) revert CollateralDisabled();
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        getRewardsInfo[_token].totalAmount += _amount;
 
-            // 0.04 link per link share | 0.004
+        emit RewardsReceived(_token,  _amount);
 
-            if(currentCollateral==_collateral){
-                console.log("poolShares %s", validatorCollateral.shares);
-                uint256 accTokensPerShare = validatorCollateral.shares > 0
-                    ? accTokens * 1e18 / validatorCollateral.shares //TODO: can be rollback 1e18 in current changes
-                    : 0;
-                console.log("accTokensPerShare+ %s", accTokensPerShare);
-                //Increase accumulated rewards per share
-                validatorCollateral.accTokensPerShare += accTokensPerShare; //+0.04
-                console.log("validatorCollateral.accTokensPerShare= %s", validatorCollateral.accTokensPerShare);
-            } else {
-                uint256 poolShares = getValidatorInfo[_validator].collateralPools[currentCollateral].shares;
-                uint256 accTokensPerShare = poolShares > 0
-                    ? accTokens * 1e18 / poolShares //TODO: we need to increase 1e18 to 1e30 accTokensPerShare is low for pair link - USDT reward
-                                                    // we have 1e6*1e18/1e18 it's soo low to precision +accTokensPerShare 9758
-                    : 0;
-                console.log("poolShares %s", poolShares);
-                console.log("accTokensPerShare+ %s", accTokensPerShare);
-                //Add a reward pool dependency
-                validatorCollateral.dependsAccTokensPerShare[currentCollateral] += accTokensPerShare; // + 0.004
-                console.log("dependsAccTokensPerShare= %s", validatorCollateral.dependsAccTokensPerShare[currentCollateral]);
-            }
-        }
+        console.log("_amount %s", _amount);
+        console.log("getRewardsInfo[_token].totalAmount %s", getRewardsInfo[_token].totalAmount);
+        console.log("getRewardsInfo[_token].distributed %s", getRewardsInfo[_token].distributed);
     }
+
+    // /**
+    //  * @dev Distributes validator rewards to delegators
+    //  * @param _validator address of validator
+    //  * @param _collateral address of collateral
+    //  * @param _delegatorsAmount amount of token
+    //  */
+    // function _distributeDelegatorRewards(address _validator, address _collateral, uint256 _delegatorsAmount) internal {
+    //     ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
+    //     // All colaterals of the validator valued in usd
+    //     uint256 totalUSDAmount = getTotalUSDAmount(_validator);
+    //     console.log("_distributeDelegatorRewards  _validator %s collateral %s delegatorsAmount %s",_validator, _collateral, _delegatorsAmount);
+    //     for (uint256 i = 0; i < collateralAddresses.length; i++) {
+    //         address currentCollateral = collateralAddresses[i];
+    //         //LINK pool | USDT pool
+    //         //1.6 link  |  0.4
+    //         // How many rewards each collateral receives
+    //         console.log("currentCollateral %s", currentCollateral);
+    //         uint256 accTokens = _delegatorsAmount *
+    //             getPoolUSDAmount(_validator, currentCollateral) /
+    //             totalUSDAmount;
+    //         console.log("getPoolUSDAmount %s", getPoolUSDAmount(_validator, currentCollateral));
+    //         console.log("totalUSDAmount %s", totalUSDAmount);
+    //         console.log("accTokens %s",accTokens);
+
+    //         // 0.04 link per link share | 0.004
+
+    //         if(currentCollateral==_collateral){
+    //             console.log("poolShares %s", validatorCollateral.shares);
+    //             uint256 accTokensPerShare = validatorCollateral.shares > 0
+    //                 ? accTokens * 1e18 / validatorCollateral.shares //TODO: can be rollback 1e18 in current changes
+    //                 : 0;
+    //             console.log("accTokensPerShare+ %s", accTokensPerShare);
+    //             //Increase accumulated rewards per share
+    //             validatorCollateral.accTokensPerShare += accTokensPerShare; //+0.04
+    //             console.log("validatorCollateral.accTokensPerShare= %s", validatorCollateral.accTokensPerShare);
+    //         } else {
+    //             uint256 poolShares = getValidatorInfo[_validator].collateralPools[currentCollateral].shares;
+    //             uint256 accTokensPerShare = poolShares > 0
+    //                 ? accTokens * 1e18 / poolShares //TODO: we need to increase 1e18 to 1e30 accTokensPerShare is low for pair link - USDT reward
+    //                                                 // we have 1e6*1e18/1e18 it's soo low to precision +accTokensPerShare 9758
+    //                 : 0;
+    //             console.log("poolShares %s", poolShares);
+    //             console.log("accTokensPerShare+ %s", accTokensPerShare);
+    //             //Add a reward pool dependency
+    //             validatorCollateral.dependsAccTokensPerShare[currentCollateral] += accTokensPerShare; // + 0.004
+    //             console.log("dependsAccTokensPerShare= %s", validatorCollateral.dependsAccTokensPerShare[currentCollateral]);
+    //         }
+    //     }
+    // }
 
     /**
      * @dev Distributes validator rewards to validators
-     * @param _collateral address of collateral
-     * @param _amount amount of token
+     * @param _rewardToken address of reward token
      */
-    function distributeValidatorRewards(address _collateral, uint256 _amount) external nonReentrant{
-        Collateral storage collateral = collaterals[_collateral];
-        if (!collateral.isEnabled) revert CollateralDisabled();
-        IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
-        //TODO: check collateral.totalLocked += _amount;
-        collateral.totalLocked += _amount;
-        collateral.rewards +=_amount;
-        accumulatedProtocolRewards[_collateral] += _amount;
-        //TODO: neet to check is validator active
-        for (uint256 i=0; i<validatorAddresses.length; i++) {
-            address _validator = validatorAddresses[i];
-            ValidatorInfo storage validator = getValidatorInfo[_validator];
-            ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-            uint256 validatorAmount =  validator.rewardWeightCoefficient * _amount / weightCoefficientDenominator;
-            uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
+    function distributeValidatorRewards(address _rewardToken) external nonReentrant{
+        // Collateral storage collateral = collaterals[_collateral];
+        // if (!collateral.isEnabled) revert CollateralDisabled();
+        // IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
+        // //TODO: check collateral.totalLocked += _amount;
+        // collateral.totalLocked += _amount;
+        // collateral.rewards +=_amount;
+        // accumulatedProtocolRewards[_collateral] += _amount;
 
-            console.log("_validator %s",_validator);
+
+        RewardInfo storage rewardInfo = getRewardsInfo[_rewardToken];
+        uint256 rewardAmount = rewardInfo.totalAmount - rewardInfo.distributed;
+        if (rewardAmount == 0) revert ZeroAmount();
+        rewardInfo.distributed += rewardAmount;
+
+        // we need to know how much tokens to swap for each pool;
+        // Sample
+        //         bob			        david			        sarah
+        //        LINK	USDC	USDT	LINK	USDC	USDT	LINK	USDC	USDT
+
+        // ALICE  2000	10000	10000	1000	10000	10000	1000	10000	10000
+
+        // EVE	  1000	10000	10000	1000	20000	10000	1000	10000	10000
+
+        // SAM	  1000	10000	10000	1000	10000	10000	1000	10000	20000
+        // profitSharingBPS 50          75                      100
+        // we distrubute reward 1800 USDT (600 USDT for each validator)
+        // bob will have 300 usdt and his validators 300 usdt
+        // link price 25 usd
+        // bob                  LINK	                    USDC	            USDT
+        // Pool cost in USD     4000*25=100000                      30000               30000
+        // will receive usdt    100000*300/160000=187,5     56,25               56,25
+        // we need to swap  187,5 usdt to link and just increment link collateral.totalStaked += receivedLinkAmount;
+        // we need to swap  56,25 usdt to usdc and just increment usdc collateral.totalStaked += receivedUSDCAmount;
+        // We don't need to create swap for each validators pool. Firs we need to calulate total Link to swap
+
+        //TODO: neet to check is validator active
+        //We don't need to distribute rewards for non active validators
+        for (uint256 v = 0; v < validatorAddresses.length; v++) {
+            address validatorAddress = validatorAddresses[v];
+            ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
+            uint256 validatorAmount =  validator.rewardWeightCoefficient * rewardAmount / weightCoefficientDenominator;
+            uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
+            // add reward for validator
+            validator.collateralPools[_rewardToken].rewardsForWithdrawal += validatorAmount - delegatorsAmount;
+            console.log("validatorAddress %s", validatorAddress);
             console.log("validatorAmount  %s", validatorAmount);
             console.log("delegatorsAmount %s", delegatorsAmount);
 
-            validatorCollateral.accumulatedRewards += validatorAmount;
-            validatorCollateral.rewardsForWithdrawal += validatorAmount - delegatorsAmount;
-            // mint validatorAmount delegators[validator.admin]
-            console.log("validatorCollateral.stakedAmount before %s", validatorCollateral.stakedAmount);
-            _distributeDelegatorRewards(_validator, _collateral, delegatorsAmount);
-            //after distribution
-            // validatorCollateral.stakedAmount += delegatorsAmount;
-            console.log("validatorCollateral.stakedAmount after increase %s", validatorCollateral.stakedAmount);
-            emit RewardsDistributed(_validator, _collateral, _amount);
+            (uint256[] memory poolsUsdAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
+
+            for (uint256 c = 0; c < collateralAddresses.length; c++) {
+                address collateralAddress = collateralAddresses[c];
+                ValidatorCollateral storage validatorCollateral = validator.collateralPools[collateralAddress];
+
+                // validatorCollateral.stakedAmount += ???;
+                // validatorCollateral.accumulatedRewards += ???;
+
+                // mint validatorAmount delegators[validator.admin]
+                console.log("validatorCollateral.stakedAmount before %s", validatorCollateral.stakedAmount);
+                // _distributeDelegatorRewards(_validator, _collateral, delegatorsAmount);
+                //after distribution
+                // validatorCollateral.stakedAmount += delegatorsAmount;
+                console.log("validatorCollateral.stakedAmount after increase %s", validatorCollateral.stakedAmount);
+                // emit RewardsDistributed(_validator, _collateral, _amount);
+            }
         }
     }
 
@@ -1164,82 +1236,83 @@ contract DelegatedStaking is Initializable,
     //     }
     // }
 
-    /**
-     * @dev Credits delegator share of validator rewards and updated passed rewards
-     * @param _validator address of validator
-     * @param _delegator address of delegator
-     */
-    function _creditDelegatorRewards(address _validator, address _delegator, address _collateral) internal returns(uint256) {
-        uint256 collateralDependencyRewards;
+    // /**
+    //  * @dev Credits delegator share of validator rewards and updated passed rewards
+    //  * @param _validator address of validator
+    //  * @param _delegator address of delegator
+    //  */
+    // function _creditDelegatorRewards(address _validator, address _delegator, address _collateral) internal returns(uint256) {
+    //     uint256 collateralDependencyRewards;
 
-        console.log("_creditDelegatorRewards _validator +%s _delegator %s _collateral %s", _validator, _delegator, _collateral);
-        for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            address rewardCollateral = collateralAddresses[i];
-            console.log("rewardCollateral %s", rewardCollateral);
-            ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[rewardCollateral];
-            DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
-            uint256 pendingReward = delegator.shares
-                                * validatorCollateral.accTokensPerShare
-                                / 1e18; //TODO:???? (10** collaterals[_collateral].decimals);
+    //     console.log("_creditDelegatorRewards _validator +%s _delegator %s _collateral %s", _validator, _delegator, _collateral);
+    //     for (uint256 i = 0; i < collateralAddresses.length; i++) {
+    //         address rewardCollateral = collateralAddresses[i];
+    //         console.log("rewardCollateral %s", rewardCollateral);
+    //         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[rewardCollateral];
+    //         DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
+    //         uint256 pendingReward = delegator.shares
+    //                             * validatorCollateral.accTokensPerShare
+    //                             / 1e18; //TODO:???? (10** collaterals[_collateral].decimals);
 
-            // accumulated token per share for collateral that exists reward in rewardCollateral
-            // when rewards are distributed in e.g. USDT, shares of other collateral pools (e.g. DBR) receive rewards in USDT (dependencyRewards)
-            uint256 dependencyRewards = _calculateDependencyRewards(_validator, _delegator, rewardCollateral);
-            console.log("dependencyRewards = %s", dependencyRewards);
-            console.log("delegator.passedRewards = %s",  delegator.passedRewards);
-            pendingReward = pendingReward + dependencyRewards - delegator.passedRewards;
-            if (pendingReward > 0) {
-                uint256 pendingShares = DelegatedStakingHelper._calculateShares(
-                                            pendingReward, validatorCollateral.shares,
-                                            validatorCollateral.stakedAmount
-                                        );
-                validatorCollateral.stakedAmount += pendingReward;
-                validatorCollateral.shares += pendingShares;
-                delegator.accumulatedRewards += pendingReward;
-                delegator.shares += pendingShares;
-                console.log("delegator.accumulatedRewards +%s = %s", pendingReward, delegator.accumulatedRewards);
-                console.log("delegator.shares +%s = %s", pendingShares, delegator.shares);
-            }
-            //TODO: can be add if(rewardCollateral != _collateral)
-            // accumulated token per share for current collateral
-            delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                            delegator.shares,
-                            validatorCollateral.accTokensPerShare)//1* 0.04
-                            + dependencyRewards;
-            console.log("delegator.passedRewards %s", delegator.passedRewards);
-            if (rewardCollateral == _collateral)
-                collateralDependencyRewards = dependencyRewards;
-        }
-        return collateralDependencyRewards;
-    }
+    //         // accumulated token per share for collateral that exists reward in rewardCollateral
+    //         // when rewards are distributed in e.g. USDT, shares of other collateral pools (e.g. DBR) receive rewards in USDT (dependencyRewards)
+    //         uint256 dependencyRewards = _calculateDependencyRewards(_validator, _delegator, rewardCollateral);
+    //         console.log("dependencyRewards = %s", dependencyRewards);
+    //         console.log("delegator.passedRewards = %s",  delegator.passedRewards);
+    //         pendingReward = pendingReward + dependencyRewards - delegator.passedRewards;
+    //         if (pendingReward > 0) {
+    //             uint256 pendingShares = DelegatedStakingHelper._calculateShares(
+    //                                         pendingReward, validatorCollateral.shares,
+    //                                         validatorCollateral.stakedAmount
+    //                                     );
+    //             validatorCollateral.stakedAmount += pendingReward;
+    //             validatorCollateral.shares += pendingShares;
+    //             delegator.accumulatedRewards += pendingReward;
+    //             delegator.shares += pendingShares;
+    //             console.log("delegator.accumulatedRewards +%s = %s", pendingReward, delegator.accumulatedRewards);
+    //             console.log("delegator.shares +%s = %s", pendingShares, delegator.shares);
+    //         }
+    //         //TODO: can be add if(rewardCollateral != _collateral)
+    //         // accumulated token per share for current collateral
+    //         delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+    //                         delegator.shares,
+    //                         validatorCollateral.accTokensPerShare)//1* 0.04
+    //                         + dependencyRewards;
+    //         console.log("delegator.passedRewards %s", delegator.passedRewards);
+    //         if (rewardCollateral == _collateral)
+    //             collateralDependencyRewards = dependencyRewards;
+    //     }
+    //     return collateralDependencyRewards;
+    // }
 
-    /**
-     * @dev Calculates accumulated tokens per share for collateral that has rewards in rewardCollateral
-     * @param _validator address of validator
-     * @param _delegator address of delegator
-     * @param _rewardCollateral address of rewardCollateral
-     */
-    function _calculateDependencyRewards(address _validator, address _delegator, address _rewardCollateral)
-        internal
-        view
-        returns(uint256)
-    {
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_rewardCollateral];
-        DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
+    //  /**
+    //  * @dev Calculates accumulated tokens per share for collateral that has rewards in rewardCollateral
+    //  * @param _validator address of validator
+    //  * @param _delegator address of delegator
+    //  * @param _rewardCollateral address of rewardCollateral
+    //  */
+    // function _calculateDependencyRewards(address _validator, address _delegator, address _rewardCollateral)
+    //     internal
+    //     view
+    //     returns(uint256)
+    // {
+    //     ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_rewardCollateral];
+    //     DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
 
-        // accumulated token per share for collateral that exists reward in rewardCollateral
-        uint256 dependencyRewards;
-        for(uint256 k = 0; k < collateralAddresses.length; k++) {
-            address collateral = collateralAddresses[k];
-                if(collateral != _rewardCollateral) {
-                    dependencyRewards +=
-                            delegator.shares
-                            * validatorCollateral.dependsAccTokensPerShare[collateral]
-                            / 1e18;
-                }
-            }
-        return dependencyRewards;
-    }
+    //     // accumulated token per share for collateral that exists reward in rewardCollateral
+    //     uint256 dependencyRewards;
+    //     for(uint256 k = 0; k < collateralAddresses.length; k++) {
+    //         address collateral = collateralAddresses[k];
+    //             if(collateral != _rewardCollateral) {
+    //                 dependencyRewards +=
+    //                         delegator.shares
+    //                         * validatorCollateral.dependsAccTokensPerShare[collateral]
+    //                         / 1e18;
+    //             }
+    //         }
+    //     return dependencyRewards;
+    // }
+
 
     /**
      * @dev Get price per share
@@ -1293,13 +1366,19 @@ contract DelegatedStaking is Initializable,
      * @dev Get total USD amount of validator collateral
      * @param _validator Address of validator
      */
-    function getTotalUSDAmount(address _validator) public view returns(uint256) {
-        uint256 totalUSDAmount = 0;
+    function getTotalUSDAmount(address _validator) public view
+        returns (uint256[] memory poolsUsdAmounts, uint256 totalUSDAmount
+    ) {
+        // uint256 totalUSDAmount;
+        // uint256[] memory poolsUsdAmounts;
+        uint256[] memory poolsUsdAmounts = new uint256[](collateralAddresses.length);
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            totalUSDAmount += getPoolUSDAmount(_validator, collateralAddresses[i]);
+            uint256 poolUSDAmount = getPoolUSDAmount(_validator, collateralAddresses[i]);
+            totalUSDAmount += poolUSDAmount;
+            poolsUsdAmounts[i] = poolUSDAmount;
         }
         console.log("getTotalUSDAmount %s totalUSDAmount: %s", _validator, totalUSDAmount);
-        return totalUSDAmount;
+        return  (poolsUsdAmounts, totalUSDAmount);
     }
 
     /**
@@ -1347,8 +1426,8 @@ contract DelegatedStaking is Initializable,
         uint256 shares,
         uint256 locked,
         uint256 accumulatedRewards,
-        uint256 rewardsForWithdrawal,
-        uint256 accTokensPerShare
+        uint256 rewardsForWithdrawal
+        // uint256 accTokensPerShare
     ) {
          ValidatorCollateral storage item =  getValidatorInfo[_validator].collateralPools[_collateral];
          return (
@@ -1356,8 +1435,8 @@ contract DelegatedStaking is Initializable,
             item.shares, // total share of collateral tokens
             item.locked, // total share locked by depositing to strategy
             item.accumulatedRewards, // how many reward tokens was earned
-            item.rewardsForWithdrawal, // how many reward tokens validator can withdrawal
-            item.accTokensPerShare // how many reward tokens user will receive per one share
+            item.rewardsForWithdrawal // how many reward tokens validator can withdrawal
+            // item.accTokensPerShare // how many reward tokens user will receive per one share
          );
     }
 
@@ -1372,14 +1451,14 @@ contract DelegatedStaking is Initializable,
     returns(
         uint256 shares, // delegator share of collateral tokens
         uint256 locked, // share locked by depositing to strategy
-        uint256 passedRewards, // rewards per collateral address, calculated before stake
+        // uint256 passedRewards, // rewards per collateral address, calculated before stake
         uint256 accumulatedRewards //info how many reward tokens  was earned
     ) {
          DelegatorsInfo storage item =  getValidatorInfo[_validator].collateralPools[_collateral].delegators[_delegator];
          return (
             item.shares, // delegator share of collateral tokens
             item.locked, // share locked by depositing to strategy
-            item.passedRewards, // rewards per collateral address, calculated before stake
+            // item.passedRewards, // rewards per collateral address, calculated before stake
             item.accumulatedRewards //info how many reward tokens  was earned
          );
     }
@@ -1396,19 +1475,19 @@ contract DelegatedStaking is Initializable,
         );
     }
 
-    /**
-     * @dev Get accumulated tokens per share
-     * @param _validator Validator address
-     * @param _collateral Collateral address
-     * @param _dependsCollateral Depends collateral address
-     */
-    function getTokensPerShare(address _validator, address _collateral, address _dependsCollateral) external view returns(uint256, uint256) {
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        return(
-            validatorCollateral.accTokensPerShare,
-            validatorCollateral.dependsAccTokensPerShare[_dependsCollateral]
-        );
-    }
+    // /**
+    //  * @dev Get accumulated tokens per share
+    //  * @param _validator Validator address
+    //  * @param _collateral Collateral address
+    //  * @param _dependsCollateral Depends collateral address
+    //  */
+    // function getTokensPerShare(address _validator, address _collateral, address _dependsCollateral) external view returns(uint256, uint256) {
+    //     ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
+    //     return(
+    //         validatorCollateral.accTokensPerShare,
+    //         validatorCollateral.dependsAccTokensPerShare[_dependsCollateral]
+    //     );
+    // }
 
     /**
      * @dev Gets total strategy shares for validator
@@ -1438,4 +1517,15 @@ contract DelegatedStaking is Initializable,
     }
 
 
+    //  function getCollateralInfo(address _collateral)
+    //     external
+    //     view
+    //     returns(uint256 totalLocked, // total staked tokens
+    //     uint8 decimals,
+    //     bool isEnabled,
+    //     bool isUSDStable)
+    // {
+    //     Collateral memory collateral = collaterals[_collateral];
+    //     return (collateral.totalLocked, collateral.decimals, collateral.isEnabled, collateral.isUSDStable);
+    // }
 }
