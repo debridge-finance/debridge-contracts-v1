@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IStrategy.sol";
@@ -47,182 +49,117 @@ library DelegatedStakingHelper {
     function _calculatePassedRewards(uint256 _shares, uint256 _accTokens) internal pure returns (uint256) {
         return _shares * _accTokens / 1e18;
     }
-
-    /**
-     * @dev Validates transfer/withdrawal not already executed
-     * @param _executed Executed bool
-     */
-    function _validateNotExecuted(bool _executed) internal pure {
-        require(!_executed, "already executed");
-    }
-
-    /**
-     * @dev Validates if collateral is enabled
-     * @param _collateralEnabled Collateral enabled bool
-     */
-    function _validateCollateral(bool _collateralEnabled) internal pure {
-        require(_collateralEnabled, "collateral disabled");
-    }
-
-    /**
-     * @dev Validates if delegator exists
-     * @param _delegatorExists Delegator exists bool
-     */
-    function _validateDelegator(bool _delegatorExists) internal pure {
-        require(_delegatorExists, "delegator !exist");
-    }
-
-    /**
-     * @dev Validates if request exists
-     * @param _requestExists Request exists bool
-     */
-    function _validateRequestExists(bool _requestExists) internal pure {
-        require(_requestExists, "request !exist");
-    }
-
-    /**
-     * @dev Validates if timelock passed
-     * @param _timelockPassed Timelock passed bool
-     */
-    function _validateTimelock(bool _timelockPassed) internal pure {
-        require(_timelockPassed, "too early");
-    }
-
-    /**
-     * @dev Validates if strategy enabled
-     * @param _strategyEnabled Strategy enabled bool
-     */
-    function _validateStrategy(bool _strategyEnabled) internal pure {
-        require(_strategyEnabled, "strategy disabled");
-    }
-
-    /**
-     * @dev Validates if sender is admin
-     * @param _admin Admin address
-     * @param _sender Sender address
-     */
-    function _validateAdmin(address _admin, address _sender) internal pure {
-        require(_admin == _sender, "only admin");
-    }
-
-    function _validateShares(uint256 _shares) internal pure {
-        require(_shares > 0, "no shares");
-    }
-
-    /**
-     * @dev Validates if greater than
-     * @param _amount Amount to validate
-     * @param _min Minimum amount
-     */
-    function _validateGtE(uint256 _amount, uint256 _min) internal pure {
-        require(_amount >= _min, "bad amount");
-    }
-
-    /**
-     * @dev Validates if correct basis points
-     * @param _profitSharingBPS BPS to validate
-     * @param BPS_DENOMINATOR Maximum amount
-     */
-    function _validateBPS(uint256 _profitSharingBPS, uint256 BPS_DENOMINATOR) internal pure {
-        require(_profitSharingBPS <= BPS_DENOMINATOR, "bad bps" );
-    }
 }
 
-contract DelegatedStaking is AccessControl, Initializable {
+contract DelegatedStaking is Initializable,
+                         AccessControlUpgradeable,
+                         PausableUpgradeable,
+                         ReentrancyGuardUpgradeable
+{
 
+    //TODO: add PAUSE for each users methods
     using SafeERC20 for IERC20;
 
     struct WithdrawalInfo {
-        uint256 amount; // amount of staked token
+        address delegator;
+        uint256 amount; // amount of withdrawn token
+        uint256 slashingAmount; // slashing amount by governance
         uint256 timelock; // time till the asset is locked
         address receiver; // token receiver
+        address collateral; // collateral identifier
         bool executed; // whether is executed
         bool paused;    // whether is paused
-        uint256 pausedTime; // paused timestamp
-        address collateral; // collateral identifier
     }
 
-    struct DelegatorInfo {
-        address admin;
-        uint256 withdrawalCount;
+    struct WithdrawalRequests {
         mapping(uint256 => WithdrawalInfo) withdrawals;
-        bool exists; // delegator exists in validator mapping
+        uint256 count; // counter of withdrawals from specific validator
     }
 
-    struct DelegationInfo {
+    struct DelegatorsInfo {
         uint256 shares; // delegator share of collateral tokens
         uint256 locked; // share locked by depositing to strategy
         mapping(address => uint256) strategyShares; // map strategy(aave/compound/yearn) for each collateral
         uint256 passedRewards; // rewards per collateral address, calculated before stake
-        uint256 accumulatedRewards;
+        uint256 accumulatedRewards; // info how many reward tokens  was earned
     }
 
     struct ValidatorCollateral {
         uint256 stakedAmount; // total tokens staked by delegators
-        uint256 maxStakeAmount; // maximum stake for each collateral
         uint256 shares; // total share of collateral tokens
         uint256 locked; // total share locked by depositing to strategy
         mapping(address => uint256) strategyShares;
-        mapping(address => DelegationInfo) delegation; // delegation info for each delegator
-        uint256 accumulatedRewards;
-        uint256 accTokensPerShare;
+        mapping(address => DelegatorsInfo) delegators; // delegation info for each delegator
+        uint256 accumulatedRewards; // how many reward tokens was earned
+        //TODO: add method to withdraw validators rewards
+        uint256 rewardsForWithdrawal; // how many reward tokens validator can withdrawal
+        uint256 accTokensPerShare; // how many reward tokens user will receive per one share
         mapping(address => uint256) dependsAccTokensPerShare;
     }
 
     struct ValidatorInfo {
         address admin;
-        uint256 delegatorCount;
-        mapping(uint256 => address) delegatorAddresses; // delegators staked to validator collateral
-        mapping(address => DelegatorInfo) delegators;
         mapping(address => ValidatorCollateral) collateralPools; // collateral pools of validator
         uint256 rewardWeightCoefficient;
         uint256 profitSharingBPS;  // profit sharing basis points.
+        bool delegatorActionPaused; // paused stake/unstake for this validator
+        bool isExist;
     }
 
     struct Collateral {
-        uint256 confiscatedFunds; // total confiscated tokens
+        uint256 slashedAmount; // balance of slashing treasury of this assets
         uint256 totalLocked; // total staked tokens
         uint256 rewards; // total accumulated rewards
-        uint256 maxStakeAmount; // maximum stake for each collateral
+        uint256 maxStakeAmount; // maximum stake for each validator's collateral
         uint8 decimals;
-        bool isSupported;
-        bool isUSDStable;
         bool isEnabled;
+        bool isUSDStable;
+        bool isExist;
     }
 
     struct Strategy {
-        bool isSupported;
-        bool isEnabled;
-        bool isRecoverable;
         address stakeToken;
         address strategyToken;
         address rewardToken;
         uint256 totalShares;
         uint256 totalReserves;
         uint256 rewards;
+        bool isEnabled;
+        bool isExist;
+        bool isRecoverable;
     }
 
     mapping(address => ValidatorInfo) public getValidatorInfo; // validator address => validator details
-    mapping(address => DelegatorInfo) public getDelegatorInfo; // delegator address => delegator details
-    uint256 public timelock; // duration of withdrawal timelock
+    mapping(address => WithdrawalRequests) public getWithdrawalRequests; // validators address => withdrawal requests
+
+    uint256 public withdrawTimelock; // duration of withdrawal timelock
     uint256 public constant BPS_DENOMINATOR = 10000; // Basis points, or bps, equal to 1/10000 used to express relative value
-    uint256 public constant MAX_COEFFICIENT = 100;
     uint256 public minProfitSharingBPS;
     uint256 public weightCoefficientDenominator;
     mapping(address => Collateral) public collaterals;
     address[] public validatorAddresses;
     address[] public collateralAddresses;
-    mapping(address => uint256) public accumulatedProtocolRewards;
+    mapping(address => uint256) public accumulatedProtocolRewards; //TODO: can be removed accumulatedProtocolRewards
     mapping(address => mapping(address => Strategy)) public strategies;
     address[] public strategyControllerAddresses;
     mapping(address => bool) public strategyControllerExists;
     IPriceConsumer public priceConsumer;
-    address slashingTreasury;
+    address public slashingTreasury;
 
     /* ========== ERRORS ========== */
 
     error AdminBadRole();
+    error CollateralDisabled();
+    error CollateralLimited();
     error WrongArgument();
+    error WrongRequest(uint256 id);
+
+    error DelegatorActionPaused();
+    error RequestPaused(uint256 id);
+    error Timelock();
+    error AlreadyExist();
+    error ZeroAmount();
+    error WrongAmount();
 
     /* ========== MODIFIERS ========== */
 
@@ -234,11 +171,31 @@ contract DelegatedStaking is AccessControl, Initializable {
     /* ========== Events ========== */
 
     event Staked(address validator, address delegator, address collateral, uint256 amount);
-    event UnstakeRequested(address validator, address delegator, address collateral, address receipient, uint256 shares);
-    event UnstakeExecuted(address delegator, uint256 withdrawalId);
+    event UnstakeRequested(
+        address validator,
+        address delegator,
+        address collateral,
+        address receipient,
+        uint256 timelock,
+        uint256 shares,
+        uint256 tokenAmount,
+        uint256 index);
+
+    event SlashedUnstakeRequest(
+        address validator,
+        address delegator,
+        address collateral,
+        uint256 slashedAmount,
+        uint256 index);
+
+    event SlashedValidatorCollateral(
+        address validator,
+        address collateral,
+        uint256 slashedAmount);
+
+    event UnstakeExecuted( address delegator, address validator, address collateral, uint256 amount, uint256 withdrawalId);
     event UnstakeCancelled(address validator, address delegator, uint256 withdrawalId);
-    event UnstakePaused(address delegator, uint256 withdrawalId, uint256 timestamp);
-    event UnstakeResumed(address delegator, uint256 withdrawalId, uint256 timestamp);
+    event UnstakePaused(address validator, uint256 withdrawalId, bool paused);
     event Liquidated(address validator, address collateral, uint256 amount);
     event LiquidatedDelegator(address validator, address delegator, address collateral, uint256 amount);
     event DepositedToStrategy(address validator, address delegator, uint256 amount, address strategy, address collateral);
@@ -247,23 +204,29 @@ contract DelegatedStaking is AccessControl, Initializable {
     event RecoveredFromEmergency(address validator, uint256 amount, address strategy, address collateral);
     event StrategyReset(address _strategy, address collateral);
     event RewardsDistributed(address validator, address collateral, uint256 amount);
+    event WithdrawSlashingTreasury(address collateral, uint256 amount);
+    event UpdateSlashingTreasury(address newTreasury);
+    event WithdrawTimelockUpdated(uint256 newTimelock);
 
+    event EnableCollateral(address collateral, bool isEnabled);
+    event UpdateCollateral(address collateral, uint256 maxStakeAmount);
+    event UpdateRewardWeight(address validator, uint256 value);
     /* PUBLIC */
 
     /**
      * @dev Initializer that initializes the most important configurations.
-     * @param _timelock Duration of withdrawal timelock.
+     * @param _withdrawTimelock Duration of withdrawal timelock.
      * @param _priceConsumer Price consumer contract.
      * @param _slashingTreasury Address of slashing treasury.
      */
-    function initialize(uint256 _timelock, IPriceConsumer _priceConsumer, address _slashingTreasury) public initializer {
+    function initialize(uint256 _withdrawTimelock, IPriceConsumer _priceConsumer, address _slashingTreasury) public initializer {
         // Grant the contract deployer the default admin role: it will be able
         // to grant and revoke any roles
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        timelock = _timelock;
+        withdrawTimelock = _withdrawTimelock;
         priceConsumer = _priceConsumer;
         slashingTreasury = _slashingTreasury;
-        minProfitSharingBPS = 5000;
+        // minProfitSharingBPS = 5000;
     }
 
     /**
@@ -272,46 +235,51 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _collateral address of collateral
      * @param _amount Amount to stake.
      */
-    function stake(address _validator, address _collateral, uint256 _amount) external {
+    function stake(
+        address _validator,
+        address _collateral,
+        uint256 _amount
+    ) external nonReentrant {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
+        if (validator.delegatorActionPaused) revert DelegatorActionPaused();
         Collateral storage collateral = collaterals[_collateral];
+        if (!collateral.isEnabled) revert CollateralDisabled();
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-        DelegatedStakingHelper._validateCollateral(collateral.isEnabled);
-        require(collateral.totalLocked+_amount <= collateral.maxStakeAmount &&
-            validatorCollateral.stakedAmount+_amount < validatorCollateral.maxStakeAmount,
-            "collateral limited"
-        );
-
-        DelegatorInfo storage delegator = validator.delegators[msg.sender];
-        DelegationInfo storage delegation = validatorCollateral.delegation[msg.sender];
-        if (delegator.admin == address(0)) delegator.admin = msg.sender;
+        if (validatorCollateral.stakedAmount + _amount > collateral.maxStakeAmount) revert CollateralLimited();
+        DelegatorsInfo storage delegator = validatorCollateral.delegators[msg.sender];
 
         IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
 
-        collateral.totalLocked += _amount;
-        validatorCollateral.stakedAmount += _amount;
-        if (!delegator.exists) {
-            validator.delegatorAddresses[validator.delegatorCount] = msg.sender;
-            validator.delegatorCount++;
-            delegator.exists = true;
-        }
-
-        uint256 shares = validatorCollateral.shares > 0
+        // Calculate amount of shares to be issued to delegator
+        uint256 shares = validatorCollateral.stakedAmount > 0
             ? DelegatedStakingHelper._calculateShares(_amount, validatorCollateral.shares,
                 validatorCollateral.stakedAmount)
             : _amount;
         //Update users passedRewards
         uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
-        //We need to sum _amount before to recalculate new passedRewards
+
+        //Increase total collateral of the protocol for this asset
+        collateral.totalLocked += _amount;
+        //Increase total collateral of the validator for this asset
         validatorCollateral.stakedAmount += _amount;
         validatorCollateral.shares += shares;
-        delegation.shares += shares;
+        delegator.shares += shares;
         // accumulated token per share for current collateral
-        delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                        delegation.shares,
+        delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+                        delegator.shares,
                         validatorCollateral.accTokensPerShare)
                         + dependencyRewards;
-        emit Staked(_validator, msg.sender, _collateral, _amount);
+
+        console.log("collateral %s", _collateral);
+        console.log("validator %s", _validator);
+        console.log("delegation %s", msg.sender);
+        console.log("_amount %s", _amount);
+        console.log("collateral.totalLocked %s", collateral.totalLocked);
+        console.log("validatorCollateral.stakedAmount %s", validatorCollateral.stakedAmount);
+        console.log("validatorCollateral.shares %s",validatorCollateral.shares);
+        console.log("delegator.shares %s", delegator.shares);
+        console.log("delegator.passedRewards %s", delegator.passedRewards);
+        console.log("dependencyRewards %s", dependencyRewards);
     }
 
     /**
@@ -327,241 +295,335 @@ contract DelegatedStaking is AccessControl, Initializable {
         address _recipient,
         uint256 _shares
     ) external {
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        DelegatorInfo storage delegator = validator.delegators[msg.sender];
-        DelegatedStakingHelper._validateDelegator(delegator.exists);
-        DelegationInfo storage delegation = validatorCollateral.delegation[msg.sender];
-        DelegatedStakingHelper._validateAdmin(delegator.admin, msg.sender);
-        DelegatedStakingHelper._validateGtE(
-            delegation.shares
-            - delegation.locked,
-            _shares
-        );
 
+        console.log("requestUnstake _validator %s", _validator);
+        console.log("requestUnstake _collateral %s", _collateral);
+        ValidatorInfo storage validator = getValidatorInfo[_validator];
+        if (validator.delegatorActionPaused) revert DelegatorActionPaused();
+        ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
+        WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
+        DelegatorsInfo storage delegator = validatorCollateral.delegators[msg.sender];
+
+        //TODO: we need check it after update rewards shares
+        // if (delegator.shares - delegator.locked < _shares) revert WrongAmount();
         uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
-        uint256 delegatorCollateral = DelegatedStakingHelper._calculateFromShares(
+        if (_shares> delegator.shares) {
+            _shares= delegator.shares;
+        }
+        console.log("requestUnstake _shares %s", _shares);
+
+        uint256 withdrawTokenAmount = DelegatedStakingHelper._calculateFromShares(
             _shares, validatorCollateral.stakedAmount,
             validatorCollateral.shares
         );
-        collaterals[_collateral].totalLocked -= delegatorCollateral;
-        delegation.shares -= _shares;
-        validatorCollateral.stakedAmount -= delegatorCollateral;
-        validatorCollateral.shares -= _shares;
 
+        delegator.shares -= _shares;
+        console.log("new  delegator.shares %s", delegator.shares);
+        validatorCollateral.shares -= _shares;
+        validatorCollateral.stakedAmount -= withdrawTokenAmount;
+        collaterals[_collateral].totalLocked -= withdrawTokenAmount;
+
+        //TODO: add test when we unstake all shares passedRewards must be set to zero
         // recalculate passed rewards with new share amount
-        delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                        delegation.shares,
+        delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+                        delegator.shares,
                         validatorCollateral.accTokensPerShare)
                         + dependencyRewards;
-        delegator.withdrawals[delegator.withdrawalCount] = WithdrawalInfo(
-            delegatorCollateral,
-            block.timestamp + timelock,
+        uint256 withdrawIndex = withdrawalRequests.count;
+        uint256 timelock = block.timestamp + withdrawTimelock;
+        WithdrawalInfo storage withdraw = withdrawalRequests.withdrawals[withdrawIndex];
+        withdraw.delegator = msg.sender;
+        withdraw.amount = withdrawTokenAmount;
+        withdraw.timelock = timelock;
+        withdraw.receiver = _recipient;
+        withdraw.collateral = _collateral;
+
+        withdrawalRequests.count++;
+        emit UnstakeRequested(
+            _validator,
+            msg.sender,
+            _collateral,
             _recipient,
-            false,
-            false,
-            0,
-            _collateral
-        );
-        delegator.withdrawalCount++;
-        emit UnstakeRequested(_validator, msg.sender, _collateral, _recipient, _shares);
-    }
-
-    /**
-     * @dev Withdraw stake.
-     * @param _delegator Delegator address.
-     * @param _withdrawalId Withdrawal identifier.
-     */
-    function executeUnstake(address _delegator, uint256 _withdrawalId) external {
-        DelegatorInfo storage delegator = getDelegatorInfo[msg.sender];
-        DelegatedStakingHelper._validateAdmin(delegator.admin, msg.sender);
-        DelegatedStakingHelper._validateRequestExists(bool(delegator.withdrawalCount > _withdrawalId));
-        WithdrawalInfo storage withdrawal = delegator.withdrawals[_withdrawalId];
-        DelegatedStakingHelper._validateNotExecuted(withdrawal.executed);
-        DelegatedStakingHelper._validateTimelock(bool(withdrawal.timelock < block.timestamp));
-        withdrawal.executed = true;
-        IERC20(withdrawal.collateral).safeTransfer(withdrawal.receiver, withdrawal.amount);
-        emit UnstakeExecuted(_delegator, _withdrawalId);
-    }
-
-    /**
-     * @dev Cancel unstake.
-     * @param _validator Validator address.
-     * @param _withdrawalId Withdrawal identifier.
-     */
-    function cancelUnstake(address _validator, uint256 _withdrawalId) external {
-        ValidatorInfo storage validator = getValidatorInfo[msg.sender];
-        DelegatorInfo storage delegator = validator.delegators[msg.sender];
-        WithdrawalInfo storage withdrawal = delegator.withdrawals[_withdrawalId];
-        ValidatorCollateral storage validatorCollateral = validator.collateralPools[withdrawal.collateral];
-        DelegatedStakingHelper._validateDelegator(delegator.exists);
-        DelegationInfo storage delegation = validatorCollateral.delegation[msg.sender];
-        DelegatedStakingHelper._validateNotExecuted(withdrawal.executed);
-        withdrawal.executed = true;
-        uint256 delegatorShares = DelegatedStakingHelper._calculateShares(
-            withdrawal.amount,
-            validatorCollateral.shares,
-            validatorCollateral.stakedAmount
-        );
-        collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
-        delegation.shares += delegatorShares;
-        validatorCollateral.shares += delegatorShares;
-        validatorCollateral.stakedAmount += withdrawal.amount;
-        // recalculate passed rewards
-        delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                        delegation.shares,
-                        validatorCollateral.accTokensPerShare);
-        emit UnstakeCancelled(_validator, msg.sender, _withdrawalId);
-    }
-
-    /**
-     * @dev Stake token to strategies to earn rewards
-     * @param _validator address of validator
-     * @param _shares Shares to be staked
-     * @param _strategy strategy to stake into.
-     */
-    function depositToStrategy(address _validator, uint256 _shares, address _strategy, address _stakeToken) external {
-        Strategy storage strategy = strategies[_strategy][_stakeToken];
-        DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
-        IStrategy strategyController = IStrategy(_strategy);
-        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
-
-        DelegatorInfo storage delegator = validator.delegators[msg.sender];
-        DelegatedStakingHelper._validateDelegator(delegator.exists);
-        DelegationInfo storage delegation = validatorCollateral.delegation[msg.sender];
-        uint256 _amount = DelegatedStakingHelper._calculateFromShares(
+            timelock,
             _shares,
-            validatorCollateral.stakedAmount,
-            validatorCollateral.shares
-        );
-        DelegatedStakingHelper._validateGtE(
-            delegation.shares
-            - delegation.locked,
-            _shares
-        );
-        delegation.locked += _shares;
-        validatorCollateral.locked += _shares;
-
-        IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
-        IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
-        strategyController.deposit(strategy.stakeToken, _amount);
-        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.strategyToken);
-        uint256 receivedAmount = afterBalance - strategy.totalReserves;
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
-        uint256 shares = strategy.totalShares > 0
-            ? DelegatedStakingHelper._calculateShares(receivedAmount, strategy.totalShares, strategy.totalReserves)
-            : receivedAmount;
-        strategy.totalShares += shares;
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
-        delegation.strategyShares[_strategy] += shares;
-        validatorCollateral.strategyShares[_strategy] += shares;
-        stakeCollateral.totalLocked -= _amount;
-        emit DepositedToStrategy(_validator, msg.sender, _amount, _strategy, strategy.stakeToken);
+            withdrawTokenAmount,
+            withdrawIndex);
     }
 
     /**
-     * @dev Withdraw token from strategies to claim rewards
-     * @param _validator address of validator
-     * @param _shares number of shares to redeem
-     * @param _strategy strategy to withdraw from.
-     */
-    function withdrawFromStrategy(address _validator, uint256 _shares, address _strategy, address _stakeToken) external {
-        Strategy storage strategy = strategies[_strategy][_stakeToken];
-        DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
-        DelegatorInfo storage delegator = validator.delegators[msg.sender];
-        DelegatedStakingHelper._validateDelegator(delegator.exists);
-        DelegationInfo storage delegation = validatorCollateral.delegation[msg.sender];
-        uint256 beforeBalance = IERC20(strategy.stakeToken).balanceOf(address(this));
-        strategy.totalReserves = IStrategy(_strategy).updateReserves(address(this), strategy.strategyToken);
-        uint256 stakeTokenAmount = DelegatedStakingHelper._calculateFromShares(
-            _shares, strategy.totalReserves, strategy.totalShares
-        );
+    * @dev Execute withdrawal requests.
+    * @param _validator Validator address.
+    * @param _fromWithdrawId Starting from withdrawal identifier.
+    * @param _toWithdrawId Up to withdrawal identifier.
+    */
+    function executeUnstake(
+        address _validator,
+        uint256 _fromWithdrawId,
+        uint256 _toWithdrawId
+    ) external nonReentrant {
+        if (getValidatorInfo[_validator].delegatorActionPaused) revert DelegatorActionPaused();
+        WithdrawalRequests storage withdrawalRequests = getWithdrawalRequests[_validator];
+        if (_toWithdrawId >= withdrawalRequests.count) revert WrongArgument();
+        for (uint256 currentWithdrawId = _fromWithdrawId; currentWithdrawId < _toWithdrawId; currentWithdrawId++) {
+            WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[currentWithdrawId];
+            if (!withdrawal.executed) {
+                if (withdrawal.paused) revert RequestPaused(currentWithdrawId);
+                if (withdrawal.timelock > block.timestamp) revert Timelock();
 
-        { // scope to avoid stack too deep errors
-            DelegatedStakingHelper._validateGtE(delegation.strategyShares[_strategy], _shares);
-            delegation.strategyShares[_strategy] -= _shares;
-            validatorCollateral.strategyShares[_strategy] -= _shares;
-            strategy.totalShares -= _shares;
-            IERC20(strategy.strategyToken).safeApprove(address(_strategy), 0);
-            IERC20(strategy.strategyToken).safeApprove(address(_strategy), stakeTokenAmount);
-            IStrategy(_strategy).withdraw(strategy.stakeToken, stakeTokenAmount);
-        }
-        uint256 receivedAmount = IERC20(strategy.stakeToken).balanceOf(address(this)) - beforeBalance;
-        collaterals[strategy.stakeToken].totalLocked += receivedAmount;
-        strategy.totalReserves = IStrategy(_strategy).updateReserves(address(this), strategy.strategyToken);
-        uint256 rewardAmount = receivedAmount - stakeTokenAmount;
-        collaterals[strategy.stakeToken].rewards += rewardAmount;
-        strategy.rewards += rewardAmount;
-        validatorCollateral.accumulatedRewards += rewardAmount;
-        delegation.accumulatedRewards += rewardAmount;
-        accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
-        uint256 rewardShares = validatorCollateral.shares > 0
-        ? DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares,
-            validatorCollateral.stakedAmount)
-        : rewardAmount;
-        uint256 stakeTokenShares = DelegatedStakingHelper._calculateShares(
-            stakeTokenAmount,
-            validatorCollateral.shares,
-            validatorCollateral.stakedAmount
-        );
-        delegation.shares += rewardShares;
-        delegation.locked -= stakeTokenShares;
-        validatorCollateral.locked -= stakeTokenShares;
-        validatorCollateral.stakedAmount += rewardAmount;
-        validatorCollateral.shares += rewardShares;
-        emit WithdrawnFromStrategy(_validator, msg.sender, receivedAmount, _strategy, strategy.stakeToken);
-    }
-
-    /**
-     * @dev Recovers user share of all funds emergency withdrawn from the strategy.
-     * @param _strategy Strategy to recover from.
-     * @param _stakeToken Address of collateral.
-     * @param _validators Array of validator addresses.
-     */
-    function recoverFromEmergency(address _strategy, address _stakeToken, address[] calldata _validators) external {
-        _recoverFromEmergency(_strategy, _stakeToken, _validators);
-    }
-
-    /**
-     * @dev Recovers user share of all funds emergency withdrawn from the strategy.
-     * @param _strategy Strategy to recover from.
-     * @param _stakeToken Address of collateral.
-     * @param _validators Array of validator addresses.
-     */
-    function _recoverFromEmergency(address _strategy, address _stakeToken, address[] memory _validators) internal {
-        Strategy storage strategy = strategies[_strategy][_stakeToken];
-        require(!strategy.isEnabled, "strategy enabled");
-        require(strategy.isRecoverable, "not recoverable");
-        for (uint256 i=0; i<_validators.length; i++) {
-            ValidatorInfo storage validator = getValidatorInfo[_validators[i]];
-            ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
-            strategy.totalReserves = IStrategy(_strategy).updateReserves(address(this), strategy.strategyToken);
-            uint256 amount = DelegatedStakingHelper._calculateFromShares(
-                validatorCollateral.strategyShares[_strategy], strategy.totalReserves, strategy.totalShares
-            );
-            uint256 fullAmount = DelegatedStakingHelper._calculateFromShares(
-                validatorCollateral.locked, validatorCollateral.stakedAmount, validatorCollateral.shares);
-            uint256 lost = fullAmount - amount;
-            strategy.totalShares -= validatorCollateral.strategyShares[_strategy];
-            validatorCollateral.locked -= validatorCollateral.strategyShares[_strategy];
-            validatorCollateral.stakedAmount -= lost;
-            validatorCollateral.strategyShares[_strategy] = 0;
-            strategy.totalReserves -= amount;
-
-            for (uint256 k=0; k<validator.delegatorCount; k++) {
-                DelegationInfo storage delegation = validatorCollateral.delegation[validator.delegatorAddresses[k]];
-                if (delegation.strategyShares[_strategy] == 0) continue;
-                delegation.locked -= delegation.strategyShares[_strategy];
-                delegation.strategyShares[_strategy] = 0;
+                withdrawal.executed = true;
+                uint256 withdrawAmount = withdrawal.amount - withdrawal.slashingAmount;
+                IERC20(withdrawal.collateral).safeTransfer(withdrawal.receiver, withdrawAmount);
+                emit UnstakeExecuted(withdrawal.delegator, _validator, withdrawal.collateral, withdrawAmount, currentWithdrawId);
             }
-            emit RecoveredFromEmergency(_validators[i], amount, _strategy, strategy.stakeToken);
         }
     }
+
+    //TODO: create test for 1000 cancelUnstake requests
+
+    /**
+    * @dev Execute withdrawal requests.
+    * @param _validator Validator address.
+    * @param _fromWithdrawId Starting from withdrawal identifier.
+    * @param _toWithdrawId Up to withdrawal identifier.
+    * @param _slashPercent percent must be set in wei (1e18 DENOMINATOR)
+    */
+    function slashUnstakeRequests(
+        address _validator,
+        uint256 _fromWithdrawId,
+        uint256 _toWithdrawId,
+        uint256 _slashPercent
+    ) external onlyAdmin {
+        WithdrawalRequests storage withdrawalRequests = getWithdrawalRequests[_validator];
+        if (_toWithdrawId >= withdrawalRequests.count) revert WrongArgument();
+
+        for (uint256 currentWithdrawId = _fromWithdrawId; currentWithdrawId < _toWithdrawId; currentWithdrawId++) {
+            WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[currentWithdrawId];
+            if (!withdrawal.executed) {
+                uint256 slashingAmount = withdrawal.amount * _slashPercent / 1e18;
+                withdrawal.amount = withdrawal.amount - slashingAmount;
+                withdrawal.slashingAmount = slashingAmount;
+                //TODO: avoid multi write to storage
+                collaterals[withdrawal.collateral].slashedAmount += slashingAmount;
+                emit SlashedUnstakeRequest(
+                    _validator,
+                    withdrawal.delegator,
+                    withdrawal.collateral,
+                    slashingAmount,
+                    currentWithdrawId);
+            }
+        }
+    }
+
+    /**
+    * @dev Withdraw collected slashed amounts of all assets to protocol slashing treasury address
+    */
+    function withdrawSlashingTreasury() external onlyAdmin {
+        for (uint256 i = 0; i < collateralAddresses.length; i++) {
+            address collateralAddress = collateralAddresses[i];
+            Collateral storage currentCollateral = collaterals[collateralAddress];
+            uint256 slashedAmount = currentCollateral.slashedAmount;
+            if (slashedAmount > 0) {
+                currentCollateral.slashedAmount = 0;
+                IERC20(collateralAddress).safeTransfer(slashingTreasury, slashedAmount);
+                emit WithdrawSlashingTreasury (collateralAddress, slashedAmount);
+            }
+        }
+    }
+
+
+    function slashValidatorCollateral(
+        address _validator,
+        address _collateral,
+        uint256 _slashAmount
+    ) external onlyAdmin {
+        Collateral storage collateral = collaterals[_collateral];
+        //Decrease total collateral of the protocol for this asset
+        collateral.totalLocked -= _slashAmount;
+        collateral.slashedAmount += _slashAmount;
+        //Decrease total collateral of the validator for this asset
+        getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount -= _slashAmount;
+        emit SlashedValidatorCollateral(_validator, _collateral, _slashAmount);
+    }
+
+
+    // /**
+    //  * @dev Cancel unstake.
+    //  * @param _validator Validator address.
+    //  * @param _withdrawalId Withdrawal identifier.
+    //  */
+    // function cancelUnstake(address _validator, uint256 _withdrawalId) external {
+    //     ValidatorInfo storage validator = getValidatorInfo[msg.sender];
+    //     DelegatorInfo storage delegator = validator.delegators[msg.sender];
+    //     WithdrawalInfo storage withdrawal = delegator.withdrawals[_withdrawalId];
+    //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[withdrawal.collateral];
+    //     DelegatedStakingHelper._validateDelegator(delegator.exists);
+    //     DelegatorsInfo storage delegation = validatorCollateral.delegation[msg.sender];
+    //     DelegatedStakingHelper._validateNotExecuted(withdrawal.executed);
+    //     withdrawal.executed = true;
+    //     uint256 delegatorShares = DelegatedStakingHelper._calculateShares(
+    //         withdrawal.amount,
+    //         validatorCollateral.shares,
+    //         validatorCollateral.stakedAmount
+    //     );
+    //     collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
+    //     delegation.shares += delegatorShares;
+    //     validatorCollateral.shares += delegatorShares;
+    //     validatorCollateral.stakedAmount += withdrawal.amount;
+    //     // recalculate passed rewards
+    //     delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+    //                     delegation.shares,
+    //                     validatorCollateral.accTokensPerShare);
+    //     emit UnstakeCancelled(_validator, msg.sender, _withdrawalId);
+    // }
+
+    // /**
+    //  * @dev Stake token to strategies to earn rewards
+    //  * @param _validator address of validator
+    //  * @param _shares Shares to be staked
+    //  * @param _strategy strategy to stake into.
+    //  */
+    // function depositToStrategy(address _validator, uint256 _shares, address _strategy, address _stakeToken) external {
+    //     Strategy storage strategy = strategies[_strategy][_stakeToken];
+    //     DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
+    //     IStrategy strategyController = IStrategy(_strategy);
+    //     Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
+    //     ValidatorInfo storage validator = getValidatorInfo[_validator];
+    //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
+
+    //     DelegatorInfo storage delegator = validator.delegators[msg.sender];
+    //     DelegatedStakingHelper._validateDelegator(delegator.exists);
+    //     DelegatorsInfo storage delegation = validatorCollateral.delegation[msg.sender];
+    //     uint256 _amount = DelegatedStakingHelper._calculateFromShares(
+    //         _shares,
+    //         validatorCollateral.stakedAmount,
+    //         validatorCollateral.shares
+    //     );
+    //     DelegatedStakingHelper._validateGtE(
+    //         delegation.shares
+    //         - delegation.locked,
+    //         _shares
+    //     );
+    //     delegation.locked += _shares;
+    //     validatorCollateral.locked += _shares;
+
+    //     IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
+    //     IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
+    //     strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+    //     strategyController.deposit(strategy.stakeToken, _amount);
+    //     uint256 afterBalance = strategyController.updateReserves(address(this), strategy.strategyToken);
+    //     uint256 receivedAmount = afterBalance - strategy.totalReserves;
+    //     strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+    //     uint256 shares = strategy.totalShares > 0
+    //         ? DelegatedStakingHelper._calculateShares(receivedAmount, strategy.totalShares, strategy.totalReserves)
+    //         : receivedAmount;
+    //     strategy.totalShares += shares;
+    //     strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+    //     delegation.strategyShares[_strategy] += shares;
+    //     validatorCollateral.strategyShares[_strategy] += shares;
+    //     stakeCollateral.totalLocked -= _amount;
+    //     emit DepositedToStrategy(_validator, msg.sender, _amount, _strategy, strategy.stakeToken);
+    // }
+
+    // /**
+    //  * @dev Withdraw token from strategies to claim rewards
+    //  * @param _validator address of validator
+    //  * @param _shares number of shares to redeem
+    //  * @param _strategy strategy to withdraw from.
+    //  */
+    // function withdrawFromStrategy(address _validator, uint256 _shares, address _strategy, address _stakeToken) external {
+    //     Strategy storage strategy = strategies[_strategy][_stakeToken];
+    //     DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
+    //     ValidatorInfo storage validator = getValidatorInfo[_validator];
+    //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
+    //     DelegatorInfo storage delegator = validator.delegators[msg.sender];
+    //     DelegatedStakingHelper._validateDelegator(delegator.exists);
+    //     DelegatorsInfo storage delegation = validatorCollateral.delegation[msg.sender];
+    //     uint256 beforeBalance = IERC20(strategy.stakeToken).balanceOf(address(this));
+    //     strategy.totalReserves = IStrategy(_strategy).updateReserves(address(this), strategy.strategyToken);
+    //     uint256 stakeTokenAmount = DelegatedStakingHelper._calculateFromShares(
+    //         _shares, strategy.totalReserves, strategy.totalShares
+    //     );
+
+    //     { // scope to avoid stack too deep errors
+    //         DelegatedStakingHelper._validateGtE(delegation.strategyShares[_strategy], _shares);
+    //         delegation.strategyShares[_strategy] -= _shares;
+    //         validatorCollateral.strategyShares[_strategy] -= _shares;
+    //         strategy.totalShares -= _shares;
+    //         IERC20(strategy.strategyToken).safeApprove(address(_strategy), 0);
+    //         IERC20(strategy.strategyToken).safeApprove(address(_strategy), stakeTokenAmount);
+    //         IStrategy(_strategy).withdraw(strategy.stakeToken, stakeTokenAmount);
+    //     }
+    //     uint256 receivedAmount = IERC20(strategy.stakeToken).balanceOf(address(this)) - beforeBalance;
+    //     collaterals[strategy.stakeToken].totalLocked += receivedAmount;
+    //     strategy.totalReserves = IStrategy(_strategy).updateReserves(address(this), strategy.strategyToken);
+    //     uint256 rewardAmount = receivedAmount - stakeTokenAmount;
+    //     collaterals[strategy.stakeToken].rewards += rewardAmount;
+    //     strategy.rewards += rewardAmount;
+    //     validatorCollateral.accumulatedRewards += rewardAmount;
+    //     delegation.accumulatedRewards += rewardAmount;
+    //     accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
+    //     uint256 rewardShares = validatorCollateral.shares > 0
+    //     ? DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares,
+    //         validatorCollateral.stakedAmount)
+    //     : rewardAmount;
+    //     uint256 stakeTokenShares = DelegatedStakingHelper._calculateShares(
+    //         stakeTokenAmount,
+    //         validatorCollateral.shares,
+    //         validatorCollateral.stakedAmount
+    //     );
+    //     delegation.shares += rewardShares;
+    //     delegation.locked -= stakeTokenShares;
+    //     validatorCollateral.locked -= stakeTokenShares;
+    //     validatorCollateral.stakedAmount += rewardAmount;
+    //     validatorCollateral.shares += rewardShares;
+    //     emit WithdrawnFromStrategy(_validator, msg.sender, receivedAmount, _strategy, strategy.stakeToken);
+    // }
+
+    // /**
+    //  * @dev Recovers user share of all funds emergency withdrawn from the strategy.
+    //  * @param _strategy Strategy to recover from.
+    //  * @param _stakeToken Address of collateral.
+    //  * @param _validators Array of validator addresses.
+    //  */
+    // function recoverFromEmergency(address _strategy, address _stakeToken, address[] calldata _validators) external {
+    //     _recoverFromEmergency(_strategy, _stakeToken, _validators);
+    // }
+
+    // /**
+    //  * @dev Recovers user share of all funds emergency withdrawn from the strategy.
+    //  * @param _strategy Strategy to recover from.
+    //  * @param _stakeToken Address of collateral.
+    //  * @param _validators Array of validator addresses.
+    //  */
+    // function _recoverFromEmergency(address _strategy, address _stakeToken, address[] memory _validators) internal {
+    //     Strategy storage strategy = strategies[_strategy][_stakeToken];
+    //     require(!strategy.isEnabled, "strategy enabled");
+    //     require(strategy.isRecoverable, "not recoverable");
+    //     for (uint256 i=0; i<_validators.length; i++) {
+    //         ValidatorInfo storage validator = getValidatorInfo[_validators[i]];
+    //         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
+    //         strategy.totalReserves = IStrategy(_strategy).updateReserves(address(this), strategy.strategyToken);
+    //         uint256 amount = DelegatedStakingHelper._calculateFromShares(
+    //             validatorCollateral.strategyShares[_strategy], strategy.totalReserves, strategy.totalShares
+    //         );
+    //         uint256 fullAmount = DelegatedStakingHelper._calculateFromShares(
+    //             validatorCollateral.locked, validatorCollateral.stakedAmount, validatorCollateral.shares);
+    //         uint256 lost = fullAmount - amount;
+    //         strategy.totalShares -= validatorCollateral.strategyShares[_strategy];
+    //         validatorCollateral.locked -= validatorCollateral.strategyShares[_strategy];
+    //         validatorCollateral.stakedAmount -= lost;
+    //         validatorCollateral.strategyShares[_strategy] = 0;
+    //         strategy.totalReserves -= amount;
+
+    //         for (uint256 k=0; k<validator.delegatorCount; k++) {
+    //             DelegatorsInfo storage delegation = validatorCollateral.delegation[validator.delegatorAddresses[k]];
+    //             if (delegation.strategyShares[_strategy] == 0) continue;
+    //             delegation.locked -= delegation.strategyShares[_strategy];
+    //             delegation.strategyShares[_strategy] = 0;
+    //         }
+    //         emit RecoveredFromEmergency(_validators[i], amount, _strategy, strategy.stakeToken);
+    //     }
+    // }
 
     /**
      * @dev set basis points of profit sharing
@@ -570,37 +632,36 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function setProfitSharing(address _validator, uint256 _profitSharingBPS) external {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
-        DelegatedStakingHelper._validateAdmin(validator.admin, msg.sender);
-        require(_profitSharingBPS >= minProfitSharingBPS, "bad min BPS");
-        DelegatedStakingHelper._validateBPS(_profitSharingBPS, BPS_DENOMINATOR);
+        if (validator.admin != msg.sender) revert AdminBadRole();
+        if (_profitSharingBPS < minProfitSharingBPS
+            || _profitSharingBPS > BPS_DENOMINATOR) revert WrongArgument();
         validator.profitSharingBPS = _profitSharingBPS;
     }
 
-    /**
-     * @dev Distributes validator rewards to validator/delegators
-     * @param _validator address of validator
-     * @param _collateral address of collateral
-     * @param _amount amount of token
-     */
-    function distributeRewards(address _validator, address _collateral, uint256 _amount) external {
-        Collateral storage collateral = collaterals[_collateral];
+    // /**
+    //  * @dev Distributes validator rewards to validator/delegators
+    //  * @param _validator address of validator
+    //  * @param _collateral address of collateral
+    //  * @param _amount amount of token
+    //  */
+    // function distributeRewards(address _validator, address _collateral, uint256 _amount) external nonReentrant{
+    //     Collateral storage collateral = collaterals[_collateral];
+    //     if (!collateral.isEnabled) revert CollateralDisabled();
+    //     IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
+    //     collateral.totalLocked += _amount;
+    //     collateral.rewards +=_amount;
+    //     accumulatedProtocolRewards[_collateral] += _amount;
 
-        DelegatedStakingHelper._validateCollateral(collateral.isEnabled);
-        IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
-        collateral.totalLocked += _amount;
-        collateral.rewards +=_amount;
-        accumulatedProtocolRewards[_collateral] += _amount;
+    //     ValidatorInfo storage validator = getValidatorInfo[_validator];
+    //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
+    //     uint256 delegatorsAmount = _amount * validator.profitSharingBPS / BPS_DENOMINATOR;
 
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-        uint256 delegatorsAmount = _amount * validator.profitSharingBPS / BPS_DENOMINATOR;
+    //     validatorCollateral.stakedAmount += _amount - delegatorsAmount;
+    //     validatorCollateral.accumulatedRewards += _amount - delegatorsAmount;
 
-        validatorCollateral.stakedAmount += _amount - delegatorsAmount;
-        validatorCollateral.accumulatedRewards += _amount - delegatorsAmount;
-
-        _distributeDelegatorRewards(_validator, _collateral, delegatorsAmount);
-        emit RewardsDistributed(_validator, _collateral, _amount);
-    }
+    //     _distributeDelegatorRewards(_validator, _collateral, delegatorsAmount);
+    //     emit RewardsDistributed(_validator, _collateral, _amount);
+    // }
 
     /**
      * @dev Distributes validator rewards to delegators
@@ -612,23 +673,42 @@ contract DelegatedStaking is AccessControl, Initializable {
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
         // All colaterals of the validator valued in usd
         uint256 totalUSDAmount = getTotalUSDAmount(_validator);
+        console.log("_distributeDelegatorRewards  _validator %s collateral %s delegatorsAmount %s",_validator, _collateral, _delegatorsAmount);
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             address currentCollateral = collateralAddresses[i];
+            //LINK pool | USDT pool
+            //1.6 link  |  0.4
             // How many rewards each collateral receives
+            console.log("currentCollateral %s", currentCollateral);
             uint256 accTokens = _delegatorsAmount *
                 getPoolUSDAmount(_validator, currentCollateral) /
                 totalUSDAmount;
+            console.log("getPoolUSDAmount %s", getPoolUSDAmount(_validator, currentCollateral));
+            console.log("totalUSDAmount %s", totalUSDAmount);
+            console.log("accTokens %s",accTokens);
 
-            uint256 accTokensPerShare = validatorCollateral.shares > 0
-                ? accTokens * 1e18 / validatorCollateral.shares
-                : 0;
+            // 0.04 link per link share | 0.004
 
             if(currentCollateral==_collateral){
+                console.log("poolShares %s", validatorCollateral.shares);
+                uint256 accTokensPerShare = validatorCollateral.shares > 0
+                    ? accTokens * 1e18 / validatorCollateral.shares //TODO: can be rollback 1e18 in current changes
+                    : 0;
+                console.log("accTokensPerShare+ %s", accTokensPerShare);
                 //Increase accumulated rewards per share
-                validatorCollateral.accTokensPerShare += accTokensPerShare;
+                validatorCollateral.accTokensPerShare += accTokensPerShare; //+0.04
+                console.log("validatorCollateral.accTokensPerShare= %s", validatorCollateral.accTokensPerShare);
             } else {
+                uint256 poolShares = getValidatorInfo[_validator].collateralPools[currentCollateral].shares;
+                uint256 accTokensPerShare = poolShares > 0
+                    ? accTokens * 1e18 / poolShares //TODO: we need to increase 1e18 to 1e30 accTokensPerShare is low for pair link - USDT reward
+                                                    // we have 1e6*1e18/1e18 it's soo low to precision +accTokensPerShare 9758
+                    : 0;
+                console.log("poolShares %s", poolShares);
+                console.log("accTokensPerShare+ %s", accTokensPerShare);
                 //Add a reward pool dependency
-                validatorCollateral.dependsAccTokensPerShare[currentCollateral] += accTokensPerShare;
+                validatorCollateral.dependsAccTokensPerShare[currentCollateral] += accTokensPerShare; // + 0.004
+                console.log("dependsAccTokensPerShare= %s", validatorCollateral.dependsAccTokensPerShare[currentCollateral]);
             }
         }
     }
@@ -638,248 +718,257 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _collateral address of collateral
      * @param _amount amount of token
      */
-    function distributeValidatorRewards(address _collateral, uint256 _amount) external {
+    function distributeValidatorRewards(address _collateral, uint256 _amount) external nonReentrant{
         Collateral storage collateral = collaterals[_collateral];
-
-        DelegatedStakingHelper._validateCollateral(collateral.isEnabled);
+        if (!collateral.isEnabled) revert CollateralDisabled();
         IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
+        //TODO: check collateral.totalLocked += _amount;
         collateral.totalLocked += _amount;
         collateral.rewards +=_amount;
         accumulatedProtocolRewards[_collateral] += _amount;
-
+        //TODO: neet to check is validator active
         for (uint256 i=0; i<validatorAddresses.length; i++) {
             address _validator = validatorAddresses[i];
             ValidatorInfo storage validator = getValidatorInfo[_validator];
             ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-            uint256 validatorAmount =  validator.rewardWeightCoefficient/weightCoefficientDenominator * _amount;
+            uint256 validatorAmount =  validator.rewardWeightCoefficient * _amount / weightCoefficientDenominator;
             uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
 
-            validatorCollateral.stakedAmount += validatorAmount;
+            console.log("_validator %s",_validator);
+            console.log("validatorAmount  %s", validatorAmount);
+            console.log("delegatorsAmount %s", delegatorsAmount);
+
             validatorCollateral.accumulatedRewards += validatorAmount;
-
+            validatorCollateral.rewardsForWithdrawal += validatorAmount - delegatorsAmount;
             // mint validatorAmount delegators[validator.admin]
-
+            console.log("validatorCollateral.stakedAmount before %s", validatorCollateral.stakedAmount);
             _distributeDelegatorRewards(_validator, _collateral, delegatorsAmount);
+            //after distribution
+            // validatorCollateral.stakedAmount += delegatorsAmount;
+            console.log("validatorCollateral.stakedAmount after increase %s", validatorCollateral.stakedAmount);
             emit RewardsDistributed(_validator, _collateral, _amount);
         }
     }
 
     /* ADMIN */
 
-    /**
-     * @dev Withdraws all funds from the strategy.
-     * @param _strategy Strategy to withdraw from.
-     */
-    function emergencyWithdrawFromStrategy(address _strategy, address _stakeToken)
-        external
-        onlyAdmin()
-    {
-        Strategy storage strategy = strategies[_strategy][_stakeToken];
-        DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
-        IStrategy strategyController = IStrategy(_strategy);
-        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
-        IERC20(strategy.strategyToken).safeApprove(address(_strategy), 0);
-        IERC20(strategy.strategyToken).safeApprove(address(_strategy), type(uint256).max);
-        uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
-        strategyController.withdrawAll(strategy.stakeToken);
-        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
-        uint256 receivedAmount = afterBalance - beforeBalance;
-        stakeCollateral.totalLocked += receivedAmount;
-        strategy.totalReserves = receivedAmount;
-        strategy.isEnabled = false;
-        strategy.isRecoverable = true;
-        emit EmergencyWithdrawnFromStrategy(receivedAmount, _strategy, strategy.stakeToken);
-    }
+    // /**
+    //  * @dev Withdraws all funds from the strategy.
+    //  * @param _strategy Strategy to withdraw from.
+    //  */
+    // function emergencyWithdrawFromStrategy(address _strategy, address _stakeToken)
+    //     external
+    //     onlyAdmin
+    // {
+    //     Strategy storage strategy = strategies[_strategy][_stakeToken];
+    //     DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
+    //     IStrategy strategyController = IStrategy(_strategy);
+    //     Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
+    //     IERC20(strategy.strategyToken).safeApprove(address(_strategy), 0);
+    //     IERC20(strategy.strategyToken).safeApprove(address(_strategy), type(uint256).max);
+    //     uint256 beforeBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+    //     strategyController.withdrawAll(strategy.stakeToken);
+    //     uint256 afterBalance = strategyController.updateReserves(address(this), strategy.stakeToken);
+    //     uint256 receivedAmount = afterBalance - beforeBalance;
+    //     stakeCollateral.totalLocked += receivedAmount;
+    //     strategy.totalReserves = receivedAmount;
+    //     strategy.isEnabled = false;
+    //     strategy.isRecoverable = true;
+    //     emit EmergencyWithdrawnFromStrategy(receivedAmount, _strategy, strategy.stakeToken);
+    // }
 
-    function resetStrategy(address _strategy, address _stakeToken)
-        external
-        onlyAdmin()
-    {
-        Strategy storage strategy = strategies[_strategy][_stakeToken];
-        require(!strategy.isEnabled, "strategy enabled");
-        _recoverFromEmergency(_strategy, _stakeToken, validatorAddresses);
-        strategy.totalReserves = 0;
-        strategy.totalShares = 0;
-        strategy.isEnabled = true;
-        strategy.isRecoverable = false;
-        emit StrategyReset(_strategy, strategy.stakeToken);
-    }
+    // function resetStrategy(address _strategy, address _stakeToken)
+    //     external
+    //     onlyAdmin
+    // {
+    //     Strategy storage strategy = strategies[_strategy][_stakeToken];
+    //     require(!strategy.isEnabled, "strategy enabled");
+    //     _recoverFromEmergency(_strategy, _stakeToken, validatorAddresses);
+    //     strategy.totalReserves = 0;
+    //     strategy.totalShares = 0;
+    //     strategy.isEnabled = true;
+    //     strategy.isRecoverable = false;
+    //     emit StrategyReset(_strategy, strategy.stakeToken);
+    // }
 
     /**
      * @dev Change withdrawal timelock.
      * @param _newTimelock New timelock.
      */
-    function setTimelock(uint256 _newTimelock) external onlyAdmin() {
-        timelock = _newTimelock;
+    function setWithdrawTimelock(uint256 _newTimelock) external onlyAdmin {
+        withdrawTimelock = _newTimelock;
+        emit WithdrawTimelockUpdated(_newTimelock);
     }
 
     /**
      * @dev set min basis points of profit sharing
      * @param _profitSharingBPS profit sharing basis points
      */
-    function setMinProfitSharing(uint256 _profitSharingBPS) external onlyAdmin() {
-        DelegatedStakingHelper._validateBPS(_profitSharingBPS, BPS_DENOMINATOR);
+    function setMinProfitSharing(uint256 _profitSharingBPS) external onlyAdmin {
+        if (_profitSharingBPS > BPS_DENOMINATOR) revert WrongArgument();
         minProfitSharingBPS = _profitSharingBPS;
+        //TODO: need to check all validators that have ProfitSharingBPS greated then minProfitSharingBPS
     }
 
-    /**
-     * @dev Confiscate collateral.
-     * @param _validator Validator address.
-     * @param _collaterals Collateral addresses.
-     * @param _bpsAmount Basis points to slash.
-     */
-    function liquidate(address _validator, address[] calldata _collaterals, uint256 _bpsAmount) external onlyAdmin() {
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        uint256 _delegatorBPS = validator.profitSharingBPS * _bpsAmount / BPS_DENOMINATOR;
-        uint256 validatorBPS = _bpsAmount - _delegatorBPS;
-        for (uint256 i=0; i<_collaterals.length; i++) {
-            address _collateral = _collaterals[i];
-            uint256 delegatorBPS = _delegatorBPS;
-            ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-            DelegatorInfo storage delegator = validator.delegators[validator.admin];
-            DelegatedStakingHelper._validateDelegator(delegator.exists);
-            DelegationInfo storage delegation = validatorCollateral.delegation[validator.admin];
-            Collateral storage collateral = collaterals[_collateral];
-            uint256 totalSlashed;
-            if (delegation.shares/validatorCollateral.shares < validatorBPS) {
-                liquidateDelegator(_validator, validator.admin, _collateral, BPS_DENOMINATOR);
-                delegatorBPS += validatorBPS - delegation.shares/validatorCollateral.shares;
-            } else {
-                liquidateDelegator(_validator, validator.admin, _collateral, validatorBPS);
-            }
-            uint256 slashingFraction = delegatorBPS / BPS_DENOMINATOR;
-            for (uint256 j=0; j<strategyControllerAddresses.length; j++) {
-                address _strategyController = strategyControllerAddresses[j];
-                Strategy storage strategy = strategies[_strategyController][_collateral];
-                uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
-                strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-                uint256 _strategyShares = validatorCollateral.strategyShares[_strategyController] * slashingFraction;
-                uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
-                    _strategyShares, strategy.totalReserves, strategy.totalShares
-                );
-                validatorCollateral.strategyShares[_strategyController] -= _strategyShares;
-                strategy.totalShares -= _strategyShares;
-                IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
-                IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
-                IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
-                uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
-                strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-                uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
-                collateral.totalLocked += rewardAmount;
-                collateral.rewards += rewardAmount;
-                strategy.rewards += rewardAmount;
-                accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
-                uint256 slashedStrategyShares = validatorCollateral.shares > 0
-                    ? DelegatedStakingHelper._calculateShares(
-                        stakeTokenCollateral,
-                        validatorCollateral.shares,
-                        validatorCollateral.stakedAmount)
-                    : stakeTokenCollateral;
-                validatorCollateral.stakedAmount -= stakeTokenCollateral;
-                validatorCollateral.shares -= slashedStrategyShares;
-                collateral.confiscatedFunds += stakeTokenCollateral;
-                totalSlashed += stakeTokenCollateral;
-            }
-            uint256 _shares = (validatorCollateral.shares - validatorCollateral.locked) * slashingFraction;
-            uint256 slashedAmount = DelegatedStakingHelper._calculateFromShares(
-                _shares,
-                validatorCollateral.stakedAmount,
-                validatorCollateral.shares
-            );
-            validatorCollateral.shares -= _shares;
-            validatorCollateral.stakedAmount -= slashedAmount;
-            collateral.confiscatedFunds += slashedAmount;
-            collateral.totalLocked -= slashedAmount;
-            totalSlashed += slashedAmount;
+    // /**
+    //  * @dev Confiscate collateral.
+    //  * @param _validator Validator address.
+    //  * @param _collaterals Collateral addresses.
+    //  * @param _bpsAmount Basis points to slash.
+    //  */
+    // function liquidate(address _validator, address[] calldata _collaterals, uint256 _bpsAmount) external onlyAdmin {
+    //     ValidatorInfo storage validator = getValidatorInfo[_validator];
+    //     uint256 _delegatorBPS = validator.profitSharingBPS * _bpsAmount / BPS_DENOMINATOR;
+    //     uint256 validatorBPS = _bpsAmount - _delegatorBPS;
+    //     for (uint256 i=0; i<_collaterals.length; i++) {
+    //         address _collateral = _collaterals[i];
+    //         uint256 delegatorBPS = _delegatorBPS;
+    //         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
+    //         DelegatorInfo storage delegator = validator.delegators[validator.admin];
+    //         DelegatedStakingHelper._validateDelegator(delegator.exists);
+    //         DelegatorsInfo storage delegation = validatorCollateral.delegation[validator.admin];
+    //         Collateral storage collateral = collaterals[_collateral];
+    //         uint256 totalSlashed;
+    //         if (delegation.shares/validatorCollateral.shares < validatorBPS) {
+    //             liquidateDelegator(_validator, validator.admin, _collateral, BPS_DENOMINATOR);
+    //             delegatorBPS += validatorBPS - delegation.shares/validatorCollateral.shares;
+    //         } else {
+    //             liquidateDelegator(_validator, validator.admin, _collateral, validatorBPS);
+    //         }
+    //         uint256 slashingFraction = delegatorBPS / BPS_DENOMINATOR;
+    //         for (uint256 j=0; j<strategyControllerAddresses.length; j++) {
+    //             address _strategyController = strategyControllerAddresses[j];
+    //             Strategy storage strategy = strategies[_strategyController][_collateral];
+    //             uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
+    //             strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //             uint256 _strategyShares = validatorCollateral.strategyShares[_strategyController] * slashingFraction;
+    //             uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
+    //                 _strategyShares, strategy.totalReserves, strategy.totalShares
+    //             );
+    //             validatorCollateral.strategyShares[_strategyController] -= _strategyShares;
+    //             strategy.totalShares -= _strategyShares;
+    //             IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
+    //             IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
+    //             IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
+    //             uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
+    //             strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //             uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
+    //             collateral.totalLocked += rewardAmount;
+    //             collateral.rewards += rewardAmount;
+    //             strategy.rewards += rewardAmount;
+    //             accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
+    //             uint256 slashedStrategyShares = validatorCollateral.shares > 0
+    //                 ? DelegatedStakingHelper._calculateShares(
+    //                     stakeTokenCollateral,
+    //                     validatorCollateral.shares,
+    //                     validatorCollateral.stakedAmount)
+    //                 : stakeTokenCollateral;
+    //             validatorCollateral.stakedAmount -= stakeTokenCollateral;
+    //             validatorCollateral.shares -= slashedStrategyShares;
+    //             collateral.confiscatedFunds += stakeTokenCollateral;
+    //             totalSlashed += stakeTokenCollateral;
+    //         }
+    //         uint256 _shares = (validatorCollateral.shares - validatorCollateral.locked) * slashingFraction;
+    //         uint256 slashedAmount = DelegatedStakingHelper._calculateFromShares(
+    //             _shares,
+    //             validatorCollateral.stakedAmount,
+    //             validatorCollateral.shares
+    //         );
+    //         validatorCollateral.shares -= _shares;
+    //         validatorCollateral.stakedAmount -= slashedAmount;
+    //         collateral.confiscatedFunds += slashedAmount;
+    //         collateral.totalLocked -= slashedAmount;
+    //         totalSlashed += slashedAmount;
 
-            IERC20(_collateral).safeTransfer(slashingTreasury, totalSlashed);
-            emit Liquidated(_validator, _collateral, totalSlashed);
-        }
-    }
+    //         IERC20(_collateral).safeTransfer(slashingTreasury, totalSlashed);
+    //         emit Liquidated(_validator, _collateral, totalSlashed);
+    //     }
+    // }
 
-    /**
-     * @dev Confiscate delegator collateral.
-     * @param _validator Validator address.
-     * @param _delegator Delegator address.
-     * @param _collateral Index of collateral.
-     * @param _bpsAmount Basis points to slash.
-     */
-    function liquidateDelegator(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) public onlyAdmin() {
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-        DelegatorInfo storage delegator = validator.delegators[_delegator];
-        DelegationInfo storage delegation = validatorCollateral.delegation[_delegator];
-        DelegatedStakingHelper._validateDelegator(delegator.exists);
-        Collateral storage collateral = collaterals[_collateral];
-        uint256 slashingFraction = _bpsAmount/BPS_DENOMINATOR;
-        uint256 totalSlashed;
-        address _strategyController;
-        for (uint i=0; i<strategyControllerAddresses.length; i++) {
-            _strategyController = strategyControllerAddresses[i];
-            Strategy storage strategy = strategies[_strategyController][_collateral];
-            uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
-            strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-            uint256 _strategyShares = delegation.strategyShares[_strategyController] * slashingFraction;
-            uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
-                _strategyShares, strategy.totalReserves, strategy.totalShares
-            );
-            validatorCollateral.strategyShares[_strategyController] -= _strategyShares;
-            strategy.totalShares -= _strategyShares;
-            IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
-            IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
-            IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
-            uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
-            strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-            uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
-            collateral.totalLocked += rewardAmount;
-            collateral.rewards += rewardAmount;
-            strategy.rewards += rewardAmount;
-            accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
-            uint256 rewardShares = validatorCollateral.shares > 0
-                ? DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares, validatorCollateral.stakedAmount)
-                : rewardAmount;
-            delegation.shares += rewardShares;
-            uint256 slashedStrategyShares = validatorCollateral.shares > 0
-                ? DelegatedStakingHelper._calculateShares(
-                    stakeTokenCollateral,
-                    validatorCollateral.shares,
-                    validatorCollateral.stakedAmount)
-                : stakeTokenCollateral;
-            delegation.shares -= slashedStrategyShares;
-            delegation.locked -= slashedStrategyShares;
-            validatorCollateral.stakedAmount -= stakeTokenCollateral;
-            validatorCollateral.shares -= slashedStrategyShares;
-            collateral.confiscatedFunds += stakeTokenCollateral;
-            totalSlashed += stakeTokenCollateral;
-        }
-        uint256 _shares = (delegation.shares - delegation.locked) * slashingFraction;
-        uint256 slashedAmount = DelegatedStakingHelper._calculateFromShares(
-            _shares,
-            validatorCollateral.stakedAmount,
-            validatorCollateral.shares
-        );
-        delegation.shares -= _shares;
-        validatorCollateral.shares -= _shares;
-        validatorCollateral.stakedAmount -= slashedAmount;
-        collateral.confiscatedFunds += slashedAmount;
-        collateral.totalLocked -= slashedAmount;
-        totalSlashed += slashedAmount;
-        delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                            delegation.shares,
-                            validatorCollateral.accTokensPerShare
-                        );
+    // /**
+    //  * @dev Confiscate delegator collateral.
+    //  * @param _validator Validator address.
+    //  * @param _delegator Delegator address.
+    //  * @param _collateral Index of collateral.
+    //  * @param _bpsAmount Basis points to slash.
+    //  */
+    // function liquidateDelegator(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) public onlyAdmin {
+    //     ValidatorInfo storage validator = getValidatorInfo[_validator];
+    //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
+    //     DelegatorInfo storage delegator = validator.delegators[_delegator];
+    //     DelegatorsInfo storage delegation = validatorCollateral.delegation[_delegator];
+    //     DelegatedStakingHelper._validateDelegator(delegator.exists);
+    //     Collateral storage collateral = collaterals[_collateral];
+    //     uint256 slashingFraction = _bpsAmount/BPS_DENOMINATOR;
+    //     uint256 totalSlashed;
+    //     address _strategyController;
+    //     for (uint i=0; i<strategyControllerAddresses.length; i++) {
+    //         _strategyController = strategyControllerAddresses[i];
+    //         Strategy storage strategy = strategies[_strategyController][_collateral];
+    //         uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
+    //         strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //         uint256 _strategyShares = delegation.strategyShares[_strategyController] * slashingFraction;
+    //         uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
+    //             _strategyShares, strategy.totalReserves, strategy.totalShares
+    //         );
+    //         validatorCollateral.strategyShares[_strategyController] -= _strategyShares;
+    //         strategy.totalShares -= _strategyShares;
+    //         IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
+    //         IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
+    //         IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
+    //         uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
+    //         strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //         uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
+    //         collateral.totalLocked += rewardAmount;
+    //         collateral.rewards += rewardAmount;
+    //         strategy.rewards += rewardAmount;
+    //         accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
+    //         uint256 rewardShares = validatorCollateral.shares > 0
+    //             ? DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares, validatorCollateral.stakedAmount)
+    //             : rewardAmount;
+    //         delegation.shares += rewardShares;
+    //         uint256 slashedStrategyShares = validatorCollateral.shares > 0
+    //             ? DelegatedStakingHelper._calculateShares(
+    //                 stakeTokenCollateral,
+    //                 validatorCollateral.shares,
+    //                 validatorCollateral.stakedAmount)
+    //             : stakeTokenCollateral;
+    //         delegation.shares -= slashedStrategyShares;
+    //         delegation.locked -= slashedStrategyShares;
+    //         validatorCollateral.stakedAmount -= stakeTokenCollateral;
+    //         validatorCollateral.shares -= slashedStrategyShares;
+    //         collateral.confiscatedFunds += stakeTokenCollateral;
+    //         totalSlashed += stakeTokenCollateral;
+    //     }
+    //     uint256 _shares = (delegation.shares - delegation.locked) * slashingFraction;
+    //     uint256 slashedAmount = DelegatedStakingHelper._calculateFromShares(
+    //         _shares,
+    //         validatorCollateral.stakedAmount,
+    //         validatorCollateral.shares
+    //     );
+    //     delegation.shares -= _shares;
+    //     validatorCollateral.shares -= _shares;
+    //     validatorCollateral.stakedAmount -= slashedAmount;
+    //     collateral.confiscatedFunds += slashedAmount;
+    //     collateral.totalLocked -= slashedAmount;
+    //     totalSlashed += slashedAmount;
+    //     delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+    //                         delegation.shares,
+    //                         validatorCollateral.accTokensPerShare
+    //                     );
 
 
-        IERC20(_collateral).safeTransfer(slashingTreasury, totalSlashed);
-        emit LiquidatedDelegator(_validator, _delegator, _collateral, totalSlashed);
-    }
+    //     IERC20(_collateral).safeTransfer(slashingTreasury, totalSlashed);
+    //     emit LiquidatedDelegator(_validator, _delegator, _collateral, totalSlashed);
+    // }
 
     /**
      * @dev Updates slashing treasury address.
      * @param _newTreasury New slashing treasury address.
      */
-    function updateSlashingTreasury(address _newTreasury) external onlyAdmin() {
+    function updateSlashingTreasury(address _newTreasury) external onlyAdmin {
         slashingTreasury = _newTreasury;
+        emit UpdateSlashingTreasury(_newTreasury);
     }
 
     /**
@@ -893,29 +982,43 @@ contract DelegatedStaking is AccessControl, Initializable {
         uint256 _rewardWeightCoefficient,
         uint256 _profitSharingBPS
     )   external
-        onlyAdmin()
+        onlyAdmin
     {
+        if (_profitSharingBPS < minProfitSharingBPS
+            || _profitSharingBPS > BPS_DENOMINATOR) revert WrongArgument();
+
         ValidatorInfo storage validator = getValidatorInfo[_validator];
+        if (!validator.isExist) {
+            validatorAddresses.push(_validator);
+        }
         validator.admin = _admin;
         validator.rewardWeightCoefficient = _rewardWeightCoefficient;
         weightCoefficientDenominator += _rewardWeightCoefficient;
         validator.profitSharingBPS = _profitSharingBPS;
-        validatorAddresses.push(_validator);
+        //TODO: how to remove address if obsolete validator
+        //TODO: add update method with isEnabled
     }
 
     /**
      * @dev Add a new collateral
      * @param _token Address of token
      */
-    function addCollateral(address _token, uint8 _decimals, bool _isUSDStable) external onlyAdmin() {
+    function addCollateral(
+        address _token,
+        uint8 _decimals,
+        bool _isUSDStable,
+        uint256 _maxStakeAmount
+    ) external onlyAdmin {
         Collateral storage collateral = collaterals[_token];
-        if (!collateral.isSupported){
-            collateral.isSupported = true;
-            collateral.isEnabled = true;
-            collateral.isUSDStable = _isUSDStable;
-            collateral.decimals = _decimals;
-            collateralAddresses.push(_token);
-        }
+        if (collateral.isExist) revert AlreadyExist();
+
+        collateral.isExist = true;
+        collateral.isEnabled = true;
+        collateral.isUSDStable = _isUSDStable;
+        //TODO: get decimals in contract
+        collateral.decimals = _decimals;
+        collateral.maxStakeAmount = _maxStakeAmount;
+        collateralAddresses.push(_token);
     }
 
     /**
@@ -923,49 +1026,41 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _collateral address of collateral
      * @param _isEnabled bool of enable
      */
-    function updateCollateral(address _collateral, bool _isEnabled) external onlyAdmin() {
+    function enableCollateral(address _collateral, bool _isEnabled) external onlyAdmin {
         collaterals[_collateral].isEnabled = _isEnabled;
+        emit EnableCollateral(_collateral, _isEnabled);
     }
 
     /**
      * @dev update collateral max amount
      * @param _collateral address of collateral
-     * @param _amount max amount
+     * @param _maxStakeAmount max amount
      */
-    function updateCollateral(address _collateral, uint256 _amount) external onlyAdmin() {
-        collaterals[_collateral].maxStakeAmount = _amount;
+    function updateCollateral(address _collateral, uint256 _maxStakeAmount) external onlyAdmin {
+        collaterals[_collateral].maxStakeAmount = _maxStakeAmount;
+        emit UpdateCollateral(_collateral, _maxStakeAmount);
     }
 
-    /**
-     * @dev update validator collateral max amount
-     * @param _collateral address of collateral
-     * @param _amount max amount
-     */
-    function updateValidatorCollateral(address _validator, address _collateral, uint256 _amount) external onlyAdmin() {
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        require(_amount <= collaterals[_collateral].maxStakeAmount, "collateral limited");
-        validatorCollateral.maxStakeAmount = _amount;
-    }
 
     /**
-     * @dev update validator reward weight coefficient
-     * @param _validator address of validator
-     * @param _amount reward weight coefficient
-     */
-    function updateRewardWeight(address _validator, uint256 _amount) external onlyAdmin() {
+    * @dev update validator reward weight coefficient
+    * @param _validator address of validator
+    * @param _value reward weight coefficient
+    */
+    function updateRewardWeight(address _validator, uint256 _value) external onlyAdmin {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
-        require(_amount <= MAX_COEFFICIENT, "bad coefficient");
         weightCoefficientDenominator -= validator.rewardWeightCoefficient;
-        validator.rewardWeightCoefficient = _amount;
-        weightCoefficientDenominator += _amount;
+        validator.rewardWeightCoefficient = _value;
+        weightCoefficientDenominator += _value;
+        emit UpdateRewardWeight(_validator, _value);
     }
 
     /**
      * @dev Add a new strategy controller
      * @param _strategyController Strategy controller address
      */
-    function addStrategyController(address _strategyController) external onlyAdmin() {
-        require(!strategyControllerExists[_strategyController], "already exists");
+    function addStrategyController(address _strategyController) external onlyAdmin {
+        if (strategyControllerExists[_strategyController]) revert AlreadyExist();
         strategyControllerAddresses.push(_strategyController);
         strategyControllerExists[_strategyController] = true;
     }
@@ -976,65 +1071,52 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @param _stakeToken collateralId of stakeToken
      * @param _rewardToken collateralId of rewardToken
      */
-    function addStrategy(address _strategyController, address _stakeToken, address _rewardToken) external onlyAdmin() {
+    function addStrategy(address _strategyController, address _stakeToken, address _rewardToken) external onlyAdmin {
         Strategy storage strategy = strategies[_strategyController][_stakeToken];
-        require(!strategy.isSupported, "already exists");
+        if (strategy.isExist)  revert AlreadyExist();
         strategy.stakeToken = _stakeToken;
         strategy.strategyToken = IStrategy(_strategyController).strategyToken(_stakeToken);
         strategy.rewardToken = _rewardToken;
-        strategy.isSupported = true;
         strategy.isEnabled = true;
+        strategy.isExist = true;
     }
 
-    /**
-     * @dev enable strategy
-     * @param _strategy address of strategy
-     * @param _stakeToken address of token
-     * @param _isEnabled bool of enable
-     */
-    function updateStrategy(address _strategy, address _stakeToken, bool _isEnabled) external onlyAdmin() {
-        strategies[_strategy][_stakeToken].isEnabled = _isEnabled;
-    }
+    // /**
+    //  * @dev enable strategy
+    //  * @param _strategy address of strategy
+    //  * @param _stakeToken address of token
+    //  * @param _isEnabled bool of enable
+    //  */
+    // function updateStrategy(address _strategy, address _stakeToken, bool _isEnabled) external onlyAdmin {
+    //     strategies[_strategy][_stakeToken].isEnabled = _isEnabled;
+    // }
+
+    // /**
+    //  * @dev enable strategy recoverable
+    //  * @param _strategy address of strategy
+    //  * @param _stakeToken address of token
+    //  * @param _isRecoverable bool of recoverable
+    //  */
+    // function updateStrategyRecoverable(address _strategy, address _stakeToken, bool _isRecoverable) external onlyAdmin {
+    //     strategies[_strategy][_stakeToken].isRecoverable = _isRecoverable;
+    // }
 
     /**
-     * @dev enable strategy recoverable
-     * @param _strategy address of strategy
-     * @param _stakeToken address of token
-     * @param _isRecoverable bool of recoverable
+     * @dev Pause/unpause unstaking request.
+     * @param _validator Validator address.
+     * @param _withdrawIds Withdraw requests ids.
+     * @param _paused pause/unpause.
      */
-    function updateStrategyRecoverable(address _strategy, address _stakeToken, bool _isRecoverable) external onlyAdmin() {
-        strategies[_strategy][_stakeToken].isRecoverable = _isRecoverable;
-    }
-
-    /**
-     * @dev Pause unstaking request.
-     * @param _delegator address of delegator
-     */
-    function pauseUnstake(address _delegator) external onlyAdmin() {
-        DelegatorInfo storage delegator = getDelegatorInfo[_delegator];
-        for (uint256 i = 0; i < delegator.withdrawalCount; i ++) {
-            WithdrawalInfo storage withdrawal = delegator.withdrawals[i];
-            if (withdrawal.paused == false && withdrawal.executed == false) {
-                withdrawal.paused = true;
-                withdrawal.pausedTime = block.timestamp;
-                emit UnstakePaused(_delegator, i, block.timestamp);
-            }
-        }
-    }
-
-    /**
-     * @dev Resume unstaking request.
-     * @param _delegator address of delegator
-     */
-    function resumeUnstake(address _delegator) external onlyAdmin() {
-        DelegatorInfo storage delegator = getDelegatorInfo[_delegator];
-        uint256 i;
-        for (i = 0; i < delegator.withdrawalCount; i ++) {
-            WithdrawalInfo storage withdrawal = delegator.withdrawals[i];
-            if (withdrawal.paused == true && withdrawal.executed == false) {
-                withdrawal.paused = false;
-                withdrawal.timelock += block.timestamp - withdrawal.pausedTime;
-                emit UnstakeResumed(_delegator, i, block.timestamp);
+    function pauseUnstakeRequests(address _validator, uint256[] memory _withdrawIds, bool _paused) external onlyAdmin {
+        WithdrawalRequests storage withdrawalRequests = getWithdrawalRequests[_validator];
+        uint256 maxCount = withdrawalRequests.count;
+        for (uint256 i = 0; i < _withdrawIds.length; i++) {
+            uint256 currentWithdrawId = _withdrawIds[i];
+            if (currentWithdrawId >= maxCount) revert WrongRequest(currentWithdrawId);
+            WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[currentWithdrawId];
+            if (!withdrawal.executed) {
+                 withdrawal.paused = _paused;
+                 emit UnstakePaused(_validator, currentWithdrawId, _paused);
             }
         }
     }
@@ -1043,7 +1125,7 @@ contract DelegatedStaking is AccessControl, Initializable {
      * @dev Set Price Consumer
      * @param _priceConsumer address of price consumer
      */
-    function setPriceConsumer(IPriceConsumer _priceConsumer) external onlyAdmin() {
+    function setPriceConsumer(IPriceConsumer _priceConsumer) external onlyAdmin {
         priceConsumer = _priceConsumer;
     }
 
@@ -1090,17 +1172,22 @@ contract DelegatedStaking is AccessControl, Initializable {
     function _creditDelegatorRewards(address _validator, address _delegator, address _collateral) internal returns(uint256) {
         uint256 collateralDependencyRewards;
 
+        console.log("_creditDelegatorRewards _validator +%s _delegator %s _collateral %s", _validator, _delegator, _collateral);
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             address rewardCollateral = collateralAddresses[i];
+            console.log("rewardCollateral %s", rewardCollateral);
             ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[rewardCollateral];
-            DelegationInfo storage delegation = validatorCollateral.delegation[_delegator];
-            uint256 pendingReward = delegation.shares
+            DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
+            uint256 pendingReward = delegator.shares
                                 * validatorCollateral.accTokensPerShare
-                                / 1e18;
+                                / 1e18; //TODO:???? (10** collaterals[_collateral].decimals);
 
             // accumulated token per share for collateral that exists reward in rewardCollateral
+            // when rewards are distributed in e.g. USDT, shares of other collateral pools (e.g. DBR) receive rewards in USDT (dependencyRewards)
             uint256 dependencyRewards = _calculateDependencyRewards(_validator, _delegator, rewardCollateral);
-            pendingReward = pendingReward + dependencyRewards - delegation.passedRewards;
+            console.log("dependencyRewards = %s", dependencyRewards);
+            console.log("delegator.passedRewards = %s",  delegator.passedRewards);
+            pendingReward = pendingReward + dependencyRewards - delegator.passedRewards;
             if (pendingReward > 0) {
                 uint256 pendingShares = DelegatedStakingHelper._calculateShares(
                                             pendingReward, validatorCollateral.shares,
@@ -1108,16 +1195,18 @@ contract DelegatedStaking is AccessControl, Initializable {
                                         );
                 validatorCollateral.stakedAmount += pendingReward;
                 validatorCollateral.shares += pendingShares;
-                delegation.accumulatedRewards += pendingReward;
-                delegation.shares += pendingShares;
+                delegator.accumulatedRewards += pendingReward;
+                delegator.shares += pendingShares;
+                console.log("delegator.accumulatedRewards +%s = %s", pendingReward, delegator.accumulatedRewards);
+                console.log("delegator.shares +%s = %s", pendingShares, delegator.shares);
             }
-
+            //TODO: can be add if(rewardCollateral != _collateral)
             // accumulated token per share for current collateral
-            delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-                            delegation.shares,
-                            validatorCollateral.accTokensPerShare)
+            delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
+                            delegator.shares,
+                            validatorCollateral.accTokensPerShare)//1* 0.04
                             + dependencyRewards;
-
+            console.log("delegator.passedRewards %s", delegator.passedRewards);
             if (rewardCollateral == _collateral)
                 collateralDependencyRewards = dependencyRewards;
         }
@@ -1136,7 +1225,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         returns(uint256)
     {
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_rewardCollateral];
-        DelegationInfo storage delegation = validatorCollateral.delegation[_delegator];
+        DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
 
         // accumulated token per share for collateral that exists reward in rewardCollateral
         uint256 dependencyRewards;
@@ -1144,7 +1233,7 @@ contract DelegatedStaking is AccessControl, Initializable {
             address collateral = collateralAddresses[k];
                 if(collateral != _rewardCollateral) {
                     dependencyRewards +=
-                            delegation.shares
+                            delegator.shares
                             * validatorCollateral.dependsAccTokensPerShare[collateral]
                             / 1e18;
                 }
@@ -1162,7 +1251,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         view
         returns (uint256)
     {
-        DelegatedStakingHelper._validateShares(strategies[_strategy][_stakeToken].totalShares);
+        if (strategies[_strategy][_stakeToken].totalShares == 0) revert ZeroAmount();
         uint256 totalStrategyTokenReserves = IStrategy(_strategy).updateReserves(address(this), _collateral);
         return totalStrategyTokenReserves/strategies[_strategy][_stakeToken].totalShares;
     }
@@ -1178,7 +1267,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         returns (uint256)
     {
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        DelegatedStakingHelper._validateShares(validatorCollateral.shares);
+        if (validatorCollateral.shares == 0) revert ZeroAmount();
         return validatorCollateral.stakedAmount/validatorCollateral.shares;
     }
 
@@ -1193,7 +1282,9 @@ contract DelegatedStaking is AccessControl, Initializable {
         Collateral memory collateral = collaterals[_collateral];
         if (collateral.isUSDStable)
             collateralPrice = 1e18;
+        // TODO: check what's decimals reuturn priceConsumer (ETH/USD has 8 decimals!!!)
         else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
+
         return getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * collateralPrice
                 / (10 ** collateral.decimals);
     }
@@ -1207,6 +1298,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             totalUSDAmount += getPoolUSDAmount(_validator, collateralAddresses[i]);
         }
+        console.log("getTotalUSDAmount %s totalUSDAmount: %s", _validator, totalUSDAmount);
         return totalUSDAmount;
     }
 
@@ -1220,7 +1312,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         view
         returns (WithdrawalInfo memory)
     {
-        return getDelegatorInfo[_delegator].withdrawals[_withdrawalId];
+        return getWithdrawalRequests[_delegator].withdrawals[_withdrawalId];
     }
 
     /**
@@ -1230,39 +1322,6 @@ contract DelegatedStaking is AccessControl, Initializable {
      */
     function getStrategy(address _strategy, address _stakeToken) external view returns (Strategy memory) {
         return strategies[_strategy][_stakeToken];
-    }
-
-    /**
-     * @dev get stake property of validator
-     * @param _validator address of validator
-     * @param _collateral Address of collateral
-     */
-    function getValidatorStaking(address _validator, address _collateral) external view returns (uint256, uint256) {
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        return(
-            validatorCollateral.stakedAmount,
-            validatorCollateral.locked
-        );
-    }
-
-    /**
-     * @dev get delegator stakes: returns whether delegator exists, shares, locked shares and passed rewards
-     * @param _validator address of validator
-     * @param _delegator address of delegator
-     * @param _collateral Address of collateral
-     */
-    function getDelegatorStakes(address _validator, address _delegator, address _collateral)
-        external
-        view
-        returns(bool, uint256, uint256, uint256)
-    {
-        DelegationInfo storage delegation = getValidatorInfo[_validator].collateralPools[_collateral].delegation[_delegator];
-        return (
-            getValidatorInfo[_validator].delegators[_delegator].exists,
-            delegation.shares,
-            delegation.locked,
-            delegation.passedRewards
-        );
     }
 
     /**
@@ -1282,18 +1341,47 @@ contract DelegatedStaking is AccessControl, Initializable {
         );
     }
 
+    function getValidatorCollateral(address _validator, address _collateral) external view
+    returns(
+        uint256 stakedAmount,
+        uint256 shares,
+        uint256 locked,
+        uint256 accumulatedRewards,
+        uint256 rewardsForWithdrawal,
+        uint256 accTokensPerShare
+    ) {
+         ValidatorCollateral storage item =  getValidatorInfo[_validator].collateralPools[_collateral];
+         return (
+            item.stakedAmount, // total tokens staked by delegators
+            item.shares, // total share of collateral tokens
+            item.locked, // total share locked by depositing to strategy
+            item.accumulatedRewards, // how many reward tokens was earned
+            item.rewardsForWithdrawal, // how many reward tokens validator can withdrawal
+            item.accTokensPerShare // how many reward tokens user will receive per one share
+         );
+    }
+
+
     /**
-     * @dev Get delegation info to validator: returns total delegation amount, total shares, delegator count
-     * @param _validator Address of validator
-     * @param _collateral Address of collateral
-     */
-    function getDelegationInfo(address _validator, address _collateral) external view returns(uint256, uint256, uint256) {
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        return (
-            validator.collateralPools[_collateral].stakedAmount,
-            validator.collateralPools[_collateral].shares,
-            validator.delegatorCount
-        );
+    * @dev get delegator stakes: returns whether shares, locked shares and passed rewards
+    * @param _validator address of validator
+    * @param _collateral Address of collateral
+    * @param _delegator address of delegator
+    */
+    function getDelegatorsInfo(address _validator, address _collateral, address _delegator) external view
+    returns(
+        uint256 shares, // delegator share of collateral tokens
+        uint256 locked, // share locked by depositing to strategy
+        uint256 passedRewards, // rewards per collateral address, calculated before stake
+        uint256 accumulatedRewards //info how many reward tokens  was earned
+    ) {
+         DelegatorsInfo storage item =  getValidatorInfo[_validator].collateralPools[_collateral].delegators[_delegator];
+         return (
+            item.shares, // delegator share of collateral tokens
+            item.locked, // share locked by depositing to strategy
+            item.passedRewards, // rewards per collateral address, calculated before stake
+            item.accumulatedRewards //info how many reward tokens  was earned
+         );
     }
 
     /**
@@ -1346,7 +1434,7 @@ contract DelegatedStaking is AccessControl, Initializable {
         view
         returns(uint256)
     {
-        return getValidatorInfo[_validator].collateralPools[_stakeToken].delegation[_delegator].strategyShares[_strategy];
+        return getValidatorInfo[_validator].collateralPools[_stakeToken].delegators[_delegator].strategyShares[_strategy];
     }
 
 
