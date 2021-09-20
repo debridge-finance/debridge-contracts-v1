@@ -278,6 +278,41 @@ contract("DelegatedStaking", function() {
       const bobOracleReset = await this.delegatedStaking.getValidatorInfo(bob);
       assert.equal(bobOracleReset.profitSharingBPS.toString(), bobSharingBefore.toString());
     });
+    it("should update validator", async function() {
+      const bobOracle = await this.delegatedStaking.getValidatorInfo(bob);
+      assert.equal(bobOracle.isEnabled, true);
+      await this.delegatedStaking.updateValidator(bob, false);
+      const bobOracleAfter = await this.delegatedStaking.getValidatorInfo(bob);
+      assert.equal(bobOracleAfter.isEnabled, false);
+      await this.delegatedStaking.updateValidator(bob, true);
+      const bobOracleReset = await this.delegatedStaking.getValidatorInfo(bob);
+      assert.equal(bobOracleReset.isEnabled, true);
+      await expectRevert(
+        this.delegatedStaking.updateValidator(bob, true),
+        "WrongArgument()"
+      );
+      await expectRevert(
+        this.delegatedStaking.updateValidator(sam, true),
+        "WrongArgument()"
+      );
+    });
+    it("should remove validator", async function() {
+      await expectRevert(
+        this.delegatedStaking.removeValidator(sam),
+        "WrongArgument()"
+      );
+      await this.delegatedStaking.addValidator(sam, alice, 1, 2500);
+      const samOracle = await this.delegatedStaking.getValidatorInfo(sam);
+      assert.equal(samOracle.exists, true);
+      await expectRevert(
+        this.delegatedStaking.removeValidator(sam),
+        "WrongArgument()"
+      );
+      await this.delegatedStaking.updateValidator(sam, false);
+      await this.delegatedStaking.removeValidator(sam);
+      const samOracleAfter = await this.delegatedStaking.getValidatorInfo(sam);
+      assert.equal(samOracleAfter.exists, false);
+    });
   });
 
   context("Test management collaterals", async () => {

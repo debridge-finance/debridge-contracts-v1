@@ -105,6 +105,7 @@ contract DelegatedStaking is Initializable,
         uint256 rewardWeightCoefficient;
         uint256 profitSharingBPS;  // profit sharing basis points.
         bool delegatorActionPaused; // paused stake/unstake for this validator
+        bool isEnabled;
         bool exists;
     }
 
@@ -1037,8 +1038,38 @@ contract DelegatedStaking is Initializable,
         validator.rewardWeightCoefficient = _rewardWeightCoefficient;
         weightCoefficientDenominator += _rewardWeightCoefficient;
         validator.profitSharingBPS = _profitSharingBPS;
-        //TODO: how to remove address if obsolete validator
-        //TODO: add update method with isEnabled
+        validator.exists = true;
+        validator.isEnabled = true;
+    }
+
+    /**
+     * @dev Update validator enabled status.
+     * @param _validator Validator address.
+     * @param _isEnabled Is validator enabled.
+     */
+    function updateValidator(address _validator, bool _isEnabled) external onlyAdmin {
+        ValidatorInfo storage validator = getValidatorInfo[_validator];
+        if (!validator.exists || validator.isEnabled == _isEnabled) revert WrongArgument();
+        validator.isEnabled = _isEnabled;
+    }
+
+    /**
+     * @dev Remove an obsolete validator.
+     * @param _validator Validator address.
+     */
+    function removeValidator(address _validator) external onlyAdmin {
+        ValidatorInfo storage validator = getValidatorInfo[_validator];
+        if (!validator.exists || validator.isEnabled) revert WrongArgument();
+        for (uint256 i=0; i<validatorAddresses.length; i++) {
+            if (validatorAddresses[i] == _validator) {
+                validatorAddresses[i] = validatorAddresses[validatorAddresses.length - 1];
+                validatorAddresses.pop();
+                for (uint256 j=0; j<collateralAddresses.length; j++) {
+                    delete validator.collateralPools[collateralAddresses[j]];
+                }
+                delete getValidatorInfo[_validator];
+            }
+        }
     }
 
     /**
