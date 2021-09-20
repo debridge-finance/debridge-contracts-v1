@@ -43,6 +43,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     error CantConvertAddress();
     error WrongArgument();
+    error ZeroAddress();
 
     /* ========== MODIFIERS ========== */
 
@@ -83,14 +84,18 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     }
 
     function setTreasury(uint256 _chainId, bytes memory _treasuryAddress) external onlyAdmin {
+        if (_treasuryAddress.length == 0) revert ZeroAddress();
         treasuryAddresses[_chainId] = _treasuryAddress;
     }
 
     function setDeEthToken(address _deEthToken) external onlyAdmin {
+        if (_deEthToken == address(0)) revert ZeroAddress();
+
         deEthToken = _deEthToken;
     }
 
     function setFeeProxyAddress(uint256 _chainId, bytes memory _address) external onlyAdmin {
+        if (_address.length == 0) revert ZeroAddress();
         feeProxyAddresses[_chainId] = _address;
     }
 
