@@ -85,8 +85,6 @@ contract DelegatedStaking is Initializable,
         uint256 shares; // delegator share of collateral tokens
         uint256 locked; // share locked by depositing to strategy
         mapping(address => uint256) strategyShares; // map strategy(aave/compound/yearn) for each collateral
-        // obsolete
-        // uint256 passedRewards; // rewards per collateral address, calculated before stake
         uint256 accumulatedRewards; // info how many reward tokens  was earned
     }
 
@@ -99,9 +97,6 @@ contract DelegatedStaking is Initializable,
         uint256 accumulatedRewards; // how many reward tokens was earned
         //TODO: add method to withdraw validators rewards
         uint256 rewardsForWithdrawal; // how many reward tokens validator can withdrawal
-        // obsolete
-        // uint256 accTokensPerShare; // how many reward tokens user will receive per one share
-        // mapping(address => uint256) dependsAccTokensPerShare;
     }
 
     struct ValidatorInfo {
@@ -266,23 +261,12 @@ contract DelegatedStaking is Initializable,
                 validatorCollateral.stakedAmount)
             : _amount;
 
-        // obsolete
-        // //Update users passedRewards
-        // uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
-
         //Increase total collateral of the protocol for this asset
         collateral.totalLocked += _amount;
         //Increase total collateral of the validator for this asset
         validatorCollateral.stakedAmount += _amount;
         validatorCollateral.shares += shares;
         delegator.shares += shares;
-
-        // obsolete
-        // // accumulated token per share for current collateral
-        // delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-        //                 delegator.shares,
-        //                 validatorCollateral.accTokensPerShare)
-        //                 + dependencyRewards;
 
         console.log("collateral %s", _collateral);
         console.log("validator %s", _validator);
@@ -292,8 +276,6 @@ contract DelegatedStaking is Initializable,
         console.log("validatorCollateral.stakedAmount %s", validatorCollateral.stakedAmount);
         console.log("validatorCollateral.shares %s",validatorCollateral.shares);
         console.log("delegator.shares %s", delegator.shares);
-        // console.log("delegator.passedRewards %s", delegator.passedRewards);
-        // console.log("dependencyRewards %s", dependencyRewards);
     }
 
     /**
@@ -318,10 +300,6 @@ contract DelegatedStaking is Initializable,
         WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
         DelegatorsInfo storage delegator = validatorCollateral.delegators[msg.sender];
 
-        // obsolete
-        // if (delegator.shares - delegator.locked < _shares) revert WrongAmount();
-        // uint256 dependencyRewards = _creditDelegatorRewards(_validator, msg.sender, _collateral);
-
         if (_shares> delegator.shares) {
             _shares= delegator.shares;
         }
@@ -337,13 +315,6 @@ contract DelegatedStaking is Initializable,
         validatorCollateral.shares -= _shares;
         validatorCollateral.stakedAmount -= withdrawTokenAmount;
         collaterals[_collateral].totalLocked -= withdrawTokenAmount;
-
-        // obsolete
-        // recalculate passed rewards with new share amount
-        // delegator.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-        //                 delegator.shares,
-        //                 validatorCollateral.accTokensPerShare)
-        //                 + dependencyRewards;
 
         uint256 withdrawIndex = withdrawalRequests.count;
         uint256 timelock = block.timestamp + withdrawTimelock;
