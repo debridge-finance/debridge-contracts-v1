@@ -165,25 +165,25 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Sets minimal required confirmations.
     /// @param _excessConfirmations Confirmation info.
-    function setExcessConfirmations(uint8 _excessConfirmations) public onlyAdmin {
+    function setExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
         excessConfirmations = _excessConfirmations;
     }
 
     /// @dev Sets minimal required confirmations.
     /// @param _confirmationThreshold Confirmation info.
-    function setThreshold(uint8 _confirmationThreshold) public onlyAdmin {
+    function setThreshold(uint8 _confirmationThreshold) external onlyAdmin {
         confirmationThreshold = _confirmationThreshold;
     }
 
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
-    function setWrappedAssetAdmin(address _wrappedAssetAdmin) public onlyAdmin onlyNonAdminAddress(_wrappedAssetAdmin) {
+    function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin onlyNonAdminAddress(_wrappedAssetAdmin) {
         wrappedAssetAdmin = _wrappedAssetAdmin;
     }
 
     /// @dev Sets core debridge conrtact address.
     /// @param _debridgeAddress Debridge address.
-    function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
+    function setDebridgeAddress(address _debridgeAddress) external onlyAdmin {
         debridgeAddress = _debridgeAddress;
     }
 
