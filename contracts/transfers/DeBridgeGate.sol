@@ -90,6 +90,7 @@ contract DeBridgeGate is
     error FeeNotPaid();
 
     error NotEnoughReserves();
+    error EthTransferFailed();
 
     /* ========== MODIFIERS ========== */
 
@@ -484,7 +485,7 @@ contract DeBridgeGate is
         if (amount == 0) revert NotEnoughReserves();
 
         if (_debridgeId == getDebridgeId(getChainId(), address(0))) {
-            payable(feeProxy).transfer(amount);
+            _safeTransferETH(feeProxy, amount);
         } else {
             // don't need this check as we check that amount is not zero
             // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
@@ -914,6 +915,16 @@ contract DeBridgeGate is
         } else {
             IERC20(_token).safeTransfer(_receiver, _amount);
         }
+    }
+
+    /*
+    * @dev transfer ETH to an address, revert if it fails.
+    * @param to recipient of the transfer
+    * @param value the amount to send
+    */
+    function _safeTransferETH(address to, uint256 value) internal {
+        (bool success, ) = to.call{value: value}(new bytes(0));
+        if (!success) revert EthTransferFailed();
     }
 
     /// @dev Mark submission as used.
