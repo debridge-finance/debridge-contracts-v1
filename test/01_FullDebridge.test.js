@@ -514,7 +514,8 @@ contract("DeBridgeGate full mode", function () {
               //Alice is required oracle
               await this.confirmationAggregator.addOracles(
                 [alice.address],
-                [alice.address],
+                // alice can't be contract admin and oracle admin at the same time
+                [bob.address],
                 [true],
                 {
                   from: alice.address,

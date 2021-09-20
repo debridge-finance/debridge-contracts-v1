@@ -43,7 +43,7 @@ contract("ConfirmationAggregator", function () {
     this.initialOracles = [
       {
         address: alice,
-        admin: alice,
+        admin: bob,
       },
       {
         address: bob,

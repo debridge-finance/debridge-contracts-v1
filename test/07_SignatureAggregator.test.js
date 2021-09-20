@@ -6,10 +6,10 @@ const chai = require("chai");
 chai.use(solidity);
 const { assert, expect } = chai;
 
-function parseHexString(str) { 
+function parseHexString(str) {
   var result = [];
   str = str.substring(2, str.length);
-  while (str.length >= 2) { 
+  while (str.length >= 2) {
       result.push(parseInt(str.substring(0, 2), 16));
 
       str = str.substring(2, str.length);
@@ -44,7 +44,7 @@ contract("SignatureAggregator", function () {
     this.initialOracles = [
       {
         address: alice,
-        admin: alice,
+        admin: carol,
       },
       {
         address: bob,
@@ -111,9 +111,9 @@ contract("SignatureAggregator", function () {
       assert.equal(oracleInfo.exist, true);
       assert.equal(oracleInfo.admin, devid);
 
-      await this.aggregator.connect(devidAccount).updateOracleAdmin(devid, alice);
+      await this.aggregator.connect(devidAccount).updateOracleAdmin(devid, eve);
       const oracleInfo1 = await this.aggregator.getOracleInfo(devid);
-      assert.equal(oracleInfo1.admin, alice);
+      assert.equal(oracleInfo1.admin, eve);
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function () {
@@ -205,7 +205,7 @@ contract("SignatureAggregator", function () {
     const name = "MUSD";
     const symbol = "Magic Dollar";
     const decimals = 18;
-  
+
     it("should add new asset if called by the oracle", async function () {
       const debridgeId = await this.aggregator.getDebridgeId(chainId, tokenAddress);
       const deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals);
@@ -214,7 +214,7 @@ contract("SignatureAggregator", function () {
       await this.aggregator
         .connect(aliceAccount)
         .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signature);
-      
+
       const deployInfo = await this.aggregator.getDeployInfo(deployId);
       assert.equal(deployInfo.confirmations, 1);
       assert.equal(deployInfo.chainId, chainId);
