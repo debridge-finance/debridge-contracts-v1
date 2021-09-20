@@ -409,6 +409,7 @@ contract DeBridgeGate is
     }
 
     function updateExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
+        if (_excessConfirmations == 0) revert WrongArgument();
         excessConfirmations = _excessConfirmations;
     }
 

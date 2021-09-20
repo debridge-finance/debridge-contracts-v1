@@ -28,6 +28,11 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         _;
     }
 
+/* ========== ERRORS ========== */
+
+    error WrongArgument();
+    error ZeroAddress();
+
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -166,12 +171,14 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /// @dev Sets minimal required confirmations.
     /// @param _excessConfirmations Confirmation info.
     function setExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
+        if (_excessConfirmations == 0) revert WrongArgument();
         excessConfirmations = _excessConfirmations;
     }
 
     /// @dev Sets minimal required confirmations.
     /// @param _confirmationThreshold Confirmation info.
     function setThreshold(uint8 _confirmationThreshold) external onlyAdmin {
+        if (_confirmationThreshold == 0) revert WrongArgument();
         confirmationThreshold = _confirmationThreshold;
     }
 
