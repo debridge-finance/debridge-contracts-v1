@@ -84,3 +84,13 @@ module.exports.packSubmissionAutoParamsFrom = async (executionFee, flags, fallba
   [ autoParams ]);
   return packed;
 }
+
+module.exports.submissionSignatures = async function (_web3, oracleKeys, submissionId) {
+  let signatures = "0x";
+  for (let oracleKey of oracleKeys) {
+    let currentSignature = (await _web3.eth.accounts.sign(submissionId, oracleKey)).signature;
+    // HACK remove first 0x
+    signatures += currentSignature.substring(2, currentSignature.length);
+  }
+  return signatures;
+}

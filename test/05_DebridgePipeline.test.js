@@ -1,5 +1,10 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { permitWithDeadline } = require("./utils.spec");
+const {
+  permitWithDeadline,
+  packSubmissionAutoParamsFrom,
+  packSubmissionAutoParamsTo,
+  submissionSignatures,
+} = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const WrappedAsset = artifacts.require("WrappedAsset");
@@ -61,8 +66,8 @@ contract("DeBridgeGate real pipeline mode", function () {
     fei = feiAccount.address;
     devid = devidAccount.address;
     treasury = devid;
-    worker = alice;
-    workerAccount = aliceAccount;
+    worker = carol;
+    workerAccount = carolAccount;
 
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
@@ -393,6 +398,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(this.wethBSC.address, await this.debridgeBSC.weth());
       assert.equal(this.wethHECO.address, await this.debridgeHECO.weth());
     });
+
     it("Initialize oracles", async function () {
       let oracleAddresses = [];
       let oracleAdmins = [];
@@ -428,6 +434,22 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       //TODO: check that we added oracles
+      assert.equal(await this.confirmationAggregatorBSC.requiredOraclesCount(), 1);
+      // assert.equal(
+      //   (await this.confirmationAggregatorBSC.oracleAddresses()).length,
+      //   this.initialOracles.length + 1
+      // );
+      assert.equal(await this.confirmationAggregatorHECO.requiredOraclesCount(), 1);
+      // assert.equal(
+      //   (await this.confirmationAggregatorHECO.oracleAddresses()).length,
+      //   this.initialOracles.length + 1
+      // );
+
+      assert.equal(await this.signatureVerifierETH.requiredOraclesCount(), 1);
+      // assert.equal(
+      //   (await this.signatureVerifierETH.oracleAddresses()).length,
+      //   this.initialOracles.length + 1
+      // );
     });
 
     it("Update fixed fee for WETH", async function () {
@@ -1396,20 +1418,22 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
       this.linkSubmissionId = this.linkSubmission.args.submissionId;
 
-      this.nativeSignatures = "0x";
-      for (let oracleKey of oracleKeys) {
-        let currentSignature = (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKey))
-          .signature;
-        //HACK remove first 0x
-        this.nativeSignatures += currentSignature.substring(2, currentSignature.length);
-      }
+      this.nativeSignatures = await submissionSignatures(bscWeb3, oracleKeys, this.nativeSubmissionId);
+      // this.nativeSignatures = "0x";
+      // for (let oracleKey of oracleKeys) {
+      //   let currentSignature = (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKey))
+      //     .signature;
+      //   //HACK remove first 0x
+      //   this.nativeSignatures += currentSignature.substring(2, currentSignature.length);
+      // }
 
-      this.linkSignatures = "0x";
-      for (let oracleKey of oracleKeys) {
-        let currentSignature = (await bscWeb3.eth.accounts.sign(this.linkSubmissionId, oracleKey))
-          .signature;
-        this.linkSignatures += currentSignature.substring(2, currentSignature.length);
-      }
+      this.linkSignatures = await submissionSignatures(bscWeb3, oracleKeys, this.linkSubmissionId);
+      // this.linkSignatures = "0x";
+      // for (let oracleKey of oracleKeys) {
+      //   let currentSignature = (await bscWeb3.eth.accounts.sign(this.linkSubmissionId, oracleKey))
+      //     .signature;
+      //   this.linkSignatures += currentSignature.substring(2, currentSignature.length);
+      // }
     });
 
     it("check view method is valid signature", async function () {
@@ -1846,6 +1870,474 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       const newBalance = toBN(await wrappedAsset.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
+    });
+  });
+
+  context("Test autosubmissions", () => {
+
+    // TODO: don't hardcode flags here
+    // Flag to unwrap ETH
+    const UNWRAP_ETH = 0;
+    // Flag to revert if external call fails
+    const REVERT_IF_EXTERNAL_FAIL = 1;
+    // Flag to call proxy with a sender contract
+    const PROXY_WITH_SENDER = 2;
+
+    // TODO: extract duplicating code for send/mint functions
+
+    it("should have same submissionId for same autoparams", async function() {
+      // TODO: write this test
+    });
+
+    context("Test UNWRAP_ETH flag", () => {
+      it("should burn/claim with UNWRAP_ETH flag", async function() {
+        const ethAccount = aliceAccount;
+        const bscAccount = bobAccount;
+        const amount = toBN(toWei("75"));
+        const executionFee = toBN(toWei("5"));
+        const fallbackAddress = fei;
+        const autoData = [];
+
+        const flags = 2 ** UNWRAP_ETH;
+
+        const balanceInitial = toBN(await web3.eth.getBalance(ethAccount.address));
+        const balanceInitialWETH = toBN(await this.wethETH.balanceOf(ethAccount.address));
+
+        const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
+        const deETHToken = await WrappedAsset.at(debridgeInfo.tokenAddress);
+
+        // send native token from ETH to BSC
+        const sentTx = await this.debridgeETH
+          .connect(ethAccount)
+          .send(
+            ZERO_ADDRESS,
+            bscAccount.address,
+            amount,
+            bscChainId,
+            [],
+            false,
+            referralCode,
+            [],
+            {
+              value: amount,
+              from: ethAccount.address,
+            }
+          );
+
+        // get Sent event
+        const sentReceipt = await sentTx.wait();
+        const sentEvent = sentReceipt.events.find(i => i.event == "Sent");
+        // console.log(sentEvent)
+
+        const balanceAfterSend = toBN(await web3.eth.getBalance(ethAccount.address));
+        const sentTxFee = sentReceipt.gasUsed * sentTx.gasPrice;
+        assert.equal(balanceAfterSend.toString(), balanceInitial.sub(amount).sub(sentTxFee).toString());
+
+        // confirm send submission
+        for (let oracle of this.initialOracles) {
+          await this.confirmationAggregatorBSC
+            .connect(oracle.account)
+            .submit(sentEvent.args.submissionId);
+        }
+        // confirm send submission by required oracle
+        await this.confirmationAggregatorBSC
+          .submit(sentEvent.args.submissionId, {from: alice});
+
+        const balanceDeETHBeforeMint = toBN(await deETHToken.balanceOf(bscAccount.address));
+
+        // call mint on BSC to get deETH
+        await this.debridgeBSC
+          .connect(bscAccount)
+          .mint(
+            this.debridgeWethId,
+            ethChainId,
+            bscAccount.address,
+            sentEvent.args.amount,
+            sentEvent.args.nonce,
+            [],
+            [],
+          );
+
+        const balanceDeETHAfterMint = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterMint.toString(), balanceDeETHBeforeMint.add(sentEvent.args.amount).toString());
+
+        // approve before burn
+        await deETHToken.approve(this.debridgeBSC.address, amount,
+          {from: bscAccount.address});
+
+        // call autoburn on BSC
+        const burnTx = await this.debridgeBSC
+          .connect(bscAccount)
+          .burn(
+            this.debridgeWethId,
+            ethAccount.address,
+            sentEvent.args.amount,
+            ethChainId,
+            [],
+            false,
+            referralCode,
+            packSubmissionAutoParamsTo(
+              executionFee,
+              flags,
+              fallbackAddress,
+              autoData),
+            {
+              // pay fee in native token
+              value: toWei('1000'),
+            }
+          );
+
+        const balanceDeETHAfterBurn = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterBurn.toString(), balanceDeETHBeforeMint.toString());
+        const balanceAfterBurn = toBN(await web3.eth.getBalance(ethAccount.address));
+        const workerBalanceBefore = toBN(await this.wethETH.balanceOf(workerAccount.address));
+
+        // get Burnt event
+        const burnReceipt = await burnTx.wait();
+        const burnEvent = burnReceipt.events.find(i => i.event == "Burnt");
+        // console.log(burnEvent)
+
+        // worker call claim on ETH to get native tokens back
+        const claimTx = await this.debridgeETH
+          .connect(workerAccount)
+          .claim(
+            burnEvent.args.debridgeId,
+            bscChainId,
+            ethAccount.address,
+            burnEvent.args.amount,
+            burnEvent.args.nonce,
+            await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
+            packSubmissionAutoParamsFrom(
+              executionFee,
+              flags,
+              fallbackAddress,
+              autoData,
+              bscAccount.address));
+
+        // weth balance shouldn't change
+        const balanceWETH = toBN(await this.wethETH.balanceOf(ethAccount.address));
+        assert.equal(balanceWETH.toString(), balanceInitialWETH.toString());
+
+        // eth balance should increased
+        const balanceAfterClaim = toBN(await web3.eth.getBalance(ethAccount.address));
+        assert.equal(balanceAfterBurn.add(burnEvent.args.amount).toString(), balanceAfterClaim.toString());
+
+        // worker should receive executionFee
+        const workerBalanceAfter = toBN(await this.wethETH.balanceOf(workerAccount.address));
+        assert.equal(workerBalanceAfter.toString(), workerBalanceBefore.add(executionFee).toString());
+      });
+    });
+
+    context("Test PROXY_WITH_SENDER flag", () => {
+      let callProxyWithSender;
+      let receiverContract;
+
+      before(async function() {
+        const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        receiverContract = await receiverContractFactory.deploy();
+      })
+
+      it("should set callProxy with sender", async function() {
+        const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
+        callProxyWithSender = await upgrades.deployProxy(CallProxyFactory, []);
+
+        await expect(
+          this.debridgeETH.setCallProxy(PROXY_WITH_SENDER, callProxyWithSender.address)
+        )
+          .to.emit(this.debridgeETH, "CallProxyUpdated")
+          .withArgs(PROXY_WITH_SENDER, callProxyWithSender.address);
+
+        const DEBRIDGE_GATE_ROLE = await callProxyWithSender.DEBRIDGE_GATE_ROLE();
+        await callProxyWithSender.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
+      })
+
+      it("should use different proxy with PROXY_WITH_SENDER flag", async function() {
+        const ethAccount = aliceAccount;
+        const bscAccount = bobAccount;
+        const amount = toBN(toWei("75"));
+        const executionFee = toBN(toWei("5"));
+        const fallbackAddress = fei;
+        const receiverAmount = toBN(toWei("10"));
+        const autoData = receiverContract.interface.encodeFunctionData(
+          "setUint256AndPullToken", [this.wethETH.address, receiverAmount, 1]);
+
+        const flags = 2 ** PROXY_WITH_SENDER;
+
+        const balanceInitial = toBN(await web3.eth.getBalance(ethAccount.address));
+        const balanceInitialWETH = toBN(await this.wethETH.balanceOf(ethAccount.address));
+
+        const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
+        const deETHToken = await WrappedAsset.at(debridgeInfo.tokenAddress);
+
+        // send native token from ETH to BSC
+        const sentTx = await this.debridgeETH
+          .connect(ethAccount)
+          .send(
+            ZERO_ADDRESS,
+            bscAccount.address,
+            amount,
+            bscChainId,
+            [],
+            false,
+            referralCode,
+            [],
+            {
+              value: amount,
+              from: ethAccount.address,
+            }
+          );
+
+        // get Sent event
+        const sentReceipt = await sentTx.wait();
+        const sentEvent = sentReceipt.events.find(i => i.event == "Sent");
+        // console.log(sentEvent)
+
+        const balanceAfterSend = toBN(await web3.eth.getBalance(ethAccount.address));
+        const sentTxFee = sentReceipt.gasUsed * sentTx.gasPrice;
+        assert.equal(balanceAfterSend.toString(), balanceInitial.sub(amount).sub(sentTxFee).toString());
+
+        // confirm send submission
+        for (let oracle of this.initialOracles) {
+          await this.confirmationAggregatorBSC
+            .connect(oracle.account)
+            .submit(sentEvent.args.submissionId);
+        }
+        // confirm send submission by required oracle
+        await this.confirmationAggregatorBSC
+          .submit(sentEvent.args.submissionId, {from: alice});
+
+        const balanceDeETHBeforeMint = toBN(await deETHToken.balanceOf(bscAccount.address));
+
+        // call mint on BSC to get deETH
+        await this.debridgeBSC
+          .connect(bscAccount)
+          .mint(
+            this.debridgeWethId,
+            ethChainId,
+            bscAccount.address,
+            sentEvent.args.amount,
+            sentEvent.args.nonce,
+            [],
+            [],
+          );
+
+        const balanceDeETHAfterMint = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterMint.toString(), balanceDeETHBeforeMint.add(sentEvent.args.amount).toString());
+
+        // approve before burn
+        await deETHToken.approve(this.debridgeBSC.address, amount,
+          {from: bscAccount.address});
+
+        // call autoburn on BSC
+        const burnTx = await this.debridgeBSC
+          .connect(bscAccount)
+          .burn(
+            this.debridgeWethId,
+            receiverContract.address,
+            sentEvent.args.amount,
+            ethChainId,
+            [],
+            false,
+            referralCode,
+            packSubmissionAutoParamsTo(
+              executionFee,
+              flags,
+              fallbackAddress,
+              autoData),
+            {
+              // pay fee in native token
+              value: toWei('1000'),
+            }
+          );
+
+        const balanceDeETHAfterBurn = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterBurn.toString(), balanceDeETHBeforeMint.toString());
+
+        const receiverBalanceBefore = toBN(await web3.eth.getBalance(receiverContract.address));
+        const receiverBalanceWETHBefore = toBN(await this.wethETH.balanceOf(receiverContract.address));
+        const fallbackBalanceWETHBefore = toBN(await this.wethETH.balanceOf(fallbackAddress));
+        const workerBalanceWETHBefore = toBN(await this.wethETH.balanceOf(workerAccount.address));
+
+        // get Burnt event
+        const burnReceipt = await burnTx.wait();
+        const burnEvent = burnReceipt.events.find(i => i.event == "Burnt");
+        // console.log(burnEvent)
+
+        // worker call claim on ETH to get native tokens back
+        await expect(
+          this.debridgeETH
+            .connect(workerAccount)
+            .claim(
+              burnEvent.args.debridgeId,
+              bscChainId,
+              receiverContract.address,
+              burnEvent.args.amount,
+              burnEvent.args.nonce,
+              await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
+              packSubmissionAutoParamsFrom(
+                executionFee,
+                flags,
+                fallbackAddress,
+                autoData,
+                bscAccount.address))
+        )
+          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          .withArgs(burnEvent.args.submissionId, true, callProxyWithSender.address);
+
+        // weth balance of receiver should change
+        const receiverBalanceWETHAfter = toBN(await this.wethETH.balanceOf(receiverContract.address));
+        assert.equal(receiverBalanceWETHAfter.toString(), receiverBalanceWETHBefore.add(receiverAmount).toString());
+
+        // fallback weth balance should increase
+        const fallbackBalanceWETHAfter = toBN(await this.wethETH.balanceOf(fallbackAddress));
+        assert.equal(fallbackBalanceWETHAfter.toString(), fallbackBalanceWETHBefore.add(burnEvent.args.amount).sub(receiverAmount).toString());
+
+        // eth balance of receiver shouldn't change
+        const receiverBalanceAfter = toBN(await web3.eth.getBalance(receiverContract.address));
+        assert.equal(receiverBalanceBefore.toString(), receiverBalanceAfter.toString());
+
+        // worker should receive executionFee
+        const workerBalanceWETHAfter = toBN(await this.wethETH.balanceOf(workerAccount.address));
+        assert.equal(workerBalanceWETHAfter.toString(), workerBalanceWETHBefore.add(executionFee).toString());
+      });
+    });
+
+    context("Test REVERT_IF_EXTERNAL_FAIL flag", () => {
+      let callProxyWithSender;
+      let receiverContract;
+
+      before(async function() {
+        const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        receiverContract = await receiverContractFactory.deploy();
+      })
+
+      it("should revert if externall call fails with REVERT_IF_EXTERNAL_FAIL flag", async function() {
+        const ethAccount = aliceAccount;
+        const bscAccount = bobAccount;
+        const amount = toBN(toWei("75"));
+        const executionFee = toBN(toWei("5"));
+        const fallbackAddress = fei;
+        // external call with this data fails
+        const autoData = receiverContract.interface.encodeFunctionData(
+          "setUint256AndPullToken", [this.wethETH.address, amount, 1]);
+
+        const flags = 2 ** REVERT_IF_EXTERNAL_FAIL;
+
+        const balanceInitial = toBN(await web3.eth.getBalance(ethAccount.address));
+        const balanceInitialWETH = toBN(await this.wethETH.balanceOf(ethAccount.address));
+
+        const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
+        const deETHToken = await WrappedAsset.at(debridgeInfo.tokenAddress);
+
+        // send native token from ETH to BSC
+        const sentTx = await this.debridgeETH
+          .connect(ethAccount)
+          .send(
+            ZERO_ADDRESS,
+            bscAccount.address,
+            amount,
+            bscChainId,
+            [],
+            false,
+            referralCode,
+            [],
+            {
+              value: amount,
+              from: ethAccount.address,
+            }
+          );
+
+        // get Sent event
+        const sentReceipt = await sentTx.wait();
+        const sentEvent = sentReceipt.events.find(i => i.event == "Sent");
+        // console.log(sentEvent)
+
+        const balanceAfterSend = toBN(await web3.eth.getBalance(ethAccount.address));
+        const sentTxFee = sentReceipt.gasUsed * sentTx.gasPrice;
+        assert.equal(balanceAfterSend.toString(), balanceInitial.sub(amount).sub(sentTxFee).toString());
+
+        // confirm send submission
+        for (let oracle of this.initialOracles) {
+          await this.confirmationAggregatorBSC
+            .connect(oracle.account)
+            .submit(sentEvent.args.submissionId);
+        }
+        // confirm send submission by required oracle
+        await this.confirmationAggregatorBSC
+          .submit(sentEvent.args.submissionId, {from: alice});
+
+        const balanceDeETHBeforeMint = toBN(await deETHToken.balanceOf(bscAccount.address));
+
+        // call mint on BSC to get deETH
+        await this.debridgeBSC
+          .connect(bscAccount)
+          .mint(
+            this.debridgeWethId,
+            ethChainId,
+            bscAccount.address,
+            sentEvent.args.amount,
+            sentEvent.args.nonce,
+            [],
+            [],
+          );
+
+        const balanceDeETHAfterMint = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterMint.toString(), balanceDeETHBeforeMint.add(sentEvent.args.amount).toString());
+
+        // approve before burn
+        await deETHToken.approve(this.debridgeBSC.address, amount,
+          {from: bscAccount.address});
+
+        // call autoburn on BSC
+        const burnTx = await this.debridgeBSC
+          .connect(bscAccount)
+          .burn(
+            this.debridgeWethId,
+            receiverContract.address,
+            sentEvent.args.amount,
+            ethChainId,
+            [],
+            false,
+            referralCode,
+            packSubmissionAutoParamsTo(
+              executionFee,
+              flags,
+              fallbackAddress,
+              autoData),
+            {
+              // pay fee in native token
+              value: toWei('1000'),
+            }
+          );
+
+        const balanceDeETHAfterBurn = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterBurn.toString(), balanceDeETHBeforeMint.toString());
+
+        // get Burnt event
+        const burnReceipt = await burnTx.wait();
+        const burnEvent = burnReceipt.events.find(i => i.event == "Burnt");
+        // console.log(burnEvent)
+
+        // worker call claim on ETH to get native tokens back
+        await expectRevert(
+          this.debridgeETH
+            .connect(workerAccount)
+            .claim(
+              burnEvent.args.debridgeId,
+              bscChainId,
+              receiverContract.address,
+              burnEvent.args.amount,
+              burnEvent.args.nonce,
+              await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
+              packSubmissionAutoParamsFrom(
+                executionFee,
+                flags,
+                fallbackAddress,
+                autoData,
+                bscAccount.address)),
+          "ExternalCallFailed()"
+        )
+      });
     });
   });
 
