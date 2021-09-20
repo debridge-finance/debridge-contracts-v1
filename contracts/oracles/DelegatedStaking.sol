@@ -268,6 +268,8 @@ contract DelegatedStaking is Initializable,
         validatorCollateral.shares += shares;
         delegator.shares += shares;
 
+        emit Staked(_validator, msg.sender, _collateral, _amount);
+
         console.log("collateral %s", _collateral);
         console.log("validator %s", _validator);
         console.log("delegation %s", msg.sender);
@@ -649,9 +651,9 @@ contract DelegatedStaking is Initializable,
     // }
 
     /**
-     * @dev stake collateral to validator.
-     * @param _token address of reward token
-     * @param _amount Amount to stake.
+     * @dev Receive protocol rewards.
+     * @param _token Address of reward token.
+     * @param _amount Amount of reward tokem.
      */
     function sendRewards(
         address _token,
@@ -661,7 +663,7 @@ contract DelegatedStaking is Initializable,
         IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
         getRewardsInfo[_token].totalAmount += _amount;
 
-        emit RewardsReceived(_token,  _amount);
+        emit RewardsReceived(_token, _amount);
 
         console.log("_amount %s", _amount);
         console.log("getRewardsInfo[_token].totalAmount %s", getRewardsInfo[_token].totalAmount);
