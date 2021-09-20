@@ -185,7 +185,8 @@ contract DeBridgeGate is
             _chainIdTo,
             _amount,
             _receiver,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         emit Sent(
@@ -226,7 +227,8 @@ contract DeBridgeGate is
             _amount,
             _receiver,
             _nonce,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         _checkAndDeployAsset(
@@ -289,7 +291,8 @@ contract DeBridgeGate is
             _chainIdTo,
             _amount,
             _receiver,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         emit Burnt(
@@ -332,7 +335,8 @@ contract DeBridgeGate is
             _amount,
             _receiver,
             _nonce,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
@@ -971,7 +975,8 @@ contract DeBridgeGate is
         uint256 _amount,
         address _receiver,
         uint256 _nonce,
-        bytes calldata _autoParams
+        SubmissionAutoParamsFrom memory autoParams,
+        bool hasAutoParams
     ) public view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
             _debridgeId,
@@ -981,10 +986,17 @@ contract DeBridgeGate is
             _receiver,
             _nonce
         );
-        if (_autoParams.length > 0) {
+        if (hasAutoParams) {
             // auto submission
             return keccak256(
-                abi.encodePacked(packedSubmission, _autoParams)
+                abi.encodePacked(
+                    packedSubmission,
+                    autoParams.executionFee,
+                    autoParams.flags,
+                    autoParams.fallbackAddress,
+                    autoParams.data,
+                    autoParams.nativeSender
+                )
             );
         }
         // regular submission
@@ -996,7 +1008,8 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         uint256 _amount,
         bytes memory _receiver,
-        bytes calldata _autoParams
+        SubmissionAutoParamsTo memory autoParams,
+        bool hasAutoParams
     ) private view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
             _debridgeId,
@@ -1006,12 +1019,15 @@ contract DeBridgeGate is
             _receiver,
             nonce
         );
-        if (_autoParams.length > 0) {
+        if (hasAutoParams) {
             // auto submission
             return keccak256(
                 abi.encodePacked(
                     packedSubmission,
-                    _autoParams,
+                    autoParams.executionFee,
+                    autoParams.flags,
+                    autoParams.fallbackAddress,
+                    autoParams.data,
                     msg.sender
                 )
             );
