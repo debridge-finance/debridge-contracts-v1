@@ -1822,7 +1822,6 @@ contract("DelegatedStaking", function() {
 
       assert(prevRewards[0].toString() < currentRewards[0].toString());
       assert(prevRewards[1].toString() < currentRewards[1].toString());
-      assert(prevRewards[2].toString() < currentRewards[2].toString());
       assert(prevStrategyStakes[1].toString() > currentStrategyStakes[1].toString());
     });
   });

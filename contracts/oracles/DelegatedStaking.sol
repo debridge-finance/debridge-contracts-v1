@@ -142,7 +142,6 @@ contract DelegatedStaking is Initializable,
     mapping(address => Collateral) public collaterals;
     address[] public validatorAddresses;
     address[] public collateralAddresses;
-    mapping(address => uint256) public accumulatedProtocolRewards; //TODO: can be removed accumulatedProtocolRewards
     mapping(address => mapping(address => Strategy)) public strategies;
     address[] public strategyControllerAddresses;
     mapping(address => bool) public strategyControllerExists;
@@ -548,7 +547,6 @@ contract DelegatedStaking is Initializable,
     //     strategy.rewards += rewardAmount;
     //     validatorCollateral.accumulatedRewards += rewardAmount;
     //     delegation.accumulatedRewards += rewardAmount;
-    //     accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
     //     uint256 rewardShares = validatorCollateral.shares > 0
     //     ? DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares,
     //         validatorCollateral.stakedAmount)
@@ -637,7 +635,6 @@ contract DelegatedStaking is Initializable,
     //     IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
     //     collateral.totalLocked += _amount;
     //     collateral.rewards +=_amount;
-    //     accumulatedProtocolRewards[_collateral] += _amount;
 
     //     ValidatorInfo storage validator = getValidatorInfo[_validator];
     //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
@@ -731,7 +728,6 @@ contract DelegatedStaking is Initializable,
         // //TODO: check collateral.totalLocked += _amount;
         // collateral.totalLocked += _amount;
         // collateral.rewards +=_amount;
-        // accumulatedProtocolRewards[_collateral] += _amount;
 
 
         RewardInfo storage rewardInfo = getRewardsInfo[_rewardToken];
@@ -899,7 +895,6 @@ contract DelegatedStaking is Initializable,
     //             collateral.totalLocked += rewardAmount;
     //             collateral.rewards += rewardAmount;
     //             strategy.rewards += rewardAmount;
-    //             accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
     //             uint256 slashedStrategyShares = validatorCollateral.shares > 0
     //                 ? DelegatedStakingHelper._calculateShares(
     //                     stakeTokenCollateral,
@@ -965,7 +960,6 @@ contract DelegatedStaking is Initializable,
     //         collateral.totalLocked += rewardAmount;
     //         collateral.rewards += rewardAmount;
     //         strategy.rewards += rewardAmount;
-    //         accumulatedProtocolRewards[strategy.stakeToken] += rewardAmount;
     //         uint256 rewardShares = validatorCollateral.shares > 0
     //             ? DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares, validatorCollateral.stakedAmount)
     //             : rewardAmount;
@@ -1382,12 +1376,11 @@ contract DelegatedStaking is Initializable,
     function getRewards(address _validator, address _collateral)
         external
         view
-        returns(uint256, uint256, uint256)
+        returns(uint256, uint256)
     {
         return(
             getValidatorInfo[_validator].collateralPools[_collateral].accumulatedRewards,
-            collaterals[_collateral].rewards,
-            accumulatedProtocolRewards[_collateral]
+            collaterals[_collateral].rewards
         );
     }
 
