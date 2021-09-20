@@ -213,6 +213,7 @@ contract DelegatedStaking is Initializable,
     event EnableCollateral(address collateral, bool isEnabled);
     event UpdateCollateral(address collateral, uint256 maxStakeAmount);
     event UpdateRewardWeight(address validator, uint256 value);
+    event EnableValidator(address validator, bool isEnabled);
 
     /* PUBLIC */
 
@@ -1060,26 +1061,21 @@ contract DelegatedStaking is Initializable,
     function updateValidator(address _validator, bool _isEnabled) external onlyAdmin {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         if (!validator.exists || validator.isEnabled == _isEnabled) revert WrongArgument();
-        validator.isEnabled = _isEnabled;
-    }
-
-    /**
-     * @dev Remove an obsolete validator.
-     * @param _validator Validator address.
-     */
-    function removeValidator(address _validator) external onlyAdmin {
-        ValidatorInfo storage validator = getValidatorInfo[_validator];
-        if (!validator.exists || validator.isEnabled) revert WrongArgument();
-        for (uint256 i=0; i<validatorAddresses.length; i++) {
-            if (validatorAddresses[i] == _validator) {
-                validatorAddresses[i] = validatorAddresses[validatorAddresses.length - 1];
-                validatorAddresses.pop();
-                for (uint256 j=0; j<collateralAddresses.length; j++) {
-                    delete validator.collateralPools[collateralAddresses[j]];
+        // If we enable validator
+        if(_isEnabled){
+            validatorAddresses.push(_validator);
+        }
+        // If we disable validator
+        else {
+            for (uint256 i=0; i< validatorAddresses.length; i++) {
+                if (validatorAddresses[i] == _validator) {
+                    validatorAddresses[i] = validatorAddresses[validatorAddresses.length - 1];
+                    validatorAddresses.pop();
                 }
-                delete getValidatorInfo[_validator];
             }
         }
+        validator.isEnabled = _isEnabled;
+        emit EnableValidator(_validator, _isEnabled);
     }
 
     /**
