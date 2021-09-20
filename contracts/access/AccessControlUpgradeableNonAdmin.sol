@@ -10,8 +10,7 @@ abstract contract AccessControlUpgradeableNonAdmin is AccessControlUpgradeable {
     }
 
 // @dev this is a non-admin-only function that chet the address passed to grantRole does not match the admin address
-    function grantRoleNonAdmin(bytes32 role, address account) public virtual onlyNonAdminAddress(role, account) {
-        grantRole(role, account);
+    function grantRole(bytes32 role, address account) public virtual override onlyNonAdminAddress(role, account) {
+        AccessControlUpgradeable.grantRole(role, account);
     }
-
 }

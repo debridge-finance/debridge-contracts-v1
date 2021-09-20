@@ -269,7 +269,7 @@ contract DefiController is Initializable, AccessControlUpgradeableNonAdmin, Paus
     }
 
     function addWorker(address _worker) external onlyAdmin {
-        grantRoleNonAdmin(WORKER_ROLE, _worker);
+        grantRole(WORKER_ROLE, _worker);
     }
 
     function removeWorker(address _worker) external onlyAdmin {
