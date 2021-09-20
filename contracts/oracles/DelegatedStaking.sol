@@ -845,8 +845,13 @@ contract DelegatedStaking is Initializable,
      */
     function setMinProfitSharing(uint256 _profitSharingBPS) external onlyAdmin {
         if (_profitSharingBPS > BPS_DENOMINATOR) revert WrongArgument();
+        for (uint256 i=0; i<validatorAddresses.length; i++) {
+            ValidatorInfo storage validator = getValidatorInfo[validatorAddresses[i]];
+            if (validator.profitSharingBPS < _profitSharingBPS) {
+                validator.profitSharingBPS = _profitSharingBPS;
+            }
+        }
         minProfitSharingBPS = _profitSharingBPS;
-        //TODO: need to check all validators that have ProfitSharingBPS greated then minProfitSharingBPS
     }
 
     // /**

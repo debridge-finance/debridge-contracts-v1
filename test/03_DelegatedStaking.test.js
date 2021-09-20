@@ -254,6 +254,30 @@ contract("DelegatedStaking", function() {
         "AdminBadRole()"
       );
     });
+    it("should increase profit sharing if less than new minimum", async function() {
+      const bobOracle = await this.delegatedStaking.getValidatorInfo(bob);
+      const davidOracle = await this.delegatedStaking.getValidatorInfo(david);
+      const sarahOracle = await this.delegatedStaking.getValidatorInfo(sarah);
+      const minSharingBefore = await this.delegatedStaking.minProfitSharingBPS();
+      const bobSharingBefore = await bobOracle.profitSharingBPS;
+      const davidSharingBefore = await davidOracle.profitSharingBPS;
+      const sarahSharingBefore = await sarahOracle.profitSharingBPS;
+      assert(bobSharingBefore < 5000, "bobOracle profitSharingBPS already greater than new minimum");
+      await this.delegatedStaking.setMinProfitSharing(5000);
+      const bobOracleAfter = await this.delegatedStaking.getValidatorInfo(bob);
+      const davidOracleAfter = await this.delegatedStaking.getValidatorInfo(david);
+      const sarahOracleAfter = await this.delegatedStaking.getValidatorInfo(sarah);
+      assert.equal(await this.delegatedStaking.minProfitSharingBPS(), 5000);
+      assert.equal(bobOracleAfter.profitSharingBPS.toString(), 5000);
+      assert.equal(davidOracleAfter.profitSharingBPS.toString(), davidSharingBefore.toString());
+      assert.equal(sarahOracleAfter.profitSharingBPS.toString(), sarahSharingBefore.toString());
+      // reset bob sharing and minimum
+      await this.delegatedStaking.setMinProfitSharing(minSharingBefore);
+      assert.equal(await this.delegatedStaking.minProfitSharingBPS(), minSharingBefore.toString());
+      await this.delegatedStaking.setProfitSharing(bob, bobSharingBefore);
+      const bobOracleReset = await this.delegatedStaking.getValidatorInfo(bob);
+      assert.equal(bobOracleReset.profitSharingBPS.toString(), bobSharingBefore.toString());
+    });
   });
 
   context("Test management collaterals", async () => {
