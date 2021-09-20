@@ -105,7 +105,7 @@ contract DelegatedStaking is Initializable,
         uint256 rewardWeightCoefficient;
         uint256 profitSharingBPS;  // profit sharing basis points.
         bool delegatorActionPaused; // paused stake/unstake for this validator
-        bool isExist;
+        bool exists;
     }
 
     struct Collateral {
@@ -116,7 +116,7 @@ contract DelegatedStaking is Initializable,
         uint8 decimals;
         bool isEnabled;
         bool isUSDStable;
-        bool isExist;
+        bool exists;
     }
 
     struct Strategy {
@@ -127,7 +127,7 @@ contract DelegatedStaking is Initializable,
         uint256 totalReserves;
         uint256 rewards;
         bool isEnabled;
-        bool isExist;
+        bool exists;
         bool isRecoverable;
     }
 
@@ -1030,7 +1030,7 @@ contract DelegatedStaking is Initializable,
             || _profitSharingBPS > BPS_DENOMINATOR) revert WrongArgument();
 
         ValidatorInfo storage validator = getValidatorInfo[_validator];
-        if (!validator.isExist) {
+        if (!validator.exists) {
             validatorAddresses.push(_validator);
         }
         validator.admin = _admin;
@@ -1052,9 +1052,9 @@ contract DelegatedStaking is Initializable,
         uint256 _maxStakeAmount
     ) external onlyAdmin {
         Collateral storage collateral = collaterals[_token];
-        if (collateral.isExist) revert AlreadyExist();
+        if (collateral.exists) revert AlreadyExist();
 
-        collateral.isExist = true;
+        collateral.exists = true;
         collateral.isEnabled = true;
         collateral.isUSDStable = _isUSDStable;
         //TODO: get decimals in contract
@@ -1115,12 +1115,12 @@ contract DelegatedStaking is Initializable,
      */
     function addStrategy(address _strategyController, address _stakeToken, address _rewardToken) external onlyAdmin {
         Strategy storage strategy = strategies[_strategyController][_stakeToken];
-        if (strategy.isExist)  revert AlreadyExist();
+        if (strategy.exists)  revert AlreadyExist();
         strategy.stakeToken = _stakeToken;
         strategy.strategyToken = IStrategy(_strategyController).strategyToken(_stakeToken);
         strategy.rewardToken = _rewardToken;
         strategy.isEnabled = true;
-        strategy.isExist = true;
+        strategy.exists = true;
     }
 
     // /**
