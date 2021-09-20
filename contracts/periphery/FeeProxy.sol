@@ -106,7 +106,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         if (feeProxyAddresses[nativeChain].length == 0) revert EmptyFeeProxyAddress(nativeChain);
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
-        address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
+        address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
 
         debridgeGate.withdrawFee(debridgeId);
         uint256 amount = IERC20(_tokenAddress).balanceOf(address(this));
@@ -124,10 +124,10 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
                 if (_tokenAddress != address(weth)) {
                     _swap(_tokenAddress, address(weth), address(this));
                 }
-                //If we are in Ethereum chain transfer to Treasery
+                //If we are in Ethereum chain transfer to Treasury
                 if (chainId == ETH_CHAINID) {
                     IERC20(address(weth)).safeTransfer(
-                        address(currentTreaseryAddress),
+                        address(currentTreasuryAddress),
                         weth.balanceOf(address(this))
                     );
                 } else {
@@ -157,7 +157,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         // TODO: treasuryAddresses can keep only for ETH network
         // if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
-        // address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
+        // address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
         debridgeGate.withdrawFee(getDebridgeId(chainId, address(0)));
         uint256 amount = address(this).balance - msg.value;
 
@@ -165,9 +165,9 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         //If we are in Ethereum chain
         if (chainId == ETH_CHAINID) {
             if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
-            address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
+            address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
             //TODO: send 50% reward to slashing contract
-            payable(currentTreaseryAddress).transfer(amount);
+            payable(currentTreasuryAddress).transfer(amount);
         }
         //If we are not in Ethereum chain
         else {
