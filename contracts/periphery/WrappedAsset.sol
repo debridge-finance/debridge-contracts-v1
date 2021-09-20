@@ -17,12 +17,13 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
 
     /* ========== ERRORS ========== */
 
+    error MinterBadRole();
     error AdminAddressDenied();
 
     /* ========== MODIFIERS ========== */
 
     modifier onlyMinter() {
-        require(hasRole(MINTER_ROLE, msg.sender), "onlyMinter: bad role");
+        if (!hasRole(MINTER_ROLE, msg.sender)) revert MinterBadRole();
         _;
     }
 
