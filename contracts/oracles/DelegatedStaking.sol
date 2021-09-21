@@ -154,6 +154,7 @@ contract DelegatedStaking is Initializable,
     error CollateralLimited();
     error WrongArgument();
     error WrongRequest(uint256 id);
+    error AlreadyExecuted(uint256 id);
 
     error DelegatorActionPaused();
     error RequestPaused(uint256 id);
@@ -369,6 +370,34 @@ contract DelegatedStaking is Initializable,
     //TODO: create test for 1000 cancelUnstake requests
 
     /**
+     * @dev Cancel unstake.
+     * @param _validator Validator address.
+     * @param _withdrawalId Withdrawal identifier.
+     */
+    function cancelUnstake(address _validator, uint256 _withdrawalId) external nonReentrant whenNotPaused {
+        ValidatorInfo storage validator = getValidatorInfo[msg.sender];
+        if (validator.delegatorActionPaused) revert DelegatorActionPaused();
+        WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
+        WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[_withdrawalId];
+        ValidatorCollateral storage validatorCollateral = validator.collateralPools[withdrawal.collateral];
+        DelegatorsInfo storage delegator = validatorCollateral.delegators[withdrawal.delegator];
+
+        if (withdrawal.executed) revert AlreadyExecuted(_withdrawalId);
+        withdrawal.executed = true;
+        uint256 _shares = validatorCollateral.shares > 0
+            ? DelegatedStakingHelper._calculateShares(
+                withdrawal.amount,
+                validatorCollateral.shares,
+                validatorCollateral.stakedAmount)
+            : withdrawal.amount;
+        collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
+        delegator.shares += _shares;
+        validatorCollateral.shares += _shares;
+        validatorCollateral.stakedAmount += withdrawal.amount;
+        emit UnstakeCancelled(_validator, msg.sender, _withdrawalId);
+    }
+
+    /**
     * @dev Execute withdrawal requests.
     * @param _validator Validator address.
     * @param _fromWithdrawId Starting from withdrawal identifier.
@@ -431,36 +460,6 @@ contract DelegatedStaking is Initializable,
         getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount -= _slashAmount;
         emit SlashedValidatorCollateral(_validator, _collateral, _slashAmount);
     }
-
-    // /**
-    //  * @dev Cancel unstake.
-    //  * @param _validator Validator address.
-    //  * @param _withdrawalId Withdrawal identifier.
-    //  */
-    // function cancelUnstake(address _validator, uint256 _withdrawalId) external nonReentrant whenNotPaused {
-    //     ValidatorInfo storage validator = getValidatorInfo[msg.sender];
-    //     DelegatorInfo storage delegator = validator.delegators[msg.sender];
-    //     WithdrawalInfo storage withdrawal = delegator.withdrawals[_withdrawalId];
-    //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[withdrawal.collateral];
-    //     DelegatedStakingHelper._validateDelegator(delegator.exists);
-    //     DelegatorsInfo storage delegation = validatorCollateral.delegation[msg.sender];
-    //     DelegatedStakingHelper._validateNotExecuted(withdrawal.executed);
-    //     withdrawal.executed = true;
-    //     uint256 delegatorShares = DelegatedStakingHelper._calculateShares(
-    //         withdrawal.amount,
-    //         validatorCollateral.shares,
-    //         validatorCollateral.stakedAmount
-    //     );
-    //     collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
-    //     delegation.shares += delegatorShares;
-    //     validatorCollateral.shares += delegatorShares;
-    //     validatorCollateral.stakedAmount += withdrawal.amount;
-    //     // recalculate passed rewards
-    //     delegation.passedRewards = DelegatedStakingHelper._calculatePassedRewards(
-    //                     delegation.shares,
-    //                     validatorCollateral.accTokensPerShare);
-    //     emit UnstakeCancelled(_validator, msg.sender, _withdrawalId);
-    // }
 
     // /**
     //  * @dev Stake token to strategies to earn rewards

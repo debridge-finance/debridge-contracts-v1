@@ -315,7 +315,7 @@ contract("DelegatedStaking", function() {
     });
   });
 
-  context("Test management collaterals", async () => {
+  context.only("Test management collaterals", async () => {
     it("should add if called by admin", async function() {
       await this.delegatedStaking.addCollateral(this.linkToken.address, 18, false, MaxUint256);
       await this.delegatedStaking.addCollateral(this.usdcToken.address, 6, true, MaxUint256);
@@ -325,9 +325,9 @@ contract("DelegatedStaking", function() {
       const usdcCollateral = await this.delegatedStaking.collaterals(this.usdcToken.address);
       const usdtCollateral = await this.delegatedStaking.collaterals(this.usdtToken.address);
 
-      assert.equal(linkCollateral.isExist, true);
-      assert.equal(usdcCollateral.isExist, true);
-      assert.equal(usdtCollateral.isExist, true);
+      assert.equal(linkCollateral.exists, true);
+      assert.equal(usdcCollateral.exists, true);
+      assert.equal(usdtCollateral.exists, true);
       assert.equal(linkCollateral.isEnabled, true);
       assert.equal(usdcCollateral.isEnabled, true);
       assert.equal(usdtCollateral.isEnabled, true);
@@ -373,7 +373,7 @@ contract("DelegatedStaking", function() {
       await this.delegatedStaking.addStrategy(this.mockCompoundController.address, this.linkToken.address, this.linkToken.address);
       const strategy = await this.delegatedStaking.getStrategy(this.mockAaveController.address, this.linkToken.address);
       assert.equal(strategy.isEnabled, true);
-      assert.equal(strategy.isExist, true);
+      assert.equal(strategy.exists, true);
       //TODO: check others properties
     });
     it("should fail if called by non admin", async function() {
@@ -1160,15 +1160,15 @@ contract("DelegatedStaking", function() {
     it("fail in case of execute unstaking before timelock", async function() {
       await this.delegatedStaking.requestUnstake(sarah, this.linkToken.address, alice, toWei("10"));
       await expectRevert(
-        this.delegatedStaking.executeUnstake(sarah, 1),
-        "too early"
+        this.delegatedStaking.executeUnstake(sarah, 1, 1),
+        "Timelock()"
       );
     });
 
     it("fail in case of execute unstaking from future", async function() {
       await expectRevert(
-        this.delegatedStaking.executeUnstake(sarah, 10),
-        "request !exist"
+        this.delegatedStaking.executeUnstake(sarah, 10, 10),
+        "WrongArgument()"
       );
     });
 
@@ -1180,10 +1180,10 @@ contract("DelegatedStaking", function() {
         withdrawalId
       );
       const collateral = prevWithdrawalInfo.collateral;
-      const prevOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
+      const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(bob, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
-      await this.delegatedStaking.executeUnstake(sarah, withdrawalId);
-      const currentOracleStaking = await this.delegatedStaking.getOracleStaking(bob, collateral);
+      await this.delegatedStaking.executeUnstake(sarah, withdrawalId, withdrawalId);
+      const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(bob, collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
       const currentWithdrawalInfo = await this.delegatedStaking.getWithdrawalRequest(
         sarah,
@@ -1192,17 +1192,43 @@ contract("DelegatedStaking", function() {
       assert.equal(prevWithdrawalInfo.executed, false);
       assert.equal(currentWithdrawalInfo.executed, true);
       assert.equal(
-        prevOracleStaking[0].toString(),
-        currentOracleStaking[0].toString()
+        prevValidatorCollateral[0].toString(),
+        currentValidatorCollateral[0].toString()
       );
       assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
     });
 
     it("fail in case of execute unstaking twice", async function() {
       await expectRevert(
-        this.delegatedStaking.executeUnstake(sarah, 0),
+        this.delegatedStaking.executeUnstake(sarah, 0, 0),
         "already executed"
       );
+    });
+  });
+
+  context.only("Test cancel unstake", async () => {
+    it("should cancel unstake 10 shares", async function() {
+      const amount = toWei("10");
+      const collateral = this.linkToken.address;
+      await this.delegatedStaking.requestUnstake(sarah, collateral, alice, amount);
+      const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(sarah, collateral);
+      const prevCollateral = await this.delegatedStaking.collaterals(collateral);
+      await this.delegatedStaking.cancelUnstake(sarah, 0);
+      const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(sarah, collateral);
+      const currentCollateral = await this.delegatedStaking.collaterals(collateral);
+      assert.equal(
+        prevValidatorCollateral[1].add(toBN(amount)).toString(),
+        currentValidatorCollateral[1].toString()
+      );
+      assert.equal(
+        prevCollateral.totalLocked.add(toBN(amount)).toString(),
+        currentCollateral.totalLocked.toString()
+      );
+    });
+    it("should fail cancel unstake if already executed", async function() {
+      await expectRevert(
+        this.delegatedStaking.cancelUnstake(sarah, 0),
+        "AlreadyExecuted(0)");
     });
   });
 
