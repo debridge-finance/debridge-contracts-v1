@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IStrategy.sol";
 import "../interfaces/IPriceConsumer.sol";
 import "hardhat/console.sol";
@@ -112,6 +113,7 @@ contract DelegatedStaking is Initializable,
         uint256 totalLocked; // total staked tokens
         uint256 rewards; // total accumulated rewards
         uint256 maxStakeAmount; // maximum stake for each validator's collateral
+        mapping(address => uint256) swapAmounts; // amount of collateral to swap for other tokens in reward distribution
         uint8 decimals;
         bool isEnabled;
         bool isUSDStable;
@@ -145,6 +147,7 @@ contract DelegatedStaking is Initializable,
     address[] public strategyControllerAddresses;
     mapping(address => bool) public strategyControllerExists;
     IPriceConsumer public priceConsumer;
+    IFeeProxy public feeProxy; // proxy to convert the collected rewards into other collaterals
     address public slashingTreasury;
 
     /* ========== ERRORS ========== */
@@ -206,7 +209,7 @@ contract DelegatedStaking is Initializable,
     event RecoveredFromEmergency(address validator, uint256 amount, address strategy, address collateral);
     event StrategyReset(address _strategy, address collateral);
     event RewardsReceived(address token,  uint256 amount);
-    event RewardsDistributed(address validator, address collateral, uint256 amount);
+    event RewardsDistributed(address rewardToken, uint256 rewardAmount);
     event WithdrawSlashingTreasury(address collateral, uint256 amount);
     event UpdateSlashingTreasury(address newTreasury);
     event WithdrawTimelockUpdated(uint256 newTimelock);
@@ -224,14 +227,20 @@ contract DelegatedStaking is Initializable,
      * @param _priceConsumer Price consumer contract.
      * @param _slashingTreasury Address of slashing treasury.
      */
-    function initialize(uint256 _withdrawTimelock, IPriceConsumer _priceConsumer, address _slashingTreasury) public initializer {
+    function initialize(
+        uint256 _withdrawTimelock, 
+        IPriceConsumer _priceConsumer,
+        IFeeProxy _feeProxy,
+        address _slashingTreasury
+    ) public initializer {
         // Grant the contract deployer the default admin role: it will be able
         // to grant and revoke any roles
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         withdrawTimelock = _withdrawTimelock;
         priceConsumer = _priceConsumer;
+        feeProxy = _feeProxy;
         slashingTreasury = _slashingTreasury;
-        // minProfitSharingBPS = 5000;
+        // minProfitSharingBPS = 5000; TODO: why commented?
     }
 
     /**
@@ -655,22 +664,17 @@ contract DelegatedStaking is Initializable,
     }
 
     /**
-     * @dev Distributes validator rewards to validators
+     * @dev Distributes validator rewards to validator/delegators
      * @param _rewardToken address of reward token
      */
     function distributeValidatorRewards(address _rewardToken) external nonReentrant whenNotPaused {
-        // Collateral storage collateral = collaterals[_collateral];
-        // if (!collateral.isEnabled) revert CollateralDisabled();
-        // IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
-        // //TODO: check collateral.totalLocked += _amount;
-        // collateral.totalLocked += _amount;
-        // collateral.rewards +=_amount;
-
+        Collateral storage rewardCollateral = collaterals[_rewardToken];
+        if (!rewardCollateral.isEnabled) revert CollateralDisabled();
 
         RewardInfo storage rewardInfo = getRewardsInfo[_rewardToken];
-        uint256 rewardAmount = rewardInfo.totalAmount - rewardInfo.distributed;
-        if (rewardAmount == 0) revert ZeroAmount();
-        rewardInfo.distributed += rewardAmount;
+        uint256 _rewardAmount = rewardInfo.totalAmount - rewardInfo.distributed;
+        if (_rewardAmount == 0) revert ZeroAmount();
+        rewardInfo.distributed += _rewardAmount;
 
         // we need to know how much tokens to swap for each pool;
         // Sample
@@ -693,37 +697,59 @@ contract DelegatedStaking is Initializable,
         // we need to swap  56,25 usdt to usdc and just increment usdc collateral.totalStaked += receivedUSDCAmount;
         // We don't need to create swap for each validators pool. Firs we need to calulate total Link to swap
 
-        //TODO: neet to check is validator active
-        //We don't need to distribute rewards for non active validators
         for (uint256 v = 0; v < validatorAddresses.length; v++) {
             address validatorAddress = validatorAddresses[v];
             ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
-            uint256 validatorAmount =  validator.rewardWeightCoefficient * rewardAmount / weightCoefficientDenominator;
+            if (!validator.isEnabled) continue; // We don't need to distribute rewards for non active validators
+            uint256 validatorAmount = validator.rewardWeightCoefficient * _rewardAmount / weightCoefficientDenominator;
             uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
-            // add reward for validator
-            validator.collateralPools[_rewardToken].rewardsForWithdrawal += validatorAmount - delegatorsAmount;
-            console.log("validatorAddress %s", validatorAddress);
-            console.log("validatorAmount  %s", validatorAmount);
-            console.log("delegatorsAmount %s", delegatorsAmount);
 
-            (uint256[] memory poolsUsdAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
+            (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
 
             for (uint256 c = 0; c < collateralAddresses.length; c++) {
                 address collateralAddress = collateralAddresses[c];
-                ValidatorCollateral storage validatorCollateral = validator.collateralPools[collateralAddress];
-
-                // validatorCollateral.stakedAmount += ???;
-                // validatorCollateral.accumulatedRewards += ???;
-
-                // mint validatorAmount delegators[validator.admin]
-                console.log("validatorCollateral.stakedAmount before %s", validatorCollateral.stakedAmount);
-                // _distributeDelegatorRewards(_validator, _collateral, delegatorsAmount);
-                //after distribution
-                // validatorCollateral.stakedAmount += delegatorsAmount;
-                console.log("validatorCollateral.stakedAmount after increase %s", validatorCollateral.stakedAmount);
-                // emit RewardsDistributed(_validator, _collateral, _amount);
+                if (!collaterals[collateralAddress].isEnabled) continue;
+                if (_rewardToken == collateralAddress) {
+                    ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[_rewardToken];
+                    uint256 validatorReward = validatorAmount - delegatorsAmount;
+                    validatorRewardCollateral.stakedAmount += validatorReward + (delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount);
+                    validatorRewardCollateral.accumulatedRewards += validatorReward + (delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount);
+                    validatorRewardCollateral.rewardsForWithdrawal += validatorReward;
+                } else {
+                    // TODO: we need to track each validator's pool share so we can distribute swapped tokens
+                    // depending on their relative share as we cannot be sure of the number of output tokens beforehand
+                    // ValidatorCollateral storage validatorCollateral = validator.collateralPools[collateralAddress];
+                    // validatorCollateral.swapAmounts[collateralAddress] += delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
+                    rewardCollateral.swapAmounts[collateralAddress] += delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
+                }
             }
         }
+
+        for (uint256 cc=0; cc<collateralAddresses.length; cc++) {
+
+            // TODO:
+            // if we are converting to another collateral, say 100 LINK -> USDC
+            // but also require 50 USDC -> LINK from another set of rewards then 
+            // there we could 'swap' partial balance using virtual balances and
+            // price oracle, since the contract already holds the tokens
+
+            address currentCollateral = collateralAddresses[cc];
+            if (currentCollateral == _rewardToken) continue;
+            uint256 swapAmount = rewardCollateral.swapAmounts[currentCollateral];
+            rewardCollateral.swapAmounts[currentCollateral] = 0;
+            IERC20(_rewardToken).safeApprove(address(feeProxy), 0);
+            IERC20(_rewardToken).safeApprove(address(feeProxy), swapAmount);
+            uint256 amountOut = feeProxy.swap(_rewardToken, currentCollateral, address(this), swapAmount);
+            // TODO: now we need to split amountOut for each current collateral between validator pools
+            // loop over validators again using validatorCollateral.swapAmounts[currentCollateral]/amountOut ??
+            
+            // TODO: update after swaps
+            // collateral.totalLocked += _amount
+            // collateral.rewards +=_amount
+            // validatorCollateral.stakedAmount += ???
+            // validatorCollateral.accumulatedRewards += ???;
+        }
+        emit RewardsDistributed(_rewardToken, _rewardAmount);
     }
 
     /* ADMIN */
@@ -1132,6 +1158,14 @@ contract DelegatedStaking is Initializable,
         priceConsumer = _priceConsumer;
     }
 
+    /**
+     * @dev Set fee converter proxy.
+     * @param _feeProxy Fee proxy address.
+     */
+    function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin() {
+        feeProxy = _feeProxy;
+    }
+
     /* internal & views */
 
     /**
@@ -1283,7 +1317,7 @@ contract DelegatedStaking is Initializable,
      */
     function getPoolUSDAmount(address _validator, address _collateral) public view returns(uint256) {
         uint256 collateralPrice;
-        Collateral memory collateral = collaterals[_collateral];
+        Collateral storage collateral = collaterals[_collateral];
         if (collateral.isUSDStable)
             collateralPrice = 1e18;
         // TODO: check what's decimals reuturn priceConsumer (ETH/USD has 8 decimals!!!)
@@ -1298,18 +1332,16 @@ contract DelegatedStaking is Initializable,
      * @param _validator Address of validator
      */
     function getTotalUSDAmount(address _validator) public view
-        returns (uint256[] memory poolsUsdAmounts, uint256 totalUSDAmount
+        returns (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount
     ) {
-        // uint256 totalUSDAmount;
-        // uint256[] memory poolsUsdAmounts;
-        poolsUsdAmounts = new uint256[](collateralAddresses.length);
+        poolsUSDAmounts = new uint256[](collateralAddresses.length);
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             uint256 poolUSDAmount = getPoolUSDAmount(_validator, collateralAddresses[i]);
             totalUSDAmount += poolUSDAmount;
-            poolsUsdAmounts[i] = poolUSDAmount;
+            poolsUSDAmounts[i] = poolUSDAmount;
         }
         console.log("getTotalUSDAmount %s totalUSDAmount: %s", _validator, totalUSDAmount);
-        return  (poolsUsdAmounts, totalUSDAmount);
+        return (poolsUSDAmounts, totalUSDAmount);
     }
 
     /**
