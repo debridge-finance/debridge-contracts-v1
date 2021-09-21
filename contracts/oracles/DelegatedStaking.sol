@@ -660,22 +660,22 @@ contract DelegatedStaking is Initializable,
 
     /**
      * @dev Receive protocol rewards.
-     * @param _token Address of reward token.
+     * @param _rewardToken Address of reward token.
      * @param _amount Amount of reward tokem.
      */
     function sendRewards(
-        address _token,
+        address _rewardToken,
         uint256 _amount
     ) external nonReentrant whenNotPaused {
-        if (!collaterals[_token].isEnabled) revert CollateralDisabled();
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        getRewardsInfo[_token].totalAmount += _amount;
+        if (!collaterals[_rewardToken].isEnabled) revert CollateralDisabled();
+        IERC20(_rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
+        getRewardsInfo[_rewardToken].totalAmount += _amount;
 
-        emit RewardsReceived(_token, _amount);
+        emit RewardsReceived(_rewardToken, _amount);
 
         console.log("_amount %s", _amount);
-        console.log("getRewardsInfo[_token].totalAmount %s", getRewardsInfo[_token].totalAmount);
-        console.log("getRewardsInfo[_token].distributed %s", getRewardsInfo[_token].distributed);
+        console.log("getRewardsInfo[_rewardToken].totalAmount %s", getRewardsInfo[_rewardToken].totalAmount);
+        console.log("getRewardsInfo[_rewardToken].distributed %s", getRewardsInfo[_rewardToken].distributed);
     }
 
     // /**
