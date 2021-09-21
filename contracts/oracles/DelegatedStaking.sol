@@ -301,8 +301,8 @@ contract DelegatedStaking is Initializable,
         WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
         DelegatorsInfo storage delegator = validatorCollateral.delegators[msg.sender];
 
-        if (_shares> delegator.shares) {
-            _shares= delegator.shares;
+        if (_shares > delegator.shares) {
+            _shares = delegator.shares;
         }
         console.log("requestUnstake _shares %s", _shares);
 
@@ -480,7 +480,7 @@ contract DelegatedStaking is Initializable,
     //     ValidatorInfo storage validator = getValidatorInfo[_validator];
     //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
 
-    //     DelegatorInfo storage delegator = validator.delegators[msg.sender];
+    //     DelegatorsInfo storage delegator = validator.delegators[msg.sender];
     //     DelegatedStakingHelper._validateDelegator(delegator.exists);
     //     DelegatorsInfo storage delegation = validatorCollateral.delegation[msg.sender];
     //     uint256 _amount = DelegatedStakingHelper._calculateFromShares(
@@ -529,7 +529,7 @@ contract DelegatedStaking is Initializable,
     //     DelegatedStakingHelper._validateStrategy(strategy.isEnabled);
     //     ValidatorInfo storage validator = getValidatorInfo[_validator];
     //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
-    //     DelegatorInfo storage delegator = validator.delegators[msg.sender];
+    //     DelegatorsInfo storage delegator = validator.delegators[msg.sender];
     //     DelegatedStakingHelper._validateDelegator(delegator.exists);
     //     DelegatorsInfo storage delegation = validatorCollateral.delegation[msg.sender];
     //     uint256 beforeBalance = IERC20(strategy.stakeToken).balanceOf(address(this));
@@ -880,7 +880,7 @@ contract DelegatedStaking is Initializable,
     //         address _collateral = _collaterals[i];
     //         uint256 delegatorBPS = _delegatorBPS;
     //         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-    //         DelegatorInfo storage delegator = validator.delegators[validator.admin];
+    //         DelegatorsInfo storage delegator = validator.delegators[validator.admin];
     //         DelegatedStakingHelper._validateDelegator(delegator.exists);
     //         DelegatorsInfo storage delegation = validatorCollateral.delegation[validator.admin];
     //         Collateral storage collateral = collaterals[_collateral];
@@ -950,7 +950,7 @@ contract DelegatedStaking is Initializable,
     // function liquidateDelegator(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) public onlyAdmin {
     //     ValidatorInfo storage validator = getValidatorInfo[_validator];
     //     ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-    //     DelegatorInfo storage delegator = validator.delegators[_delegator];
+    //     DelegatorsInfo storage delegator = validator.delegators[_delegator];
     //     DelegatorsInfo storage delegation = validatorCollateral.delegation[_delegator];
     //     DelegatedStakingHelper._validateDelegator(delegator.exists);
     //     Collateral storage collateral = collaterals[_collateral];
@@ -1434,7 +1434,7 @@ contract DelegatedStaking is Initializable,
         uint256 rewardsForWithdrawal
         // uint256 accTokensPerShare
     ) {
-         ValidatorCollateral storage item =  getValidatorInfo[_validator].collateralPools[_collateral];
+         ValidatorCollateral storage item = getValidatorInfo[_validator].collateralPools[_collateral];
          return (
             item.stakedAmount, // total tokens staked by delegators
             item.shares, // total share of collateral tokens
