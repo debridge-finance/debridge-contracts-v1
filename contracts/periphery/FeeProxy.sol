@@ -155,6 +155,17 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         }
     }
 
+    function swap(
+        address _fromToken,
+        address _toToken,
+        address _receiver,
+        uint256 _amount
+    ) external returns(uint256 amountOut) {
+        IERC20(_fromToken).safeTransferFrom(msg.sender, address(this), _amount);
+        amountOut = _swapExact(_fromToken, _toToken, _receiver, _amount);
+        return amountOut;
+    }
+
     //Used when weth.withdraw
     fallback() external payable {}
 
@@ -206,6 +217,16 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
             uint256 amountOut = getAmountOut(_amount, reserve1, reserve0);
             uniswapPair.swap(amountOut, 0, _receiver, "");
         }
+    }
+
+    function _swapExact(
+        address _fromToken,
+        address _toToken,
+        address _receiver,
+        uint256 _amount
+    ) private returns(uint256 amountOut) {
+        // TODO: use UniswapV2Router
+        return amountOut;
     }
 
     function getAmountOut(
