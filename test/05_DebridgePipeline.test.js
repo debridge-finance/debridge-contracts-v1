@@ -1419,21 +1419,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       this.linkSubmissionId = this.linkSubmission.args.submissionId;
 
       this.nativeSignatures = await submissionSignatures(bscWeb3, oracleKeys, this.nativeSubmissionId);
-      // this.nativeSignatures = "0x";
-      // for (let oracleKey of oracleKeys) {
-      //   let currentSignature = (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKey))
-      //     .signature;
-      //   //HACK remove first 0x
-      //   this.nativeSignatures += currentSignature.substring(2, currentSignature.length);
-      // }
-
       this.linkSignatures = await submissionSignatures(bscWeb3, oracleKeys, this.linkSubmissionId);
-      // this.linkSignatures = "0x";
-      // for (let oracleKey of oracleKeys) {
-      //   let currentSignature = (await bscWeb3.eth.accounts.sign(this.linkSubmissionId, oracleKey))
-      //     .signature;
-      //   this.linkSignatures += currentSignature.substring(2, currentSignature.length);
-      // }
     });
 
     it("check view method is valid signature", async function () {
@@ -1883,10 +1869,59 @@ contract("DeBridgeGate real pipeline mode", function () {
     // Flag to call proxy with a sender contract
     const PROXY_WITH_SENDER = 2;
 
-    // TODO: extract duplicating code for send/mint functions
+    // TODO: extract duplicating code in flag tests for send/mint functions
 
     it("should have same submissionId for same autoparams", async function() {
-      // TODO: write this test
+      const amount = toBN(toWei("150"));
+      const sender = aliceAccount;
+      const receiver = bobAccount;
+      const executionFee = toBN(toWei("25"));
+      const flags = 0;
+      const data = [];
+      const fallbackAddress = fei;
+
+      const sentTx = await this.debridgeETH
+        .connect(sender)
+        .send(
+          ZERO_ADDRESS,
+          receiver.address,
+          amount,
+          bscChainId,
+          [],
+          false,
+          referralCode,
+          packSubmissionAutoParamsTo(
+            executionFee,
+            flags,
+            fallbackAddress,
+            data),
+          {
+            value: amount,
+            from: sender.address,
+          }
+        );
+
+      // get Sent event
+      const sentReceipt = await sentTx.wait();
+      const sentEvent = sentReceipt.events.find(i => i.event == "Sent");
+
+      const submissionIdFrom = await this.debridgeBSC.getSubmissionIdFrom(
+        this.debridgeWethId,
+        ethChainId,
+        amount.sub(executionFee),
+        receiver.address,
+        sentEvent.args.nonce,
+        {
+          executionFee,
+          flags,
+          fallbackAddress,
+          data,
+          nativeSender: sender.address,
+        },
+        true,
+      );
+
+      assert.equal(sentEvent.args.submissionId, submissionIdFrom);
     });
 
     context("Test UNWRAP_ETH flag", () => {
