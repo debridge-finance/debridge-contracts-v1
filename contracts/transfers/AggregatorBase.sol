@@ -26,6 +26,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     error OracleNotFound();
 
     error WrongArgument();
+    error LowMinConfirmations();
 
     error SubmittedAlready();
 
@@ -58,7 +59,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @dev Sets minimal required confirmations.
     /// @param _minConfirmations Confirmation info.
     function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
-        if (_minConfirmations == 0) revert WrongArgument();
+        if (_minConfirmations < oracleAddresses.length / 2 + 1) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
     }
 
@@ -69,6 +70,8 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         address[] memory _oracles,
         bool[] memory _required
     ) external onlyAdmin {
+        if (minConfirmations < (oracleAddresses.length +  _oracles.length) / 2 + 1) revert LowMinConfirmations();
+
         for (uint256 i = 0; i < _oracles.length; i++) {
             OracleInfo storage oracleInfo = getOracleInfo[_oracles[i]];
             if (oracleInfo.exist) revert OracleAlreadyExist();
@@ -117,8 +120,8 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
                 }
             }
         } else if (!oracleInfo.isValid && _isValid) {
+            if (minConfirmations < (oracleAddresses.length + 1) / 2 + 1) revert LowMinConfirmations();
             oracleAddresses.push(_oracle);
-            // TODO: check minConfirmations
         }
         oracleInfo.isValid = _isValid;
         oracleInfo.required = _required;

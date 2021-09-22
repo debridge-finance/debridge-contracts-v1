@@ -78,6 +78,20 @@ contract("ConfirmationAggregator", function () {
       assert.equal(confirmationThreshold, newThreshold);
     });
 
+    it("should revert adding new oracle if minConfirmations will be too low", async function () {
+      await expectRevert(
+        this.aggregator.connect(aliceAccount).addOracles([devid], [true]),
+        "LowMinConfirmations()"
+      );
+    });
+
+    it("should increase minConfirmations before adding new oracle", async function () {
+      const newConfirmations = 3;
+      await this.aggregator.connect(aliceAccount).setMinConfirmations(newConfirmations);
+      const minConfirmations = await this.aggregator.minConfirmations();
+      assert.equal(minConfirmations, newConfirmations);
+    });
+
     it("should add new oracle if called by the admin", async function () {
       let isRequired = true;
       await this.aggregator.connect(aliceAccount).addOracles([devid], [isRequired]);
@@ -108,6 +122,13 @@ contract("ConfirmationAggregator", function () {
       );
     });
 
+    it("should revert decreasing minConfirmations if value is too low", async function () {
+      await expectRevert(
+        this.aggregator.connect(aliceAccount).setMinConfirmations(2),
+        "LowMinConfirmations()"
+      );
+    });
+
     it("should updateOracle oracle (disable) if called by the admin", async function () {
       await this.aggregator.connect(aliceAccount).updateOracle(devid, false, false);
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
@@ -134,6 +155,20 @@ contract("ConfirmationAggregator", function () {
       assert.equal(
         JSON.stringify(oracleAddressesExpected.sort()),
         JSON.stringify(oracleAddresses.sort())
+      );
+    });
+
+    it("should decrease minConfirmations after disabling oracle", async function () {
+      const newConfirmations = 2;
+      await this.aggregator.connect(aliceAccount).setMinConfirmations(newConfirmations);
+      const minConfirmations = await this.aggregator.minConfirmations();
+      assert.equal(minConfirmations, newConfirmations);
+    });
+
+    it("should revert enabling oracle if minConfirmations will be too low", async function () {
+      await expectRevert(
+        this.aggregator.connect(aliceAccount).updateOracle(devid, true, false),
+        "LowMinConfirmations()"
       );
     });
 
