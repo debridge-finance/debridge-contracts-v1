@@ -98,44 +98,36 @@ contract("DeBridgeGate light mode", function () {
     ]);
     await this.signatureVerifier.deployed();
     this.initialOracles = [
-      // {
-      //   address: alice,
-      //   admin: alice,
-      // },
       {
         account: bobAccount,
         address: bob,
-        admin: carol,
       },
       {
         account: carolAccount,
         address: carol,
-        admin: eve,
       },
       {
         account: eveAccount,
         address: eve,
-        admin: carol,
       },
       {
         account: feiAccount,
         address: fei,
-        admin: eve,
       },
       {
         account: devidAccount,
         address: devid,
-        admin: carol,
       },
     ];
-    for (let oracle of this.initialOracles) {
-      await this.signatureVerifier.addOracles([oracle.address], [oracle.address], [false], {
+    await this.signatureVerifier.addOracles(
+      this.initialOracles.map(o => o.address),
+      this.initialOracles.map(o => false),
+      {
         from: alice,
       });
-    }
 
-    //Alice is required oracle
-    await this.signatureVerifier.addOracles([alice], [bob], [true], {
+    // Alice is required oracle
+    await this.signatureVerifier.addOracles([alice], [true], {
       from: alice,
     });
 

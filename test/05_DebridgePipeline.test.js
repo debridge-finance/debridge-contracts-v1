@@ -94,7 +94,6 @@ contract("DeBridgeGate real pipeline mode", function () {
       this.initialOracles.push({
         account: this.signers[i],
         address: this.signers[i].address,
-        admin: devid,
       });
     }
 
@@ -395,32 +394,31 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
     it("Initialize oracles", async function () {
       let oracleAddresses = this.initialOracles.map(i => i.address);
-      let oracleAdmins = this.initialOracles.map(i => i.admin);
       let required = this.initialOracles.map(i => false);
 
       await this.confirmationAggregatorBSC
         .connect(aliceAccount)
-        .addOracles(oracleAddresses, oracleAdmins, required);
+        .addOracles(oracleAddresses, required);
       await this.confirmationAggregatorHECO
         .connect(aliceAccount)
-        .addOracles(oracleAddresses, oracleAdmins, required);
+        .addOracles(oracleAddresses, required);
 
       // Alice is required oracle
       await this.confirmationAggregatorBSC
         .connect(aliceAccount)
-        .addOracles([alice], [devid], [true]);
+        .addOracles([alice], [true]);
       await this.confirmationAggregatorHECO
         .connect(aliceAccount)
-        .addOracles([alice], [devid], [true]);
+        .addOracles([alice], [true]);
 
       await this.signatureVerifierETH
         .connect(aliceAccount)
-        .addOracles(oracleAddresses, oracleAdmins, required);
+        .addOracles(oracleAddresses, required);
 
       // Alice is required oracle
       await this.signatureVerifierETH
         .connect(aliceAccount)
-        .addOracles([alice], [devid], [true]);
+        .addOracles([alice], [true]);
 
       //TODO: check that we added oracles
     });

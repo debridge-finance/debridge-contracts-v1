@@ -93,41 +93,33 @@ contract("DeBridgeGate full with auto", function () {
     await this.confirmationAggregator.deployed();
 
     this.initialOracles = [
-      // {
-      //   address: alice,
-      //   admin: alice,
-      // },
       {
         account: bobAccount,
         address: bob,
-        admin: carol,
       },
       {
         account: carolAccount,
         address: carol,
-        admin: eve,
       },
       {
         account: eveAccount,
         address: eve,
-        admin: carol,
       },
       {
         account: feiAccount,
         address: fei,
-        admin: eve,
       },
       {
         account: devidAccount,
         address: devid,
-        admin: carol,
       },
     ];
-    for (let oracle of this.initialOracles) {
-      await this.confirmationAggregator.addOracles([oracle.address], [oracle.admin], [false], {
+    await this.confirmationAggregator.addOracles(
+      this.initialOracles.map(o => o.address),
+      this.initialOracles.map(o => false),
+      {
         from: alice,
       });
-    }
     this.uniswapFactory = await UniswapV2Factory.deploy(carol);
     this.feeProxy = await FeeProxy.new(this.linkToken.address, this.uniswapFactory.address, {
       from: alice,

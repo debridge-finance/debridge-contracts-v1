@@ -477,45 +477,35 @@ contract("DeBridgeGate full mode", function () {
                 {
                   account: bob,
                   address: bob.address,
-                  admin: carol.address,
                 },
                 {
                   account: carol,
                   address: carol.address,
-                  admin: eve.address,
                 },
                 {
                   account: eve,
                   address: eve.address,
-                  admin: carol.address,
                 },
                 {
                   account: fei,
                   address: fei.address,
-                  admin: eve.address,
                 },
                 {
                   account: devid,
                   address: devid.address,
-                  admin: carol.address,
                 },
               ];
-              for (let oracle of this.initialOracles) {
-                await this.confirmationAggregator.addOracles(
-                  [oracle.address],
-                  [oracle.admin],
-                  [false],
-                  {
-                    from: alice.address,
-                  }
-                );
-              }
+              await this.confirmationAggregator.addOracles(
+                this.initialOracles.map(o => o.address),
+                this.initialOracles.map(o => false),
+                {
+                  from: alice.address,
+                }
+              );
 
-              //Alice is required oracle
+              // Alice is required oracle
               await this.confirmationAggregator.addOracles(
                 [alice.address],
-                // alice can't be contract admin and oracle admin at the same time
-                [bob.address],
                 [true],
                 {
                   from: alice.address,

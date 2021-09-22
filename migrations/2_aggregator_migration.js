@@ -9,14 +9,8 @@ module.exports = async function(deployer, network, accounts) {
   // if (network == "test") return;
   const debridgeInitParams = require("../assets/debridgeInitParams")[network];
 
-  let oracleAddresses =[];
-  let oracleAdmins = [];
-  let required = [];
-  for (let oracle of debridgeInitParams.oracles) {
-    oracleAddresses.push(oracle.address);
-    oracleAdmins.push(oracle.admin);
-    required.push(false);
-  }
+  let oracleAddresses = debridgeInitParams.oracles;
+  let required = debridgeInitParams.oracles.map(o => true);
 
   if (debridgeInitParams.type == "full") {
 
@@ -53,8 +47,8 @@ module.exports = async function(deployer, network, accounts) {
     console.log("ConfirmationAggregator: " + aggregatorInstance.address);
     console.log("SignatureAggregator: " + SignatureAggregator.address);
 
-    await aggregatorInstance.addOracles(oracleAddresses, oracleAdmins, required);
-    await signatureAggregatorInstance.addOracles(oracleAddresses, oracleAdmins, required);
+    await aggregatorInstance.addOracles(oracleAddresses, required);
+    await signatureAggregatorInstance.addOracles(oracleAddresses, required);
     console.log("addOracle: " + oracleAddresses);
 
   } else {
@@ -80,7 +74,7 @@ module.exports = async function(deployer, network, accounts) {
     let aggregatorInstance = await SignatureVerifier.deployed();
     console.log("SignatureVerifier: " + aggregatorInstance.address);
 
-    await aggregatorInstance.addOracles(oracleAddresses, oracleAdmins, required);
+    await aggregatorInstance.addOracles(oracleAddresses, required);
     console.log("addOracle: " + oracleAddresses);
   }
 };
