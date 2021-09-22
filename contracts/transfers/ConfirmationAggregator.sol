@@ -179,7 +179,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
-    function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin onlyNonAdminAddress(_wrappedAssetAdmin) {
+    function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin {
         if (_wrappedAssetAdmin == address(0)) revert WrongArgument();
         wrappedAssetAdmin = _wrappedAssetAdmin;
     }
