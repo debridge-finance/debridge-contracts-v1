@@ -114,7 +114,6 @@ contract DelegatedStaking is Initializable,
         uint256 totalLocked; // total staked tokens
         uint256 rewards; // total accumulated rewards
         uint256 maxStakeAmount; // maximum stake for each validator's collateral
-        mapping(address => uint256) swapAmounts; // amount of collateral to swap for other tokens in reward distribution
         uint8 decimals;
         bool isEnabled;
         bool isUSDStable;
@@ -716,8 +715,8 @@ contract DelegatedStaking is Initializable,
                 if (_rewardToken == collateralAddress) {
                     ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[_rewardToken];
                     uint256 validatorReward = validatorAmount - delegatorsAmount;
-                    validatorRewardCollateral.stakedAmount += validatorReward + delegatorReward;
-                    validatorRewardCollateral.accumulatedRewards += validatorReward + delegatorReward;
+                    validatorRewardCollateral.stakedAmount += delegatorReward;
+                    validatorRewardCollateral.accumulatedRewards += validatorAmount;
                     validatorRewardCollateral.rewardsForWithdrawal += validatorReward;
                     tempValidatorRewards[c] = 0;
                     collectedRewards[c] += 0;
