@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IStrategy.sol";
 import "../interfaces/IPriceConsumer.sol";
@@ -1042,7 +1043,6 @@ contract DelegatedStaking is Initializable,
      */
     function addCollateral(
         address _token,
-        uint8 _decimals,
         bool _isUSDStable,
         uint256 _maxStakeAmount
     ) external onlyAdmin {
@@ -1052,8 +1052,7 @@ contract DelegatedStaking is Initializable,
         collateral.exists = true;
         collateral.isEnabled = true;
         collateral.isUSDStable = _isUSDStable;
-        //TODO: get decimals in contract
-        collateral.decimals = _decimals;
+        collateral.decimals = ERC20(_token).decimals();
         collateral.maxStakeAmount = _maxStakeAmount;
         collateralAddresses.push(_token);
     }
