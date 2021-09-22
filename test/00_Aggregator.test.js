@@ -89,6 +89,23 @@ contract("ConfirmationAggregator", function () {
 
       const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
       assert.equal(requiredOraclesCount, 1);
+
+      const oracleAddressesExpected = [...this.initialOracles, devid];
+      // fetch all oracleAddresses array items one by - array getter works only for certain index
+      let oracleAddresses = [];
+      for(let i = 0; true; i++) {
+        try {
+          const val = await this.aggregator.oracleAddresses(i);
+          oracleAddresses.push(val);
+        } catch (e) {
+          break;
+        }
+      }
+      // compare 2 arrays
+      assert.equal(
+        JSON.stringify(oracleAddressesExpected.sort()),
+        JSON.stringify(oracleAddresses.sort())
+      );
     });
 
     it("should updateOracle oracle (disable) if called by the admin", async function () {
@@ -101,6 +118,23 @@ contract("ConfirmationAggregator", function () {
 
       const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
       assert.equal(requiredOraclesCount, 0);
+
+      const oracleAddressesExpected = [...this.initialOracles];
+      // fetch all oracleAddresses array items one by - array getter works only for certain index
+      let oracleAddresses = [];
+      for(let i = 0; true; i++) {
+        try {
+          const val = await this.aggregator.oracleAddresses(i);
+          oracleAddresses.push(val);
+        } catch (e) {
+          break;
+        }
+      }
+      // compare 2 arrays
+      assert.equal(
+        JSON.stringify(oracleAddressesExpected.sort()),
+        JSON.stringify(oracleAddresses.sort())
+      );
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function () {

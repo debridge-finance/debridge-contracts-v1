@@ -102,13 +102,25 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         OracleInfo storage oracleInfo = getOracleInfo[_oracle];
         if (!oracleInfo.exist) revert OracleNotFound();
 
-        oracleInfo.isValid = _isValid;
-
         if (oracleInfo.required && !_required) {
             requiredOraclesCount -= 1;
         } else if (!oracleInfo.required && _required) {
             requiredOraclesCount += 1;
         }
+        if (oracleInfo.isValid && !_isValid) {
+            // remove oracle from oracleAddresses array without keeping an order
+            for (uint256 i = 0; i < oracleAddresses.length; i++) {
+                if (oracleAddresses[i] == _oracle) {
+                    oracleAddresses[i] = oracleAddresses[oracleAddresses.length - 1];
+                    oracleAddresses.pop();
+                    break;
+                }
+            }
+        } else if (!oracleInfo.isValid && _isValid) {
+            oracleAddresses.push(_oracle);
+            // TODO: check minConfirmations
+        }
+        oracleInfo.isValid = _isValid;
         oracleInfo.required = _required;
         emit UpdateOracle(_oracle, _required, _isValid);
     }
