@@ -69,7 +69,7 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         override
         onlyOracle
     {
-        if (_submissionIds.length != _signatures.length) revert IncorrectParams();
+        if (_submissionIds.length != _signatures.length) revert WrongArgument();
         for (uint256 i; i < _submissionIds.length; i++) {
             _submit(_submissionIds[i], _signatures[i]);
         }
