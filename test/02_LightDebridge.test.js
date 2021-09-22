@@ -57,7 +57,7 @@ contract("DeBridgeGate light mode", function () {
       from: alice,
     });
     this.amountThreshold = toWei("1000");
-    this.minConfirmations = 3;
+    this.minConfirmations = 4;
     //this.confirmationAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     //this.aggregatorInstance = new web3.eth.Contract(
     //  ConfirmationAggregator.abi,

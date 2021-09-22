@@ -439,7 +439,7 @@ contract("DeBridgeGate full mode", function () {
         context("with confirmation aggregator", async function () {
           beforeEach(async function () {
             this.amountThreshols = toWei("1000");
-            this.minConfirmations = 2;
+            this.minConfirmations = 4;
             this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
             const ConfirmationAggregator = await ethers.getContractFactory(
               "ConfirmationAggregator",
