@@ -697,6 +697,9 @@ contract DelegatedStaking is Initializable,
         // we need to swap  56,25 usdt to usdc and just increment usdc collateral.totalStaked += receivedUSDCAmount;
         // We don't need to create swap for each validators pool. Firs we need to calulate total Link to swap
 
+        uint256 collateralExcludingRewardTokenLength = collateralAddresses.length - 1;
+        uint256[] memory collectedRewards = new uint256[](collateralExcludingRewardTokenLength);
+        uint256[][] memory validatorRewards = new uint256[][](collateralExcludingRewardTokenLength);
         for (uint256 v = 0; v < validatorAddresses.length; v++) {
             address validatorAddress = validatorAddresses[v];
             ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
@@ -706,48 +709,43 @@ contract DelegatedStaking is Initializable,
 
             (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
 
+            uint256[] memory tempValidatorRewards = new uint256[](collateralExcludingRewardTokenLength);
             for (uint256 c = 0; c < collateralAddresses.length; c++) {
                 address collateralAddress = collateralAddresses[c];
                 if (!collaterals[collateralAddress].isEnabled) continue;
+                uint256 delegatorReward = delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
                 if (_rewardToken == collateralAddress) {
                     ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[_rewardToken];
                     uint256 validatorReward = validatorAmount - delegatorsAmount;
-                    validatorRewardCollateral.stakedAmount += validatorReward + (delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount);
-                    validatorRewardCollateral.accumulatedRewards += validatorReward + (delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount);
+                    validatorRewardCollateral.stakedAmount += validatorReward + delegatorReward;
+                    validatorRewardCollateral.accumulatedRewards += validatorReward + delegatorReward;
                     validatorRewardCollateral.rewardsForWithdrawal += validatorReward;
                 } else {
-                    // TODO: we need to track each validator's pool share so we can distribute swapped tokens
-                    // depending on their relative share as we cannot be sure of the number of output tokens beforehand
-                    // ValidatorCollateral storage validatorCollateral = validator.collateralPools[collateralAddress];
-                    // validatorCollateral.swapAmounts[collateralAddress] += delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
-                    rewardCollateral.swapAmounts[collateralAddress] += delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
+                    tempValidatorRewards[c] = delegatorReward;
+                    collectedRewards[c] += delegatorReward;
                 }
             }
+            validatorRewards[v] = tempValidatorRewards;
         }
 
         for (uint256 cc=0; cc<collateralAddresses.length; cc++) {
-
-            // TODO:
-            // if we are converting to another collateral, say 100 LINK -> USDC
-            // but also require 50 USDC -> LINK from another set of rewards then 
-            // there we could 'swap' partial balance using virtual balances and
-            // price oracle, since the contract already holds the tokens
-
             address currentCollateral = collateralAddresses[cc];
             if (currentCollateral == _rewardToken) continue;
-            uint256 swapAmount = rewardCollateral.swapAmounts[currentCollateral];
-            rewardCollateral.swapAmounts[currentCollateral] = 0;
+            uint256 swapAmount = collectedRewards[cc];
             IERC20(_rewardToken).safeApprove(address(feeProxy), 0);
             IERC20(_rewardToken).safeApprove(address(feeProxy), swapAmount);
             uint256 amountOut = feeProxy.swap(_rewardToken, currentCollateral, address(this), swapAmount);
-            // TODO: now we need to split amountOut for each current collateral between validator pools
-            // loop over validators again using validatorCollateral.swapAmounts[currentCollateral]/amountOut ??
-            
-            // TODO: update after swaps
-            // collateral.totalLocked += _amount
-            // collateral.rewards +=_amount
-            // validatorCollateral.stakedAmount += ???
-            // validatorCollateral.accumulatedRewards += ???;
+            collaterals[currentCollateral].totalLocked += amountOut;
+            collaterals[currentCollateral].rewards += amountOut;
+            // now we need to split amountOut for each current collateral between validator pools
+            uint256 postSwapRewardAmount;
+            for (uint256 vv=0; vv<validatorAddresses.length; vv++) {
+                postSwapRewardAmount = validatorRewards[vv][cc] * amountOut / collectedRewards[cc];
+                ValidatorInfo storage validator = getValidatorInfo[validatorAddresses[vv]];
+                ValidatorCollateral storage validatorCollateral = validator.collateralPools[currentCollateral];
+                validatorCollateral.stakedAmount += postSwapRewardAmount;
+                validatorCollateral.accumulatedRewards += postSwapRewardAmount;
+            }
         }
         emit RewardsDistributed(_rewardToken, _rewardAmount);
     }
