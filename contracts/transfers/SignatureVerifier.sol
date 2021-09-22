@@ -31,7 +31,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     error NotConfirmedThreshold();
     error SubmissionNotConfirmed();
     error DuplicateSignatures();
-    error ZeroAddress();
 
     /* ========== MODIFIERS ========== */
 
@@ -210,14 +209,13 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
     function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin onlyNonAdminAddress(_wrappedAssetAdmin) {
-        if (_wrappedAssetAdmin == address(0)) revert ZeroAddress();
+        if (_wrappedAssetAdmin == address(0)) revert WrongArgument();
         wrappedAssetAdmin = _wrappedAssetAdmin;
     }
 
     /// @dev Sets core debridge conrtact address.
     /// @param _debridgeAddress Debridge address.
     function setDebridgeAddress(address _debridgeAddress) external onlyAdmin {
-        if (_debridgeAddress == address(0)) revert ZeroAddress();
         debridgeAddress = _debridgeAddress;
     }
 

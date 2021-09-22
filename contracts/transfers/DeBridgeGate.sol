@@ -424,7 +424,6 @@ contract DeBridgeGate is
     /// @dev Set proxy address.
     /// @param _address Address of the proxy that executes external calls.
     function setCallProxy(uint256 version, address _address) external onlyAdmin {
-        if (_address == address(0)) revert ZeroAddress();
         callProxyAddresses[version] = _address;
         emit CallProxyUpdated(version, _address);
     }
@@ -449,14 +448,12 @@ contract DeBridgeGate is
     /// @dev Set aggregator address.
     /// @param _aggregator Submission aggregator address.
     function setAggregator(address _aggregator) external onlyAdmin {
-        if (_aggregator == address(0)) revert ZeroAddress();
         confirmationAggregator = _aggregator;
     }
 
     /// @dev Set signature verifier address.
     /// @param _verifier Signature verifier address.
     function setSignatureVerifier(address _verifier) external onlyAdmin {
-        if (_verifier == address(0)) revert ZeroAddress();
         signatureVerifier = _verifier;
     }
 
@@ -464,7 +461,6 @@ contract DeBridgeGate is
     /// @param _defiController Defi controller address address.
     function setDefiController(address _defiController) external onlyAdmin {
         // TODO: claim all the reserves before
-        if (_defiController == address(0)) revert ZeroAddress();
         defiController = _defiController;
     }
 
@@ -542,7 +538,6 @@ contract DeBridgeGate is
     /// @dev Set fee converter proxy.
     /// @param _feeProxy Fee proxy address.
     function setFeeProxy(address _feeProxy) external onlyAdmin {
-        if (_feeProxy == address(0)) revert ZeroAddress();
         feeProxy = _feeProxy;
     }
 
