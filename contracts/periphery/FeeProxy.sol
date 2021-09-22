@@ -160,7 +160,7 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         address _toToken,
         address _receiver,
         uint256 _amount
-    ) external returns(uint256 amountOut) {
+    ) external override returns(uint256 amountOut) {
         IERC20(_fromToken).safeTransferFrom(msg.sender, address(this), _amount);
         amountOut = _swapExact(_fromToken, _toToken, _receiver, _amount);
         return amountOut;
@@ -225,7 +225,20 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         address _receiver,
         uint256 _amount
     ) private returns(uint256 amountOut) {
-        // TODO: use UniswapV2Router
+        IERC20 erc20 = IERC20(_fromToken);
+        IUniswapV2Pair uniswapPair = IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
+        erc20.safeTransfer(address(uniswapPair), _amount);
+
+        bool toFirst = _toToken < _fromToken;
+
+        (uint256 reserve0, uint256 reserve1, ) = uniswapPair.getReserves();
+        if (toFirst) {
+            amountOut = getAmountOut(_amount, reserve1, reserve0);
+            uniswapPair.swap(amountOut, 0, _receiver, "");
+        } else {
+            amountOut = getAmountOut(_amount, reserve0, reserve1);
+            uniswapPair.swap(0, amountOut, _receiver, "");
+        }
         return amountOut;
     }
 
