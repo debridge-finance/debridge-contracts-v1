@@ -10,10 +10,9 @@ import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IStrategy.sol";
-import "../access/AccessControlUpgradeableNonAdmin.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract DefiController is Initializable, AccessControlUpgradeableNonAdmin, PausableUpgradeable {
+contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using SafeERC20 for IERC20;
 
     struct Strategy {
