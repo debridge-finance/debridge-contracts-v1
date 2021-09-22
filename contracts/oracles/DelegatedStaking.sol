@@ -241,7 +241,7 @@ contract DelegatedStaking is Initializable,
         priceConsumer = _priceConsumer;
         feeProxy = _feeProxy;
         slashingTreasury = _slashingTreasury;
-        // minProfitSharingBPS = 5000; TODO: why commented?
+        minProfitSharingBPS = 5000;
     }
 
     /**
