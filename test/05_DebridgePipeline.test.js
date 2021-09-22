@@ -84,18 +84,24 @@ contract("DeBridgeGate real pipeline mode", function () {
     const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
 
     this.amountThreshols = toWei("1000");
-    this.minConfirmations = 5;
-    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
-    this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
     this.initialOracles = [];
-
-    for (let i = 1; i < this.signers.length; i++) {
+    const maxOraclesCount = Math.min(this.signers.length,10);
+    for (let i = 1; i <= maxOraclesCount; i++) {
       this.initialOracles.push({
         account: this.signers[i],
         address: this.signers[i].address,
       });
     }
+
+    this.minConfirmations = Math.floor(this.initialOracles.length/2) + 1;
+
+    console.log("minConfirmations: "+this.minConfirmations);
+    console.log("oracle keys: "+ oracleKeys.length)
+
+    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    this.excessConfirmations = 7; //Confirmations count in case of excess activity.
+
 
     //-------Deploy mock tokens contracts
     this.cakeToken = await MockToken.new("PancakeSwap Token", "Cake", 18, {

@@ -194,13 +194,13 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
-    /// @return _confirmations number of confirmation.
-    /// @return _isConfirmed is confirmed sumbission.
+    /// @return confirmations number of confirmation.
+    /// @return isConfirmed is confirmed sumbission.
     function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
         override
-        returns (uint8 _confirmations, bool _isConfirmed)
+        returns (uint8 confirmations, bool isConfirmed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
 

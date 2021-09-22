@@ -50,6 +50,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
     function initializeBase(uint8 _minConfirmations) internal {
+        if (_minConfirmations == 0) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }

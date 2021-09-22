@@ -71,7 +71,7 @@ contract("DeBridgeGate full with auto", function () {
       from: alice,
     });
     this.amountThreshols = toWei("1000");
-    this.minConfirmations = 1;
+    this.minConfirmations = 3;
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
 
@@ -298,10 +298,11 @@ contract("DeBridgeGate full with auto", function () {
       //     string memory _symbol,
       //     uint8 _decimals
       // )
-      await this.confirmationAggregator
-        .connect(this.initialOracles[0].account)
-        .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals);
-
+      for (const validator of this.initialOracles) {
+        await this.confirmationAggregator
+          .connect(validator.account)
+          .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals);
+      }
       //   function getDeployId(
       //     bytes32 _debridgeId,
       //     string memory _name,
@@ -524,7 +525,10 @@ contract("DeBridgeGate full with auto", function () {
           data,
           nativeSender),
       );
-      await this.confirmationAggregator.connect(bobAccount).submit(burnAutoSubmissionId);
+
+      for (const validator of this.initialOracles) {
+        await this.confirmationAggregator.connect(validator.account).submit(burnAutoSubmissionId);
+      }
 
       let submissionInfo = await this.confirmationAggregator.getSubmissionInfo(
         burnAutoSubmissionId
@@ -533,9 +537,9 @@ contract("DeBridgeGate full with auto", function () {
         burnAutoSubmissionId
       );
 
-      assert.equal(1, submissionInfo.confirmations);
-      assert.equal(true, submissionConfirmations[0]);
-      assert.equal(1, submissionConfirmations[1]);
+      assert.equal(5, submissionInfo.confirmations);
+      assert.equal(true, submissionConfirmations.isConfirmed);
+      assert.equal(5, submissionConfirmations.confirmations);
     });
 
     it("should mint when the submission is approved", async function () {
@@ -722,8 +726,9 @@ contract("DeBridgeGate full with auto", function () {
           data,
           nativeSender),
       );
-      await this.confirmationAggregator.connect(bobAccount).submit(currentChainSubmission);
-
+      for (const validator of this.initialOracles) {
+        await this.confirmationAggregator.connect(validator.account).submit(currentChainSubmission);
+      }
       // const outsideChainSubmission = await this.debridge.getAutoSubmissionIdFrom(
       //   nativeSender,
       //   outsideDebridgeId,
@@ -752,7 +757,9 @@ contract("DeBridgeGate full with auto", function () {
           data,
           nativeSender)
       );
-      await this.confirmationAggregator.connect(bobAccount).submit(erc20Submission);
+      for (const validator of this.initialOracles) {
+        await this.confirmationAggregator.connect(validator.account).submit(erc20Submission);
+      }
     });
 
     it("should claim native token when the submission is approved", async function () {

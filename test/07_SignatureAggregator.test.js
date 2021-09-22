@@ -54,7 +54,7 @@ contract("SignatureAggregator", function () {
 
   context("Test setting configurations by different users", () => {
     it("should set min confirmations if called by the admin", async function () {
-      const newConfirmations = 2;
+      const newConfirmations = 3;
       await this.aggregator.connect(aliceAccount).setMinConfirmations(newConfirmations);
       const minConfirmations = await this.aggregator.minConfirmations();
       assert.equal(minConfirmations, newConfirmations);
