@@ -215,7 +215,7 @@ contract DelegatedStaking is Initializable,
     event UpdateSlashingTreasury(address newTreasury);
     event WithdrawTimelockUpdated(uint256 newTimelock);
 
-    event EnableCollateral(address collateral, bool isEnabled);
+    event UpdateCollateralEnabled(address collateral, bool isEnabled);
     event UpdateCollateral(address collateral, uint256 maxStakeAmount);
     event UpdateRewardWeight(address validator, uint256 value);
     event EnableValidator(address validator, bool isEnabled);
@@ -701,21 +701,17 @@ contract DelegatedStaking is Initializable,
         uint256 collateralExcludingRewardTokenLength = collateralAddresses.length - 1;
         uint256[] memory collectedRewards = new uint256[](collateralExcludingRewardTokenLength);
         uint256[][] memory validatorRewards = new uint256[][](validatorAddresses.length);
-        uint256 tv = 0;
         for (uint256 v = 0; v < validatorAddresses.length; v++) {
             address validatorAddress = validatorAddresses[v];
             ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
-            if (!validator.isEnabled) continue; // We don't need to distribute rewards for non active validators
             uint256 validatorAmount = validator.rewardWeightCoefficient * _rewardAmount / weightCoefficientDenominator;
             uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
 
             (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
 
             uint256[] memory tempValidatorRewards = new uint256[](collateralExcludingRewardTokenLength);
-            uint256 tc = 0;
             for (uint256 c = 0; c < collateralAddresses.length; c++) {
                 address collateralAddress = collateralAddresses[c];
-                if (!collaterals[collateralAddress].isEnabled) continue;
                 uint256 delegatorReward = delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
                 if (_rewardToken == collateralAddress) {
                     ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[_rewardToken];
@@ -723,21 +719,20 @@ contract DelegatedStaking is Initializable,
                     validatorRewardCollateral.stakedAmount += validatorReward + delegatorReward;
                     validatorRewardCollateral.accumulatedRewards += validatorReward + delegatorReward;
                     validatorRewardCollateral.rewardsForWithdrawal += validatorReward;
+                    tempValidatorRewards[c] = 0;
+                    collectedRewards[c] += 0;
                 } else {
-                    tempValidatorRewards[tc] = delegatorReward;
-                    collectedRewards[tc] += delegatorReward;
-                    tc++;
+                    tempValidatorRewards[c] = delegatorReward;
+                    collectedRewards[c] += delegatorReward;
                 }
             }
-            validatorRewards[tv] = tempValidatorRewards;
-            tv++;
+            validatorRewards[v] = tempValidatorRewards;
         }
 
-        uint256 tcc = 0;
         for (uint256 cc=0; cc<collateralAddresses.length; cc++) {
             address currentCollateral = collateralAddresses[cc];
-            if (currentCollateral == _rewardToken) continue;
-            uint256 swapAmount = collectedRewards[tcc];
+            uint256 swapAmount = collectedRewards[cc];
+            if (currentCollateral == _rewardToken || swapAmount == 0) continue;
             IERC20(_rewardToken).safeApprove(address(feeProxy), 0);
             IERC20(_rewardToken).safeApprove(address(feeProxy), swapAmount);
             uint256 amountOut = feeProxy.swap(_rewardToken, currentCollateral, address(this), swapAmount);
@@ -745,17 +740,13 @@ contract DelegatedStaking is Initializable,
             collaterals[currentCollateral].rewards += amountOut;
             // now we need to split amountOut for each current collateral between validator pools
             uint256 postSwapRewardAmount;
-            uint256 tvv = 0;
             for (uint256 vv=0; vv<validatorAddresses.length; vv++) {
                 ValidatorInfo storage validator = getValidatorInfo[validatorAddresses[vv]];
-                if (!validator.isEnabled) continue;
-                postSwapRewardAmount = validatorRewards[tvv][tcc] * amountOut / collectedRewards[tcc];
+                postSwapRewardAmount = validatorRewards[vv][cc] * amountOut / collectedRewards[cc];
                 ValidatorCollateral storage validatorCollateral = validator.collateralPools[currentCollateral];
                 validatorCollateral.stakedAmount += postSwapRewardAmount;
                 validatorCollateral.accumulatedRewards += postSwapRewardAmount;
-                tvv++;
             }
-            tcc++;
         }
         emit RewardsDistributed(_rewardToken, _rewardAmount);
     }
@@ -1058,13 +1049,26 @@ contract DelegatedStaking is Initializable,
     }
 
     /**
-     * @dev enable collateral
+     * @dev Update collateral enabled
      * @param _collateral address of collateral
      * @param _isEnabled bool of enable
      */
-    function enableCollateral(address _collateral, bool _isEnabled) external onlyAdmin {
-        collaterals[_collateral].isEnabled = _isEnabled;
-        emit EnableCollateral(_collateral, _isEnabled);
+    function updateCollateralEnabled(address _collateral, bool _isEnabled) external onlyAdmin {
+        Collateral storage collateral = collaterals[_collateral];
+        if (!collateral.exists || collateral.isEnabled == _isEnabled) revert WrongArgument();
+        if(_isEnabled){
+            collateralAddresses.push(_collateral);
+        }
+        else {
+            for (uint256 i=0; i< collateralAddresses.length; i++) {
+                if (collateralAddresses[i] == _collateral) {
+                    collateralAddresses[i] = collateralAddresses[collateralAddresses.length - 1];
+                    collateralAddresses.pop();
+                }
+            }
+        }
+        collateral.isEnabled = _isEnabled;
+        emit UpdateCollateralEnabled(_collateral, _isEnabled);
     }
 
     /**

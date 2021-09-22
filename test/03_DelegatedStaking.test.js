@@ -336,13 +336,13 @@ contract("DelegatedStaking", function() {
       assert.equal(usdtCollateral.maxStakeAmount.toString(), MaxUint256);
     });
     it("should enable/disable, set maxStakeAmount if called by admin", async function() {
-      await this.delegatedStaking.enableCollateral(this.linkToken.address, false);
+      await this.delegatedStaking.updateCollateralEnabled(this.linkToken.address, false);
       await this.delegatedStaking.updateCollateral(this.linkToken.address, 100);
       let collateralInfo = await this.delegatedStaking.collaterals(this.linkToken.address);
       assert.equal(collateralInfo.isEnabled, false);
       assert.equal(collateralInfo.maxStakeAmount.toString(), "100");
 
-      await this.delegatedStaking.enableCollateral(this.linkToken.address, true);
+      await this.delegatedStaking.updateCollateralEnabled(this.linkToken.address, true);
       await this.delegatedStaking.updateCollateral(this.linkToken.address, MaxUint256);
       collateralInfo = await this.delegatedStaking.collaterals(this.linkToken.address);
       assert.equal(collateralInfo.isEnabled, true);
@@ -354,7 +354,7 @@ contract("DelegatedStaking", function() {
         "AdminBadRole()"
       );
       await expectRevert(
-        this.delegatedStaking.connect(eveAccount).enableCollateral(this.linkToken.address, true),
+        this.delegatedStaking.connect(eveAccount).updateCollateralEnabled(this.linkToken.address, true),
         "AdminBadRole()"
       );
       await expectRevert(
@@ -396,12 +396,12 @@ contract("DelegatedStaking", function() {
     it("fail in case of staking collateral not enabled", async function() {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
-      await this.delegatedStaking.enableCollateral(collateral, false);
+      await this.delegatedStaking.updateCollateralEnabled(collateral, false);
       await expectRevert(
         this.delegatedStaking.stake(bob, collateral, amount),
         "CollateralDisabled()"
       );
-      await this.delegatedStaking.enableCollateral(collateral, true);
+      await this.delegatedStaking.updateCollateralEnabled(collateral, true);
     });
 
     it("fail in case of collateral staking exceeded", async function() {
@@ -1444,7 +1444,7 @@ contract("DelegatedStaking", function() {
     });
     it("should pay for oracle who set profit sharing as zero", async function() {
       const collateral = this.linkToken.address;
-      await this.delegatedStaking.enableCollateral(collateral, true);
+      await this.delegatedStaking.updateCollateralEnabled(collateral, true);
       const amount = toWei("100");
       const prevOracleStake = await this.delegatedStaking.getOracleStaking(bob, collateral);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1481,12 +1481,12 @@ contract("DelegatedStaking", function() {
     it("fail in case of reward collateral not enabled", async function() {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
-      await this.delegatedStaking.enableCollateral(collateral, false);
+      await this.delegatedStaking.updateCollateralEnabled(collateral, false);
       await expectRevert(
         this.delegatedStaking.distributeRewards(david, collateral, amount),
         "collateral disabled"
       );
-      await this.delegatedStaking.enableCollateral(collateral, true);
+      await this.delegatedStaking.updateCollateralEnabled(collateral, true);
     });
   });
 
