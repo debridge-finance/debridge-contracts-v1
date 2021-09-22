@@ -699,7 +699,8 @@ contract DelegatedStaking is Initializable,
 
         uint256 collateralExcludingRewardTokenLength = collateralAddresses.length - 1;
         uint256[] memory collectedRewards = new uint256[](collateralExcludingRewardTokenLength);
-        uint256[][] memory validatorRewards = new uint256[][](collateralExcludingRewardTokenLength);
+        uint256[][] memory validatorRewards = new uint256[][](validatorAddresses.length);
+        uint256 tv = 0;
         for (uint256 v = 0; v < validatorAddresses.length; v++) {
             address validatorAddress = validatorAddresses[v];
             ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
@@ -710,6 +711,7 @@ contract DelegatedStaking is Initializable,
             (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
 
             uint256[] memory tempValidatorRewards = new uint256[](collateralExcludingRewardTokenLength);
+            uint256 tc = 0;
             for (uint256 c = 0; c < collateralAddresses.length; c++) {
                 address collateralAddress = collateralAddresses[c];
                 if (!collaterals[collateralAddress].isEnabled) continue;
@@ -721,17 +723,20 @@ contract DelegatedStaking is Initializable,
                     validatorRewardCollateral.accumulatedRewards += validatorReward + delegatorReward;
                     validatorRewardCollateral.rewardsForWithdrawal += validatorReward;
                 } else {
-                    tempValidatorRewards[c] = delegatorReward;
-                    collectedRewards[c] += delegatorReward;
+                    tempValidatorRewards[tc] = delegatorReward;
+                    collectedRewards[tc] += delegatorReward;
+                    tc++;
                 }
             }
-            validatorRewards[v] = tempValidatorRewards;
+            validatorRewards[tv] = tempValidatorRewards;
+            tv++;
         }
 
+        uint256 tcc = 0;
         for (uint256 cc=0; cc<collateralAddresses.length; cc++) {
             address currentCollateral = collateralAddresses[cc];
             if (currentCollateral == _rewardToken) continue;
-            uint256 swapAmount = collectedRewards[cc];
+            uint256 swapAmount = collectedRewards[tcc];
             IERC20(_rewardToken).safeApprove(address(feeProxy), 0);
             IERC20(_rewardToken).safeApprove(address(feeProxy), swapAmount);
             uint256 amountOut = feeProxy.swap(_rewardToken, currentCollateral, address(this), swapAmount);
@@ -739,13 +744,17 @@ contract DelegatedStaking is Initializable,
             collaterals[currentCollateral].rewards += amountOut;
             // now we need to split amountOut for each current collateral between validator pools
             uint256 postSwapRewardAmount;
+            uint256 tvv = 0;
             for (uint256 vv=0; vv<validatorAddresses.length; vv++) {
-                postSwapRewardAmount = validatorRewards[vv][cc] * amountOut / collectedRewards[cc];
                 ValidatorInfo storage validator = getValidatorInfo[validatorAddresses[vv]];
+                if (!validator.isEnabled) continue;
+                postSwapRewardAmount = validatorRewards[tvv][tcc] * amountOut / collectedRewards[tcc];
                 ValidatorCollateral storage validatorCollateral = validator.collateralPools[currentCollateral];
                 validatorCollateral.stakedAmount += postSwapRewardAmount;
                 validatorCollateral.accumulatedRewards += postSwapRewardAmount;
+                tvv++;
             }
+            tcc++;
         }
         emit RewardsDistributed(_rewardToken, _rewardAmount);
     }
