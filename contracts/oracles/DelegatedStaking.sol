@@ -437,14 +437,30 @@ contract DelegatedStaking is Initializable,
         WithdrawalRequests storage withdrawalRequests = getWithdrawalRequests[_validator];
         if (_toWithdrawId >= withdrawalRequests.count) revert WrongArgument();
 
+        address[] memory seenCollateral = new address[](_toWithdrawId - _fromWithdrawId);
+        uint256[] memory slashingAmounts = new uint256[](_toWithdrawId - _fromWithdrawId);
+        uint256 seenIterator = 0;
         for (uint256 currentWithdrawId = _fromWithdrawId; currentWithdrawId < _toWithdrawId; currentWithdrawId++) {
             WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[currentWithdrawId];
             if (!withdrawal.executed) {
                 uint256 slashingAmount = withdrawal.amount * _slashPercent / 1e18;
                 withdrawal.amount = withdrawal.amount - slashingAmount;
                 withdrawal.slashingAmount = slashingAmount;
-                //TODO: avoid multi write to storage
-                collaterals[withdrawal.collateral].slashedAmount += slashingAmount;
+                
+                bool seen = false;
+                for (uint256 i=0; i<seenCollateral.length; i++) {
+                    if (seenCollateral[i] == withdrawal.collateral) {
+                        slashingAmounts[i] += slashingAmount;
+                        seen = true;
+                        break;
+                    }
+                }
+                if (seen == false) {
+                    seenCollateral[seenIterator] = withdrawal.collateral;
+                    slashingAmounts[seenIterator] = slashingAmount;
+                    seenIterator++;
+                }
+
                 emit SlashedUnstakeRequest(
                     _validator,
                     withdrawal.delegator,
@@ -452,6 +468,9 @@ contract DelegatedStaking is Initializable,
                     slashingAmount,
                     currentWithdrawId);
             }
+        }
+        for (uint256 index=0; index<seenCollateral.length; index++) {
+            collaterals[seenCollateral[index]].slashedAmount += slashingAmounts[index];
         }
     }
 
