@@ -228,10 +228,10 @@ contract DeBridgeGate is
             _autoParams
         );
 
-        _checkAndDeployAsset(
-            _debridgeId,
-            _signatures.length > 0 ? signatureVerifier : confirmationAggregator
-        );
+        // _checkAndDeployAsset(
+        //     _debridgeId,
+        //     _signatures.length > 0 ? signatureVerifier : confirmationAggregator
+        // );
 
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
@@ -377,6 +377,47 @@ contract DeBridgeGate is
         getDebridgeFeeInfo[debridgeId].collectedFees += paid;
         emit Flash(msg.sender, _tokenAddress, _receiver, _amount, paid);
     }
+
+
+    function deployNewAsset(
+        bytes memory _nativeTokenAddress,
+        uint256 _nativeChainId,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals,
+        bytes memory _signatures
+    ) external {
+        //TODO: add test that debridgeId are the same like getDebridgeId
+        bytes32 debridgeId = keccak256(abi.encodePacked(_nativeChainId, _nativeTokenAddress)); //getDebridgeId(_nativeChainId, _tokenAddress);
+        if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
+
+        if(_signatures.length > 0){
+             ISignatureVerifier(signatureVerifier).confirmNewAsset(_nativeTokenAddress,
+                _nativeChainId,
+                _name,
+                _symbol,
+                _decimals,
+                _signatures);
+        }
+        // bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
+        // //verify signatures
+        // ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
+
+        // _addAsset(debridgeId, wrappedAssetAddress, _nativeTokenAddress, _nativeChainId);
+
+        _deployAsset(debridgeId, _signatures.length > 0 ? signatureVerifier : confirmationAggregator);
+    }
+
+    // /// @dev Calculates asset identifier.
+    // function getDeployId(
+    //     bytes32 _debridgeId,
+    //     string memory _name,
+    //     string memory _symbol,
+    //     uint8 _decimals
+    // ) public pure returns (bytes32) {
+    //     return keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
+    // }
+
 
     /* ========== ADMIN ========== */
 
@@ -584,16 +625,27 @@ contract DeBridgeGate is
 
     /* ========== INTERNAL ========== */
 
-    function _checkAndDeployAsset(bytes32 _debridgeId, address _aggregatorAddress) internal {
-        if (!getDebridge[_debridgeId].exist) {
-            (
-                address wrappedAssetAddress,
-                bytes memory nativeAddress,
-                uint256 nativeChainId
-            ) = IConfirmationAggregator(_aggregatorAddress).deployAsset(_debridgeId);
-            if (wrappedAssetAddress == address(0)) revert WrappedAssetNotFound();
-            _addAsset(_debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
-        }
+
+    // function _checkAndDeployAsset(bytes32 _debridgeId, address _aggregatorAddress) internal {
+    //     if (!getDebridge[_debridgeId].exist) {
+    //         (
+    //             address wrappedAssetAddress,
+    //             bytes memory nativeAddress,
+    //             uint256 nativeChainId
+    //         ) = IConfirmationAggregator(_aggregatorAddress).deployAsset(_debridgeId);
+    //         if (wrappedAssetAddress == address(0)) revert WrappedAssetNotFound();
+    //         _addAsset(_debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
+    //     }
+    // }
+
+    function _deployAsset(bytes32 _debridgeId, address _aggregatorAddress) internal {
+        (
+            address wrappedAssetAddress,
+            bytes memory nativeAddress,
+            uint256 nativeChainId
+        ) = IConfirmationAggregator(_aggregatorAddress).deployAsset(_debridgeId);
+        if (wrappedAssetAddress == address(0)) revert WrappedAssetNotFound();
+        _addAsset(_debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
     }
 
     function _checkConfirmations(

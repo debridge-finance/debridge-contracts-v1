@@ -539,8 +539,13 @@ contract("DeBridgeGate full mode", function () {
                   from: alice.address,
                 }
               );
+              //Deploy token
+              await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
+
               const debridge = await this.debridge.getDebridge(debridgeId);
               const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
+              expect(debridge.exist).to.equal(true);
+              expect(debridge.chainId).to.equal(chainId);
               expect(debridge.maxAmount).to.equal(maxAmount);
               expect(debridgeFeeInfo.collectedFees).to.equal("0");
               expect(debridge.balance).to.equal("0");
@@ -602,6 +607,8 @@ contract("DeBridgeGate full mode", function () {
                   }
                 );
 
+                //Deploy token
+                await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
                 for (let oracle of this.initialOracles) {
                   await this.confirmationAggregator.connect(oracle.account).submit(submissionId);
                 }

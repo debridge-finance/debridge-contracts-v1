@@ -31,6 +31,15 @@ interface ISignatureVerifier {
         view
         returns (address _wrappedAssetAddress);
 
+    function confirmNewAsset(
+        bytes memory _tokenAddress,
+        uint256 _chainId,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals,
+        bytes memory _signatures
+    ) external;
+
     function deployAsset(bytes32 _debridgeId)
         external
         returns (

@@ -262,12 +262,11 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         signatures += currentSignature.substring(2, currentSignature.length);
       }
-      await this.signatureVerifier
-        .connect(this.initialOracles[0].account)
-        .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
+      // Deploy token
+      await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
 
       ////   function getDeployId(
       ////     bytes32 _debridgeId,
@@ -280,11 +279,11 @@ contract("DeBridgeGate light mode", function () {
       //  from: this.initialOracles[0].address,
       //});
 
-      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold, {
-        from: alice,
-      });
+      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
       const debridge = await this.debridge.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
+      assert.equal(debridge.exist, true);
+      assert.equal(debridge.chainId, chainId);
       assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
@@ -307,21 +306,18 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 1; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         signatures += currentSignature.substring(2, currentSignature.length);
       }
 
       await expectRevert(
-        this.signatureVerifier.confirmNewAsset(
+        this.debridge.deployNewAsset(
           tokenAddress,
           chainId,
           name,
           symbol,
           decimals,
-          signatures,
-          {
-            from: alice,
-          }
+          signatures
         ),
         "NotConfirmedByRequiredOracles()"
       );
@@ -343,21 +339,18 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 0; i < this.minConfirmations - 1; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         signatures += currentSignature.substring(2, currentSignature.length);
       }
 
       await expectRevert(
-        this.signatureVerifier.confirmNewAsset(
+        this.debridge.deployNewAsset(
           tokenAddress,
           chainId,
           name,
           symbol,
           decimals,
-          signatures,
-          {
-            from: alice,
-          }
+          signatures
         ),
         "DeployNotConfirmed()"
       );
@@ -525,7 +518,7 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(submission, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         this.signatures += currentSignature.substring(2, currentSignature.length);
       }
     });
@@ -802,7 +795,7 @@ contract("DeBridgeGate light mode", function () {
         const oracleKey = oracleKeys[i];
         let _currentSignature = (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
           .signature;
-        //HACK remove first 0x
+        // remove first 0x
         this.ethSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       const erc20Submission = await this.debridge.getSubmissionId(
@@ -819,7 +812,7 @@ contract("DeBridgeGate light mode", function () {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(erc20Submission, oracleKey))
           .signature;
-        //HACK remove first 0x
+        // remove first 0x
         this.erc20Signatures += currentSignature.substring(2, currentSignature.length);
       }
     });
@@ -830,7 +823,7 @@ contract("DeBridgeGate light mode", function () {
         const oracleKey = oracleKeys[i];
         let _currentSignature = (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
           .signature;
-        //HACK remove first 0x
+        // remove first 0x
         currentSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       await expectRevert(

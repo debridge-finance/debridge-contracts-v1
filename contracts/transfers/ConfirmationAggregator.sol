@@ -9,7 +9,6 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /* ========== STATE VARIABLES ========== */
 
     uint8 public confirmationThreshold; // required confirmations per block after extra check enabled
-    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     address public wrappedAssetAdmin; // admin for any deployed wrapped asset
     address public debridgeAddress; // Debridge gate address
 
@@ -41,9 +40,8 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         address _wrappedAssetAdmin,
         address _debridgeAddress
     ) public initializer {
-        AggregatorBase.initializeBase(_minConfirmations);
+        AggregatorBase.initializeBase(_minConfirmations, _excessConfirmations);
         confirmationThreshold = _confirmationThreshold;
-        excessConfirmations = _excessConfirmations;
         wrappedAssetAdmin = _wrappedAssetAdmin;
         debridgeAddress = _debridgeAddress;
     }
@@ -162,13 +160,6 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     }
 
     /* ========== ADMIN ========== */
-
-    /// @dev Sets minimal required confirmations.
-    /// @param _excessConfirmations Confirmation info.
-    function setExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
-        if (_excessConfirmations == 0) revert WrongArgument();
-        excessConfirmations = _excessConfirmations;
-    }
 
     /// @dev Sets minimal required confirmations.
     /// @param _confirmationThreshold Confirmation info.

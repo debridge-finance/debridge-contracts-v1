@@ -303,6 +303,9 @@ contract("DeBridgeGate full with auto", function () {
           .connect(validator.account)
           .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals);
       }
+      // Deploy token
+      await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
+
       //   function getDeployId(
       //     bytes32 _debridgeId,
       //     string memory _name,
@@ -314,11 +317,11 @@ contract("DeBridgeGate full with auto", function () {
       // await this.debridge.checkAndDeployAsset(debridgeId, {
       //   from: this.initialOracles[0].address,
       // });
-      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold, {
-        from: alice,
-      });
+      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
       const debridge = await this.debridge.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
+      assert.equal(debridge.exist, true);
+      assert.equal(debridge.chainId, chainId);
       assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");

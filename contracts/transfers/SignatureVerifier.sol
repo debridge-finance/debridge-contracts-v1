@@ -13,7 +13,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /* ========== STATE VARIABLES ========== */
 
     uint8 public confirmationThreshold; // required confirmations per block after extra check enabled
-    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
 
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
@@ -52,9 +51,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         address _wrappedAssetAdmin,
         address _debridgeAddress
     ) public initializer {
-        AggregatorBase.initializeBase(_minConfirmations);
+        AggregatorBase.initializeBase(_minConfirmations, _excessConfirmations);
         confirmationThreshold = _confirmationThreshold;
-        excessConfirmations = _excessConfirmations;
         wrappedAssetAdmin = _wrappedAssetAdmin;
         debridgeAddress = _debridgeAddress;
     }
@@ -67,7 +65,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         string memory _symbol,
         uint8 _decimals,
         bytes memory _signatures
-    ) external {
+    ) external override onlyDeBridgeGate {
         bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
         if (getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
 
@@ -102,7 +100,9 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             }
         }
 
-        if (confirmations < minConfirmations) revert DeployNotConfirmed();
+        if (confirmations < minConfirmations
+            || confirmations < excessConfirmations) revert DeployNotConfirmed();
+
         if (currentRequiredOraclesCount != requiredOraclesCount)
             revert NotConfirmedByRequiredOracles();
 
@@ -110,9 +110,10 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         confirmedDeployInfo[debridgeId] = deployId;
     }
 
-    /// @dev Confirms the mint request.
+    /// @dev Check is valid signatures.
     /// @param _submissionId Submission identifier.
     /// @param _signatures Array of signatures by oracles.
+    /// @param _excessConfirmations override min confirmations count
     function submit(
         bytes32 _submissionId,
         bytes memory _signatures,

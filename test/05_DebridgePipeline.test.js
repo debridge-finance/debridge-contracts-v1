@@ -620,6 +620,16 @@ contract("DeBridgeGate real pipeline mode", function () {
           .connect(oracle.account)
           .confirmNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18);
       }
+
+      //Deploy tokens
+      await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
+      await this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []);
+      await this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []);
+
+      await this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []);
+      await this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []);
+      await this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18, []);
+
     });
   });
 
@@ -1399,7 +1409,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       for (let oracleKey of oracleKeys) {
         let currentSignature = (await bscWeb3.eth.accounts.sign(this.nativeSubmissionId, oracleKey))
           .signature;
-        //HACK remove first 0x
+        // remove first 0x
         this.nativeSignatures += currentSignature.substring(2, currentSignature.length);
       }
 
@@ -2082,7 +2092,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         let currentSignature = (
           await bscWeb3.eth.accounts.sign(currentBurnEvent.args.submissionId, oracleKey)
         ).signature;
-        //HACK remove first 0x
+        // remove first 0x
         signatures += currentSignature.substring(2, currentSignature.length);
       }
 
