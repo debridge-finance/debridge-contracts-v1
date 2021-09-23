@@ -206,7 +206,7 @@ contract DelegatedStaking is Initializable,
         address collateral,
         uint256 slashedAmount);
 
-    event UnstakeExecuted( address delegator, address validator, address collateral, uint256 amount, uint256 withdrawalId);
+    event UnstakeExecuted(address validator, address delegator, address collateral, uint256 amount, uint256 withdrawalId);
     event UnstakeCancelled(address validator, address delegator, uint256 withdrawalId);
     event UnstakePaused(address validator, uint256 withdrawalId, bool paused);
     event Liquidated(address validator, address collateral, uint256 amount);
@@ -379,39 +379,46 @@ contract DelegatedStaking is Initializable,
                 withdrawal.executed = true;
                 uint256 withdrawAmount = withdrawal.amount - withdrawal.slashingAmount; // I think this is already accounted for on L#428
                 IERC20(withdrawal.collateral).safeTransfer(withdrawal.receiver, withdrawAmount);
-                emit UnstakeExecuted(withdrawal.delegator, _validator, withdrawal.collateral, withdrawAmount, currentWithdrawId);
+                emit UnstakeExecuted(_validator, withdrawal.delegator, withdrawal.collateral, withdrawAmount, currentWithdrawId);
             }
         }
     }
 
-    //TODO: create test for 1000 cancelUnstake requests
-
     /**
      * @dev Cancel unstake.
      * @param _validator Validator address.
-     * @param _withdrawalId Withdrawal identifier.
+     * @param _fromWithdrawId Starting from withdrawal identifier.
+     * @param _toWithdrawId Up to withdrawal identifier.
      */
-    function cancelUnstake(address _validator, uint256 _withdrawalId) external nonReentrant whenNotPaused {
-        ValidatorInfo storage validator = getValidatorInfo[msg.sender];
+    function cancelUnstake(
+        address _validator,
+        uint256 _fromWithdrawId,
+        uint256 _toWithdrawId
+    ) external nonReentrant whenNotPaused {
+        ValidatorInfo storage validator = getValidatorInfo[_validator];
         if (validator.delegatorActionPaused) revert DelegatorActionPaused();
         WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
-        WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[_withdrawalId];
-        ValidatorCollateral storage validatorCollateral = validator.collateralPools[withdrawal.collateral];
-        DelegatorsInfo storage delegator = validatorCollateral.delegators[withdrawal.delegator];
 
-        if (withdrawal.executed) revert AlreadyExecuted(_withdrawalId);
-        withdrawal.executed = true;
-        uint256 _shares = validatorCollateral.shares > 0
-            ? DelegatedStakingHelper._calculateShares(
-                withdrawal.amount,
-                validatorCollateral.shares,
-                validatorCollateral.stakedAmount)
-            : withdrawal.amount;
-        collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
-        delegator.shares += _shares;
-        validatorCollateral.shares += _shares;
-        validatorCollateral.stakedAmount += withdrawal.amount;
-        emit UnstakeCancelled(_validator, msg.sender, _withdrawalId);
+        for (uint256 currentWithdrawId = _fromWithdrawId; currentWithdrawId < _toWithdrawId; currentWithdrawId++) {
+            WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[currentWithdrawId];
+            if (withdrawal.executed) revert AlreadyExecuted(currentWithdrawId);
+            ValidatorCollateral storage validatorCollateral = validator.collateralPools[withdrawal.collateral];
+            if (msg.sender != withdrawal.delegator) revert WrongArgument();
+            DelegatorsInfo storage delegator = validatorCollateral.delegators[withdrawal.delegator];
+
+            withdrawal.executed = true;
+            uint256 _shares = validatorCollateral.shares > 0
+                ? DelegatedStakingHelper._calculateShares(
+                    withdrawal.amount,
+                    validatorCollateral.shares,
+                    validatorCollateral.stakedAmount)
+                : withdrawal.amount;
+            collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
+            delegator.shares += _shares;
+            validatorCollateral.shares += _shares;
+            validatorCollateral.stakedAmount += withdrawal.amount;
+            emit UnstakeCancelled(_validator, withdrawal.delegator, currentWithdrawId);
+        }
     }
 
     /**
