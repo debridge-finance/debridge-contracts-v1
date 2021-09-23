@@ -85,7 +85,7 @@ contract DelegatedStaking is Initializable,
         uint256 shares; // delegator share of collateral tokens
         uint256 locked; // share locked by depositing to strategy
         mapping(address => uint256) strategyShares; // map strategy(aave/compound/yearn) for each collateral
-        uint256 accumulatedRewards; // info how many reward tokens  was earned
+        uint256 accumulatedRewards; // info how many reward tokens were earned
     }
 
     struct ValidatorCollateral {
@@ -94,7 +94,7 @@ contract DelegatedStaking is Initializable,
         uint256 locked; // total share locked by depositing to strategy
         mapping(address => uint256) strategyShares;
         mapping(address => DelegatorsInfo) delegators; // delegation info for each delegator
-        uint256 accumulatedRewards; // how many reward tokens was earned
+        uint256 accumulatedRewards; // how many reward tokens were earned
         uint256 rewardsForWithdrawal; // how many reward tokens validator can withdrawal
     }
 
@@ -203,6 +203,12 @@ contract DelegatedStaking is Initializable,
         address validator,
         address collateral,
         uint256 slashedAmount);
+
+    event SlashedValidatorRewards(
+        address validator,
+        address collateral,
+        uint256 slashedAmount
+    );
 
     event UnstakeExecuted(address validator, address delegator, address collateral, uint256 amount, uint256 withdrawalId);
     event UnstakeCancelled(address validator, address delegator, uint256 withdrawalId);
@@ -488,6 +494,12 @@ contract DelegatedStaking is Initializable,
         }
     }
 
+    /**
+    * @dev Slash validator collateral.
+    * @param _validator Validator address.
+    * @param _collateral Collateral address.
+    * @param _slashAmount Amount to be slashed.
+    */
     function slashValidatorCollateral(
         address _validator,
         address _collateral,
@@ -500,6 +512,24 @@ contract DelegatedStaking is Initializable,
         //Decrease total collateral of the validator for this asset
         getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount -= _slashAmount;
         emit SlashedValidatorCollateral(_validator, _collateral, _slashAmount);
+    }
+
+    /**
+    * @dev Slash validator rewards.
+    * @param _validator Validator address.
+    * @param _collateral Collateral address.
+    * @param _bpsAmount Basis points to be slashed.
+    */
+    function slashValidatorRewards(
+        address _validator,
+        address _collateral,
+        uint256 _bpsAmount
+    ) external onlyAdmin {
+        Collateral storage collateral = collaterals[_collateral];
+        uint256 slashingFraction = _bpsAmount/BPS_DENOMINATOR;
+        uint256 _slashAmount = getValidatorInfo[_validator].collateralPools[_collateral].rewardsForWithdrawal * slashingFraction;
+        collateral.slashedAmount += _slashAmount;
+        emit SlashedValidatorRewards(_validator, _collateral, _slashAmount);
     }
 
     // /**
