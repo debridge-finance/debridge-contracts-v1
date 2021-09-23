@@ -95,7 +95,6 @@ contract DelegatedStaking is Initializable,
         mapping(address => uint256) strategyShares;
         mapping(address => DelegatorsInfo) delegators; // delegation info for each delegator
         uint256 accumulatedRewards; // how many reward tokens was earned
-        //TODO: add method to withdraw validators rewards
         uint256 rewardsForWithdrawal; // how many reward tokens validator can withdrawal
     }
 
@@ -185,6 +184,15 @@ contract DelegatedStaking is Initializable,
         uint256 shares,
         uint256 tokenAmount,
         uint256 index);
+
+    event WithdrawValidatorRewardsRequested(
+        address _validator,
+        address _admin,
+        address _collateral,
+        address _recipient,
+        uint256 timelock,
+        uint256 withdrawTokenAmount,
+        uint256 withdrawIndex);
 
     event SlashedUnstakeRequest(
         address validator,
@@ -369,7 +377,7 @@ contract DelegatedStaking is Initializable,
                 if (withdrawal.timelock > block.timestamp) revert Timelock();
 
                 withdrawal.executed = true;
-                uint256 withdrawAmount = withdrawal.amount - withdrawal.slashingAmount;
+                uint256 withdrawAmount = withdrawal.amount - withdrawal.slashingAmount; // I think this is already accounted for on L#428
                 IERC20(withdrawal.collateral).safeTransfer(withdrawal.receiver, withdrawAmount);
                 emit UnstakeExecuted(withdrawal.delegator, _validator, withdrawal.collateral, withdrawAmount, currentWithdrawId);
             }
@@ -748,6 +756,41 @@ contract DelegatedStaking is Initializable,
             }
         }
         emit RewardsDistributed(_rewardToken, _rewardAmount);
+    }
+
+    function requestWithdrawValidatorRewards(
+        address _validator,
+        address _collateral,
+        address _recipient
+    ) external nonReentrant whenNotPaused {
+        ValidatorInfo storage validator = getValidatorInfo[_validator];
+        if (validator.delegatorActionPaused) revert DelegatorActionPaused();
+        address _admin = validator.admin;
+        if (_admin != msg.sender) revert AdminBadRole();
+        ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
+        WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
+        uint256 withdrawTokenAmount = validatorCollateral.rewardsForWithdrawal;
+
+        validatorCollateral.rewardsForWithdrawal -= withdrawTokenAmount;
+
+        uint256 withdrawIndex = withdrawalRequests.count;
+        uint256 timelock = block.timestamp + withdrawTimelock;
+        WithdrawalInfo storage withdraw = withdrawalRequests.withdrawals[withdrawIndex];
+        withdraw.delegator = _admin;
+        withdraw.amount = withdrawTokenAmount;
+        withdraw.timelock = timelock;
+        withdraw.receiver = _recipient;
+        withdraw.collateral = _collateral;
+
+        withdrawalRequests.count++;
+        emit WithdrawValidatorRewardsRequested(
+            _validator,
+            _admin,
+            _collateral,
+            _recipient,
+            timelock,
+            withdrawTokenAmount,
+            withdrawIndex);
     }
 
     /* ADMIN */
