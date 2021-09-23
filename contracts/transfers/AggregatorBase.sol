@@ -21,7 +21,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     error OracleBadRole();
     error DeBridgeGateBadRole();
 
-    error OraclesAdminAccessDenied();
 
     error OracleAlreadyExist();
     error OracleNotFound();
@@ -31,9 +30,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
 
     error SubmittedAlready();
 
-    error DeployNotConfirmed();
-    error DeployNotFound();
-    error DeployedAlready();
 
     /* ========== MODIFIERS ========== */
 

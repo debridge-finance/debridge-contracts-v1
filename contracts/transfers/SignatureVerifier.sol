@@ -20,10 +20,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     address public wrappedAssetAdmin; // admin for any deployed wrapped asset
     address public debridgeAddress; // Debridge gate address
 
-    mapping(bytes32 => bytes32) public confirmedDeployInfo; // debridge Id => deploy Id
-    mapping(bytes32 => DebridgeDeployInfo) public getDeployInfo; // mint id => debridge info
-    mapping(bytes32 => address) public override getWrappedAssetAddress; // debridge id => wrapped asset address
-
     /* ========== ERRORS ========== */
 
     error NotConfirmedByRequiredOracles();
@@ -57,58 +53,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         debridgeAddress = _debridgeAddress;
     }
 
-    /// @dev Confirms the transfer request.
-    function confirmNewAsset(
-        bytes memory _tokenAddress,
-        uint256 _chainId,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals,
-        bytes memory _signatures
-    ) external override onlyDeBridgeGate {
-        bytes32 debridgeId = getDebridgeId(_chainId, _tokenAddress);
-        if (getWrappedAssetAddress[debridgeId] != address(0)) revert DeployedAlready();
-
-        bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
-        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-        debridgeInfo.name = _name;
-        debridgeInfo.symbol = _symbol;
-        debridgeInfo.nativeAddress = _tokenAddress;
-        debridgeInfo.chainId = _chainId;
-        debridgeInfo.decimals = _decimals;
-
-        // Count of required(DSRM) oracles confirmation
-        uint256 currentRequiredOraclesCount;
-        // stack variable to aggregate confirmations and write to storage once
-        uint8 confirmations = debridgeInfo.confirmations;
-
-        uint256 signaturesCount = _countSignatures(_signatures);
-        address[] memory validators = new address[](signaturesCount);
-        for (uint256 i = 0; i < signaturesCount; i++) {
-            (bytes32 r, bytes32 s, uint8 v) = _signatures.parseSignature(i * 65);
-            address oracle = ecrecover(deployId.getUnsignedMsg(), v, r, s);
-            if (getOracleInfo[oracle].isValid) {
-                for (uint256 k = 0; k < i; k++) {
-                    if (validators[k] == oracle) revert DuplicateSignatures();
-                }
-                validators[i] = oracle;
-                emit DeployConfirmed(deployId, oracle);
-                confirmations += 1;
-                if (getOracleInfo[oracle].required) {
-                    currentRequiredOraclesCount += 1;
-                }
-            }
-        }
-
-        if (confirmations < minConfirmations
-            || confirmations < excessConfirmations) revert DeployNotConfirmed();
-
-        if (currentRequiredOraclesCount != requiredOraclesCount)
-            revert NotConfirmedByRequiredOracles();
-
-        debridgeInfo.confirmations = confirmations;
-        confirmedDeployInfo[debridgeId] = deployId;
-    }
 
     /// @dev Check is valid signatures.
     /// @param _submissionId Submission identifier.
@@ -175,34 +119,25 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /* ========== deployAsset ========== */
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
-    function deployAsset(bytes32 _debridgeId)
+    function deployAsset(
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals)
         external
         override
         onlyDeBridgeGate
-        returns (
-            address wrappedAssetAddress,
-            bytes memory nativeAddress,
-            uint256 nativeChainId
-        )
+        returns (address wrappedAssetAddress)
     {
-        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
-        bytes32 deployId = confirmedDeployInfo[_debridgeId];
-        if (deployId == "") revert DeployNotFound();
-
-        DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
-
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
         WrappedAsset wrappedAsset = new WrappedAsset(
-            debridgeInfo.name,
-            debridgeInfo.symbol,
-            debridgeInfo.decimals,
+            _name,
+            _symbol,
+            _decimals,
             wrappedAssetAdmin,
             minters
         );
-        getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
-        emit DeployApproved(deployId);
-        return (address(wrappedAsset), debridgeInfo.nativeAddress, debridgeInfo.chainId);
+        return (address(wrappedAsset));
     }
 
     /* ========== ADMIN ========== */

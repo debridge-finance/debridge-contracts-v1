@@ -352,7 +352,7 @@ contract("DeBridgeGate light mode", function () {
           decimals,
           signatures
         ),
-        "DeployNotConfirmed()"
+        "SubmissionNotConfirmed()"
       );
     });
   });

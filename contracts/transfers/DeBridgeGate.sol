@@ -392,20 +392,24 @@ contract DeBridgeGate is
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
         if(_signatures.length > 0){
-             ISignatureVerifier(signatureVerifier).confirmNewAsset(_nativeTokenAddress,
-                _nativeChainId,
-                _name,
-                _symbol,
-                _decimals,
-                _signatures);
+            bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
+            //TODO: get from getDeployId
+            //getDeployId(debridgeId, _name, _symbol, _decimals);
+            //verify signatures
+            ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
+            //Deploy assets
+            address wrappedAssetAddress = ISignatureVerifier(signatureVerifier).deployAsset(_name, _symbol,  _decimals);
+            _addAsset(debridgeId, wrappedAssetAddress, _nativeTokenAddress, _nativeChainId);
         }
-        // bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
-        // //verify signatures
-        // ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
-
-        // _addAsset(debridgeId, wrappedAssetAddress, _nativeTokenAddress, _nativeChainId);
-
-        _deployAsset(debridgeId, _signatures.length > 0 ? signatureVerifier : confirmationAggregator);
+        else {
+            (
+                address wrappedAssetAddress,
+                bytes memory nativeAddress,
+                uint256 nativeChainId
+            ) = IConfirmationAggregator(confirmationAggregator).deployAsset(debridgeId);
+            if (wrappedAssetAddress == address(0)) revert WrappedAssetNotFound();
+                _addAsset(debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
+        }
     }
 
     // /// @dev Calculates asset identifier.
@@ -624,29 +628,6 @@ contract DeBridgeGate is
     }
 
     /* ========== INTERNAL ========== */
-
-
-    // function _checkAndDeployAsset(bytes32 _debridgeId, address _aggregatorAddress) internal {
-    //     if (!getDebridge[_debridgeId].exist) {
-    //         (
-    //             address wrappedAssetAddress,
-    //             bytes memory nativeAddress,
-    //             uint256 nativeChainId
-    //         ) = IConfirmationAggregator(_aggregatorAddress).deployAsset(_debridgeId);
-    //         if (wrappedAssetAddress == address(0)) revert WrappedAssetNotFound();
-    //         _addAsset(_debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
-    //     }
-    // }
-
-    function _deployAsset(bytes32 _debridgeId, address _aggregatorAddress) internal {
-        (
-            address wrappedAssetAddress,
-            bytes memory nativeAddress,
-            uint256 nativeChainId
-        ) = IConfirmationAggregator(_aggregatorAddress).deployAsset(_debridgeId);
-        if (wrappedAssetAddress == address(0)) revert WrappedAssetNotFound();
-        _addAsset(_debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
-    }
 
     function _checkConfirmations(
         bytes32 _submissionId,

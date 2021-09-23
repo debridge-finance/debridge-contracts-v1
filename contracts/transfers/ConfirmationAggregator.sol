@@ -20,6 +20,12 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
 
+    /* ========== ERRORS ========== */
+
+    error DeployNotConfirmed();
+    error DeployNotFound();
+    error DeployedAlready();
+
     /* ========== MODIFIERS ========== */
 
     modifier onlyDeBridgeGate() {

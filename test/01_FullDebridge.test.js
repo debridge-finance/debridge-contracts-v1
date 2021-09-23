@@ -818,7 +818,6 @@ contract("DeBridgeGate full mode", function () {
                             chainIdTo,
                             tokenAddress
                           );
-                          //await this.confirmationAggregator.deployAsset(debridgeId)  // todo: fix this
                           const debridge = await this.debridge.getDebridge(debridgeId);
                           const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             debridgeId
@@ -881,7 +880,6 @@ contract("DeBridgeGate full mode", function () {
                             chainIdTo,
                             tokenAddress
                           );
-                          //await this.confirmationAggregator.deployAsset(debridgeId)  // todo: fix this
                           const debridge = await this.debridge.getDebridge(debridgeId);
                           const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             debridgeId
