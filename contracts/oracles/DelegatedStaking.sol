@@ -185,14 +185,12 @@ contract DelegatedStaking is Initializable,
         uint256 tokenAmount,
         uint256 index);
 
-    event WithdrawValidatorRewardsRequested(
+    event ValidatorRewardsExchanged(
         address _validator,
         address _admin,
+        address _caller,
         address _collateral,
-        address _recipient,
-        uint256 timelock,
-        uint256 withdrawTokenAmount,
-        uint256 withdrawIndex);
+        uint256 _rewardAmount);
 
     event SlashedUnstakeRequest(
         address validator,
@@ -784,39 +782,29 @@ contract DelegatedStaking is Initializable,
         emit RewardsDistributed(_rewardToken, _rewardAmount);
     }
 
-    function requestWithdrawValidatorRewards(
+    function exchangeValidatorRewards(
         address _validator,
-        address _collateral,
-        address _recipient
+        address _collateral
     ) external nonReentrant whenNotPaused {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         if (validator.delegatorActionPaused) revert DelegatorActionPaused();
-        address _admin = validator.admin;
-        if (_admin != msg.sender) revert AdminBadRole();
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-        WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
-        uint256 withdrawTokenAmount = validatorCollateral.rewardsForWithdrawal;
+        DelegatorsInfo storage admin = validatorCollateral.delegators[validator.admin];
+        uint256 rewardAmount = validatorCollateral.rewardsForWithdrawal;
+        uint256 rewardShares = DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares, validatorCollateral.stakedAmount);
 
-        validatorCollateral.rewardsForWithdrawal -= withdrawTokenAmount;
-
-        uint256 withdrawIndex = withdrawalRequests.count;
-        uint256 timelock = block.timestamp + withdrawTimelock;
-        WithdrawalInfo storage withdraw = withdrawalRequests.withdrawals[withdrawIndex];
-        withdraw.delegator = _admin;
-        withdraw.amount = withdrawTokenAmount;
-        withdraw.timelock = timelock;
-        withdraw.receiver = _recipient;
-        withdraw.collateral = _collateral;
-
-        withdrawalRequests.count++;
-        emit WithdrawValidatorRewardsRequested(
+        validatorCollateral.rewardsForWithdrawal -= rewardAmount;
+        collaterals[_collateral].totalLocked += rewardAmount;
+        validatorCollateral.stakedAmount += rewardAmount;
+        validatorCollateral.shares += rewardShares;
+        admin.accumulatedRewards += rewardAmount;
+        admin.shares += rewardShares;
+        emit ValidatorRewardsExchanged(
             _validator,
-            _admin,
+            validator.admin,
+            msg.sender,
             _collateral,
-            _recipient,
-            timelock,
-            withdrawTokenAmount,
-            withdrawIndex);
+            rewardAmount);
     }
 
     /* ADMIN */
