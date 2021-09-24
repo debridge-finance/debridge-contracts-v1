@@ -759,8 +759,7 @@ contract DelegatedStaking is Initializable,
         // we need to swap  56,25 usdt to usdc and just increment usdc collateral.totalStaked += receivedUSDCAmount;
         // We don't need to create swap for each validators pool. Firs we need to calulate total Link to swap
 
-        uint256 collateralExcludingRewardTokenLength = collateralAddresses.length - 1;
-        uint256[] memory collectedRewards = new uint256[](collateralExcludingRewardTokenLength);
+        uint256[] memory collectedRewards = new uint256[](collateralAddresses.length);
         uint256[][] memory validatorRewards = new uint256[][](validatorAddresses.length);
         for (uint256 v = 0; v < validatorAddresses.length; v++) {
             address validatorAddress = validatorAddresses[v];
@@ -770,7 +769,7 @@ contract DelegatedStaking is Initializable,
 
             (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
 
-            uint256[] memory tempValidatorRewards = new uint256[](collateralExcludingRewardTokenLength);
+            uint256[] memory tempValidatorRewards = new uint256[](collateralAddresses.length);
             for (uint256 c = 0; c < collateralAddresses.length; c++) {
                 address collateralAddress = collateralAddresses[c];
                 uint256 delegatorReward = delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
