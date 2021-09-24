@@ -163,6 +163,13 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== ADMIN ========== */
 
+    /// @dev Sets minimal required confirmations.
+    /// @param _confirmationThreshold Confirmation info.
+    function setThreshold(uint8 _confirmationThreshold) external onlyAdmin {
+        if (_confirmationThreshold == 0) revert WrongArgument();
+        confirmationThreshold = _confirmationThreshold;
+    }
+
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
     function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin {
