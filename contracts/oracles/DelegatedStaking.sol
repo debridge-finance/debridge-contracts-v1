@@ -935,10 +935,10 @@ contract DelegatedStaking is Initializable,
             uint256 totalSlashed;
             // slash admin start
             if (adminCollateral.shares/validatorCollateral.shares < validatorBPS) {
-                liquidateDelegator(_validator, validator.admin, _collateral, BPS_DENOMINATOR);
+                _liquidateDelegator(_validator, validator.admin, _collateral, BPS_DENOMINATOR);
                 delegatorBPS += validatorBPS - adminCollateral.shares/validatorCollateral.shares;
             } else {
-                liquidateDelegator(_validator, validator.admin, _collateral, validatorBPS);
+                _liquidateDelegator(_validator, validator.admin, _collateral, validatorBPS);
             }
             slashValidatorRewards(_validator, _collateral, validatorBPS);
             // slash admin end
@@ -967,7 +967,7 @@ contract DelegatedStaking is Initializable,
      * @param _collateral Index of collateral.
      * @param _bpsAmount Basis points to slash.
      */
-    function liquidateDelegator(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) public onlyAdmin {
+    function _liquidateDelegator(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) internal {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
         DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
@@ -995,6 +995,10 @@ contract DelegatedStaking is Initializable,
 
         IERC20(_collateral).safeTransfer(slashingTreasury, totalSlashed);
         emit LiquidatedDelegator(_validator, _delegator, _collateral, totalSlashed);
+    }
+
+    function liquidateDelegator(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) external onlyAdmin {
+        _liquidateDelegator(_validator, _delegator, _collateral, _bpsAmount);
     }
 
     /**
