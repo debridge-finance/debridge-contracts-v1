@@ -726,6 +726,44 @@ contract DelegatedStaking is Initializable,
     }
 
     /**
+     * @dev Calculates rewards to swapped and credited to validators collateral
+     * @param _rewardToken address of reward token
+     * @param _rewardAmount amount of reward token
+     */
+    function _calculateValidatorRewards(address _rewardToken, uint256 _rewardAmount) internal nonReentrant whenNotPaused returns (uint256[] memory, uint256[][] memory) {
+        uint256[] memory collectedRewards = new uint256[](collateralAddresses.length);
+        uint256[][] memory validatorRewards = new uint256[][](validatorAddresses.length);
+        for (uint256 v = 0; v < validatorAddresses.length; v++) {
+            address validatorAddress = validatorAddresses[v];
+            ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
+            uint256 validatorAmount = validator.rewardWeightCoefficient * _rewardAmount / weightCoefficientDenominator;
+            uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
+
+            (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
+
+            uint256[] memory tempValidatorRewards = new uint256[](collateralAddresses.length);
+            for (uint256 c = 0; c < collateralAddresses.length; c++) {
+                address collateralAddress = collateralAddresses[c];
+                uint256 delegatorReward = delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
+                if (_rewardToken == collateralAddress) {
+                    ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[_rewardToken];
+                    uint256 validatorReward = validatorAmount - delegatorsAmount;
+                    validatorRewardCollateral.stakedAmount += delegatorReward;
+                    validatorRewardCollateral.accumulatedRewards += validatorAmount;
+                    validatorRewardCollateral.rewardsForWithdrawal += validatorReward;
+                    tempValidatorRewards[c] = 0;
+                    collectedRewards[c] += 0;
+                } else {
+                    tempValidatorRewards[c] = delegatorReward;
+                    collectedRewards[c] += delegatorReward;
+                }
+            }
+            validatorRewards[v] = tempValidatorRewards;
+        }
+        return (collectedRewards, validatorRewards);
+    }
+
+    /**
      * @dev Distributes validator rewards to validator/delegators
      * @param _rewardToken address of reward token
      */
@@ -761,33 +799,7 @@ contract DelegatedStaking is Initializable,
 
         uint256[] memory collectedRewards = new uint256[](collateralAddresses.length);
         uint256[][] memory validatorRewards = new uint256[][](validatorAddresses.length);
-        for (uint256 v = 0; v < validatorAddresses.length; v++) {
-            address validatorAddress = validatorAddresses[v];
-            ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
-            uint256 validatorAmount = validator.rewardWeightCoefficient * _rewardAmount / weightCoefficientDenominator;
-            uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
-
-            (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
-
-            uint256[] memory tempValidatorRewards = new uint256[](collateralAddresses.length);
-            for (uint256 c = 0; c < collateralAddresses.length; c++) {
-                address collateralAddress = collateralAddresses[c];
-                uint256 delegatorReward = delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
-                if (_rewardToken == collateralAddress) {
-                    ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[_rewardToken];
-                    uint256 validatorReward = validatorAmount - delegatorsAmount;
-                    validatorRewardCollateral.stakedAmount += delegatorReward;
-                    validatorRewardCollateral.accumulatedRewards += validatorAmount;
-                    validatorRewardCollateral.rewardsForWithdrawal += validatorReward;
-                    tempValidatorRewards[c] = 0;
-                    collectedRewards[c] += 0;
-                } else {
-                    tempValidatorRewards[c] = delegatorReward;
-                    collectedRewards[c] += delegatorReward;
-                }
-            }
-            validatorRewards[v] = tempValidatorRewards;
-        }
+        (collectedRewards, validatorRewards) = _calculateValidatorRewards(_rewardToken, _rewardAmount);
 
         for (uint256 cc=0; cc<collateralAddresses.length; cc++) {
             address currentCollateral = collateralAddresses[cc];
