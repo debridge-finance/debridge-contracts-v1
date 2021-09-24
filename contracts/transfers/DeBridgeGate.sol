@@ -398,7 +398,8 @@ contract DeBridgeGate is
             //verify signatures
             ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
             //Deploy assets
-            address wrappedAssetAddress = ISignatureVerifier(signatureVerifier).deployAsset(_name, _symbol,  _decimals);
+            address wrappedAssetAddress = ISignatureVerifier(signatureVerifier)
+                .deployAsset(_nativeTokenAddress, _nativeChainId,  _name, _symbol, _decimals);
             _addAsset(debridgeId, wrappedAssetAddress, _nativeTokenAddress, _nativeChainId);
         }
         else {

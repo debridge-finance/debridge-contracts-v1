@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./ERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+//import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "../interfaces/IWrappedAsset.sol";
 
-contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
+contract WrappedAssetImplementation is Initializable, AccessControl, IWrappedAsset, ERC20 {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); // minter role identifier
     bytes32 public DOMAIN_SEPARATOR;
     // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     bytes32 public constant PERMIT_TYPEHASH =
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public nonces; // transfer's counter
-    uint8 internal _decimals;
 
     /* ========== ERRORS ========== */
 
@@ -30,14 +30,15 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
     /// @param _name Asset's name.
     /// @param _symbol Asset's symbol.
     /// @param _minters The accounts allowed to int new tokens.
-    constructor(
+    function initialize(
         string memory _name,
         string memory _symbol,
-        uint8 _tokenDecimals,
+        uint8 _decimals,
         address _admin,
         address[] memory _minters
-    ) ERC20(_name, _symbol) {
-        _decimals = _tokenDecimals;
+    ) public initializer {
+        ERC20.initializeBase(_name, _symbol, _decimals);
+
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
         for (uint256 i = 0; i < _minters.length; i++) {
             _setupRole(MINTER_ROLE, _minters[i]);
@@ -112,9 +113,5 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
             "permit: invalid signature"
         );
         _approve(_owner, _spender, _value);
-    }
-
-    function decimals() public view override returns (uint8) {
-        return _decimals;
     }
 }

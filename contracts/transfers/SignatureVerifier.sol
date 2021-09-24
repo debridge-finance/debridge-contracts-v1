@@ -3,7 +3,8 @@ pragma solidity 0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/ISignatureVerifier.sol";
-import "../periphery/WrappedAsset.sol";
+import "../periphery/WrappedAssetProxy.sol";
+import "../periphery/WrappedAssetImplementation.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
@@ -120,6 +121,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(
+        bytes memory _nativeTokenAddress,
+        uint256 _nativeChainId,
         string memory _name,
         string memory _symbol,
         uint8 _decimals)
@@ -130,14 +133,35 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     {
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
-        WrappedAsset wrappedAsset = new WrappedAsset(
+
+        //Initialize args
+        bytes memory initialisationArgs = abi.encodeWithSelector(
+            WrappedAssetImplementation.initialize.selector,
             _name,
             _symbol,
             _decimals,
             wrappedAssetAdmin,
             minters
         );
-        return (address(wrappedAsset));
+
+        // initialize Proxy
+        //
+        bytes memory constructorArgs = abi.encode(address(this), initialisationArgs);
+
+        // deployment code
+        bytes memory bytecode = abi.encodePacked(type(WrappedAssetProxy).creationCode, constructorArgs);
+
+        bytes32 salt = keccak256(abi.encodePacked(_nativeChainId, _nativeTokenAddress));
+
+        assembly {
+            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+
+            if iszero(extcodesize(wrappedAssetAddress)) {
+                revert (0, 0)
+            }
+        }
+
+        return (wrappedAssetAddress);
     }
 
     /* ========== ADMIN ========== */

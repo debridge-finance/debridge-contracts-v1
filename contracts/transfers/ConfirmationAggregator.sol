@@ -3,7 +3,8 @@ pragma solidity 0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/IConfirmationAggregator.sol";
-import "../periphery/WrappedAsset.sol";
+import "../periphery/WrappedAssetProxy.sol";
+import "../periphery/WrappedAssetImplementation.sol";
 
 contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /* ========== STATE VARIABLES ========== */
@@ -153,16 +154,37 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         DebridgeDeployInfo storage debridgeInfo = getDeployInfo[deployId];
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
-        WrappedAsset wrappedAsset = new WrappedAsset(
+
+
+        //Initialize args
+        bytes memory initialisationArgs = abi.encodeWithSelector(
+            WrappedAssetImplementation.initialize.selector,
             debridgeInfo.name,
             debridgeInfo.symbol,
             debridgeInfo.decimals,
             wrappedAssetAdmin,
             minters
         );
-        getWrappedAssetAddress[_debridgeId] = address(wrappedAsset);
+
+        // initialize Proxy
+        bytes memory constructorArgs = abi.encode(address(this), initialisationArgs);
+
+        // deployment code
+        bytes memory bytecode = abi.encodePacked(type(WrappedAssetProxy).creationCode, constructorArgs);
+
+        bytes32 salt = _debridgeId;
+
+        assembly {
+            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+
+            if iszero(extcodesize(wrappedAssetAddress)) {
+                revert(0, 0)
+            }
+        }
+
+        getWrappedAssetAddress[_debridgeId] = wrappedAssetAddress;
         emit DeployApproved(deployId);
-        return (address(wrappedAsset), debridgeInfo.nativeAddress, debridgeInfo.chainId);
+        return (wrappedAssetAddress, debridgeInfo.nativeAddress, debridgeInfo.chainId);
     }
 
     /* ========== ADMIN ========== */

@@ -3,7 +3,6 @@ pragma solidity 0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/ISignatureAggregator.sol";
-import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
