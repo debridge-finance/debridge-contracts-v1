@@ -121,8 +121,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev deploy wrapped token, called by DeBridgeGate.
     function deployAsset(
-        bytes memory _nativeTokenAddress,
-        uint256 _nativeChainId,
+        bytes32 _debridgeId,
         string memory _name,
         string memory _symbol,
         uint8 _decimals)
@@ -145,23 +144,21 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         );
 
         // initialize Proxy
-        //
         bytes memory constructorArgs = abi.encode(address(this), initialisationArgs);
 
         // deployment code
         bytes memory bytecode = abi.encodePacked(type(WrappedAssetProxy).creationCode, constructorArgs);
 
-        bytes32 salt = keccak256(abi.encodePacked(_nativeChainId, _nativeTokenAddress));
-
         assembly {
-            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+            // debridgeId is a salt
+            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
 
             if iszero(extcodesize(wrappedAssetAddress)) {
                 revert (0, 0)
             }
         }
 
-        return (wrappedAssetAddress);
+        return wrappedAssetAddress;
     }
 
     /* ========== ADMIN ========== */

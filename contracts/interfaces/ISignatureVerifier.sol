@@ -27,8 +27,7 @@ interface ISignatureVerifier {
     ) external;
 
     function deployAsset(
-        bytes memory _nativeTokenAddress,
-        uint256 _nativeChainId,
+        bytes32 _debridgeId,
         string memory _name,
         string memory _symbol,
         uint8 _decimals)

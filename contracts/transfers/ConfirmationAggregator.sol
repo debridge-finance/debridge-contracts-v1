@@ -155,8 +155,7 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
 
-
-        //Initialize args
+        // Initialize args
         bytes memory initialisationArgs = abi.encodeWithSelector(
             WrappedAssetImplementation.initialize.selector,
             debridgeInfo.name,
@@ -172,10 +171,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
         // deployment code
         bytes memory bytecode = abi.encodePacked(type(WrappedAssetProxy).creationCode, constructorArgs);
 
-        bytes32 salt = _debridgeId;
-
         assembly {
-            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+            // debridgeId is a salt
+            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
 
             if iszero(extcodesize(wrappedAssetAddress)) {
                 revert(0, 0)
