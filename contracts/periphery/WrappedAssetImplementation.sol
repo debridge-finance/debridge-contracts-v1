@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "./ERC20.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-//import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../interfaces/IWrappedAsset.sol";
 
-contract WrappedAssetImplementation is Initializable, AccessControl, IWrappedAsset, ERC20 {
+contract WrappedAssetImplementation is ERC20Upgradeable, AccessControlUpgradeable, IWrappedAsset {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); // minter role identifier
     bytes32 public DOMAIN_SEPARATOR;
     // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     bytes32 public constant PERMIT_TYPEHASH =
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public nonces; // transfer's counter
+    uint8 internal _decimals;
 
     /* ========== ERRORS ========== */
 
@@ -33,11 +32,12 @@ contract WrappedAssetImplementation is Initializable, AccessControl, IWrappedAss
     function initialize(
         string memory _name,
         string memory _symbol,
-        uint8 _decimals,
+        uint8 _tokenDecimals,
         address _admin,
         address[] memory _minters
     ) public initializer {
-        ERC20.initializeBase(_name, _symbol, _decimals);
+        _decimals = _tokenDecimals;
+        __ERC20_init(_name, _symbol);
 
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
         for (uint256 i = 0; i < _minters.length; i++) {
@@ -113,5 +113,9 @@ contract WrappedAssetImplementation is Initializable, AccessControl, IWrappedAss
             "permit: invalid signature"
         );
         _approve(_owner, _spender, _value);
+    }
+
+    function decimals() public view override returns (uint8) {
+        return _decimals;
     }
 }
