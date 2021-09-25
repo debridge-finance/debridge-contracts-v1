@@ -431,57 +431,53 @@ contract DelegatedStaking is Initializable,
     /**
     * @dev Execute withdrawal requests.
     * @param _validator Validator address.
-    * @param _problemTimestamp Timestamp at which problem occurred
+    * @param _fromWithdrawId Starting from withdrawal identifier.
+    * @param _toWithdrawId Up to withdrawal identifier.
     * @param _slashPercent percent must be set in wei (1e18 DENOMINATOR)
     */
     function slashUnstakeRequests(
         address _validator,
-        uint256 _problemTimestamp,
+        uint256 _fromWithdrawId,
+        uint256 _toWithdrawId,
         uint256 _slashPercent
-    ) external onlyAdmin {
+    ) public onlyAdmin {
         WithdrawalRequests storage withdrawalRequests = getWithdrawalRequests[_validator];
-        uint256[] memory withdrawalIds = new uint256[](withdrawalRequests.count); // allocate enough for worst case where all requests are included
-        uint256 idIterator = 0;
-        for (uint256 id = 0; id < withdrawalRequests.count; id++) {
-            WithdrawalInfo memory withdrawal = withdrawalRequests.withdrawals[id];
-            if (!withdrawal.executed && withdrawal.timelock > _problemTimestamp + withdrawTimelock) {
-                // then this was after problem, so add to list of ids to slash
-                withdrawalIds[idIterator] = id;
-                idIterator++;
-            }
-        }
-        address[] memory seenCollateral = new address[](collateralAddresses.length);
-        uint256[] memory slashingAmounts = new uint256[](collateralAddresses.length);
-        uint256 seenIterator = 0;
-        for (uint256 idIndex = 0; idIndex < withdrawalIds.length; idIndex++) {
-            uint256 currentWithdrawId = withdrawalIds[idIndex];
-            WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[currentWithdrawId];
-            uint256 slashingAmount = withdrawal.amount * _slashPercent / 1e18;
-            withdrawal.amount = withdrawal.amount - slashingAmount;
-            withdrawal.slashingAmount = slashingAmount;
+        if (_toWithdrawId >= withdrawalRequests.count) revert WrongArgument();
 
-            bool seen = false;
-            for (uint256 i=0; i<seenCollateral.length; i++) {
-                if (seenCollateral[i] == withdrawal.collateral) {
-                    slashingAmounts[i] += slashingAmount;
-                    seen = true;
-                    break;
+        address[] memory seenCollateral = new address[](_toWithdrawId - _fromWithdrawId);
+        uint256[] memory slashingAmounts = new uint256[](_toWithdrawId - _fromWithdrawId);
+        uint256 seenIterator = 0;
+        for (uint256 currentWithdrawId = _fromWithdrawId; currentWithdrawId < _toWithdrawId; currentWithdrawId++) {
+            WithdrawalInfo storage withdrawal = withdrawalRequests.withdrawals[currentWithdrawId];
+            if (!withdrawal.executed) {
+                uint256 slashingAmount = withdrawal.amount * _slashPercent / 1e18;
+                withdrawal.amount = withdrawal.amount - slashingAmount;
+                withdrawal.slashingAmount = slashingAmount;
+                
+                bool seen = false;
+                for (uint256 i=0; i<seenCollateral.length; i++) {
+                    if (seenCollateral[i] == withdrawal.collateral) {
+                        slashingAmounts[i] += slashingAmount;
+                        seen = true;
+                        break;
+                    }
                 }
+                if (seen == false) {
+                    seenCollateral[seenIterator] = withdrawal.collateral;
+                    slashingAmounts[seenIterator] = slashingAmount;
+                    seenIterator++;
+                }
+
+                emit SlashedUnstakeRequest(
+                    _validator,
+                    withdrawal.delegator,
+                    withdrawal.collateral,
+                    slashingAmount,
+                    currentWithdrawId);
             }
-            if (seen == false) {
-                seenCollateral[seenIterator] = withdrawal.collateral;
-                slashingAmounts[seenIterator] = slashingAmount;
-                seenIterator++;
-            }
-            emit SlashedUnstakeRequest(
-                _validator,
-                withdrawal.delegator,
-                withdrawal.collateral,
-                slashingAmount,
-                currentWithdrawId);
         }
-        for (uint256 seenIndex=0; seenIndex < seenCollateral.length; seenIndex++) {
-            collaterals[seenCollateral[seenIndex]].slashedAmount += slashingAmounts[seenIndex];
+        for (uint256 index=0; index<seenCollateral.length; index++) {
+            collaterals[seenCollateral[index]].slashedAmount += slashingAmounts[index];
         }
     }
 
@@ -531,7 +527,7 @@ contract DelegatedStaking is Initializable,
         address _validator,
         address _collateral,
         uint256 _bpsAmount
-    ) public onlyAdmin { // TODO: either make this method internal and call in liquidate, or remove and have arbitrary wallet (keeper) call exchangeValidatorRewards prior to slashing
+    ) public onlyAdmin {
         Collateral storage collateral = collaterals[_collateral];
         uint256 slashingFraction = _bpsAmount/BPS_DENOMINATOR;
         uint256 _slashAmount = getValidatorInfo[_validator].collateralPools[_collateral].rewardsForWithdrawal * slashingFraction;
@@ -930,6 +926,8 @@ contract DelegatedStaking is Initializable,
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         uint256 _delegatorBPS = validator.profitSharingBPS * _bpsAmount / BPS_DENOMINATOR;
         uint256 validatorBPS = _bpsAmount - _delegatorBPS;
+
+        // slashUnstakeRequests(_validator, , , _delegatorBPS * (10 ** (18 - BPS_DENOMINATOR))); TODO
 
         for (uint256 i=0; i<_collaterals.length; i++) {
             address _collateral = _collaterals[i];
