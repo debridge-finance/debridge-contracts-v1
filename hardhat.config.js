@@ -67,6 +67,7 @@ module.exports = {
   },
   namedAccounts: {
     deployer: 0,
+    minter: 1,
   },
   networks: {
     hardhat: {

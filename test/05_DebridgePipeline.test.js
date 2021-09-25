@@ -84,19 +84,24 @@ contract("DeBridgeGate real pipeline mode", function () {
     const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
 
     this.amountThreshols = toWei("1000");
-    this.minConfirmations = 5;
-    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
-    this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
     this.initialOracles = [];
-
-    for (let i = 1; i < this.signers.length; i++) {
+    const maxOraclesCount = Math.min(this.signers.length,10);
+    for (let i = 1; i <= maxOraclesCount; i++) {
       this.initialOracles.push({
         account: this.signers[i],
         address: this.signers[i].address,
-        admin: alice,
       });
     }
+
+    this.minConfirmations = Math.floor(this.initialOracles.length/2) + 1;
+
+    console.log("minConfirmations: "+this.minConfirmations);
+    console.log("oracle keys: "+ oracleKeys.length)
+
+    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    this.excessConfirmations = 7; //Confirmations count in case of excess activity.
+
 
     //-------Deploy mock tokens contracts
     this.cakeToken = await MockToken.new("PancakeSwap Token", "Cake", 18, {
@@ -394,38 +399,32 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(this.wethHECO.address, await this.debridgeHECO.weth());
     });
     it("Initialize oracles", async function () {
-      let oracleAddresses = [];
-      let oracleAdmins = [];
-      let required = [];
-      for (let oracle of this.initialOracles) {
-        oracleAddresses.push(oracle.address);
-        oracleAdmins.push(oracle.admin);
-        required.push(false);
-      }
+      let oracleAddresses = this.initialOracles.map(i => i.address);
+      let required = this.initialOracles.map(i => false);
 
-      await this.confirmationAggregatorBSC.addOracles(oracleAddresses, oracleAdmins, required, {
-        from: alice,
-      });
-      await this.confirmationAggregatorHECO.addOracles(oracleAddresses, oracleAdmins, required, {
-        from: alice,
-      });
+      await this.confirmationAggregatorBSC
+        .connect(aliceAccount)
+        .addOracles(oracleAddresses, required);
+      await this.confirmationAggregatorHECO
+        .connect(aliceAccount)
+        .addOracles(oracleAddresses, required);
 
-      //Alice is required oracle
-      await this.confirmationAggregatorBSC.addOracles([alice], [alice], [true], {
-        from: alice,
-      });
-      await this.confirmationAggregatorHECO.addOracles([alice], [alice], [true], {
-        from: alice,
-      });
+      // Alice is required oracle
+      await this.confirmationAggregatorBSC
+        .connect(aliceAccount)
+        .addOracles([alice], [true]);
+      await this.confirmationAggregatorHECO
+        .connect(aliceAccount)
+        .addOracles([alice], [true]);
 
-      await this.signatureVerifierETH.addOracles(oracleAddresses, oracleAdmins, required, {
-        from: alice,
-      });
+      await this.signatureVerifierETH
+        .connect(aliceAccount)
+        .addOracles(oracleAddresses, required);
 
-      //Alice is required oracle
-      await this.signatureVerifierETH.addOracles([alice], [alice], [true], {
-        from: alice,
-      });
+      // Alice is required oracle
+      await this.signatureVerifierETH
+        .connect(aliceAccount)
+        .addOracles([alice], [true]);
 
       //TODO: check that we added oracles
     });
@@ -1023,13 +1022,13 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("confirm by required oracle", async function () {
-      await this.confirmationAggregatorBSC.submit(this.nativeSubmissionId, {
-        from: alice,
-      });
+      await this.confirmationAggregatorBSC
+        .connect(aliceAccount)
+        .submit(this.nativeSubmissionId);
 
-      await this.confirmationAggregatorBSC.submit(this.linkSubmissionId, {
-        from: alice,
-      });
+      await this.confirmationAggregatorBSC
+        .connect(aliceAccount)
+        .submit(this.linkSubmissionId);
     });
 
     it("check confirmations", async function () {

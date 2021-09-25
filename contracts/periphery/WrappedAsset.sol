@@ -14,8 +14,15 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
     mapping(address => uint256) public nonces; // transfer's counter
     uint8 internal _decimals;
+
+    /* ========== ERRORS ========== */
+
+    error MinterBadRole();
+
+    /* ========== MODIFIERS ========== */
+
     modifier onlyMinter() {
-        require(hasRole(MINTER_ROLE, msg.sender), "onlyMinter: bad role");
+        if (!hasRole(MINTER_ROLE, msg.sender)) revert MinterBadRole();
         _;
     }
 

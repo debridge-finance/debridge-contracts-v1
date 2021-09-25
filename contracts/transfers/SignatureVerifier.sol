@@ -208,13 +208,14 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
-    function setWrappedAssetAdmin(address _wrappedAssetAdmin) public onlyAdmin {
+    function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin {
+        if (_wrappedAssetAdmin == address(0)) revert WrongArgument();
         wrappedAssetAdmin = _wrappedAssetAdmin;
     }
 
     /// @dev Sets core debridge conrtact address.
     /// @param _debridgeAddress Debridge address.
-    function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
+    function setDebridgeAddress(address _debridgeAddress) external onlyAdmin {
         debridgeAddress = _debridgeAddress;
     }
 
