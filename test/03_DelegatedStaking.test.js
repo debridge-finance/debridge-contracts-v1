@@ -388,7 +388,7 @@ contract("DelegatedStaking", function() {
       const amount = toWei("10");
       const collateral = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       await expectRevert(
-        this.delegatedStaking.stake(bob, collateral, amount),
+        this.delegatedStaking.stake(alice, bob, collateral, amount),
         "CollateralDisabled()"
       );
     });
@@ -398,7 +398,7 @@ contract("DelegatedStaking", function() {
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateCollateralEnabled(collateral, false);
       await expectRevert(
-        this.delegatedStaking.stake(bob, collateral, amount),
+        this.delegatedStaking.stake(alice, bob, collateral, amount),
         "CollateralDisabled()"
       );
       await this.delegatedStaking.updateCollateralEnabled(collateral, true);
@@ -409,7 +409,7 @@ contract("DelegatedStaking", function() {
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateCollateral(collateral, toWei("100"));
       await expectRevert(
-        this.delegatedStaking.stake(bob, collateral, amount),
+        this.delegatedStaking.stake(alice, bob, collateral, amount),
         "CollateralLimited()"
       );
       await this.delegatedStaking.updateCollateral(this.linkToken.address, MaxUint256);
@@ -437,7 +437,7 @@ contract("DelegatedStaking", function() {
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const prevCollateral = await this.delegatedStaking.collaterals(collateralAddress);
 
-        await this.delegatedStaking.connect(delegarorAccount).stake(validatorAddress, collateralAddress, amount);
+        await this.delegatedStaking.connect(delegarorAccount).stake(delegarorAccount.address, validatorAddress, collateralAddress, amount);
 
         const balanceAfter = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
         const totalUSDAmountAfter = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
@@ -506,7 +506,7 @@ contract("DelegatedStaking", function() {
         const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const prevCollateral = await this.delegatedStaking.collaterals(collateralAddress);
-        await this.delegatedStaking.connect(delegarorAccount).stake(validatorAddress, collateralAddress, amount);
+        await this.delegatedStaking.connect(delegarorAccount).stake(delegarorAccount.address, validatorAddress, collateralAddress, amount);
         const balanceAfter = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
         const totalUSDAmountAfter = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
         const currentDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
@@ -556,7 +556,7 @@ contract("DelegatedStaking", function() {
         const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const prevCollateral = await this.delegatedStaking.collaterals(collateralAddress);
-        await this.delegatedStaking.connect(delegarorAccount).stake(validatorAddress, collateralAddress, amount);
+        await this.delegatedStaking.connect(delegarorAccount).stake(delegarorAccount.address, validatorAddress, collateralAddress, amount);
         const balanceAfter = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
         const totalUSDAmountAfter = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
         const currentDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
@@ -605,35 +605,35 @@ contract("DelegatedStaking", function() {
       // await this.delegatedStaking.connect(aliceAccount).stake(david, this.linkToken.address, linkAmount);
       // await this.delegatedStaking.connect(aliceAccount).stake(sarah, this.linkToken.address, linkAmount);
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(aliceAccount).stake(validator, this.linkToken.address, linkAmount);
+        await this.delegatedStaking.connect(aliceAccount).stake(alice, validator, this.linkToken.address, linkAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(aliceAccount).stake(validator, this.usdcToken.address, usdAmount);
+        await this.delegatedStaking.connect(aliceAccount).stake(alice,validator, this.usdcToken.address, usdAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(aliceAccount).stake(validator, this.usdtToken.address, usdAmount);
+        await this.delegatedStaking.connect(aliceAccount).stake(alice,validator, this.usdtToken.address, usdAmount);
       }
       // await this.delegatedStaking.connect(eveAccount).stake(bob, this.usdcToken.address, usdAmount);
       // await this.delegatedStaking.connect(eveAccount).stake(sarah, this.usdcToken.address, usdAmount);
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(eveAccount).stake(validator, this.linkToken.address, linkAmount);
+        await this.delegatedStaking.connect(eveAccount).stake(eve, validator, this.linkToken.address, linkAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(eveAccount).stake(validator, this.usdcToken.address, usdAmount);
+        await this.delegatedStaking.connect(eveAccount).stake(eve,validator, this.usdcToken.address, usdAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(eveAccount).stake(validator, this.usdtToken.address, usdAmount);
+        await this.delegatedStaking.connect(eveAccount).stake(eve, validator, this.usdtToken.address, usdAmount);
       }
       // await this.delegatedStaking.connect(samAccount).stake(bob, this.usdtToken.address, usdAmount);
       // await this.delegatedStaking.connect(samAccount).stake(david, this.usdtToken.address, usdAmount);
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(samAccount).stake(validator, this.linkToken.address, linkAmount);
+        await this.delegatedStaking.connect(samAccount).stake(sam, validator, this.linkToken.address, linkAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(samAccount).stake(validator, this.usdcToken.address, usdAmount);
+        await this.delegatedStaking.connect(samAccount).stake(sam, validator, this.usdcToken.address, usdAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(samAccount).stake(validator, this.usdtToken.address, usdAmount);
+        await this.delegatedStaking.connect(samAccount).stake(sam, validator, this.usdtToken.address, usdAmount);
       }
     });
     it("Checks correct pools staked amount", async function() {

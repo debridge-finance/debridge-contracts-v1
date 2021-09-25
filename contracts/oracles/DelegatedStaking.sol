@@ -174,7 +174,7 @@ contract DelegatedStaking is Initializable,
 
     /* ========== Events ========== */
 
-    event Staked(address validator, address delegator, address collateral, uint256 amount);
+    event Staked(address sender, address receiver, address validator, address collateral, uint256 stakeAmount, uint256 receivedShares);
     event UnstakeRequested(
         address validator,
         address delegator,
@@ -240,7 +240,7 @@ contract DelegatedStaking is Initializable,
      * @param _slashingTreasury Address of slashing treasury.
      */
     function initialize(
-        uint256 _withdrawTimelock, 
+        uint256 _withdrawTimelock,
         IPriceConsumer _priceConsumer,
         IFeeProxy _feeProxy,
         address _slashingTreasury
@@ -257,11 +257,13 @@ contract DelegatedStaking is Initializable,
 
     /**
      * @dev stake collateral to validator.
+     * @param _receiver Delegator receiver address.
      * @param _validator Validator address.
      * @param _collateral address of collateral
      * @param _amount Amount to stake.
      */
     function stake(
+        address _receiver,
         address _validator,
         address _collateral,
         uint256 _amount
@@ -272,7 +274,7 @@ contract DelegatedStaking is Initializable,
         if (!collateral.isEnabled) revert CollateralDisabled();
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
         if (validatorCollateral.stakedAmount + _amount > collateral.maxStakeAmount) revert CollateralLimited();
-        DelegatorsInfo storage delegator = validatorCollateral.delegators[msg.sender];
+        DelegatorsInfo storage delegator = validatorCollateral.delegators[_receiver];
 
         IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
 
@@ -289,11 +291,12 @@ contract DelegatedStaking is Initializable,
         validatorCollateral.shares += shares;
         delegator.shares += shares;
 
-        emit Staked(_validator, msg.sender, _collateral, _amount);
+        emit Staked(msg.sender, _receiver, _validator, _collateral, _amount, shares);
 
         console.log("collateral %s", _collateral);
         console.log("validator %s", _validator);
         console.log("delegation %s", msg.sender);
+        console.log("_receiver %s", _receiver);
         console.log("_amount %s", _amount);
         console.log("collateral.totalLocked %s", collateral.totalLocked);
         console.log("validatorCollateral.stakedAmount %s", validatorCollateral.stakedAmount);
@@ -456,7 +459,7 @@ contract DelegatedStaking is Initializable,
             uint256 slashingAmount = withdrawal.amount * _slashPercent / 1e18;
             withdrawal.amount = withdrawal.amount - slashingAmount;
             withdrawal.slashingAmount = slashingAmount;
-                
+
             bool seen = false;
             for (uint256 i=0; i<seenCollateral.length; i++) {
                 if (seenCollateral[i] == withdrawal.collateral) {
