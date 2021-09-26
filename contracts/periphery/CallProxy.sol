@@ -6,18 +6,21 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/ICallProxy.sol";
+import "../libraries/Flags.sol";
 
 contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     using SafeERC20 for IERC20;
+    using Flags for uint256;
 
     /* ========== STATE VARIABLES ========== */
 
-    uint256 public constant PROXY_WITH_SENDER_FLAG = 100; //Flag to call proxy with sender contract
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
 
     /* ========== ERRORS ========== */
 
     error DeBridgeGateBadRole();
+
+    error ExternalCallFailed();
     error CallFailed();
 
     /* ========== MODIFIERS ========== */
@@ -37,15 +40,19 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         address _reserveAddress,
         address _receiver,
         bytes memory _data,
-        uint8 _reservedFlag,
+        uint256 _flags,
         bytes memory _nativeSender
     ) external payable override onlyGateRole returns (bool _result) {
         // Add last argument is sender from original network
-        if (_reservedFlag == PROXY_WITH_SENDER_FLAG) {
+        if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
             _data = abi.encodePacked(_data, _nativeSender);
         }
 
         _result = externalCall(_receiver, msg.value, _data.length, _data);
+
+        if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
+            revert ExternalCallFailed();
+        }
         if (!_result) {
             (bool success, ) = _reserveAddress.call{value: msg.value}(new bytes(0));
             if (!success) revert CallFailed();
@@ -57,7 +64,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         address _reserveAddress,
         address _receiver,
         bytes memory _data,
-        uint8 _reservedFlag,
+        uint256 _flags,
         bytes memory _nativeSender
     ) external override onlyGateRole returns (bool _result) {
         uint256 amount = IERC20(_token).balanceOf(address(this));
@@ -65,12 +72,16 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         IERC20(_token).safeApprove(_receiver, amount);
 
         // Add last argument is sender from original network
-        if (_reservedFlag == PROXY_WITH_SENDER_FLAG) {
+        if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
             _data = abi.encodePacked(_data, _nativeSender);
         }
 
         _result = externalCall(_receiver, 0, _data.length, _data);
         amount = IERC20(_token).balanceOf(address(this));
+
+        if (!_result &&_flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
+            revert ExternalCallFailed();
+        }
         if (!_result || amount > 0) {
             IERC20(_token).safeTransfer(_reserveAddress, amount);
         }

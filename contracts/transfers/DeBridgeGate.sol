@@ -17,6 +17,7 @@ import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
+import "../libraries/Flags.sol";
 
 contract DeBridgeGate is
     Initializable,
@@ -27,6 +28,7 @@ contract DeBridgeGate is
 {
     using SafeERC20 for IERC20;
     using SignatureUtil for bytes;
+    using Flags for uint256;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -34,7 +36,6 @@ contract DeBridgeGate is
     // used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
-    uint256 public constant PROXY_WITH_SENDER_FLAG = 100; //Flag to call proxy with sender contract
 
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
@@ -184,7 +185,8 @@ contract DeBridgeGate is
             _chainIdTo,
             _amount,
             _receiver,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         emit Sent(
@@ -225,7 +227,8 @@ contract DeBridgeGate is
             _amount,
             _receiver,
             _nonce,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         _checkAndDeployAsset(
@@ -288,7 +291,8 @@ contract DeBridgeGate is
             _chainIdTo,
             _amount,
             _receiver,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         emit Burnt(
@@ -331,7 +335,8 @@ contract DeBridgeGate is
             _amount,
             _receiver,
             _nonce,
-            _autoParams
+            autoParams,
+            _autoParams.length > 0
         );
 
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
@@ -884,8 +889,8 @@ contract DeBridgeGate is
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isMint);
         }
         if (_autoParams.data.length > 0) {
-            address callProxyAddress = _autoParams.reservedFlag == PROXY_WITH_SENDER_FLAG
-                ? callProxyAddresses[PROXY_WITH_SENDER_FLAG]
+            address callProxyAddress = _autoParams.flags.getFlag(Flags.PROXY_WITH_SENDER)
+                ? callProxyAddresses[Flags.PROXY_WITH_SENDER]
                 : callProxyAddresses[0];
 
             _mintOrTransfer(_token, callProxyAddress, _amount, isMint);
@@ -895,10 +900,17 @@ contract DeBridgeGate is
                 _autoParams.fallbackAddress,
                 _receiver,
                 _autoParams.data,
-                _autoParams.reservedFlag,
+                _autoParams.flags,
                 _autoParams.nativeSender
             );
-            emit AutoRequestExecuted(_submissionId, status);
+            emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
+        } else if (!isMint
+            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+            && _token == address(weth)
+        ) {
+            // transferring WETH with unwrap flag
+            weth.withdraw(_amount);
+            _safeTransferETH(_receiver, _amount);
         } else {
             _mintOrTransfer(_token, _receiver, _amount, isMint);
         }
@@ -965,7 +977,8 @@ contract DeBridgeGate is
         uint256 _amount,
         address _receiver,
         uint256 _nonce,
-        bytes calldata _autoParams
+        SubmissionAutoParamsFrom memory autoParams,
+        bool hasAutoParams
     ) public view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
             _debridgeId,
@@ -975,10 +988,17 @@ contract DeBridgeGate is
             _receiver,
             _nonce
         );
-        if (_autoParams.length > 0) {
+        if (hasAutoParams) {
             // auto submission
             return keccak256(
-                abi.encodePacked(packedSubmission, _autoParams)
+                abi.encodePacked(
+                    packedSubmission,
+                    autoParams.executionFee,
+                    autoParams.flags,
+                    autoParams.fallbackAddress,
+                    autoParams.data,
+                    autoParams.nativeSender
+                )
             );
         }
         // regular submission
@@ -990,7 +1010,8 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         uint256 _amount,
         bytes memory _receiver,
-        bytes calldata _autoParams
+        SubmissionAutoParamsTo memory autoParams,
+        bool hasAutoParams
     ) private view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
             _debridgeId,
@@ -1000,12 +1021,15 @@ contract DeBridgeGate is
             _receiver,
             nonce
         );
-        if (_autoParams.length > 0) {
+        if (hasAutoParams) {
             // auto submission
             return keccak256(
                 abi.encodePacked(
                     packedSubmission,
-                    _autoParams,
+                    autoParams.executionFee,
+                    autoParams.flags,
+                    autoParams.fallbackAddress,
+                    autoParams.data,
                     msg.sender
                 )
             );

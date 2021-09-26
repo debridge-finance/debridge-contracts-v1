@@ -54,14 +54,14 @@ module.exports.permitWithDeadline = async (token, owner, spender, value, deadlin
 }
 
 
-module.exports.packSubmissionAutoParamsTo = async (executionFee, reservedFlag, fallbackAddress, data) => {
-  const autoParams = {executionFee, reservedFlag, fallbackAddress, data};
+module.exports.packSubmissionAutoParamsTo = async (executionFee, flags, fallbackAddress, data) => {
+  const autoParams = {executionFee, flags, fallbackAddress, data};
   const packed = ethers.utils.defaultAbiCoder.encode([{
     type: "tuple",
     name: "SubmissionAutoParamsTo",
     components: [
       { name: "executionFee", type: 'uint256' },
-      { name: "reservedFlag", type: 'uint8' },
+      { name: "flags", type: 'uint8' },
       { name: "fallbackAddress", type:'bytes' },
       { name: "data", type:'bytes' },
     ]}],
@@ -69,18 +69,28 @@ module.exports.packSubmissionAutoParamsTo = async (executionFee, reservedFlag, f
   return packed;
 }
 
-module.exports.packSubmissionAutoParamsFrom = async (executionFee, reservedFlag, fallbackAddress, data, nativeSender) => {
-  const autoParams = {executionFee, reservedFlag, fallbackAddress, data, nativeSender};
+module.exports.packSubmissionAutoParamsFrom = async (executionFee, flags, fallbackAddress, data, nativeSender) => {
+  const autoParams = {executionFee, flags, fallbackAddress, data, nativeSender};
   const packed = ethers.utils.defaultAbiCoder.encode([{
     type: "tuple",
     name: "SubmissionAutoParamsFrom",
     components: [
       { name: "executionFee", type: 'uint256' },
-      { name: "reservedFlag", type: 'uint8' },
+      { name: "flags", type: 'uint8' },
       { name: "fallbackAddress", type:'address' },
       { name: "data", type:'bytes' },
       { name: "nativeSender", type:'bytes' },
     ]}],
   [ autoParams ]);
   return packed;
+}
+
+module.exports.submissionSignatures = async function (_web3, oracleKeys, submissionId) {
+  let signatures = "0x";
+  for (let oracleKey of oracleKeys) {
+    let currentSignature = (await _web3.eth.accounts.sign(submissionId, oracleKey)).signature;
+    // HACK remove first 0x
+    signatures += currentSignature.substring(2, currentSignature.length);
+  }
+  return signatures;
 }

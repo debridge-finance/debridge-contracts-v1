@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const reservedFlag = 0;
+const flags = 0;
 const nativeSender = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
 describe("CallProxy", function () {
   before(async function () {
@@ -24,7 +24,7 @@ describe("CallProxy", function () {
           reserve.address,
           receiver.address,
           0,
-          reservedFlag,
+          flags,
           nativeSender,
           {
             value: 1234876,
@@ -49,7 +49,7 @@ describe("CallProxy", function () {
           reserve.address,
           receiverContract.address,
           0,
-          reservedFlag,
+          flags,
           nativeSender,
           {
             value: 1234876,
@@ -74,7 +74,7 @@ describe("CallProxy", function () {
             reserve.address,
             receiverContract.address,
             [],
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: 123487678,
@@ -98,7 +98,7 @@ describe("CallProxy", function () {
             reserve.address,
             receiverContract.address,
             0,
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: 123487678,
@@ -125,7 +125,7 @@ describe("CallProxy", function () {
             reserve.address,
             receiverContract.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: 12348767,
@@ -155,7 +155,7 @@ describe("CallProxy", function () {
             reserve.address,
             receiverContract.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: 12348767,
@@ -254,7 +254,7 @@ describe("CallProxy", function () {
             reserve.address,
             this.router.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: 1234534567,
@@ -277,7 +277,7 @@ describe("CallProxy", function () {
             reserve.address,
             this.router.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: 1234534567,
@@ -307,7 +307,7 @@ describe("CallProxy", function () {
             reserve.address,
             this.router.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: amountOut[0],
@@ -329,7 +329,7 @@ describe("CallProxy", function () {
             reserve.address,
             this.router.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender,
             {
               value: 1234534567,
@@ -368,7 +368,7 @@ describe("CallProxy", function () {
             reserve.address,
             receiver.address,
             [],
-            reservedFlag,
+            flags,
             nativeSender
           )
         ).to.be.reverted;
@@ -378,7 +378,7 @@ describe("CallProxy", function () {
             reserve.address,
             receiver.address,
             "0xdeadbeef",
-            reservedFlag,
+            flags,
             nativeSender
           )
         ).to.be.reverted;
@@ -401,7 +401,7 @@ describe("CallProxy", function () {
           reserve.address,
           nonPullingReceiver.address,
           callData,
-          reservedFlag,
+          flags,
           nativeSender
         );
         // check we hit the non-pulling function
@@ -419,7 +419,7 @@ describe("CallProxy", function () {
           reserve.address,
           receiver.address,
           [],
-          reservedFlag,
+          flags,
           nativeSender
         );
         transferResult = await this.proxy.callERC20(
@@ -427,7 +427,7 @@ describe("CallProxy", function () {
           reserve.address,
           receiver.address,
           "0xdeadbeef",
-          reservedFlag,
+          flags,
           nativeSender
         );
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
@@ -451,7 +451,7 @@ describe("CallProxy", function () {
           reserve.address,
           alwaysRevertingReceiver.address,
           callData,
-          reservedFlag,
+          flags,
           nativeSender
         );
 
@@ -481,7 +481,7 @@ describe("CallProxy", function () {
             reserve.address,
             receiverContract.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender
           );
           // check internal tx hit correct function
@@ -585,7 +585,7 @@ describe("CallProxy", function () {
             reserve.address,
             this.router.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender
           );
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
@@ -615,7 +615,7 @@ describe("CallProxy", function () {
             reserve.address,
             this.router.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender
           );
           const tokenHolderBalanceAfter = await ethers.provider.getBalance(tokenHolder.address);
@@ -646,7 +646,7 @@ describe("CallProxy", function () {
             reserve.address,
             this.router.address,
             callData,
-            reservedFlag,
+            flags,
             nativeSender
           );
           const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
@@ -1042,7 +1042,7 @@ describe("CallProxy", function () {
           reserve.address,
           nonPullingReceiver.address,
           callData,
-          reservedFlag,
+          flags,
           nativeSender
         );
         const transferResultTwo = await this.ProxyConsumer.transferToken(

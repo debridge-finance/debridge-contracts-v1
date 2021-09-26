@@ -6,7 +6,7 @@ interface ICallProxy {
         address _fallbackAddress,
         address _receiver,
         bytes memory _data,
-        uint8 _reservedFlag,
+        uint256 _flags,
         bytes memory _nativeSender
     ) external payable returns (bool);
 
@@ -15,7 +15,7 @@ interface ICallProxy {
         address _fallbackAddress,
         address _receiver,
         bytes memory _data,
-        uint8 _reservedFlag,
+        uint256 _flags,
         bytes memory _nativeSender
     ) external returns (bool);
 }
