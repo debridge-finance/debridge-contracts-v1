@@ -214,7 +214,7 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures,
+        bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
         SubmissionAutoParamsFrom memory autoParams;
@@ -320,7 +320,7 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures,
+        bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override nonReentrant whenNotPaused {
 
@@ -414,6 +414,7 @@ contract DeBridgeGate is
     }
 
     function updateExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
+        if (_excessConfirmations == 0) revert WrongArgument();
         excessConfirmations = _excessConfirmations;
     }
 
@@ -428,7 +429,6 @@ contract DeBridgeGate is
     /// @dev Set proxy address.
     /// @param _address Address of the proxy that executes external calls.
     function setCallProxy(uint256 version, address _address) external onlyAdmin {
-        if (_address == address(0)) revert WrongArgument();
         callProxyAddresses[version] = _address;
         emit CallProxyUpdated(version, _address);
     }
@@ -490,7 +490,7 @@ contract DeBridgeGate is
         if (amount == 0) revert NotEnoughReserves();
 
         if (_debridgeId == getDebridgeId(getChainId(), address(0))) {
-            payable(feeProxy).transfer(amount);
+            _safeTransferETH(feeProxy, amount);
         } else {
             // don't need this check as we check that amount is not zero
             // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
@@ -506,6 +506,7 @@ contract DeBridgeGate is
         external
         override
         onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
@@ -515,8 +516,8 @@ contract DeBridgeGate is
         if (minReserves + _amount > IERC20(_tokenAddress).balanceOf(address(this)))
             revert NotEnoughReserves();
 
-        IERC20(_tokenAddress).safeTransfer(defiController, _amount);
         debridge.lockedInStrategies += _amount;
+        IERC20(_tokenAddress).safeTransfer(defiController, _amount);
     }
 
     /// @dev Return the assets that were used in defi protocol.
@@ -526,16 +527,17 @@ contract DeBridgeGate is
         external
         override
         onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
+        debridge.lockedInStrategies -= _amount;
         IERC20(debridge.tokenAddress).safeTransferFrom(
             defiController,
             address(this),
             _amount
         );
-        debridge.lockedInStrategies -= _amount;
     }
 
     /// @dev Set fee converter proxy.
@@ -603,7 +605,7 @@ contract DeBridgeGate is
         bytes32 _submissionId,
         bytes32 _debridgeId,
         uint256 _amount,
-        bytes memory _signatures
+        bytes calldata _signatures
     ) internal {
         if (isBlockedSubmission[_submissionId]) revert SubmissionBlocked();
         if (_signatures.length > 0) {

@@ -2,7 +2,7 @@ const debridgeInitParams = require("../../assets/debridgeInitParams");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const { deployer, minter } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
@@ -22,7 +22,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
         "DBR",
         18,
         deployer,
-        [deployer],
+        [minter],
       ],
       // deterministicDeployment: true,
       log: true,

@@ -19,7 +19,9 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== ERRORS ========== */
 
     error DeBridgeGateBadRole();
+
     error ExternalCallFailed();
+    error CallFailed();
 
     /* ========== MODIFIERS ========== */
 
@@ -52,7 +54,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             revert ExternalCallFailed();
         }
         if (!_result) {
-            payable(_reserveAddress).transfer(msg.value);
+            (bool success, ) = _reserveAddress.call{value: msg.value}(new bytes(0));
+            if (!success) revert CallFailed();
         }
     }
 

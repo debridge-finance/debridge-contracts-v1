@@ -26,9 +26,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     ], true);
 
     if (isDeployed) {
-      // Transform oracles to array
-      let oracleAddresses = deployInitParams.oracles.map(o => o.address);
-      let oracleAdmins = deployInitParams.oracles.map(o => o.admin);
+      let oracleAddresses = deployInitParams.oracles;
       let required = deployInitParams.oracles.map(o => false);
 
       console.log("add non required oracles:");
@@ -36,13 +34,9 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
       // function addOracles(
       //   address[] memory _oracles,
-      //   address[] memory _admins,
       //   bool[] memory _required
       // )
-      const tx = await confirmationAggregatorInstance.addOracles(
-        oracleAddresses,
-        oracleAdmins,
-        required);
+      const tx = await confirmationAggregatorInstance.addOracles(oracleAddresses, required);
       await tx.wait();
     }
   }

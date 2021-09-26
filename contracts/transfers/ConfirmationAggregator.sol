@@ -165,25 +165,28 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Sets minimal required confirmations.
     /// @param _excessConfirmations Confirmation info.
-    function setExcessConfirmations(uint8 _excessConfirmations) public onlyAdmin {
+    function setExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
+        if (_excessConfirmations == 0) revert WrongArgument();
         excessConfirmations = _excessConfirmations;
     }
 
     /// @dev Sets minimal required confirmations.
     /// @param _confirmationThreshold Confirmation info.
-    function setThreshold(uint8 _confirmationThreshold) public onlyAdmin {
+    function setThreshold(uint8 _confirmationThreshold) external onlyAdmin {
+        if (_confirmationThreshold == 0) revert WrongArgument();
         confirmationThreshold = _confirmationThreshold;
     }
 
     /// @dev Set admin for any deployed wrapped asset.
     /// @param _wrappedAssetAdmin Admin address.
-    function setWrappedAssetAdmin(address _wrappedAssetAdmin) public onlyAdmin {
+    function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin {
+        if (_wrappedAssetAdmin == address(0)) revert WrongArgument();
         wrappedAssetAdmin = _wrappedAssetAdmin;
     }
 
     /// @dev Sets core debridge conrtact address.
     /// @param _debridgeAddress Debridge address.
-    function setDebridgeAddress(address _debridgeAddress) public onlyAdmin {
+    function setDebridgeAddress(address _debridgeAddress) external onlyAdmin {
         debridgeAddress = _debridgeAddress;
     }
 
@@ -191,13 +194,13 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /// @dev Returns whether transfer request is confirmed.
     /// @param _submissionId Submission identifier.
-    /// @return _confirmations number of confirmation.
-    /// @return _isConfirmed is confirmed sumbission.
+    /// @return confirmations number of confirmation.
+    /// @return isConfirmed is confirmed sumbission.
     function getSubmissionConfirmations(bytes32 _submissionId)
         external
         view
         override
-        returns (uint8 _confirmations, bool _isConfirmed)
+        returns (uint8 confirmations, bool isConfirmed)
     {
         SubmissionInfo storage submissionInfo = getSubmissionInfo[_submissionId];
 
