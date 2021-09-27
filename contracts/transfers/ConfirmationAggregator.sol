@@ -18,11 +18,6 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
 
-    /* ========== ERRORS ========== */
-
-    error DeployNotConfirmed();
-    error DeployNotFound();
-
 
     /* ========== CONSTRUCTOR  ========== */
 
@@ -121,8 +116,8 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
     /* ========== deployAsset ========== */
 
-    function confirmNewAssetDeploy(bytes32 _debridgeId) external override view {
-        if (confirmedDeployInfo[_debridgeId] == "") revert DeployNotFound();
+    function getConfirmedDeployId(bytes32 _debridgeId) external override view returns (bytes32) {
+        return confirmedDeployInfo[_debridgeId];
     }
 
     /* ========== ADMIN ========== */

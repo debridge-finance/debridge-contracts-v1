@@ -579,6 +579,24 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
     });
 
+    it("should revert deploying new asset without confirm", async function() {
+      await expectRevert(
+        this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []),
+        "AssetNotConfirmed()");
+      await expectRevert(
+        this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []),
+        "AssetNotConfirmed()");
+      await expectRevert(
+        this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []),
+        "AssetNotConfirmed()");
+      await expectRevert(
+        this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []),
+        "AssetNotConfirmed()");
+      await expectRevert(
+        this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18, []),
+        "AssetNotConfirmed()");
+    });
+
     it("should confirm new asset if called by the oracles", async function () {
       const tokenAddress = this.linkToken.address;
       const chainId = ethChainId;

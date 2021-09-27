@@ -37,5 +37,8 @@ interface IConfirmationAggregator {
         view
         returns (uint8 _confirmations, bool _isConfirmed);
 
-    function confirmNewAssetDeploy(bytes32 _debridgeId) external;
+    function getConfirmedDeployId(bytes32 _debridgeId)
+        external
+        view
+        returns (bytes32);
 }

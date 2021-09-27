@@ -85,7 +85,7 @@ contract DeBridgeGate is
     error AmountMismatch();
 
     error AssetAlreadyExist();
-    error WrappedAssetNotFound();
+    error AssetNotConfirmed();
     error ZeroAddress();
 
     error ProposedFeeTooHigh();
@@ -396,15 +396,15 @@ contract DeBridgeGate is
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
+        // TODO: get from getDeployId
+        bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
         if(_signatures.length > 0){
-            // TODO: get from getDeployId
-            bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
-
             // verify signatures
             ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
         }
         else {
-            IConfirmationAggregator(confirmationAggregator).confirmNewAssetDeploy(debridgeId);
+            bytes32 confirmedDeployId = IConfirmationAggregator(confirmationAggregator).getConfirmedDeployId(debridgeId);
+            if (deployId != confirmedDeployId) revert AssetNotConfirmed();
         }
 
         address wrappedAssetAddress = IAssetDeployer(assetDeployer)
