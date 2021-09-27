@@ -235,11 +235,6 @@ contract DeBridgeGate is
             _autoParams.length > 0
         );
 
-        // _checkAndDeployAsset(
-        //     _debridgeId,
-        //     _signatures.length > 0 ? signatureVerifier : confirmationAggregator
-        // );
-
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
         _mint(
@@ -396,7 +391,6 @@ contract DeBridgeGate is
         uint8 _decimals,
         bytes memory _signatures
     ) external {
-        //TODO: add test that debridgeId are the same like getDebridgeId
         bytes32 debridgeId = keccak256(abi.encodePacked(_nativeChainId, _nativeTokenAddress)); //getDebridgeId(_nativeChainId, _tokenAddress);
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
@@ -418,15 +412,6 @@ contract DeBridgeGate is
         _addAsset(debridgeId, deBridgeTokenAddress, _nativeTokenAddress, _nativeChainId);
     }
 
-    // /// @dev Calculates asset identifier.
-    // function getDeployId(
-    //     bytes32 _debridgeId,
-    //     string memory _name,
-    //     string memory _symbol,
-    //     uint8 _decimals
-    // ) public pure returns (bytes32) {
-    //     return keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
-    // }
 
     /* ========== ADMIN ========== */
 

@@ -653,31 +653,52 @@ contract("DeBridgeGate real pipeline mode", function () {
       for (let oracle of this.initialOracles) {
         await this.confirmationAggregatorBSC
           .connect(oracle.account)
-          .confirmNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18);
+          .confirmNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18);
         await this.confirmationAggregatorHECO
           .connect(oracle.account)
-          .confirmNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18);
+          .confirmNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18);
         await this.confirmationAggregatorBSC
           .connect(oracle.account)
-          .confirmNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18);
+          .confirmNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "WHT", 18);
         await this.confirmationAggregatorHECO
           .connect(oracle.account)
           .confirmNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18);
         await this.confirmationAggregatorHECO
           .connect(oracle.account)
-          .confirmNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18);
+          .confirmNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "WBNB", 18);
       }
-
-      // Deploy tokens
-      await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
-      await this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []);
-      await this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []);
-
-      await this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []);
-      await this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []);
-      await this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18, []);
-
+       // Deploy tokens
+       await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
     });
+
+    it("should deploy new asset", async function () {
+        await this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []);
+        await this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "WHT", 18, []);
+
+        await this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []);
+        await this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []);
+        await this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "WBNB", 18, []);
+
+        //Check that new deployed token with correct values
+        const wethDebridgeId =  await this.debridgeBSC.getDebridgeId(ethChainId, this.wethETH.address);
+        const wethDebridge = await this.debridgeBSC.getDebridge(wethDebridgeId);
+        const deWethTokenAddress = wethDebridge.tokenAddress;
+        const deBridgeTokenInstance = await DeBridgeToken.at(deWethTokenAddress);
+        // console.log(deWethTokenAddress);
+        // console.log(await deBridgeTokenInstance.symbol());
+        // console.log(await deBridgeTokenInstance.name());
+        // console.log(await deBridgeTokenInstance.decimals());
+        assert.equal( await deBridgeTokenInstance.symbol(), "deWETH");
+        assert.equal( await deBridgeTokenInstance.name(), "Wrapped ETH (deBridge)");
+        assert.equal( (await deBridgeTokenInstance.decimals()).toString(), "18");
+    });
+
+    it("should reject deploy new asset twice", async function () {
+      await expectRevert(
+        this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []),
+        "AssetAlreadyExist()");
+    });
+
   });
 
   //TODO: ADDDDD
