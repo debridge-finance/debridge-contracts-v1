@@ -3,8 +3,6 @@ pragma solidity 0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/IConfirmationAggregator.sol";
-import "../periphery/WrappedAssetProxy.sol";
-import "../periphery/WrappedAssetImplementation.sol";
 
 contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /* ========== STATE VARIABLES ========== */

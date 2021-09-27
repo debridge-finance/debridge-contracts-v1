@@ -4,25 +4,25 @@ pragma solidity 0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-import "../interfaces/IAssetDeployer.sol";
-import "../periphery/WrappedAssetProxy.sol";
-import "../periphery/WrappedAssetImplementation.sol";
+import "../interfaces/IDeTokenDeployer.sol";
+import "../periphery/DeToken.sol";
+import "../periphery/DeTokenProxy.sol";
 
-contract AssetDeployer is
+contract DeTokenDeployer is
     Initializable,
     AccessControlUpgradeable,
-    IAssetDeployer
+    IDeTokenDeployer
 {
 
     /* ========== STATE VARIABLES ========== */
 
-    // address of wrapped asset implementation
+    // address of deToken implementation
     address public tokenImplementation;
-    // admin for any deployed wrapped asset
-    address public wrappedAssetAdmin;
+    // admin for any deployed deToken
+    address public deTokenAdmin;
     // Debridge gate address
     address public debridgeAddress;
-    // debridge id => wrapped asset address
+    // debridge id => deToken address
     mapping(bytes32 => address) public getDeployedAssetAddress;
 
 
@@ -53,11 +53,11 @@ contract AssetDeployer is
     /// @dev Constructor that initializes the most important configurations.
     function initialize(
         address _tokenImplementation,
-        address _wrappedAssetAdmin,
+        address _deTokenAdmin,
         address _debridgeAddress
     ) public initializer {
         tokenImplementation = _tokenImplementation;
-        wrappedAssetAdmin = _wrappedAssetAdmin;
+        deTokenAdmin = _deTokenAdmin;
         debridgeAddress = _debridgeAddress;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -71,7 +71,7 @@ contract AssetDeployer is
         external
         override
         onlyDeBridgeGate
-        returns (address wrappedAssetAddress)
+        returns (address deTokenAddress)
     {
         if (getDeployedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
 
@@ -80,11 +80,11 @@ contract AssetDeployer is
 
         // Initialize args
         bytes memory initialisationArgs = abi.encodeWithSelector(
-            WrappedAssetImplementation.initialize.selector,
+            DeToken.initialize.selector,
             _name,
             _symbol,
             _decimals,
-            wrappedAssetAdmin,
+            deTokenAdmin,
             minters
         );
 
@@ -92,27 +92,27 @@ contract AssetDeployer is
         bytes memory constructorArgs = abi.encode(address(this), initialisationArgs);
 
         // deployment code
-        bytes memory bytecode = abi.encodePacked(type(WrappedAssetProxy).creationCode, constructorArgs);
+        bytes memory bytecode = abi.encodePacked(type(DeTokenProxy).creationCode, constructorArgs);
 
         assembly {
             // debridgeId is a salt
-            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
+            deTokenAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
 
-            if iszero(extcodesize(wrappedAssetAddress)) {
+            if iszero(extcodesize(deTokenAddress)) {
                 revert(0, 0)
             }
         }
 
-        getDeployedAssetAddress[_debridgeId] = wrappedAssetAddress;
-        emit WrappedAssetDeployed(
-            wrappedAssetAddress,
+        getDeployedAssetAddress[_debridgeId] = deTokenAddress;
+        emit DeTokenDeployed(
+            deTokenAddress,
             _name,
             _symbol,
             _decimals
         );
     }
 
-    // Beacon getter for the wrapped asset contracts
+    // Beacon getter for the deToken contracts
     function implementation() public view returns (address) {
         return tokenImplementation;
     }
@@ -120,18 +120,18 @@ contract AssetDeployer is
 
     /* ========== ADMIN ========== */
 
-    /// @dev Set wrapped asset implementation contract address
+    /// @dev Set deToken implementation contract address
     /// @param _impl Wrapped asset implementation contract address.
     function setTokenImplementation(address _impl) external onlyAdmin {
         if (_impl == address(0)) revert WrongArgument();
         tokenImplementation = _impl;
     }
 
-    /// @dev Set admin for any deployed wrapped asset.
-    /// @param _wrappedAssetAdmin Admin address.
-    function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin {
-        if (_wrappedAssetAdmin == address(0)) revert WrongArgument();
-        wrappedAssetAdmin = _wrappedAssetAdmin;
+    /// @dev Set admin for any deployed deToken.
+    /// @param _deTokenAdmin Admin address.
+    function setDeTokenAdmin(address _deTokenAdmin) external onlyAdmin {
+        if (_deTokenAdmin == address(0)) revert WrongArgument();
+        deTokenAdmin = _deTokenAdmin;
     }
 
     /// @dev Sets core debridge conrtact address.

@@ -29,8 +29,6 @@ contract("ConfirmationAggregator", function () {
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
-    //     address _debridgeAddress
     // )
 
     this.aggregator = await upgrades.deployProxy(ConfirmationAggregator, [

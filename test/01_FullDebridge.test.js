@@ -2,7 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAssetImplementation");
+const DeToken = artifacts.require("DeToken");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
@@ -40,8 +40,8 @@ contract("DeBridgeGate full mode", function () {
     this.WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
     this.DeBridgeGate = await ethers.getContractFactory("MockDeBridgeGate", alice);
     this.CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
-    this.WrappedAssetImplementationFactory = await ethers.getContractFactory("WrappedAssetImplementation", alice);
-    this.AssetDeployerFactory = await ethers.getContractFactory("AssetDeployer", alice);
+    this.DeTokenFactory = await ethers.getContractFactory("DeToken", alice);
+    this.DeTokenDeployerFactory = await ethers.getContractFactory("DeTokenDeployer", alice);
   });
 
   beforeEach(async function () {
@@ -50,12 +50,12 @@ contract("DeBridgeGate full mode", function () {
     //-------Deploy weth contracts
     this.weth = await this.WETH9Factory.deploy();
     // deploy wrapped asset implementation
-    this.wrappedAssetImplementation = await this.WrappedAssetImplementationFactory.deploy();
+    this.deTokenImplementation = await this.DeTokenFactory.deploy();
     // deploy asset deployer
-    this.assetDeployer = await upgrades.deployProxy(
-      this.AssetDeployerFactory,
+    this.deTokenDeployer = await upgrades.deployProxy(
+      this.DeTokenDeployerFactory,
       [
-        this.wrappedAssetImplementation.address,
+        this.deTokenImplementation.address,
         alice.address,
         ZERO_ADDRESS,
       ]);
@@ -69,7 +69,7 @@ contract("DeBridgeGate full mode", function () {
         this.callProxy.address,
         this.weth.address,
         ZERO_ADDRESS,
-        this.assetDeployer.address,
+        this.deTokenDeployer.address,
         ZERO_ADDRESS,
         1, //overrideChainId
       ],
@@ -96,7 +96,7 @@ contract("DeBridgeGate full mode", function () {
       ]
     );
 
-    await this.assetDeployer.setDebridgeAddress(this.debridge.address);
+    await this.deTokenDeployer.setDebridgeAddress(this.debridge.address);
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
@@ -764,8 +764,8 @@ contract("DeBridgeGate full mode", function () {
                           from: alice.address,
                         });
                       const debridge = await this.debridge.getDebridge(debridgeId);
-                      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-                      const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
+                      const deToken = await DeToken.at(debridge.tokenAddress);
+                      const newBalance = toBN(await deToken.balanceOf(receiver));
                       const submissionId = await this.debridge.getSubmissionId(
                         debridgeId,
                         chainId,
@@ -833,11 +833,11 @@ contract("DeBridgeGate full mode", function () {
                           const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             debridgeId
                           );
-                          const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-                          const balance = toBN(await wrappedAsset.balanceOf(bob.address));
+                          const deToken = await DeToken.at(debridge.tokenAddress);
+                          const balance = toBN(await deToken.balanceOf(bob.address));
                           const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
                           const permitParameter = await permitWithDeadline(
-                            wrappedAsset,
+                            deToken,
                             bob.address,
                             this.debridge.address,
                             amount,
@@ -867,7 +867,7 @@ contract("DeBridgeGate full mode", function () {
                           const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             this.nativeDebridgeId
                           );
-                          const newBalance = toBN(await wrappedAsset.balanceOf(bob.address));
+                          const newBalance = toBN(await deToken.balanceOf(bob.address));
                           expect(balance.sub(amount)).to.equal(newBalance);
                           const newDebridge = await this.debridge.getDebridge(debridgeId);
                           const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
@@ -896,11 +896,11 @@ contract("DeBridgeGate full mode", function () {
                             debridgeId
                           );
 
-                          const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-                          const balance = toBN(await wrappedAsset.balanceOf(bob.address));
+                          const deToken = await DeToken.at(debridge.tokenAddress);
+                          const balance = toBN(await deToken.balanceOf(bob.address));
                           const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
                           const permitParameter = await permitWithDeadline(
-                            wrappedAsset,
+                            deToken,
                             bob.address,
                             this.debridge.address,
                             amount,
@@ -932,7 +932,7 @@ contract("DeBridgeGate full mode", function () {
                           const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             this.nativeDebridgeId
                           );
-                          const newBalance = toBN(await wrappedAsset.balanceOf(bob.address));
+                          const newBalance = toBN(await deToken.balanceOf(bob.address));
                           expect(balance.sub(amount)).to.equal(newBalance);
                           const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             debridgeId

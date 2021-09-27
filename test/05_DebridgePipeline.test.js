@@ -2,7 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAssetImplementation");
+const DeToken = artifacts.require("DeToken");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
@@ -73,8 +73,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       alice
     );
 
-    const WrappedAssetImplementationFactory = await ethers.getContractFactory("WrappedAssetImplementation", alice);
-    const AssetDeployerFactory = await ethers.getContractFactory("AssetDeployer", alice);
+    const DeTokenFactory = await ethers.getContractFactory("DeToken", alice);
+    const DeTokenDeployerFactory = await ethers.getContractFactory("DeTokenDeployer", alice);
     const ConfirmationAggregatorFactory = await ethers.getContractFactory(
       "ConfirmationAggregator",
       alice
@@ -170,8 +170,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
-    //     address _debridgeAddress
     // )
     this.confirmationAggregatorBSC = await upgrades.deployProxy(ConfirmationAggregatorFactory, [
       this.minConfirmations,
@@ -198,29 +196,29 @@ contract("DeBridgeGate real pipeline mode", function () {
     await this.signatureVerifierETH.deployed();
 
     // deploy token implementations
-    this.wrappedAssetImplementationETH = await WrappedAssetImplementationFactory.deploy();
-    this.wrappedAssetImplementationBSC = await WrappedAssetImplementationFactory.deploy();
-    this.wrappedAssetImplementationHECO = await WrappedAssetImplementationFactory.deploy();
+    this.deTokenETH = await DeTokenFactory.deploy();
+    this.deTokenBSC = await DeTokenFactory.deploy();
+    this.deTokenHECO = await DeTokenFactory.deploy();
 
-    // deploy AssetDeployer contracts
-    this.assetDeployerETH = await upgrades.deployProxy(
-      AssetDeployerFactory,
+    // deploy DeTokenDeployer contracts
+    this.deTokenDeployerETH = await upgrades.deployProxy(
+      DeTokenDeployerFactory,
       [
-        this.wrappedAssetImplementationETH.address,
+        this.deTokenETH.address,
         alice,
         ZERO_ADDRESS,
       ]);
-    this.assetDeployerBSC = await upgrades.deployProxy(
-      AssetDeployerFactory,
+    this.deTokenDeployerBSC = await upgrades.deployProxy(
+      DeTokenDeployerFactory,
       [
-        this.wrappedAssetImplementationBSC.address,
+        this.deTokenBSC.address,
         alice,
         ZERO_ADDRESS,
       ]);
-    this.assetDeployerHECO = await upgrades.deployProxy(
-      AssetDeployerFactory,
+    this.deTokenDeployerHECO = await upgrades.deployProxy(
+      DeTokenDeployerFactory,
       [
-        this.wrappedAssetImplementationHECO.address,
+        this.deTokenHECO.address,
         alice,
         ZERO_ADDRESS,
       ]);
@@ -244,7 +242,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.callProxy.address.toString(),
         this.wethETH.address,
         this.feeProxyETH.address,
-        this.assetDeployerETH.address,
+        this.deTokenDeployerETH.address,
         this.defiControllerETH.address,
         ethChainId, //overrideChainId
       ],
@@ -262,7 +260,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.callProxy.address.toString(),
         this.wethBSC.address,
         this.feeProxyBSC.address,
-        this.assetDeployerBSC.address,
+        this.deTokenDeployerBSC.address,
         ZERO_ADDRESS,
         bscChainId, //overrideChainId
       ],
@@ -281,7 +279,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.callProxy.address.toString(),
         this.wethHECO.address,
         this.feeProxyHECO.address,
-        this.assetDeployerHECO.address,
+        this.deTokenDeployerHECO.address,
         ZERO_ADDRESS,
         hecoChainId, //overrideChainId
       ],
@@ -340,9 +338,9 @@ contract("DeBridgeGate real pipeline mode", function () {
     )
 
     // set debridge address
-    await this.assetDeployerETH.setDebridgeAddress(this.debridgeETH.address);
-    await this.assetDeployerBSC.setDebridgeAddress(this.debridgeBSC.address);
-    await this.assetDeployerHECO.setDebridgeAddress(this.debridgeHECO.address);
+    await this.deTokenDeployerETH.setDebridgeAddress(this.debridgeETH.address);
+    await this.deTokenDeployerBSC.setDebridgeAddress(this.debridgeBSC.address);
+    await this.deTokenDeployerHECO.setDebridgeAddress(this.debridgeHECO.address);
 
     await this.signatureVerifierETH.setDebridgeAddress(this.debridgeETH.address);
 
@@ -1176,8 +1174,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       );
       const debridgeInfo = await this.debridgeBSC.getDebridge(this.debridgeWethId);
-      const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-      const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
+      const deToken = await DeToken.at(debridgeInfo.tokenAddress);
+      const newBalance = toBN(await deToken.balanceOf(receiver));
 
       const submissionId = await this.debridgeBSC.getSubmissionId(
         this.debridgeWethId,
@@ -1225,8 +1223,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       );
       const debridgeInfo = await this.debridgeBSC.getDebridge(this.linkDebridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-      const newBalance = toBN(await wrappedAsset.balanceOf(this.linkSubmission.args.receiver));
+      const deToken = await DeToken.at(debridgeInfo.tokenAddress);
+      const newBalance = toBN(await deToken.balanceOf(this.linkSubmission.args.receiver));
       const submissionId = await this.debridgeBSC.getSubmissionId(
         this.linkDebridgeId,
         ethChainId,
@@ -1301,11 +1299,11 @@ contract("DeBridgeGate real pipeline mode", function () {
           const amount = toBN(toWei("1"));
           const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
           const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-          const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-          const balance = toBN(await wrappedAsset.balanceOf(bob));
+          const deToken = await DeToken.at(debridgeInfo.tokenAddress);
+          const balance = toBN(await deToken.balanceOf(bob));
           const supportedChainInfo = await this.debridgeBSC.getChainSupport(chainIdTo);
           const permitParameter = await permitWithDeadline(
-            wrappedAsset,
+            deToken,
             bob,
             this.debridgeBSC.address,
             amount,
@@ -1342,7 +1340,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           const newNativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
             nativeBSCDebridgeId
           );
-          const newBalance = toBN(await wrappedAsset.balanceOf(bob));
+          const newBalance = toBN(await deToken.balanceOf(bob));
           assert.equal(balance.sub(amount).toString(), newBalance.toString());
           const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
@@ -1384,7 +1382,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("0.1"));
         const debridgeId = this.debridgeWethId;
         const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
-        const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
+        const deToken = await DeToken.at(debridgeInfo.tokenAddress);
         const supportedChainInfo = await this.debridgeBSC.getChainSupport(ethChainId);
         let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
         fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
@@ -1392,7 +1390,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
         for (const receiver of this.non_evm_receivers) {
           const permitParameter = await permitWithDeadline(
-            wrappedAsset,
+            deToken,
             bob,
             this.debridgeBSC.address,
             amount,
@@ -1785,8 +1783,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         await this.debridgeHECO.confirmationAggregator()
       );
       const debridgeInfo = await this.debridgeHECO.getDebridge(this.debridgeWethBSCId);
-      const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-      const newBalance = toBN(await wrappedAsset.balanceOf(this.nativeSubmission.args.receiver));
+      const deToken = await DeToken.at(debridgeInfo.tokenAddress);
+      const newBalance = toBN(await deToken.balanceOf(this.nativeSubmission.args.receiver));
 
       const submissionId = await this.debridgeHECO.getSubmissionId(
         this.debridgeWethBSCId,
@@ -1832,8 +1830,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       let receipt = await mintTx.wait();
 
       const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-      const newBalance = toBN(await wrappedAsset.balanceOf(this.cakeSubmission.args.receiver));
+      const deToken = await DeToken.at(debridgeInfo.tokenAddress);
+      const newBalance = toBN(await deToken.balanceOf(this.cakeSubmission.args.receiver));
       const submissionId = await this.debridgeHECO.getSubmissionId(
         this.cakeDebridgeId,
         bscChainId,
@@ -1853,12 +1851,12 @@ contract("DeBridgeGate real pipeline mode", function () {
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const debridgeInfo = await this.debridgeHECO.getDebridge(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridgeInfo.tokenAddress);
-      const balance = toBN(await wrappedAsset.balanceOf(bob));
+      const deToken = await DeToken.at(debridgeInfo.tokenAddress);
+      const balance = toBN(await deToken.balanceOf(bob));
       // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
       const supportedChainInfo = await this.debridgeHECO.getChainSupport(chainIdTo);
       const permitParameter = await permitWithDeadline(
-        wrappedAsset,
+        deToken,
         bob,
         this.debridgeHECO.address,
         amount,
@@ -1880,7 +1878,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           value: fixedNativeFeeWithDiscount,
         }
       );
-      const newBalance = toBN(await wrappedAsset.balanceOf(bob));
+      const newBalance = toBN(await deToken.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
     });
   });
@@ -1934,8 +1932,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       const BSCPool_DeLINK_BNB = await IUniswapV2Pair.at(BSCPoolAddres_DeLINK_BNB);
       const ETHPool_LINK_ETH = await IUniswapV2Pair.at(ETHPoolAddres_LINK_ETH);
 
-      this.deLinkToken = await WrappedAsset.at(debridgeInfoDeLink.tokenAddress);
-      this.deETHToken = await WrappedAsset.at(debridgeInfoDeETH.tokenAddress);
+      this.deLinkToken = await DeToken.at(debridgeInfoDeLink.tokenAddress);
+      this.deETHToken = await DeToken.at(debridgeInfoDeETH.tokenAddress);
 
       //Ethereum network
       await this.deETHToken.grantRole(await this.deETHToken.MINTER_ROLE(), alice, {

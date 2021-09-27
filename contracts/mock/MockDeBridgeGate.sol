@@ -18,7 +18,7 @@ contract MockDeBridgeGate is DeBridgeGate {
         address _callProxy,
         IWETH _weth,
         address _feeProxy,
-        address _assetDeployer,
+        address _deTokenDeployer,
         address _defiController,
         uint256 overrideChainId
     ) public initializer {
@@ -48,7 +48,7 @@ contract MockDeBridgeGate is DeBridgeGate {
 
         weth = _weth;
         feeProxy = _feeProxy;
-        assetDeployer = _assetDeployer;
+        deTokenDeployer = _deTokenDeployer;
 
         flashFeeBps = 10;
     }

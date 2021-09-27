@@ -3,9 +3,9 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "../interfaces/IWrappedAsset.sol";
+import "../interfaces/IDeToken.sol";
 
-contract WrappedAssetImplementation is ERC20Upgradeable, AccessControlUpgradeable, IWrappedAsset {
+contract DeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeToken {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); // minter role identifier
     bytes32 public DOMAIN_SEPARATOR;
     // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
@@ -118,4 +118,12 @@ contract WrappedAssetImplementation is ERC20Upgradeable, AccessControlUpgradeabl
     function decimals() public view override returns (uint8) {
         return _decimals;
     }
+
+    // function symbol() public view override returns (string memory) {
+    //     return string(abi.encodePacked("de", _symbol));
+    // }
+
+    // function name() public view override returns (string memory) {
+    //     return string(abi.encodePacked(_name, " (deBridge)"));
+    // }
 }

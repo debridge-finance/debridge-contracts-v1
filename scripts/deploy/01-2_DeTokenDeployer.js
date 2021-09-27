@@ -7,14 +7,14 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const wrappedAssetImplementation = (await deployments.get("WrappedAssetImplementation")).address
-  await deployProxy("AssetDeployer", deployer,
+  const deToken = (await deployments.get("DeToken")).address
+  await deployProxy("DeTokenDeployer", deployer,
     [
-      wrappedAssetImplementation,
-      deployInitParams.wrappedAssetAdmin,
+      deToken,
+      deployInitParams.deTokenAdmin,
       ethers.constants.AddressZero,
     ],
     true);
 };
 
-module.exports.tags = ["01-2_AssetDeployer"]
+module.exports.tags = ["01-2_DeTokenDeployer"]
