@@ -529,12 +529,14 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        packSubmissionAutoParamsFrom(
-          claimFee,
-          zeroFlag,
-          reserveAddress,
-          data,
-          nativeSender),
+        {
+          executionFee: claimFee,
+          flags: zeroFlag,
+          fallbackAddress: reserveAddress,
+          data: data,
+          nativeSender: nativeSender,
+        },
+        true
       );
 
       for (const validator of this.initialOracles) {
@@ -730,12 +732,14 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        packSubmissionAutoParamsFrom(
-          claimFee,
-          zeroFlag,
-          reserveAddress,
-          data,
-          nativeSender),
+        {
+          executionFee: claimFee,
+          flags: zeroFlag,
+          fallbackAddress: reserveAddress,
+          data: data,
+          nativeSender: nativeSender,
+        },
+        true,
       );
       for (const validator of this.initialOracles) {
         await this.confirmationAggregator.connect(validator.account).submit(currentChainSubmission);
@@ -761,12 +765,14 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        packSubmissionAutoParamsFrom(
-          claimFee,
-          zeroFlag,
-          reserveAddress,
-          data,
-          nativeSender)
+        {
+          executionFee: claimFee,
+          flags: zeroFlag,
+          fallbackAddress: reserveAddress,
+          data: data,
+          nativeSender: nativeSender,
+        },
+        true,
       );
       for (const validator of this.initialOracles) {
         await this.confirmationAggregator.connect(validator.account).submit(erc20Submission);
@@ -808,12 +814,14 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        packSubmissionAutoParamsFrom(
-          claimFee,
-          zeroFlag,
-          reserveAddress,
-          data,
-          nativeSender),
+        {
+          executionFee: claimFee,
+          flags: zeroFlag,
+          fallbackAddress: reserveAddress,
+          data: data,
+          nativeSender: nativeSender,
+        },
+        true,
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(submissionId);
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.wethDebridgeId);
@@ -848,12 +856,14 @@ contract("DeBridgeGate full with auto", function () {
         amount,
         receiver,
         nonce,
-        packSubmissionAutoParamsFrom(
-          claimFee,
-          zeroFlag,
-          reserveAddress,
-          data,
-          nativeSender),
+        {
+          executionFee: claimFee,
+          flags: zeroFlag,
+          fallbackAddress: reserveAddress,
+          data: data,
+          nativeSender: nativeSender,
+        },
+        true,
       );
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(submissionId);
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(erc20DebridgeId);

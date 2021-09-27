@@ -76,6 +76,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         address[] memory _oracles,
         bool[] memory _required
     ) external onlyAdmin {
+        if (_oracles.length != _required.length) revert WrongArgument();
         if (minConfirmations < (oracleAddresses.length +  _oracles.length) / 2 + 1) revert LowMinConfirmations();
 
         for (uint256 i = 0; i < _oracles.length; i++) {

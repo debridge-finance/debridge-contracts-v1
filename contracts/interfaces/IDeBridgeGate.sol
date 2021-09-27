@@ -45,7 +45,7 @@ interface IDeBridgeGate {
     /// @param fallbackAddress Receiver of the tokens if the call fails.
     struct SubmissionAutoParamsTo {
         uint256 executionFee;
-        uint8 reservedFlag;
+        uint256 flags;
         bytes fallbackAddress;
         bytes data;
     }
@@ -54,7 +54,7 @@ interface IDeBridgeGate {
     /// @param fallbackAddress Receiver of the tokens if the call fails.
     struct SubmissionAutoParamsFrom {
         uint256 executionFee;
-        uint8 reservedFlag;
+        uint256 flags;
         address fallbackAddress;
         bytes data;
         bytes nativeSender;
@@ -208,7 +208,11 @@ interface IDeBridgeGate {
     event ChainSupportUpdated(uint256 chainId, bool isSupported); // Emits when the asset is allowed/disallowed to be transferred to the chain.
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
     event CallProxyUpdated(uint256 version, address callProxy); // emited when the new call proxy set
-    event AutoRequestExecuted(bytes32 submissionId, bool success); // emited when the new call proxy set
+    event AutoRequestExecuted(
+        bytes32 submissionId,
+        bool indexed success,
+        address callProxy
+    ); // emited when the new call proxy set
 
     event Blocked(bytes32 submissionId); //Block submission
     event Unblocked(bytes32 submissionId); //UnBlock submission
