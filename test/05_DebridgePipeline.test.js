@@ -2,7 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAsset");
+const WrappedAsset = artifacts.require("WrappedAssetImplementation");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
@@ -73,6 +73,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       alice
     );
 
+    const WrappedAssetImplementationFactory = await ethers.getContractFactory("WrappedAssetImplementation", alice);
+    const AssetDeployerFactory = await ethers.getContractFactory("AssetDeployer", alice);
     const ConfirmationAggregatorFactory = await ethers.getContractFactory(
       "ConfirmationAggregator",
       alice
@@ -95,10 +97,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     }
 
     this.minConfirmations = Math.floor(this.initialOracles.length/2) + 1;
-
-    console.log("minConfirmations: "+this.minConfirmations);
-    console.log("oracle keys: "+ oracleKeys.length)
-
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
@@ -179,8 +177,6 @@ contract("DeBridgeGate real pipeline mode", function () {
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
 
     await this.confirmationAggregatorBSC.deployed();
@@ -189,8 +185,6 @@ contract("DeBridgeGate real pipeline mode", function () {
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
 
     await this.confirmationAggregatorHECO.deployed();
@@ -199,10 +193,37 @@ contract("DeBridgeGate real pipeline mode", function () {
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifierETH.deployed();
+
+    // deploy token implementations
+    this.wrappedAssetImplementationETH = await WrappedAssetImplementationFactory.deploy();
+    this.wrappedAssetImplementationBSC = await WrappedAssetImplementationFactory.deploy();
+    this.wrappedAssetImplementationHECO = await WrappedAssetImplementationFactory.deploy();
+
+    // deploy AssetDeployer contracts
+    this.assetDeployerETH = await upgrades.deployProxy(
+      AssetDeployerFactory,
+      [
+        this.wrappedAssetImplementationETH.address,
+        alice,
+        ZERO_ADDRESS,
+      ]);
+    this.assetDeployerBSC = await upgrades.deployProxy(
+      AssetDeployerFactory,
+      [
+        this.wrappedAssetImplementationBSC.address,
+        alice,
+        ZERO_ADDRESS,
+      ]);
+    this.assetDeployerHECO = await upgrades.deployProxy(
+      AssetDeployerFactory,
+      [
+        this.wrappedAssetImplementationHECO.address,
+        alice,
+        ZERO_ADDRESS,
+      ]);
 
     //-------Deploy DebridgeGate contracts
     //   function initialize(
@@ -223,6 +244,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.callProxy.address.toString(),
         this.wethETH.address,
         this.feeProxyETH.address,
+        this.assetDeployerETH.address,
         this.defiControllerETH.address,
         ethChainId, //overrideChainId
       ],
@@ -231,7 +253,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         kind: "transparent",
       }
     );
-
     this.debridgeBSC = await upgrades.deployProxy(
       DeBridgeGateFactory,
       [
@@ -241,6 +262,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.callProxy.address.toString(),
         this.wethBSC.address,
         this.feeProxyBSC.address,
+        this.assetDeployerBSC.address,
         ZERO_ADDRESS,
         bscChainId, //overrideChainId
       ],
@@ -259,6 +281,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.callProxy.address.toString(),
         this.wethHECO.address,
         this.feeProxyHECO.address,
+        this.assetDeployerHECO.address,
         ZERO_ADDRESS,
         hecoChainId, //overrideChainId
       ],
@@ -315,6 +338,12 @@ contract("DeBridgeGate real pipeline mode", function () {
         },
       ]
     )
+
+    // set debridge address
+    await this.assetDeployerETH.setDebridgeAddress(this.debridgeETH.address);
+    await this.assetDeployerBSC.setDebridgeAddress(this.debridgeBSC.address);
+    await this.assetDeployerHECO.setDebridgeAddress(this.debridgeHECO.address);
+
     await this.signatureVerifierETH.setDebridgeAddress(this.debridgeETH.address);
 
     this.linkDebridgeId = await this.debridgeETH.getDebridgeId(ethChainId, this.linkToken.address);
@@ -373,10 +402,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.confirmationAggregatorHECO.address,
         await this.debridgeHECO.confirmationAggregator()
       );
-
-      // assert.equal(ZERO_ADDRESS, await this.confirmationAggregatorETH.debridgeAddress());
-      assert.equal(ZERO_ADDRESS, await this.confirmationAggregatorBSC.debridgeAddress());
-      assert.equal(ZERO_ADDRESS, await this.confirmationAggregatorHECO.debridgeAddress());
 
       assert.equal(ZERO_ADDRESS, await this.feeProxyETH.debridgeGate());
       assert.equal(ZERO_ADDRESS, await this.feeProxyBSC.debridgeGate());
@@ -474,22 +499,6 @@ contract("DeBridgeGate real pipeline mode", function () {
       //Return to ZERO_ADDRESS
       await this.debridgeETH.setAggregator(ZERO_ADDRESS);
       assert.equal(ZERO_ADDRESS, await this.debridgeETH.confirmationAggregator());
-    });
-
-    it("should set debridgeGate to confirmationAggregator if called by the admin", async function () {
-      await this.confirmationAggregatorBSC.setDebridgeAddress(this.debridgeBSC.address.toString());
-      assert.equal(
-        this.debridgeBSC.address.toString(),
-        await this.confirmationAggregatorBSC.debridgeAddress()
-      );
-
-      await this.confirmationAggregatorHECO.setDebridgeAddress(
-        this.debridgeHECO.address.toString()
-      );
-      assert.equal(
-        this.debridgeHECO.address.toString(),
-        await this.confirmationAggregatorHECO.debridgeAddress()
-      );
     });
 
     it("should set debridgeGate to fee proxy if called by the admin", async function () {
@@ -621,7 +630,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           .confirmNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18);
       }
 
-      //Deploy tokens
+      // Deploy tokens
       await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
       await this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []);
       await this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []);

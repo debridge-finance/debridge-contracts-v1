@@ -13,7 +13,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     //     uint8 _minConfirmations,
     //     uint8 _confirmationThreshold,
     //     uint8 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
     //     address _debridgeAddress
     // )
 
@@ -22,7 +21,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
       deployInitParams.minConfirmations,
       deployInitParams.confirmationThreshold,
       deployInitParams.excessConfirmations,
-      deployInitParams.wrappedAssetAdmin,
       ethers.constants.AddressZero
     ], true);
 

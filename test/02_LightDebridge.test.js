@@ -4,7 +4,7 @@ const { permitWithDeadline } = require("./utils.spec");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAsset");
+const WrappedAsset = artifacts.require("WrappedAssetImplementation");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
 const MAX = web3.utils.toTwosComplement(-1);
@@ -77,8 +77,6 @@ contract("DeBridgeGate light mode", function () {
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
 
     await this.confirmationAggregator.deployed();
@@ -93,7 +91,6 @@ contract("DeBridgeGate light mode", function () {
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifier.deployed();
@@ -149,6 +146,17 @@ contract("DeBridgeGate light mode", function () {
     //     IDefiController _defiController,
     // )
 
+    const WrappedAssetImplementationFactory = await ethers.getContractFactory("WrappedAssetImplementation", alice);
+    const wrappedAssetImplementation = await WrappedAssetImplementationFactory.deploy();
+    const AssetDeployerFactory = await ethers.getContractFactory("AssetDeployer", alice);
+    const assetDeployer = await upgrades.deployProxy(
+      AssetDeployerFactory,
+      [
+        wrappedAssetImplementation.address,
+        alice,
+        ZERO_ADDRESS,
+      ]);
+
     this.debridge = await upgrades.deployProxy(
       Debridge,
       [
@@ -158,6 +166,7 @@ contract("DeBridgeGate light mode", function () {
         this.callProxy.address.toString(),
         this.weth.address,
         ZERO_ADDRESS,
+        assetDeployer.address,
         ZERO_ADDRESS,
         1, //overrideChainId
       ],
@@ -188,6 +197,7 @@ contract("DeBridgeGate light mode", function () {
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
+    await assetDeployer.setDebridgeAddress(this.debridge.address);
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);

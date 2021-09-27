@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "../interfaces/IAssetDeployer.sol";
 import "../interfaces/IWrappedAsset.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IWETH.sol";
@@ -36,6 +37,7 @@ contract DeBridgeGate is
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
     uint256 public constant PROXY_WITH_SENDER_FLAG = 100; //Flag to call proxy with sender contract
 
+    address public assetDeployer;
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
@@ -126,6 +128,7 @@ contract DeBridgeGate is
         address _callProxy,
         IWETH _weth,
         address _feeProxy,
+        address _assetDeployer,
         address _defiController
     ) public initializer {
         _addAsset(
@@ -144,6 +147,7 @@ contract DeBridgeGate is
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         weth = _weth;
+        assetDeployer = _assetDeployer;
         feeProxy = _feeProxy;
     }
 
@@ -389,28 +393,24 @@ contract DeBridgeGate is
     ) external {
         //TODO: add test that debridgeId are the same like getDebridgeId
         bytes32 debridgeId = keccak256(abi.encodePacked(_nativeChainId, _nativeTokenAddress)); //getDebridgeId(_nativeChainId, _tokenAddress);
+
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
         if(_signatures.length > 0){
+            // TODO: get from getDeployId
             bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
-            //TODO: get from getDeployId
-            //getDeployId(debridgeId, _name, _symbol, _decimals);
-            //verify signatures
+
+            // verify signatures
             ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
-            //Deploy assets
-            address wrappedAssetAddress = ISignatureVerifier(signatureVerifier)
-                .deployAsset(debridgeId,  _name, _symbol, _decimals);
-            _addAsset(debridgeId, wrappedAssetAddress, _nativeTokenAddress, _nativeChainId);
         }
         else {
-            (
-                address wrappedAssetAddress,
-                bytes memory nativeAddress,
-                uint256 nativeChainId
-            ) = IConfirmationAggregator(confirmationAggregator).deployAsset(debridgeId);
-            if (wrappedAssetAddress == address(0)) revert WrappedAssetNotFound();
-                _addAsset(debridgeId, wrappedAssetAddress, nativeAddress, nativeChainId);
+            IConfirmationAggregator(confirmationAggregator).confirmNewAssetDeploy(debridgeId);
         }
+
+        address wrappedAssetAddress = IAssetDeployer(assetDeployer)
+            .deployAsset(debridgeId, _name, _symbol, _decimals);
+
+        _addAsset(debridgeId, wrappedAssetAddress, _nativeTokenAddress, _nativeChainId);
     }
 
     // /// @dev Calculates asset identifier.
@@ -422,7 +422,6 @@ contract DeBridgeGate is
     // ) public pure returns (bytes32) {
     //     return keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
     // }
-
 
     /* ========== ADMIN ========== */
 
@@ -501,6 +500,12 @@ contract DeBridgeGate is
     /// @param _verifier Signature verifier address.
     function setSignatureVerifier(address _verifier) external onlyAdmin {
         signatureVerifier = _verifier;
+    }
+
+    /// @dev Set asset deployer address.
+    /// @param _assetDeployer Asset deployer address.
+    function setAssetDeployer(address _assetDeployer) external onlyAdmin {
+        assetDeployer = _assetDeployer;
     }
 
     /// @dev Set defi controoler.

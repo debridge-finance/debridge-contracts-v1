@@ -2,7 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { permitWithDeadline } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAsset");
+const WrappedAsset = artifacts.require("WrappedAssetImplementation");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
@@ -40,6 +40,8 @@ contract("DeBridgeGate full mode", function () {
     this.WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
     this.DeBridgeGate = await ethers.getContractFactory("MockDeBridgeGate", alice);
     this.CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
+    this.WrappedAssetImplementationFactory = await ethers.getContractFactory("WrappedAssetImplementation", alice);
+    this.AssetDeployerFactory = await ethers.getContractFactory("AssetDeployer", alice);
   });
 
   beforeEach(async function () {
@@ -47,6 +49,16 @@ contract("DeBridgeGate full mode", function () {
 
     //-------Deploy weth contracts
     this.weth = await this.WETH9Factory.deploy();
+    // deploy wrapped asset implementation
+    this.wrappedAssetImplementation = await this.WrappedAssetImplementationFactory.deploy();
+    // deploy asset deployer
+    this.assetDeployer = await upgrades.deployProxy(
+      this.AssetDeployerFactory,
+      [
+        this.wrappedAssetImplementation.address,
+        alice.address,
+        ZERO_ADDRESS,
+      ]);
 
     this.debridge = await upgrades.deployProxy(
       this.DeBridgeGate,
@@ -57,6 +69,7 @@ contract("DeBridgeGate full mode", function () {
         this.callProxy.address,
         this.weth.address,
         ZERO_ADDRESS,
+        this.assetDeployer.address,
         ZERO_ADDRESS,
         1, //overrideChainId
       ],
@@ -82,6 +95,8 @@ contract("DeBridgeGate full mode", function () {
         },
       ]
     );
+
+    await this.assetDeployer.setDebridgeAddress(this.debridge.address);
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
@@ -450,20 +465,16 @@ contract("DeBridgeGate full mode", function () {
               this.minConfirmations,
               this.confirmationThreshold,
               excessConfirmations,
-              alice.address,
-              ZERO_ADDRESS,
             ]);
 
             await this.confirmationAggregator.deployed();
-
-            await this.confirmationAggregator.setDebridgeAddress(this.debridge.address);
             await this.debridge.setAggregator(this.confirmationAggregator.address);
           });
 
           it("debridge and aggregator are linked together", async function () {
-            expect(this.debridge.address).to.equal(
-              await this.confirmationAggregator.debridgeAddress()
-            );
+            // expect(this.debridge.address).to.equal(
+            //   await this.confirmationAggregator.debridgeAddress()
+            // );
             expect(await this.debridge.confirmationAggregator()).to.equal(
               this.confirmationAggregator.address
             );

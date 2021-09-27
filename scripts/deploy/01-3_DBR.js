@@ -15,7 +15,8 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // )
 
   if (deployInitParams.deploy.DBR) {
-    await deploy("WrappedAsset", {
+    // TODO: fix deploying DBR token
+    await deploy("WrappedAssetProxy", {
       from: deployer,
       args: [
         "Debridge token",
@@ -30,4 +31,4 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   }
 };
 
-module.exports.tags = ["01_DBR"]
+module.exports.tags = ["01-3_DBR"]

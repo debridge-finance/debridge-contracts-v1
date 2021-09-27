@@ -26,13 +26,4 @@ interface ISignatureVerifier {
         uint8 _excessConfirmations
     ) external;
 
-    function deployAsset(
-        bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals)
-        external
-        returns (
-            address wrappedAssetAddress
-        );
 }

@@ -2,7 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { permitWithDeadline, packSubmissionAutoParamsFrom, packSubmissionAutoParamsTo } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAsset");
+const WrappedAsset = artifacts.require("WrappedAssetImplementation");
 const FeeProxy = artifacts.require("FeeProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 
@@ -86,8 +86,6 @@ contract("DeBridgeGate full with auto", function () {
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
 
     await this.confirmationAggregator.deployed();
@@ -143,6 +141,17 @@ contract("DeBridgeGate full with auto", function () {
     //     IDefiController _defiController,
     // )
 
+    const WrappedAssetImplementationFactory = await ethers.getContractFactory("WrappedAssetImplementation", alice);
+    const wrappedAssetImplementation = await WrappedAssetImplementationFactory.deploy();
+    const AssetDeployerFactory = await ethers.getContractFactory("AssetDeployer", alice);
+    const assetDeployer = await upgrades.deployProxy(
+      AssetDeployerFactory,
+      [
+        wrappedAssetImplementation.address,
+        alice,
+        ZERO_ADDRESS,
+      ]);
+
     this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
       ZERO_ADDRESS,
@@ -150,6 +159,7 @@ contract("DeBridgeGate full with auto", function () {
       this.callProxy.address.toString(),
       this.weth.address,
       ZERO_ADDRESS,
+      assetDeployer.address,
       ZERO_ADDRESS,
     ]);
     await this.debridge.deployed();
@@ -172,7 +182,7 @@ contract("DeBridgeGate full with auto", function () {
 
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
-    await this.confirmationAggregator.setDebridgeAddress(this.debridge.address.toString());
+    await assetDeployer.setDebridgeAddress(this.debridge.address);
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);

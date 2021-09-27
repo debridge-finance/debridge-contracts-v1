@@ -4,10 +4,15 @@ pragma solidity 0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
+import "../interfaces/IAssetDeployer.sol";
 import "../periphery/WrappedAssetProxy.sol";
 import "../periphery/WrappedAssetImplementation.sol";
 
-contract AssetDeployer is Initializable, AccessControlUpgradeable {
+contract AssetDeployer is
+    Initializable,
+    AccessControlUpgradeable,
+    IAssetDeployer
+{
 
     /* ========== STATE VARIABLES ========== */
 
@@ -18,12 +23,8 @@ contract AssetDeployer is Initializable, AccessControlUpgradeable {
     // Debridge gate address
     address public debridgeAddress;
     // debridge id => wrapped asset address
-    mapping(bytes32 => address) public getWrappedAssetAddress;
+    mapping(bytes32 => address) public getDeployedAssetAddress;
 
-
-    /* ========== EVENTS ========== */
-
-    event WrappedAssetDeployed(address asset);
 
     /* ========== ERRORS ========== */
 
@@ -64,20 +65,15 @@ contract AssetDeployer is Initializable, AccessControlUpgradeable {
 
     function deployAsset(
         bytes32 _debridgeId,
-        // bytes memory _nativeTokenAddress,
-        // uint256 _nativeChainId,
         string memory _name,
         string memory _symbol,
         uint8 _decimals)
         external
+        override
         onlyDeBridgeGate
-        returns (
-            address wrappedAssetAddress
-            // bytes memory nativeAddress,
-            // uint256 nativeChainId
-        )
+        returns (address wrappedAssetAddress)
     {
-        if (getWrappedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
+        if (getDeployedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
 
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
@@ -107,8 +103,13 @@ contract AssetDeployer is Initializable, AccessControlUpgradeable {
             }
         }
 
-        getWrappedAssetAddress[_debridgeId] = wrappedAssetAddress;
-        emit WrappedAssetDeployed(wrappedAssetAddress);
+        getDeployedAssetAddress[_debridgeId] = wrappedAssetAddress;
+        emit WrappedAssetDeployed(
+            wrappedAssetAddress,
+            _name,
+            _symbol,
+            _decimals
+        );
     }
 
     // Beacon getter for the wrapped asset contracts
@@ -119,11 +120,15 @@ contract AssetDeployer is Initializable, AccessControlUpgradeable {
 
     /* ========== ADMIN ========== */
 
+    /// @dev Set wrapped asset implementation contract address
+    /// @param _impl Wrapped asset implementation contract address.
     function setTokenImplementation(address _impl) external onlyAdmin {
         if (_impl == address(0)) revert WrongArgument();
         tokenImplementation = _impl;
     }
 
+    /// @dev Set admin for any deployed wrapped asset.
+    /// @param _wrappedAssetAdmin Admin address.
     function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin {
         if (_wrappedAssetAdmin == address(0)) revert WrongArgument();
         wrappedAssetAdmin = _wrappedAssetAdmin;

@@ -18,7 +18,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     uint40 public submissionsInBlock; //submissions count in current block
     uint40 public currentBlock; //Current block
 
-    address public wrappedAssetAdmin; // admin for any deployed wrapped asset
     address public debridgeAddress; // Debridge gate address
 
     /* ========== ERRORS ========== */
@@ -45,12 +44,10 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint8 _minConfirmations,
         uint8 _confirmationThreshold,
         uint8 _excessConfirmations,
-        address _wrappedAssetAdmin,
         address _debridgeAddress
     ) public initializer {
         AggregatorBase.initializeBase(_minConfirmations, _excessConfirmations);
         confirmationThreshold = _confirmationThreshold;
-        wrappedAssetAdmin = _wrappedAssetAdmin;
         debridgeAddress = _debridgeAddress;
     }
 
@@ -101,6 +98,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             revert NotConfirmedByRequiredOracles();
 
         if (confirmations >= minConfirmations) {
+            // TODO: don't update state when verifying new asset deploy
             if (currentBlock == uint40(block.number)) {
                 submissionsInBlock += 1;
             } else {
@@ -117,50 +115,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         if (confirmations < needConfirmations) revert SubmissionNotConfirmed();
     }
 
-    /* ========== deployAsset ========== */
-
-    /// @dev deploy wrapped token, called by DeBridgeGate.
-    function deployAsset(
-        bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals)
-        external
-        override
-        onlyDeBridgeGate
-        returns (address wrappedAssetAddress)
-    {
-        address[] memory minters = new address[](1);
-        minters[0] = debridgeAddress;
-
-        //Initialize args
-        bytes memory initialisationArgs = abi.encodeWithSelector(
-            WrappedAssetImplementation.initialize.selector,
-            _name,
-            _symbol,
-            _decimals,
-            wrappedAssetAdmin,
-            minters
-        );
-
-        // initialize Proxy
-        bytes memory constructorArgs = abi.encode(address(this), initialisationArgs);
-
-        // deployment code
-        bytes memory bytecode = abi.encodePacked(type(WrappedAssetProxy).creationCode, constructorArgs);
-
-        assembly {
-            // debridgeId is a salt
-            wrappedAssetAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
-
-            if iszero(extcodesize(wrappedAssetAddress)) {
-                revert (0, 0)
-            }
-        }
-
-        return wrappedAssetAddress;
-    }
-
     /* ========== ADMIN ========== */
 
     /// @dev Sets minimal required confirmations.
@@ -168,13 +122,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     function setThreshold(uint8 _confirmationThreshold) external onlyAdmin {
         if (_confirmationThreshold == 0) revert WrongArgument();
         confirmationThreshold = _confirmationThreshold;
-    }
-
-    /// @dev Set admin for any deployed wrapped asset.
-    /// @param _wrappedAssetAdmin Admin address.
-    function setWrappedAssetAdmin(address _wrappedAssetAdmin) external onlyAdmin {
-        if (_wrappedAssetAdmin == address(0)) revert WrongArgument();
-        wrappedAssetAdmin = _wrappedAssetAdmin;
     }
 
     /// @dev Sets core debridge conrtact address.

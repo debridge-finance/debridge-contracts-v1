@@ -37,8 +37,6 @@ contract("ConfirmationAggregator", function () {
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
     this.initialOracles = [alice, bob, eve];
     await this.aggregator.deployed();
