@@ -152,7 +152,7 @@ contract DeBridgeGate is
         feeProxy = _feeProxy;
     }
 
-    /* ========== send, mint, burn, claim ========== */
+    /* ========== send, claim ========== */
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
     /// @param _tokenAddress Asset identifier.
@@ -173,10 +173,10 @@ contract DeBridgeGate is
         bytes32 debridgeId;
         // the amount will be reduced by the protocol fee
         (_amount, debridgeId) = _send(
+            _permit,
             _tokenAddress,
             _amount,
             _chainIdTo,
-            _permit,
             _useAssetFee,
             _referralCode
         );
@@ -207,106 +207,106 @@ contract DeBridgeGate is
         nonce++;
     }
 
-    /// @dev Mints wrapped asset on the current chain.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    /// @param _nonce Submission id.
-    /// @param _signatures Array of oracles signatures.
-    function mint(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes calldata _signatures,
-        bytes calldata _autoParams
-    ) external override nonReentrant whenNotPaused {
-        SubmissionAutoParamsFrom memory autoParams;
-        if (_autoParams.length > 0) {
-            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsFrom));
-        }
-        bytes32 submissionId = getSubmissionIdFrom(
-            _debridgeId,
-            _chainIdFrom,
-            _amount,
-            _receiver,
-            _nonce,
-            autoParams,
-            _autoParams.length > 0
-        );
+    // /// @dev Mints wrapped asset on the current chain.
+    // /// @param _receiver Receiver address.
+    // /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    // /// @param _nonce Submission id.
+    // /// @param _signatures Array of oracles signatures.
+    // function mint(
+    //     bytes32 _debridgeId,
+    //     uint256 _chainIdFrom,
+    //     address _receiver,
+    //     uint256 _amount,
+    //     uint256 _nonce,
+    //     bytes calldata _signatures,
+    //     bytes calldata _autoParams
+    // ) external override nonReentrant whenNotPaused {
+    //     SubmissionAutoParamsFrom memory autoParams;
+    //     if (_autoParams.length > 0) {
+    //         autoParams = abi.decode(_autoParams, (SubmissionAutoParamsFrom));
+    //     }
+    //     bytes32 submissionId = getSubmissionIdFrom(
+    //         _debridgeId,
+    //         _chainIdFrom,
+    //         _amount,
+    //         _receiver,
+    //         _nonce,
+    //         autoParams,
+    //         _autoParams.length > 0
+    //     );
 
-        _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
+    //     _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
-        _mint(
-            submissionId,
-            _debridgeId,
-            _receiver,
-            _amount,
-            autoParams
-        );
+    //     _mint(
+    //         submissionId,
+    //         _debridgeId,
+    //         _receiver,
+    //         _amount,
+    //         autoParams
+    //     );
 
-        emit Minted(
-            submissionId,
-            _debridgeId,
-            _amount,
-            _receiver,
-            _nonce,
-            _chainIdFrom,
-            autoParams
-        );
-    }
+    //     emit Minted(
+    //         submissionId,
+    //         _debridgeId,
+    //         _amount,
+    //         _receiver,
+    //         _nonce,
+    //         _chainIdFrom,
+    //         autoParams
+    //     );
+    // }
 
-    /// @dev Burns wrapped asset and allowss to claim it on the other chain.
-    /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _chainIdTo Chain id of the target chain.
-    /// @param _permit deadline + signature for approving the spender by signature.
-    function burn(
-        bytes32 _debridgeId,
-        bytes memory _receiver,
-        uint256 _amount,
-        uint256 _chainIdTo,
-        bytes memory _permit,
-        bool _useAssetFee,
-        uint32 _referralCode,
-        bytes calldata _autoParams
-    ) external payable override nonReentrant whenNotPaused {
-        // the amount will be reduced by the protocol fee
-        _amount = _burn(
-            _debridgeId,
-            _amount,
-            _chainIdTo,
-            _permit,
-            _useAssetFee,
-            _referralCode
-        );
+    // /// @dev Burns wrapped asset and allowss to claim it on the other chain.
+    // /// @param _debridgeId Asset identifier.
+    // /// @param _receiver Receiver address.
+    // /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    // /// @param _chainIdTo Chain id of the target chain.
+    // /// @param _permit deadline + signature for approving the spender by signature.
+    // function burn(
+    //     bytes32 _debridgeId,
+    //     bytes memory _receiver,
+    //     uint256 _amount,
+    //     uint256 _chainIdTo,
+    //     bytes memory _permit,
+    //     bool _useAssetFee,
+    //     uint32 _referralCode,
+    //     bytes calldata _autoParams
+    // ) external payable override nonReentrant whenNotPaused {
+    //     // the amount will be reduced by the protocol fee
+    //     _amount = _burn(
+    //         _debridgeId,
+    //         _amount,
+    //         _chainIdTo,
+    //         _permit,
+    //         _useAssetFee,
+    //         _referralCode
+    //     );
 
-        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
-        _amount -= autoParams.executionFee;
+    //     SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
+    //     _amount -= autoParams.executionFee;
 
-        bytes32 submissionId = getSubmissionIdTo(
-            _debridgeId,
-            _chainIdTo,
-            _amount,
-            _receiver,
-            autoParams,
-            _autoParams.length > 0
-        );
+    //     bytes32 submissionId = getSubmissionIdTo(
+    //         _debridgeId,
+    //         _chainIdTo,
+    //         _amount,
+    //         _receiver,
+    //         autoParams,
+    //         _autoParams.length > 0
+    //     );
 
-        emit Burnt(
-            submissionId,
-            _debridgeId,
-            _amount,
-            _receiver,
-            nonce,
-            _chainIdTo,
-            _referralCode,
-            autoParams,
-            msg.sender
-        );
-        nonce++;
-    }
+    //     emit Burnt(
+    //         submissionId,
+    //         _debridgeId,
+    //         _amount,
+    //         _receiver,
+    //         nonce,
+    //         _chainIdTo,
+    //         _referralCode,
+    //         autoParams,
+    //         msg.sender
+    //     );
+    //     nonce++;
+    // }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
@@ -391,7 +391,7 @@ contract DeBridgeGate is
         uint8 _decimals,
         bytes memory _signatures
     ) external {
-        bytes32 debridgeId = keccak256(abi.encodePacked(_nativeChainId, _nativeTokenAddress)); //getDebridgeId(_nativeChainId, _tokenAddress);
+        bytes32 debridgeId = getbDebridgeId(_nativeChainId, _nativeTokenAddress);
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
@@ -654,12 +654,12 @@ contract DeBridgeGate is
     /// @param _debridgeId Asset identifier.
     /// @param _tokenAddress Address of the asset on the current chain.
     /// @param _nativeAddress Address of the asset on the native chain.
-    /// @param _chainId Current chain id.
+    /// @param _nativeChainId Native chain id.
     function _addAsset(
         bytes32 _debridgeId,
         address _tokenAddress,
         bytes memory _nativeAddress,
-        uint256 _chainId
+        uint256 _nativeChainId
     ) internal {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
 
@@ -668,7 +668,7 @@ contract DeBridgeGate is
 
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
-        debridge.chainId = _chainId;
+        debridge.chainId = _nativeChainId;
         //Don't override if the admin already set maxAmount
         if (debridge.maxAmount == 0) {
             debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
@@ -681,13 +681,14 @@ contract DeBridgeGate is
         }
 
         TokenInfo storage tokenInfo = getNativeInfo[_tokenAddress];
-        tokenInfo.chainId = _chainId;
+        tokenInfo.nativeChainId = _nativeChainId;
         tokenInfo.nativeAddress = _nativeAddress;
 
         emit PairAdded(
             _debridgeId,
             _tokenAddress,
-            _chainId,
+            _nativeAddress,
+            _nativeChainId,
             debridge.maxAmount,
             debridge.minReservesBps
         );
@@ -698,38 +699,15 @@ contract DeBridgeGate is
     /// @param _chainIdTo Chain id of the target chain.
     /// @param _permit deadline + signature for approving the spender by signature.
     function _send(
+        bytes memory _permit,
         address _tokenAddress,
         uint256 _amount,
         uint256 _chainIdTo,
-        bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode
     ) internal returns (uint256 newAmount, bytes32 debridgeId) {
-        //We use WETH debridgeId for transfer ETH
-        debridgeId = getDebridgeId(
-            getChainId(),
-            _tokenAddress == address(0) ? address(weth) : _tokenAddress
-        );
-
-        DebridgeInfo storage debridge = getDebridge[debridgeId];
-        if (!debridge.exist) {
-            _addAsset(
-                debridgeId,
-                _tokenAddress == address(0) ? address(weth) : _tokenAddress,
-                abi.encodePacked(_tokenAddress),
-                getChainId()
-            );
-        }
-        if (debridge.chainId != getChainId()) revert WrongChain();
-        if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
-        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
-
-        if (_tokenAddress == address(0)) {
-            if (_amount != msg.value) revert AmountMismatch();
-            weth.deposit{value: msg.value}();
-            _useAssetFee = true;
-        } else {
-            if (_permit.length > 0) {
+        // Run _permit first. Avoid Stack too deep,
+        if (_permit.length > 0) {
                 // call permit before transfering token
                 uint256 deadline = _permit.toUint256(0);
                 (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
@@ -741,7 +719,45 @@ contract DeBridgeGate is
                     v,
                     r,
                     s);
-            }
+        }
+
+        TokenInfo memory nativeTokenInfo = getNativeInfo[_tokenAddress];
+        bool isNativeToken = nativeTokenInfo.nativeChainId  == 0
+            ? true // token not in mapping
+            : nativeTokenInfo.nativeChainId == getChainId(); // token native chain id the same
+
+        if (isNativeToken) {
+            //We use WETH debridgeId for transfer ETH
+            debridgeId = getDebridgeId(
+                getChainId(),
+                _tokenAddress == address(0) ? address(weth) : _tokenAddress
+            );
+        }
+        else {
+            debridgeId = getbDebridgeId(
+                nativeTokenInfo.nativeChainId,
+                nativeTokenInfo.nativeAddress
+            );
+        }
+
+        DebridgeInfo storage debridge = getDebridge[debridgeId];
+        if (!debridge.exist) {
+            _addAsset(
+                debridgeId,
+                _tokenAddress == address(0) ? address(weth) : _tokenAddress,
+                abi.encodePacked(_tokenAddress),
+                getChainId()
+            );
+        }
+
+        if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
+
+        if (_tokenAddress == address(0)) {
+            if (_amount != msg.value) revert AmountMismatch();
+            weth.deposit{value: msg.value}();
+            _useAssetFee = true;
+        } else {
             IERC20 token = IERC20(_tokenAddress);
             uint256 balanceBefore = token.balanceOf(address(this));
             token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -755,47 +771,54 @@ contract DeBridgeGate is
             _useAssetFee,
             _referralCode
         );
-        debridge.balance += _amount;
+        // Is native token
+        if (isNativeToken) {
+            debridge.balance += _amount;
+        }
+        else {
+            IDeBridgeToken(debridge.tokenAddress).burn(_amount);
+            debridge.balance -= _amount;
+        }
         return (_amount, debridgeId);
     }
 
-    /// @dev Burns wrapped asset and allowss to claim it on the other chain.
-    /// @param _debridgeId Asset identifier.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
-    /// @param _chainIdTo Chain id of the target chain.
-    /// @param _permit deadline + signature for approving the spender by signature.
-    function _burn(
-        bytes32 _debridgeId,
-        uint256 _amount,
-        uint256 _chainIdTo,
-        bytes memory _permit,
-        bool _useAssetFee,
-        uint32 _referralCode
-    ) internal returns (uint256) {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        if (!debridge.exist) revert DebridgeNotFound();
-        if (debridge.chainId == getChainId()) revert WrongChain();
-        if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
-        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
-        IDeBridgeToken deBridgeToken = IDeBridgeToken(debridge.tokenAddress);
-        if (_permit.length > 0) {
-            //First dealine, next is signature
-            uint256 deadline = _permit.toUint256(0);
-            (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
-            deBridgeToken.permit(msg.sender, address(this), _amount, deadline, v, r, s);
-        }
-        deBridgeToken.transferFrom(msg.sender, address(this), _amount);
-        _amount = _processFeeForTransfer(
-            _debridgeId,
-            _amount,
-            _chainIdTo,
-            _useAssetFee,
-            _referralCode
-        );
-        deBridgeToken.burn(_amount);
-        debridge.balance -= _amount;
-        return _amount;
-    }
+    // /// @dev Burns wrapped asset and allowss to claim it on the other chain.
+    // /// @param _debridgeId Asset identifier.
+    // /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    // /// @param _chainIdTo Chain id of the target chain.
+    // /// @param _permit deadline + signature for approving the spender by signature.
+    // function _burn(
+    //     bytes32 _debridgeId,
+    //     uint256 _amount,
+    //     uint256 _chainIdTo,
+    //     bytes memory _permit,
+    //     bool _useAssetFee,
+    //     uint32 _referralCode
+    // ) internal returns (uint256) {
+    //     DebridgeInfo storage debridge = getDebridge[_debridgeId];
+    //     if (!debridge.exist) revert DebridgeNotFound();
+    //     if (debridge.chainId == getChainId()) revert WrongChain();
+    //     if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
+    //     if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
+    //     IDeBridgeToken deBridgeToken = IDeBridgeToken(debridge.tokenAddress);
+    //     if (_permit.length > 0) {
+    //         //First dealine, next is signature
+    //         uint256 deadline = _permit.toUint256(0);
+    //         (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
+    //         deBridgeToken.permit(msg.sender, address(this), _amount, deadline, v, r, s);
+    //     }
+    //     deBridgeToken.transferFrom(msg.sender, address(this), _amount);
+    //     _amount = _processFeeForTransfer(
+    //         _debridgeId,
+    //         _amount,
+    //         _chainIdTo,
+    //         _useAssetFee,
+    //         _referralCode
+    //     );
+    //     deBridgeToken.burn(_amount);
+    //     debridge.balance -= _amount;
+    //     return _amount;
+    // }
 
     function _processFeeForTransfer(
         bytes32 _debridgeId,
@@ -848,32 +871,32 @@ contract DeBridgeGate is
         }
     }
 
-    /// @dev Mints wrapped asset on the current chain.
-    /// @param _submissionId Submission identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: without applyed fee).
-    function _mint(
-        bytes32 _submissionId,
-        bytes32 _debridgeId,
-        address _receiver,
-        uint256 _amount,
-        SubmissionAutoParamsFrom memory _autoParams
-    ) internal {
-        _markAsUsed(_submissionId);
+    // /// @dev Mints wrapped asset on the current chain.
+    // /// @param _submissionId Submission identifier.
+    // /// @param _receiver Receiver address.
+    // /// @param _amount Amount of the transfered asset (note: without applyed fee).
+    // function _mint(
+    //     bytes32 _submissionId,
+    //     bytes32 _debridgeId,
+    //     address _receiver,
+    //     uint256 _amount,
+    //     SubmissionAutoParamsFrom memory _autoParams
+    // ) internal {
+    //     _markAsUsed(_submissionId);
 
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        if (!debridge.exist) revert DebridgeNotFound();
-        if (debridge.chainId == getChainId()) revert WrongChain();
+    //     DebridgeInfo storage debridge = getDebridge[_debridgeId];
+    //     if (!debridge.exist) revert DebridgeNotFound();
+    //     if (debridge.chainId == getChainId()) revert WrongChain();
 
-        _processTransferFrom(
-            _submissionId,
-            debridge.tokenAddress,
-            _amount,
-            _receiver,
-            _autoParams,
-            true);
-        debridge.balance += _amount + _autoParams.executionFee;
-    }
+    //     _processTransferFrom(
+    //         _submissionId,
+    //         debridge.tokenAddress,
+    //         _amount,
+    //         _receiver,
+    //         _autoParams,
+    //         true);
+    //     debridge.balance += _amount + _autoParams.executionFee;
+    // }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
@@ -886,19 +909,25 @@ contract DeBridgeGate is
         uint256 _amount,
         SubmissionAutoParamsFrom memory _autoParams
     ) internal {
-        DebridgeInfo storage debridge = getDebridge[_debridgeId];
-        if (debridge.chainId != getChainId()) revert WrongChain();
         _markAsUsed(_submissionId);
 
-        debridge.balance -= _amount + _autoParams.executionFee;
+        DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        // if (debridge.chainId != getChainId()) revert WrongChain();
+        bool isMint = debridge.chainId != getChainId();
 
+        if (isMint) {
+            debridge.balance += _amount + _autoParams.executionFee;
+        }
+        else {
+            debridge.balance -= _amount + _autoParams.executionFee;
+        }
         _processTransferFrom(
             _submissionId,
             debridge.tokenAddress,
             _amount,
             _receiver,
             _autoParams,
-            false);
+            isMint);
     }
 
     function _processTransferFrom(
@@ -989,6 +1018,13 @@ contract DeBridgeGate is
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
+    /// @dev Calculates asset identifier.
+    /// @param _chainId Current chain id.
+    /// @param _tokenAddress Address of the asset on the other chain.
+    function getbDebridgeId(uint256 _chainId, bytes memory _tokenAddress) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(_chainId, _tokenAddress));
+    }
+
     /// @dev Calculate submission id for auto claimable transfer.
     /// @param _debridgeId Asset identifier.
     /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
@@ -1066,10 +1102,10 @@ contract DeBridgeGate is
         external
         view
         override
-        returns (uint256 chainId, bytes memory nativeAddress)
+        returns (uint256 nativeChainId, bytes memory nativeAddress)
     {
         TokenInfo memory tokenInfo = getNativeInfo[currentTokenAddress];
-        return (tokenInfo.chainId, tokenInfo.nativeAddress);
+        return (tokenInfo.nativeChainId, tokenInfo.nativeAddress);
     }
 
     function getChainId() public view virtual returns (uint256 cid) {

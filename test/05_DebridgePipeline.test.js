@@ -49,6 +49,13 @@ const nativeETHDebridgeId = "0x6ac1b981b4452354ad8bd156fe151bcb91252dea9ed7232af
 const referralCode = 555;
 const zeroFlag = 0;
 
+let deLinkAddressInBSC = "0";
+let deETHAddressInBSC = "0";
+let deHTAddressInBSC = "0";
+let deETHAddressInHECO = "0";
+let deCakeAddressInHECO = "0";
+let deBNBAddressInHECO = "0";
+
 const discountsValues = [0, 5000, 10000];
 contract("DeBridgeGate real pipeline mode", function () {
   before(async function () {
@@ -667,17 +674,56 @@ contract("DeBridgeGate real pipeline mode", function () {
           .connect(oracle.account)
           .confirmNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "WBNB", 18);
       }
-       // Deploy tokens
-       await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
+      // Deploy tokens
+      let tx = await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
+      let receipt = await tx.wait();
+      let pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      deLinkAddressInBSC = pairAddedEvent.args.tokenAddress;
+      console.log(`deLinkAddressInBSC ${deLinkAddressInBSC}`);
     });
 
     it("should deploy new asset", async function () {
-        await this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []);
-        await this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "WHT", 18, []);
+        let tx =  await this.debridgeBSC.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []);
+        let receipt = await tx.wait();
+        let pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        deETHAddressInBSC = pairAddedEvent.args.tokenAddress;
+        console.log(`deETHAddressInBSC ${deETHAddressInBSC}`);
 
-        await this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []);
-        await this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []);
-        await this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "WBNB", 18, []);
+        tx =  await this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "WHT", 18, []);
+        receipt = await tx.wait();
+        pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        deHTAddressInBSC = pairAddedEvent.args.tokenAddress;
+        console.log(`deHTAddressInBSC ${deHTAddressInBSC}`);
+
+        tx =  await this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []);
+        receipt = await tx.wait();
+        pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        deETHAddressInHECO = pairAddedEvent.args.tokenAddress;
+        console.log(`deETHAddressInHECO ${deETHAddressInHECO}`);
+
+        tx =  await this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []);
+        receipt = await tx.wait();
+        pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        deCakeAddressInHECO = pairAddedEvent.args.tokenAddress;
+        console.log(`deCakeAddressInHECO ${deCakeAddressInHECO}`);
+
+        tx =  await this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "WBNB", 18, []);
+        receipt = await tx.wait();
+        pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        deBNBAddressInHECO = pairAddedEvent.args.tokenAddress;
+        console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
 
         //Check that new deployed token with correct values
         const wethDebridgeId =  await this.debridgeBSC.getDebridgeId(ethChainId, this.wethETH.address);
@@ -1083,7 +1129,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should reject native token without confirmation from required oracle", async function () {
       await expectRevert(
-        this.debridgeBSC.mint(
+        this.debridgeBSC.claim(
           this.debridgeWethId,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1162,7 +1208,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
       assert.equal(await this.debridgeBSC.isBlockedSubmission(this.nativeSubmissionId), true);
       await expectRevert(
-        this.debridgeBSC.mint(
+        this.debridgeBSC.claim(
           this.debridgeWethId,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1204,7 +1250,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log("this.nativeETHDebridgeId: "+ nativeETHDebridgeId);
       // console.log(await this.debridgeBSC.getDebridge(nativeETHDebridgeId));
 
-      await this.debridgeBSC.mint(
+      await this.debridgeBSC.claim(
         this.debridgeWethId,
         ethChainId,
         receiver,
@@ -1236,7 +1282,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.ok(isSubmissionUsed);
 
       const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
-      assert.equal(ethChainId.toString(), nativeTokenInfo.chainId.toString());
+      assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
       assert.equal(this.wethETH.address.toLowerCase(), nativeTokenInfo.nativeAddress.toString());
     });
 
@@ -1253,7 +1299,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       //     bytes[] calldata _signatures
       // )
 
-      await this.debridgeBSC.mint(
+      await this.debridgeBSC.claim(
         this.linkDebridgeId,
         ethChainId,
         this.linkSubmission.args.receiver,
@@ -1281,14 +1327,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.ok(isSubmissionUsed);
 
       const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
-      assert.equal(ethChainId.toString(), nativeTokenInfo.chainId.toString());
+      assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
       assert.equal(this.linkToken.address.toLowerCase(), nativeTokenInfo.nativeAddress.toString());
     });
 
     it("should reject minting with unconfirmed submission", async function () {
       const wrongNonce = 4;
       await expectRevert(
-        this.debridgeBSC.mint(
+        this.debridgeBSC.claim(
           this.debridgeWethId,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1306,7 +1352,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     it("should reject minting twice", async function () {
       await expectRevert(
-        this.debridgeBSC.mint(
+        this.debridgeBSC.claim(
           this.debridgeWethId,
           ethChainId,
           this.nativeSubmission.args.receiver,
@@ -1335,11 +1381,16 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
 
       it("should burning (deETH, deLink) when the amount is suficient", async function () {
-        let debridgeIds = [this.debridgeWethId, this.linkDebridgeId];
-        for (let debridgeId of debridgeIds) {
+        let tokensAddresses = [deETHAddressInBSC, deLinkAddressInBSC];
+        for (let currentToken of tokensAddresses) {
           const chainIdTo = ethChainId;
           const receiver = bob;
           const amount = toBN(toWei("1"));
+          console.log(currentToken);
+          const nativeInfo = await this.debridgeBSC.getNativeInfo(currentToken);
+          const debridgeId = await this.debridgeBSC.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
+          console.log(debridgeId);
+          console.log(`debridgeWethId ${this.debridgeWethId}`);
           const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
           const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
@@ -1360,8 +1411,8 @@ contract("DeBridgeGate real pipeline mode", function () {
           fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
             toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
           );
-          let burnTx = await this.debridgeBSC.connect(bobAccount).burn(
-            debridgeId,
+          let burnTx = await this.debridgeBSC.connect(bobAccount).send(
+            currentToken,
             receiver,
             amount,
             chainIdTo,
@@ -1375,8 +1426,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           );
 
           let receipt = await burnTx.wait();
+          // console.log(receipt);
           let burnEvent = receipt.events.find((x) => {
-            return x.event == "Burnt";
+            return x.event == "Sent";
           });
           burnEvents.push(burnEvent);
 
@@ -1388,7 +1440,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
           fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
-
+          console.log( debridgeFeeInfo);
+          console.log( 'newDebridgeFeeInfo');
+          console.log(newDebridgeFeeInfo);
           assert.equal(
             debridgeFeeInfo.collectedFees.add(fees).toString(),
             newDebridgeFeeInfo.collectedFees.toString()
@@ -1400,32 +1454,47 @@ contract("DeBridgeGate real pipeline mode", function () {
         }
       });
 
-      it("should reject burning from current chain", async function () {
-        const receiver = bob;
-        const amount = toBN(toWei("1"));
-        await expectRevert(
-          this.debridgeETH.burn(
-            this.debridgeWethId,
-            receiver,
-            amount,
-            ethChainId,
-            [],
-            false,
-            referralCode,
-            [],
-            {
-              from: alice,
-            }
-          ),
-          "WrongChain()"
-        );
-      });
+      // Obsolete
+      // it("should reject burning from current chain", async function () {
+      //   const receiver = bob;
+      //   const amount = toBN(toWei("1"));
+      //   await expectRevert(
+      //     this.debridgeETH.burn(
+      //       this.debridgeWethId,
+      //       receiver,
+      //       amount,
+      //       ethChainId,
+      //       [],
+      //       false,
+      //       referralCode,
+      //       [],
+      //       {
+      //         from: alice,
+      //       }
+      //     ),
+      //     "WrongChain()"
+      //   );
+      // });
 
       it("should support non EVM receiver parameter", async function () {
         const amount = toBN(toWei("0.1"));
-        const debridgeId = this.debridgeWethId;
+        const currentToken = deETHAddressInBSC;
+        const nativeInfo = await this.debridgeBSC.getNativeInfo(currentToken);
+        console.log("nativeInfo");
+        console.log(nativeInfo);
+        const debridgeId = await this.debridgeBSC.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
+        console.log("debridgeId");
+        console.log(debridgeId);
+
         const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
+        console.log("debridgeInfo");
+        console.log(debridgeInfo);
+
         const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+        console.log(`deBridgeToken: ${deBridgeToken.address}`);
+        console.log(`currentToken: ${currentToken}`);
+        assert.equal(currentToken, deBridgeToken.address);
+
         const supportedChainInfo = await this.debridgeBSC.getChainSupport(ethChainId);
         let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
         fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
@@ -1440,8 +1509,8 @@ contract("DeBridgeGate real pipeline mode", function () {
             toBN(MAX_UINT256),
             bobPrivKey
           );
-          const tx = await this.debridgeBSC.connect(bobAccount).burn(
-            debridgeId,
+          const tx = await this.debridgeBSC.connect(bobAccount).send(
+            currentToken,
             receiver,
             amount,
             ethChainId,
@@ -1454,7 +1523,8 @@ contract("DeBridgeGate real pipeline mode", function () {
             }
           );
           let receipt = await tx.wait();
-          let event = receipt.events.find((x) => x.event == "Burnt");
+          console.log(receipt);
+          let event = receipt.events.find((x) => x.event == "Sent");
           assert.equal(event.args.receiver, receiver);
         }
       });
@@ -1797,7 +1867,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     it("should mint (deBSC) when the submission is approved", async function () {
       const balance = toBN("0");
 
-      await this.debridgeHECO.mint(
+      await this.debridgeHECO.claim(
         this.debridgeWethBSCId,
         bscChainId,
         this.nativeSubmission.args.receiver,
@@ -1847,7 +1917,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       //     bytes[] calldata _signatures
       // )
 
-      let mintTx = await this.debridgeHECO.mint(
+      let mintTx = await this.debridgeHECO.claim(
         this.cakeDebridgeId,
         bscChainId,
         this.cakeSubmission.args.receiver,
@@ -1878,12 +1948,15 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should burn (deCake in HECO network)", async function () {
-      const debridgeId = this.cakeDebridgeId;
+      const currentToken = deCakeAddressInHECO;
+      const nativeInfo = await this.debridgeHECO.getNativeInfo(currentToken);
+      const debridgeId = await this.debridgeHECO.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
       const chainIdTo = ethChainId;
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const debridgeInfo = await this.debridgeHECO.getDebridge(debridgeId);
       const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
+      assert.equal(currentToken, deBridgeToken.address);
       const balance = toBN(await deBridgeToken.balanceOf(bob));
       // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
       const supportedChainInfo = await this.debridgeHECO.getChainSupport(chainIdTo);
@@ -1897,8 +1970,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
       // fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS));
-      let burnTx = await this.debridgeHECO.connect(bobAccount).burn(
-        debridgeId,
+      let burnTx = await this.debridgeHECO.connect(bobAccount).send(
+        currentToken,
         receiver,
         amount,
         chainIdTo,
@@ -2039,7 +2112,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         // call mint on BSC to get deETH
         await this.debridgeBSC
           .connect(bscAccount)
-          .mint(
+          .claim(
             this.debridgeWethId,
             ethChainId,
             bscAccount.address,
@@ -2059,8 +2132,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         // call autoburn on BSC
         const burnTx = await this.debridgeBSC
           .connect(bscAccount)
-          .burn(
-            this.debridgeWethId,
+          .send(
+            deETHToken.address,
             ethAccount.address,
             sentEvent.args.amount,
             ethChainId,
@@ -2085,7 +2158,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // get Burnt event
         const burnReceipt = await burnTx.wait();
-        const burnEvent = burnReceipt.events.find(i => i.event == "Burnt");
+        const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
 
         // worker call claim on ETH to get native tokens back
@@ -2202,7 +2275,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         // call mint on BSC to get deETH
         await this.debridgeBSC
           .connect(bscAccount)
-          .mint(
+          .claim(
             this.debridgeWethId,
             ethChainId,
             bscAccount.address,
@@ -2222,8 +2295,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         // call autoburn on BSC
         const burnTx = await this.debridgeBSC
           .connect(bscAccount)
-          .burn(
-            this.debridgeWethId,
+          .send(
+            deETHToken.address,
             receiverContract.address,
             sentEvent.args.amount,
             ethChainId,
@@ -2251,7 +2324,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // get Burnt event
         const burnReceipt = await burnTx.wait();
-        const burnEvent = burnReceipt.events.find(i => i.event == "Burnt");
+        const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
 
         // worker call claim on ETH to get native tokens back
@@ -2362,7 +2435,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         // call mint on BSC to get deETH
         await this.debridgeBSC
           .connect(bscAccount)
-          .mint(
+          .claim(
             this.debridgeWethId,
             ethChainId,
             bscAccount.address,
@@ -2382,8 +2455,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         // call autoburn on BSC
         const burnTx = await this.debridgeBSC
           .connect(bscAccount)
-          .burn(
-            this.debridgeWethId,
+          .send(
+            deETHToken.address,
             receiverContract.address,
             sentEvent.args.amount,
             ethChainId,
@@ -2406,7 +2479,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // get Burnt event
         const burnReceipt = await burnTx.wait();
-        const burnEvent = burnReceipt.events.find(i => i.event == "Burnt");
+        const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
 
         // worker call claim on ETH to get native tokens back
@@ -2636,7 +2709,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       // });
 
       this.burnEventDeLink = (
-        await this.debridgeBSC.queryFilter(this.debridgeBSC.filters.Burnt(), receipt.blockNumber)
+        await this.debridgeBSC.queryFilter(this.debridgeBSC.filters.Sent(), receipt.blockNumber)
       )[0];
 
       const newBalance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
@@ -2728,7 +2801,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       //   return x.event == "Burnt"; //"AutoBurnt";
       // });
       this.burnEventDeCake = (
-        await this.debridgeHECO.queryFilter(this.debridgeHECO.filters.Burnt(), receipt.blockNumber)
+        await this.debridgeHECO.queryFilter(this.debridgeHECO.filters.Sent(), receipt.blockNumber)
       )[0];
 
       // console.log(this.burnEventDeCake);
