@@ -12,17 +12,13 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     // function initialize(
     //     uint8 _minConfirmations,
     //     uint8 _confirmationThreshold,
-    //     uint8 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
-    //     address _debridgeAddress
+    //     uint8 _excessConfirmations
     // )
 
     const { contract: confirmationAggregatorInstance, isDeployed } = await deployProxy("ConfirmationAggregator", deployer, [
       deployInitParams.minConfirmations,
       deployInitParams.confirmationThreshold,
       deployInitParams.excessConfirmations,
-      deployInitParams.wrappedAssetAdmin,
-      ethers.constants.AddressZero,
     ], true);
 
     if (isDeployed) {

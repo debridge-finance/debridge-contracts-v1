@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "../interfaces/IWrappedAsset.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "../interfaces/IDeBridgeToken.sol";
 
-contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
+contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeToken {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); // minter role identifier
     bytes32 public DOMAIN_SEPARATOR;
     // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
@@ -30,14 +29,18 @@ contract WrappedAsset is AccessControl, IWrappedAsset, ERC20 {
     /// @param _name Asset's name.
     /// @param _symbol Asset's symbol.
     /// @param _minters The accounts allowed to int new tokens.
-    constructor(
+    function initialize(
         string memory _name,
         string memory _symbol,
         uint8 _tokenDecimals,
         address _admin,
         address[] memory _minters
-    ) ERC20(_name, _symbol) {
+    ) public initializer {
         _decimals = _tokenDecimals;
+        _symbol = string(abi.encodePacked("de", _symbol));
+        _name =  string(abi.encodePacked(_name, " (deBridge)"));
+        __ERC20_init(_name, _symbol);
+
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
         for (uint256 i = 0; i < _minters.length; i++) {
             _setupRole(MINTER_ROLE, _minters[i]);

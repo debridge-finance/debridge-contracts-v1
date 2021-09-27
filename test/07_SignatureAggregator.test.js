@@ -35,11 +35,12 @@ contract("SignatureAggregator", function () {
     devid = devidAccount.address;
 
     this.minConfirmations = 2;
+    this.excessConfirmations = 3;
 
     const SignatureAggregator = await ethers.getContractFactory("SignatureAggregator", alice);
 
     this.aggregator = await upgrades.deployProxy(SignatureAggregator, [
-      this.minConfirmations
+      this.minConfirmations, this.excessConfirmations
     ]);
     await this.aggregator.deployed();
     await this.aggregator
@@ -50,6 +51,9 @@ contract("SignatureAggregator", function () {
   it("should have correct initial values", async function () {
     const minConfirmations = await this.aggregator.minConfirmations();
     assert.equal(minConfirmations, this.minConfirmations);
+
+    const excessConfirmations = await this.aggregator.excessConfirmations();
+    assert.equal(excessConfirmations, this.excessConfirmations);
   });
 
   context("Test setting configurations by different users", () => {

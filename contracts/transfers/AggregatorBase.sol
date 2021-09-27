@@ -9,6 +9,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /* ========== STATE VARIABLES ========== */
 
     uint8 public minConfirmations; // minimal required confirmations
+    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint8 public requiredOraclesCount; // count of required oracles
 
     address[] public oracleAddresses;
@@ -20,7 +21,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     error OracleBadRole();
     error DeBridgeGateBadRole();
 
-    error OraclesAdminAccessDenied();
 
     error OracleAlreadyExist();
     error OracleNotFound();
@@ -30,9 +30,6 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
 
     error SubmittedAlready();
 
-    error DeployNotConfirmed();
-    error DeployNotFound();
-    error DeployedAlready();
 
     /* ========== MODIFIERS ========== */
 
@@ -49,9 +46,10 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initializeBase(uint8 _minConfirmations) internal {
-        if (_minConfirmations == 0) revert LowMinConfirmations();
+    function initializeBase(uint8 _minConfirmations, uint8 _excessConfirmations) internal {
+        if (_minConfirmations == 0 || _excessConfirmations < _minConfirmations) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
+        excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -62,6 +60,13 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
         if (_minConfirmations < oracleAddresses.length / 2 + 1) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
+    }
+
+    /// @dev Sets minimal required confirmations.
+    /// @param _excessConfirmations new excessConfirmations count.
+    function setExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
+        if (_excessConfirmations < minConfirmations) revert LowMinConfirmations();
+        excessConfirmations = _excessConfirmations;
     }
 
     /// @dev Add oracle.

@@ -3,7 +3,6 @@ pragma solidity 0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/ISignatureAggregator.sol";
-import "../periphery/WrappedAsset.sol";
 import "../libraries/SignatureUtil.sol";
 
 contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
@@ -23,8 +22,9 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    function initialize(uint8 _minConfirmations) public initializer {
-        AggregatorBase.initializeBase(_minConfirmations);
+    /// @param _excessConfirmations Confirmations count in case of excess activity.
+    function initialize(uint8 _minConfirmations, uint8 _excessConfirmations) public initializer {
+        AggregatorBase.initializeBase(_minConfirmations, _excessConfirmations);
     }
 
     /* ========== ORACLES  ========== */
@@ -54,7 +54,8 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         debridgeInfo.decimals = _decimals;
         debridgeInfo.signatures.push(_signature);
         debridgeInfo.hasVerified[msg.sender] = true;
-        if (debridgeInfo.confirmations >= minConfirmations) {
+        if (debridgeInfo.confirmations >= minConfirmations
+            && debridgeInfo.confirmations >= excessConfirmations) {
             debridgeInfo.approved = true;
             emit DeployApproved(deployId);
         }

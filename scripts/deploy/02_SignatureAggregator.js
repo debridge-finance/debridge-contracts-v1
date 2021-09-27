@@ -13,7 +13,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     const { contract: signatureAggregatorInstance, isDeployed } = await deployProxy(
       "SignatureAggregator",
       deployer,
-      [deployInitParams.minConfirmations],
+      [deployInitParams.minConfirmations, deployInitParams.excessConfirmations],
       true);
 
     if (isDeployed) {

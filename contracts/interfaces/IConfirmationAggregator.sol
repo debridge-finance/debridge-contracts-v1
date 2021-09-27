@@ -37,16 +37,8 @@ interface IConfirmationAggregator {
         view
         returns (uint8 _confirmations, bool _isConfirmed);
 
-    function getWrappedAssetAddress(bytes32 _debridgeId)
+    function getConfirmedDeployId(bytes32 _debridgeId)
         external
         view
-        returns (address _wrappedAssetAddress);
-
-    function deployAsset(bytes32 _debridgeId)
-        external
-        returns (
-            address wrappedAssetAddress,
-            bytes memory nativeAddress,
-            uint256 nativeChainId
-        );
+        returns (bytes32);
 }

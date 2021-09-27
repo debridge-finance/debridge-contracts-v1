@@ -2,7 +2,7 @@ const { expectRevert } = require("@openzeppelin/test-helpers");
 const { permitWithDeadline, packSubmissionAutoParamsFrom, packSubmissionAutoParamsTo } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAsset");
+const DeBridgeToken = artifacts.require("DeBridgeToken");
 const FeeProxy = artifacts.require("FeeProxy");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 
@@ -79,15 +79,11 @@ contract("DeBridgeGate full with auto", function () {
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
-    //     address _debridgeAddress
     // )
     this.confirmationAggregator = await upgrades.deployProxy(ConfirmationAggregator, [
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
 
     await this.confirmationAggregator.deployed();
@@ -143,6 +139,17 @@ contract("DeBridgeGate full with auto", function () {
     //     IDefiController _defiController,
     // )
 
+    const DeBridgeTokenFactory = await ethers.getContractFactory("DeBridgeToken", alice);
+    const deBridgeToken = await DeBridgeTokenFactory.deploy();
+    const DeBridgeTokenDeployerFactory = await ethers.getContractFactory("DeBridgeTokenDeployer", alice);
+    const deBridgeTokenDeployer = await upgrades.deployProxy(
+      DeBridgeTokenDeployerFactory,
+      [
+        deBridgeToken.address,
+        alice,
+        ZERO_ADDRESS,
+      ]);
+
     this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
       ZERO_ADDRESS,
@@ -150,6 +157,7 @@ contract("DeBridgeGate full with auto", function () {
       this.callProxy.address.toString(),
       this.weth.address,
       ZERO_ADDRESS,
+      deBridgeTokenDeployer.address,
       ZERO_ADDRESS,
     ]);
     await this.debridge.deployed();
@@ -172,7 +180,7 @@ contract("DeBridgeGate full with auto", function () {
 
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
-    await this.confirmationAggregator.setDebridgeAddress(this.debridge.address.toString());
+    await deBridgeTokenDeployer.setDebridgeAddress(this.debridge.address);
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
@@ -303,6 +311,9 @@ contract("DeBridgeGate full with auto", function () {
           .connect(validator.account)
           .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals);
       }
+      // Deploy token
+      await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
+
       //   function getDeployId(
       //     bytes32 _debridgeId,
       //     string memory _name,
@@ -314,11 +325,11 @@ contract("DeBridgeGate full with auto", function () {
       // await this.debridge.checkAndDeployAsset(debridgeId, {
       //   from: this.initialOracles[0].address,
       // });
-      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold, {
-        from: alice,
-      });
+      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
       const debridge = await this.debridge.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
+      assert.equal(debridge.exist, true);
+      assert.equal(debridge.chainId, chainId);
       assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
@@ -563,8 +574,8 @@ contract("DeBridgeGate full with auto", function () {
         }
       );
       const debridge = await this.debridge.getDebridge(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-      const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
+      const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
+      const newBalance = toBN(await deBridgeToken.balanceOf(receiver));
 
       const isSubmissionUsed = await this.debridge.isSubmissionUsed(burnAutoSubmissionId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
@@ -622,11 +633,11 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeId = await this.debridge.getDebridgeId(chainIdTo, tokenAddress);
       const debridge = await this.debridge.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-      const balance = toBN(await wrappedAsset.balanceOf(bob));
+      const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
+      const balance = toBN(await deBridgeToken.balanceOf(bob));
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const permitParameter = await permitWithDeadline(
-        wrappedAsset,
+        deBridgeToken,
         bob,
         this.debridge.address,
         amount,
@@ -651,7 +662,7 @@ contract("DeBridgeGate full with auto", function () {
       const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
         this.nativeDebridgeId
       );
-      const newBalance = toBN(await wrappedAsset.balanceOf(bob));
+      const newBalance = toBN(await deBridgeToken.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
