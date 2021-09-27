@@ -4,25 +4,25 @@ pragma solidity 0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-import "../interfaces/IDeTokenDeployer.sol";
-import "../periphery/DeToken.sol";
-import "../periphery/DeTokenProxy.sol";
+import "../interfaces/IDeBridgeTokenDeployer.sol";
+import "../periphery/DeBridgeToken.sol";
+import "../periphery/DeBridgeTokenProxy.sol";
 
-contract DeTokenDeployer is
+contract DeBridgeTokenDeployer is
     Initializable,
     AccessControlUpgradeable,
-    IDeTokenDeployer
+    IDeBridgeTokenDeployer
 {
 
     /* ========== STATE VARIABLES ========== */
 
-    // address of deToken implementation
+    // address of deBridgeToken implementation
     address public tokenImplementation;
-    // admin for any deployed deToken
-    address public deTokenAdmin;
+    // admin for any deployed deBridgeToken
+    address public deBridgeTokenAdmin;
     // Debridge gate address
     address public debridgeAddress;
-    // debridge id => deToken address
+    // debridge id => deBridgeToken address
     mapping(bytes32 => address) public getDeployedAssetAddress;
 
 
@@ -53,11 +53,11 @@ contract DeTokenDeployer is
     /// @dev Constructor that initializes the most important configurations.
     function initialize(
         address _tokenImplementation,
-        address _deTokenAdmin,
+        address _deBridgeTokenAdmin,
         address _debridgeAddress
     ) public initializer {
         tokenImplementation = _tokenImplementation;
-        deTokenAdmin = _deTokenAdmin;
+        deBridgeTokenAdmin = _deBridgeTokenAdmin;
         debridgeAddress = _debridgeAddress;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -71,7 +71,7 @@ contract DeTokenDeployer is
         external
         override
         onlyDeBridgeGate
-        returns (address deTokenAddress)
+        returns (address deBridgeTokenAddress)
     {
         if (getDeployedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
 
@@ -80,11 +80,11 @@ contract DeTokenDeployer is
 
         // Initialize args
         bytes memory initialisationArgs = abi.encodeWithSelector(
-            DeToken.initialize.selector,
+            DeBridgeToken.initialize.selector,
             _name,
             _symbol,
             _decimals,
-            deTokenAdmin,
+            deBridgeTokenAdmin,
             minters
         );
 
@@ -92,27 +92,27 @@ contract DeTokenDeployer is
         bytes memory constructorArgs = abi.encode(address(this), initialisationArgs);
 
         // deployment code
-        bytes memory bytecode = abi.encodePacked(type(DeTokenProxy).creationCode, constructorArgs);
+        bytes memory bytecode = abi.encodePacked(type(DeBridgeTokenProxy).creationCode, constructorArgs);
 
         assembly {
             // debridgeId is a salt
-            deTokenAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
+            deBridgeTokenAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
 
-            if iszero(extcodesize(deTokenAddress)) {
+            if iszero(extcodesize(deBridgeTokenAddress)) {
                 revert(0, 0)
             }
         }
 
-        getDeployedAssetAddress[_debridgeId] = deTokenAddress;
-        emit DeTokenDeployed(
-            deTokenAddress,
+        getDeployedAssetAddress[_debridgeId] = deBridgeTokenAddress;
+        emit DeBridgeTokenDeployed(
+            deBridgeTokenAddress,
             _name,
             _symbol,
             _decimals
         );
     }
 
-    // Beacon getter for the deToken contracts
+    // Beacon getter for the deBridgeToken contracts
     function implementation() public view returns (address) {
         return tokenImplementation;
     }
@@ -120,18 +120,18 @@ contract DeTokenDeployer is
 
     /* ========== ADMIN ========== */
 
-    /// @dev Set deToken implementation contract address
+    /// @dev Set deBridgeToken implementation contract address
     /// @param _impl Wrapped asset implementation contract address.
     function setTokenImplementation(address _impl) external onlyAdmin {
         if (_impl == address(0)) revert WrongArgument();
         tokenImplementation = _impl;
     }
 
-    /// @dev Set admin for any deployed deToken.
-    /// @param _deTokenAdmin Admin address.
-    function setDeTokenAdmin(address _deTokenAdmin) external onlyAdmin {
-        if (_deTokenAdmin == address(0)) revert WrongArgument();
-        deTokenAdmin = _deTokenAdmin;
+    /// @dev Set admin for any deployed deBridgeToken.
+    /// @param _deBridgeTokenAdmin Admin address.
+    function setDeBridgeTokenAdmin(address _deBridgeTokenAdmin) external onlyAdmin {
+        if (_deBridgeTokenAdmin == address(0)) revert WrongArgument();
+        deBridgeTokenAdmin = _deBridgeTokenAdmin;
     }
 
     /// @dev Sets core debridge conrtact address.

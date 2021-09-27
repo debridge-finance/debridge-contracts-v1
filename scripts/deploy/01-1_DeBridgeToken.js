@@ -9,11 +9,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[networkName];
   if (!deployInitParams) return;
 
-  await deploy("DeToken", {
+  await deploy("DeBridgeToken", {
     from: deployer,
     // deterministicDeployment: true,
     log: true,
   });
 };
 
-module.exports.tags = ["01-1_DeToken"]
+module.exports.tags = ["01-1_DeBridgeToken"]

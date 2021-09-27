@@ -22,7 +22,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
   const callProxy = await getLastDeployedProxy("CallProxy", deployer);
   const feeProxy = await getLastDeployedProxy("FeeProxy", deployer);
-  const deTokenDeployer = await getLastDeployedProxy("DeTokenDeployer", deployer);
+  const deBridgeTokenDeployer = await getLastDeployedProxy("DeBridgeTokenDeployer", deployer);
 
   let defiController;
   if (deployInitParams.deploy.DefiController) {
@@ -46,7 +46,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     callProxy.address,
     wethAddress,
     feeProxy.address,
-    deTokenDeployer.address,
+    deBridgeTokenDeployer.address,
     defiController ? defiController.address : ethers.constants.AddressZero,
   ], true)
 
@@ -121,7 +121,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // --------------------------------
   //    setting debridge address for contracts
   // --------------------------------
-  await deTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
+  await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
 
   if (signatureVerifier) {
     await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);

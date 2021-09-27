@@ -4,7 +4,7 @@ const { permitWithDeadline } = require("./utils.spec");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const DeToken = artifacts.require("DeToken");
+const DeBridgeToken = artifacts.require("DeBridgeToken");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
 const MAX = web3.utils.toTwosComplement(-1);
@@ -143,13 +143,13 @@ contract("DeBridgeGate light mode", function () {
     //     IDefiController _defiController,
     // )
 
-    const DeTokenFactory = await ethers.getContractFactory("DeToken", alice);
-    const deToken = await DeTokenFactory.deploy();
-    const DeTokenDeployerFactory = await ethers.getContractFactory("DeTokenDeployer", alice);
-    const deTokenDeployer = await upgrades.deployProxy(
-      DeTokenDeployerFactory,
+    const DeBridgeTokenFactory = await ethers.getContractFactory("DeBridgeToken", alice);
+    const deBridgeToken = await DeBridgeTokenFactory.deploy();
+    const DeBridgeTokenDeployerFactory = await ethers.getContractFactory("DeBridgeTokenDeployer", alice);
+    const deBridgeTokenDeployer = await upgrades.deployProxy(
+      DeBridgeTokenDeployerFactory,
       [
-        deToken.address,
+        deBridgeToken.address,
         alice,
         ZERO_ADDRESS,
       ]);
@@ -163,7 +163,7 @@ contract("DeBridgeGate light mode", function () {
         this.callProxy.address.toString(),
         this.weth.address,
         ZERO_ADDRESS,
-        deTokenDeployer.address,
+        deBridgeTokenDeployer.address,
         ZERO_ADDRESS,
         1, //overrideChainId
       ],
@@ -194,7 +194,7 @@ contract("DeBridgeGate light mode", function () {
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
-    await deTokenDeployer.setDebridgeAddress(this.debridge.address);
+    await deBridgeTokenDeployer.setDebridgeAddress(this.debridge.address);
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
@@ -554,9 +554,9 @@ contract("DeBridgeGate light mode", function () {
           from: alice,
         });
       const debridge = await this.debridge.getDebridge(debridgeId);
-      const deToken = await DeToken.at(debridge.tokenAddress);
+      const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
 
-      const newBalance = toBN(await deToken.balanceOf(receiver));
+      const newBalance = toBN(await deBridgeToken.balanceOf(receiver));
       const submissionId = await this.debridge.getSubmissionId(
         debridgeId,
         chainId,
@@ -666,11 +666,11 @@ contract("DeBridgeGate light mode", function () {
       const debridgeId = await this.debridge.getDebridgeId(chainIdTo, tokenAddress);
       const debridge = await this.debridge.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
-      const deToken = await DeToken.at(debridge.tokenAddress);
-      const balance = toBN(await deToken.balanceOf(bob));
+      const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
+      const balance = toBN(await deBridgeToken.balanceOf(bob));
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const permitParameter = await permitWithDeadline(
-        deToken,
+        deBridgeToken,
         bob,
         this.debridge.address,
         amount,
@@ -694,7 +694,7 @@ contract("DeBridgeGate light mode", function () {
       const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
         this.nativeDebridgeId
       );
-      const newBalance = toBN(await deToken.balanceOf(bob));
+      const newBalance = toBN(await deBridgeToken.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
@@ -742,13 +742,13 @@ contract("DeBridgeGate light mode", function () {
     //       tokenAddress
     //       );
     //     const debridge = await this.debridge.getDebridge(debridgeId);
-    //     const deToken = await DeToken.at(debridge.tokenAddress);
-    //     //const balance = toBN(await deToken.balanceOf(bob));
+    //     const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
+    //     //const balance = toBN(await deBridgeToken.balanceOf(bob));
     //     const deadline = 0;
     //     const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
     //     //const signature = "0x";
     //     const signature = await permit(
-    //           deToken,
+    //           deBridgeToken,
     //           bob,
     //           this.debridge.address,
     //           amount,

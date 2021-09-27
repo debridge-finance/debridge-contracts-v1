@@ -9,8 +9,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "../interfaces/IDeToken.sol";
-import "../interfaces/IDeTokenDeployer.sol";
+import "../interfaces/IDeBridgeToken.sol";
+import "../interfaces/IDeBridgeTokenDeployer.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
@@ -38,7 +38,7 @@ contract DeBridgeGate is
     uint256 public constant BPS_DENOMINATOR = 10000;
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
 
-    address public deTokenDeployer;
+    address public deBridgeTokenDeployer;
     address public signatureVerifier; // current signatureVerifier address to verify signatures
     address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
@@ -129,7 +129,7 @@ contract DeBridgeGate is
         address _callProxy,
         IWETH _weth,
         address _feeProxy,
-        address _deTokenDeployer,
+        address _deBridgeTokenDeployer,
         address _defiController
     ) public initializer {
         _addAsset(
@@ -148,7 +148,7 @@ contract DeBridgeGate is
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         weth = _weth;
-        deTokenDeployer = _deTokenDeployer;
+        deBridgeTokenDeployer = _deBridgeTokenDeployer;
         feeProxy = _feeProxy;
     }
 
@@ -412,10 +412,10 @@ contract DeBridgeGate is
             if (deployId != confirmedDeployId) revert AssetNotConfirmed();
         }
 
-        address deTokenAddress = IDeTokenDeployer(deTokenDeployer)
+        address deBridgeTokenAddress = IDeBridgeTokenDeployer(deBridgeTokenDeployer)
             .deployAsset(debridgeId, _name, _symbol, _decimals);
 
-        _addAsset(debridgeId, deTokenAddress, _nativeTokenAddress, _nativeChainId);
+        _addAsset(debridgeId, deBridgeTokenAddress, _nativeTokenAddress, _nativeChainId);
     }
 
     // /// @dev Calculates asset identifier.
@@ -508,9 +508,9 @@ contract DeBridgeGate is
     }
 
     /// @dev Set asset deployer address.
-    /// @param _deTokenDeployer Asset deployer address.
-    function setDeTokenDeployer(address _deTokenDeployer) external onlyAdmin {
-        deTokenDeployer = _deTokenDeployer;
+    /// @param _deBridgeTokenDeployer Asset deployer address.
+    function setDeBridgeTokenDeployer(address _deBridgeTokenDeployer) external onlyAdmin {
+        deBridgeTokenDeployer = _deBridgeTokenDeployer;
     }
 
     /// @dev Set defi controoler.
@@ -792,14 +792,14 @@ contract DeBridgeGate is
         if (debridge.chainId == getChainId()) revert WrongChain();
         if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
-        IDeToken deToken = IDeToken(debridge.tokenAddress);
+        IDeBridgeToken deBridgeToken = IDeBridgeToken(debridge.tokenAddress);
         if (_permit.length > 0) {
             //First dealine, next is signature
             uint256 deadline = _permit.toUint256(0);
             (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
-            deToken.permit(msg.sender, address(this), _amount, deadline, v, r, s);
+            deBridgeToken.permit(msg.sender, address(this), _amount, deadline, v, r, s);
         }
-        deToken.transferFrom(msg.sender, address(this), _amount);
+        deBridgeToken.transferFrom(msg.sender, address(this), _amount);
         _amount = _processFeeForTransfer(
             _debridgeId,
             _amount,
@@ -807,7 +807,7 @@ contract DeBridgeGate is
             _useAssetFee,
             _referralCode
         );
-        deToken.burn(_amount);
+        deBridgeToken.burn(_amount);
         debridge.balance -= _amount;
         return _amount;
     }
@@ -962,7 +962,7 @@ contract DeBridgeGate is
         bool isMint
     ) internal {
         if (isMint) {
-            IDeToken(_token).mint(_receiver, _amount);
+            IDeBridgeToken(_token).mint(_receiver, _amount);
         } else {
             IERC20(_token).safeTransfer(_receiver, _amount);
         }
