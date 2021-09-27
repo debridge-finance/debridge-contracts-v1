@@ -11,7 +11,6 @@
     "migrate": "truffle migrate",
     "verify": "truffle run verify Aggregator Debridge",
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
-    "pretest": "$npm_execpath compile",
     "test": "hardhat test",
     "contract-size": "truffle run contract-size",
     "coverage": "hardhat coverage"
@@ -51,7 +50,7 @@
     "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.4.2",
-    "hardhat": "^2.5.0",
+    "hardhat": "^2.6.4",
     "hardhat-deploy": "^0.8.11",
     "hardhat-gas-reporter": "^1.0.4",
     "prettier": "^2.3.2",
