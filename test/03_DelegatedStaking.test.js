@@ -6,7 +6,6 @@ const { MaxUint256 } = require("@ethersproject/constants");
 const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 const { assert } = require("chai");
 const { upgrades, artifacts, ethers } = require('hardhat');
-const { getUniswapFactory, getWeth } = require("../migrations/utils");
 const ether = require("@openzeppelin/test-helpers/src/ether");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
@@ -157,13 +156,19 @@ contract("DelegatedStaking", function() {
       this.yRegistry.address
     );
     await this.mockYearnController.deployed();
-    const uniswapFactory = await getUniswapFactory(deployer, network);
-    const weth = await getWeth(deployer, network)
+
+    const WETH9 = await deployments.getArtifact("WETH9");
+    const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
+    this.weth = await WETH9Factory.deploy();
+
+    const UniswapV2 = await deployments.getArtifact("UniswapV2Factory");
+    const UniswapV2Factory = await ethers.getContractFactory(UniswapV2.abi,UniswapV2.bytecode, alice);
+    this.uniswapFactory = await UniswapV2Factory.deploy(carol);
 
     this.timelock = 1;
     this.slashingTreasuryAddress = alice;
     this.mockPriceConsumer = await MockPriceConsumer.new();
-    this.mockFeeProxy = await MockFeeProxy.new(uniswapFactory, weth, this.slashingTreasuryAddress);
+    this.mockFeeProxy = await MockFeeProxy.new(this.uniswapFactory.address, this.weth.address, this.slashingTreasuryAddress);
     this.DelegatedStaking = await ethers.getContractFactory("DelegatedStaking", alice);
     this.delegatedStaking = await upgrades.deployProxy(this.DelegatedStaking, [
         this.timelock,
