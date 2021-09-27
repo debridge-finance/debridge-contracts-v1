@@ -37,6 +37,8 @@ contract DeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeToken {
         address[] memory _minters
     ) public initializer {
         _decimals = _tokenDecimals;
+        _symbol = string(abi.encodePacked("de", _symbol));
+        _name =  string(abi.encodePacked(_name, " (deBridge)"));
         __ERC20_init(_name, _symbol);
 
         _setupRole(DEFAULT_ADMIN_ROLE, _admin);
@@ -118,12 +120,4 @@ contract DeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeToken {
     function decimals() public view override returns (uint8) {
         return _decimals;
     }
-
-    // function symbol() public view override returns (string memory) {
-    //     return string(abi.encodePacked("de", _symbol));
-    // }
-
-    // function name() public view override returns (string memory) {
-    //     return string(abi.encodePacked(_name, " (deBridge)"));
-    // }
 }
