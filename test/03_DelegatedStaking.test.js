@@ -1392,7 +1392,7 @@ contract("DelegatedStaking", function() {
     });
   });
 
-  context("Test deposit to strategy", async () => {
+  context.skip("Test deposit to strategy", async () => {
     it("should fail if strategy not enabled", async function() {
       const amount = toWei("10");
       const collateral = this.linkToken.address
@@ -1860,7 +1860,7 @@ contract("DelegatedStaking", function() {
     });
   });
 
-  context("Test recover from emergency", async () => {
+  context.skip("Test recover from emergency", async () => {
     beforeEach(async function() {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
@@ -1976,7 +1976,7 @@ contract("DelegatedStaking", function() {
       await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
   });
-  context("Test simulate hack", async function() {
+  context.skip("Test simulate hack", async function() {
     beforeEach(async function() {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
