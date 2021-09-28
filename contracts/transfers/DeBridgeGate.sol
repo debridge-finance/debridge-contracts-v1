@@ -184,27 +184,28 @@ contract DeBridgeGate is
         SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
         _amount -= autoParams.executionFee;
 
+        //Avoid Stack too deep, try removing local variables
+        bytes memory receiver = _receiver;
         bytes32 submissionId = getSubmissionIdTo(
             debridgeId,
             _chainIdTo,
             _amount,
-            _receiver,
+            receiver,
             autoParams,
             _autoParams.length > 0
         );
 
-        // TODO: fix Stack too deep
         emit Sent(
-            isNativeToken,
             submissionId,
             debridgeId,
             _amount,
-            _receiver,
+            receiver,
             nonce,
             _chainIdTo,
             _referralCode,
             autoParams,
-            msg.sender
+            msg.sender,
+            isNativeToken
         );
         nonce++;
     }
@@ -250,14 +251,14 @@ contract DeBridgeGate is
         );
 
         emit Claimed(
-            isNativeToken,
             submissionId,
             _debridgeId,
             _amount,
             _receiver,
             _nonce,
             _chainIdFrom,
-            autoParams
+            autoParams,
+            isNativeToken
         );
     }
 
