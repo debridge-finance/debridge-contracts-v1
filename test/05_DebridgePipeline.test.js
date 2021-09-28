@@ -681,7 +681,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           return x.event == "PairAdded";
       });
       deLinkAddressInBSC = pairAddedEvent.args.tokenAddress;
-      console.log(`deLinkAddressInBSC ${deLinkAddressInBSC}`);
+      // console.log(`deLinkAddressInBSC ${deLinkAddressInBSC}`);
     });
 
     it("should deploy new asset", async function () {
@@ -691,7 +691,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             return x.event == "PairAdded";
         });
         deETHAddressInBSC = pairAddedEvent.args.tokenAddress;
-        console.log(`deETHAddressInBSC ${deETHAddressInBSC}`);
+        // console.log(`deETHAddressInBSC ${deETHAddressInBSC}`);
 
         tx =  await this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "WHT", 18, []);
         receipt = await tx.wait();
@@ -699,7 +699,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             return x.event == "PairAdded";
         });
         deHTAddressInBSC = pairAddedEvent.args.tokenAddress;
-        console.log(`deHTAddressInBSC ${deHTAddressInBSC}`);
+        // console.log(`deHTAddressInBSC ${deHTAddressInBSC}`);
 
         tx =  await this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "WETH", 18, []);
         receipt = await tx.wait();
@@ -707,7 +707,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             return x.event == "PairAdded";
         });
         deETHAddressInHECO = pairAddedEvent.args.tokenAddress;
-        console.log(`deETHAddressInHECO ${deETHAddressInHECO}`);
+        // console.log(`deETHAddressInHECO ${deETHAddressInHECO}`);
 
         tx =  await this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []);
         receipt = await tx.wait();
@@ -715,7 +715,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             return x.event == "PairAdded";
         });
         deCakeAddressInHECO = pairAddedEvent.args.tokenAddress;
-        console.log(`deCakeAddressInHECO ${deCakeAddressInHECO}`);
+        // console.log(`deCakeAddressInHECO ${deCakeAddressInHECO}`);
 
         tx =  await this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "WBNB", 18, []);
         receipt = await tx.wait();
@@ -723,7 +723,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             return x.event == "PairAdded";
         });
         deBNBAddressInHECO = pairAddedEvent.args.tokenAddress;
-        console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
+        // console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
 
         //Check that new deployed token with correct values
         const wethDebridgeId =  await this.debridgeBSC.getDebridgeId(ethChainId, this.wethETH.address);
@@ -1397,11 +1397,11 @@ contract("DeBridgeGate real pipeline mode", function () {
           const chainIdTo = ethChainId;
           const receiver = bob;
           const amount = toBN(toWei("1"));
-          console.log(currentToken);
+          // console.log(currentToken);
           const nativeInfo = await this.debridgeBSC.getNativeInfo(currentToken);
           const debridgeId = await this.debridgeBSC.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
-          console.log(debridgeId);
-          console.log(`debridgeWethId ${this.debridgeWethId}`);
+          // console.log(debridgeId);
+          // console.log(`debridgeWethId ${this.debridgeWethId}`);
           const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
           const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
@@ -1451,9 +1451,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
           fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
-          console.log( debridgeFeeInfo);
-          console.log( 'newDebridgeFeeInfo');
-          console.log(newDebridgeFeeInfo);
+          // console.log( debridgeFeeInfo);
+          // console.log( 'newDebridgeFeeInfo');
+          // console.log(newDebridgeFeeInfo);
           assert.equal(
             debridgeFeeInfo.collectedFees.add(fees).toString(),
             newDebridgeFeeInfo.collectedFees.toString()
@@ -1491,19 +1491,19 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amount = toBN(toWei("0.1"));
         const currentToken = deETHAddressInBSC;
         const nativeInfo = await this.debridgeBSC.getNativeInfo(currentToken);
-        console.log("nativeInfo");
-        console.log(nativeInfo);
+        // console.log("nativeInfo");
+        // console.log(nativeInfo);
         const debridgeId = await this.debridgeBSC.getDebridgeId(nativeInfo.nativeChainId, nativeInfo.nativeAddress);
-        console.log("debridgeId");
-        console.log(debridgeId);
+        // console.log("debridgeId");
+        // console.log(debridgeId);
 
         const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
-        console.log("debridgeInfo");
-        console.log(debridgeInfo);
+        // console.log("debridgeInfo");
+        // console.log(debridgeInfo);
 
         const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
-        console.log(`deBridgeToken: ${deBridgeToken.address}`);
-        console.log(`currentToken: ${currentToken}`);
+        // console.log(`deBridgeToken: ${deBridgeToken.address}`);
+        // console.log(`currentToken: ${currentToken}`);
         assert.equal(currentToken, deBridgeToken.address);
 
         const supportedChainInfo = await this.debridgeBSC.getChainSupport(ethChainId);
@@ -1534,7 +1534,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             }
           );
           let receipt = await tx.wait();
-          console.log(receipt);
+          // console.log(receipt);
           let event = receipt.events.find((x) => x.event == "Sent");
           assert.equal(event.args.receiver, receiver);
         }
