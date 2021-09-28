@@ -22,8 +22,59 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-contract("DelegatedStaking", function() {
-  before(async function() {
+async function deployPancakeSwapPairs({
+  tokens,
+  weth,
+  provider,
+  factory,
+  router
+}) {
+
+  for (const { token, liquidityAmount, wethLiquidityAmount } of tokens) {
+    try {
+      await factory.createPair(token.address, weth.address)
+      console.log(liquidityAmount, 'liquidityAmount')
+      console.log(wethLiquidityAmount, 'wethLiquidityAmount')
+
+      await token.approve(
+        router.address,
+        MaxUint256,
+        { from: provider }
+      )
+
+      const balance = await token.balanceOf(provider)
+      console.log(balance.toString(), 'balance')
+      const wethBalance = await current(provider)
+      console.log(wethBalance.toString(), 'wethBalance')
+
+      console.log(provider, 'provider')
+      console.log(router.signer.address, "router signer")
+      console.log(weth.signer.address, "weth signer")
+
+      await weth.approve(
+        router.address,
+        MaxUint256
+      )
+
+      await router.addLiquidity(
+        token.address,
+        weth.address,
+        liquidityAmount,
+        wethLiquidityAmount,
+        "1",
+        "1",
+        provider,
+        Math.floor(new Date().getTime() / 1000) + 10000000
+      )
+    } catch (e) {
+      console.log(e)
+    }
+
+  }
+}
+
+contract("DelegatedStaking", function () {
+  before(async function () {
     this.signers = await ethers.getSigners();
     aliceAccount = this.signers[0];
     bobAccount = this.signers[1];
@@ -137,8 +188,6 @@ contract("DelegatedStaking", function() {
     await this.usdcToken.mint(carol, mintUSDAmount);
     await this.usdtToken.mint(carol, mintUSDAmount);
 
-
-
     await this.linkToken.mint(this.lendingPool.address, toWei("3200000"));
 
     this.mockAaveController = await this.MockAaveControllerFactory.deploy(
@@ -158,12 +207,28 @@ contract("DelegatedStaking", function() {
     await this.mockYearnController.deployed();
 
     const WETH9 = await deployments.getArtifact("WETH9");
-    const WETH9Factory = await ethers.getContractFactory(WETH9.abi,WETH9.bytecode, alice );
+    const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
     this.weth = await WETH9Factory.deploy();
 
     const UniswapV2 = await deployments.getArtifact("UniswapV2Factory");
-    const UniswapV2Factory = await ethers.getContractFactory(UniswapV2.abi,UniswapV2.bytecode, alice);
+    const UniswapV2Factory = await ethers.getContractFactory(UniswapV2.abi, UniswapV2.bytecode, alice);
     this.uniswapFactory = await UniswapV2Factory.deploy(carol);
+
+    const UniswapV2RouterArtifact = await deployments.getArtifact("UniswapV2Router02");
+    const UniswapV2Router = await ethers.getContractFactory(UniswapV2RouterArtifact.abi, UniswapV2RouterArtifact.bytecode, alice);
+    this.uniswapRouter = await UniswapV2Router.deploy(this.uniswapFactory.address, this.weth.address);
+
+    await deployPancakeSwapPairs({
+      tokens: [
+        { token: this.linkToken, liquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 2), wethLiquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 4) },
+        { token: this.usdcToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 1), wethLiquidityAmount: (10e18).toString() },
+        { token: this.usdtToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 1), wethLiquidityAmount: (10e18).toString() }
+      ],
+      weth: this.weth,
+      provider: alice,
+      router: this.uniswapRouter,
+      factory: this.uniswapFactory
+    })
 
     this.timelock = 1;
     this.slashingTreasuryAddress = alice;
@@ -171,10 +236,10 @@ contract("DelegatedStaking", function() {
     this.mockFeeProxy = await MockFeeProxy.new(this.uniswapFactory.address, this.weth.address, this.slashingTreasuryAddress);
     this.DelegatedStaking = await ethers.getContractFactory("DelegatedStaking", alice);
     this.delegatedStaking = await upgrades.deployProxy(this.DelegatedStaking, [
-        this.timelock,
-        this.mockPriceConsumer.address,
-        this.mockFeeProxy.address,
-        this.slashingTreasuryAddress
+      this.timelock,
+      this.mockPriceConsumer.address,
+      this.mockFeeProxy.address,
+      this.slashingTreasuryAddress
     ]);
     await this.delegatedStaking.deployed();
 
@@ -211,7 +276,7 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test management main properties", async () => {
-    it("should update if called by admin", async function() {
+    it("should update if called by admin", async function () {
       assert.equal((await this.delegatedStaking.minProfitSharingBPS()).toString(), 5000);
       await this.delegatedStaking.setMinProfitSharing(100);
       assert.equal((await this.delegatedStaking.minProfitSharingBPS()).toString(), 100);
@@ -224,7 +289,7 @@ contract("DelegatedStaking", function() {
         "WrongArgument()"
       );
     });
-    it("should fail if called by non admin", async function() {
+    it("should fail if called by non admin", async function () {
       await expectRevert(
         this.delegatedStaking.connect(eveAccount).setMinProfitSharing(10001),
         "AdminBadRole()"
@@ -233,7 +298,7 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test management validators", async () => {
-    it("should add if called by admin", async function() {
+    it("should add if called by admin", async function () {
       await this.delegatedStaking.addValidator(bob, alice, 1, 2500);
       await this.delegatedStaking.addValidator(david, alice, 1, 5000);
       await this.delegatedStaking.addValidator(sarah, alice, 2, 10000);
@@ -259,13 +324,13 @@ contract("DelegatedStaking", function() {
       assert.equal(davidOracle.profitSharingBPS, 5000);
       assert.equal(sarahOracle.profitSharingBPS, 10000);
     });
-    it("should fail if called by non admin", async function() {
+    it("should fail if called by non admin", async function () {
       await expectRevert(
         this.delegatedStaking.connect(eveAccount).addValidator(sarah, alice, 2, 10000),
         "AdminBadRole()"
       );
     });
-    it("should increase profit sharing if less than new minimum", async function() {
+    it("should increase profit sharing if less than new minimum", async function () {
       const bobOracle = await this.delegatedStaking.getValidatorInfo(bob);
       const davidOracle = await this.delegatedStaking.getValidatorInfo(david);
       const sarahOracle = await this.delegatedStaking.getValidatorInfo(sarah);
@@ -289,7 +354,7 @@ contract("DelegatedStaking", function() {
       const bobOracleReset = await this.delegatedStaking.getValidatorInfo(bob);
       assert.equal(bobOracleReset.profitSharingBPS.toString(), bobSharingBefore.toString());
     });
-    it("should update validator", async function() {
+    it("should update validator", async function () {
       const bobOracle = await this.delegatedStaking.getValidatorInfo(bob);
       assert.equal(bobOracle.isEnabled, true);
       await this.delegatedStaking.updateValidator(bob, false);
@@ -310,7 +375,7 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test management collaterals", async () => {
-    it("should add if called by admin", async function() {
+    it("should add if called by admin", async function () {
       await this.delegatedStaking.addCollateral(this.linkToken.address, false, MaxUint256);
       await this.delegatedStaking.addCollateral(this.usdcToken.address, true, MaxUint256);
       await this.delegatedStaking.addCollateral(this.usdtToken.address, true, MaxUint256);
@@ -329,7 +394,7 @@ contract("DelegatedStaking", function() {
       assert.equal(usdcCollateral.maxStakeAmount.toString(), MaxUint256);
       assert.equal(usdtCollateral.maxStakeAmount.toString(), MaxUint256);
     });
-    it("should enable/disable, set maxStakeAmount if called by admin", async function() {
+    it("should enable/disable, set maxStakeAmount if called by admin", async function () {
       await this.delegatedStaking.updateCollateralEnabled(this.linkToken.address, false);
       await this.delegatedStaking.updateCollateral(this.linkToken.address, 100);
       let collateralInfo = await this.delegatedStaking.collaterals(this.linkToken.address);
@@ -342,7 +407,7 @@ contract("DelegatedStaking", function() {
       assert.equal(collateralInfo.isEnabled, true);
       assert.equal(collateralInfo.maxStakeAmount.toString(), MaxUint256);
     });
-    it("should fail if called by non admin", async function() {
+    it("should fail if called by non admin", async function () {
       await expectRevert(
         this.delegatedStaking.connect(eveAccount).addCollateral(this.usdtToken.address, true, MaxUint256),
         "AdminBadRole()"
@@ -359,7 +424,7 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test management strategies", async () => {
-    it("should add if called by admin", async function() {
+    it("should add if called by admin", async function () {
       this.linkPrice = toWei("25");
       await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, this.linkPrice);
       await this.delegatedStaking.addStrategy(this.mockAaveController.address, this.linkToken.address, this.linkToken.address);
@@ -370,7 +435,7 @@ contract("DelegatedStaking", function() {
       assert.equal(strategy.exists, true);
       //TODO: check others properties
     });
-    it("should fail if called by non admin", async function() {
+    it("should fail if called by non admin", async function () {
       await expectRevert(
         this.delegatedStaking.connect(eveAccount).addStrategy(this.mockAaveController.address, this.linkToken.address, this.linkToken.address),
         "AdminBadRole()"
@@ -378,7 +443,7 @@ contract("DelegatedStaking", function() {
     });
   });
   context("Test limitation of staking", async () => {
-    it("fail in case of staking undefined collateral", async function() {
+    it("fail in case of staking undefined collateral", async function () {
       const amount = toWei("10");
       const collateral = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       await expectRevert(
@@ -387,7 +452,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("fail in case of staking collateral not enabled", async function() {
+    it("fail in case of staking collateral not enabled", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateCollateralEnabled(collateral, false);
@@ -398,7 +463,7 @@ contract("DelegatedStaking", function() {
       await this.delegatedStaking.updateCollateralEnabled(collateral, true);
     });
 
-    it("fail in case of collateral staking exceeded", async function() {
+    it("fail in case of collateral staking exceeded", async function () {
       const amount = toWei("1000");
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateCollateral(collateral, toWei("100"));
@@ -411,11 +476,11 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test staking different amounts", async () => {
-    beforeEach(async function() {
+    beforeEach(async function () {
 
     });
 
-    it("should stake [0, 100, 900, 0] link tokens to bob validator (called by alice)", async function() {
+    it("should stake [0, 100, 900, 0] link tokens to bob validator (called by alice)", async function () {
       const amounts = [0, toWei("100"), toWei("900"), 0];
       for (const amount of amounts) {
         console.log(`Process amount ${amount}`);
@@ -429,7 +494,6 @@ contract("DelegatedStaking", function() {
         const balanceBefore = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
         const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
-        console.log(prevValidatorCollateral,'prevValidatorCollateral')
         const prevCollateral = await this.delegatedStaking.collaterals(collateralAddress);
 
         await this.delegatedStaking.connect(delegarorAccount).stake(delegarorAccount.address, validatorAddress, collateralAddress, amount);
@@ -479,8 +543,8 @@ contract("DelegatedStaking", function() {
       }
     });
 
-    it("should stake [0, 1000, 9000, 0] USDC tokens to david validator (called by eve)", async function() {
-      const amounts = [0, 1000*1e6, 9000*1e6, 0];
+    it("should stake [0, 1000, 9000, 0] USDC tokens to david validator (called by eve)", async function () {
+      const amounts = [0, 1000 * 1e6, 9000 * 1e6, 0];
       for (const amount of amounts) {
         console.log(`Process amount ${amount}`);
         const collateralAddress = this.usdcToken.address;
@@ -524,8 +588,8 @@ contract("DelegatedStaking", function() {
       }
     });
 
-    it("should stake [0, 1000, 9000, 0] USDT tokens to sarah validator (called by sam)", async function() {
-      const amounts = [0, 1000*1e6, 9000*1e6, 0];
+    it("should stake [0, 1000, 9000, 0] USDT tokens to sarah validator (called by sam)", async function () {
+      const amounts = [0, 1000 * 1e6, 9000 * 1e6, 0];
       for (const amount of amounts) {
         console.log(`Process amount ${amount}`);
         const collateralAddress = this.usdtToken.address;
@@ -570,7 +634,7 @@ contract("DelegatedStaking", function() {
   });
 
   context("Stake for each validators pools", async () => {
-    before(async function() {
+    before(async function () {
       //We have
       // 1000 LINK in bob collateral
       // 10000 USDC in david collateral
@@ -585,10 +649,10 @@ contract("DelegatedStaking", function() {
         await this.delegatedStaking.connect(aliceAccount).stake(alice, validator, this.linkToken.address, linkAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(aliceAccount).stake(alice,validator, this.usdcToken.address, usdAmount);
+        await this.delegatedStaking.connect(aliceAccount).stake(alice, validator, this.usdcToken.address, usdAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(aliceAccount).stake(alice,validator, this.usdtToken.address, usdAmount);
+        await this.delegatedStaking.connect(aliceAccount).stake(alice, validator, this.usdtToken.address, usdAmount);
       }
       // await this.delegatedStaking.connect(eveAccount).stake(bob, this.usdcToken.address, usdAmount);
       // await this.delegatedStaking.connect(eveAccount).stake(sarah, this.usdcToken.address, usdAmount);
@@ -596,7 +660,7 @@ contract("DelegatedStaking", function() {
         await this.delegatedStaking.connect(eveAccount).stake(eve, validator, this.linkToken.address, linkAmount);
       }
       for (const validator of allValidatorsAddresses) {
-        await this.delegatedStaking.connect(eveAccount).stake(eve,validator, this.usdcToken.address, usdAmount);
+        await this.delegatedStaking.connect(eveAccount).stake(eve, validator, this.usdcToken.address, usdAmount);
       }
       for (const validator of allValidatorsAddresses) {
         await this.delegatedStaking.connect(eveAccount).stake(eve, validator, this.usdtToken.address, usdAmount);
@@ -613,14 +677,14 @@ contract("DelegatedStaking", function() {
         await this.delegatedStaking.connect(samAccount).stake(sam, validator, this.usdtToken.address, usdAmount);
       }
     });
-    it("Checks correct pools staked amount", async function() {
+    it("Checks correct pools staked amount", async function () {
       const usdAmount = "10000000000"; //10k
       const linkAmount = toWei("1000"); //1k
       const allValidatorsAddresses = [bob, david, sarah];
       const allDelegatorsAddresses = [alice, eve, sam];
-      const specialAmounts = [[toWei("2000"), usdAmount, usdAmount ],
-                             [linkAmount, "20000000000", usdAmount],
-                             [linkAmount, usdAmount,"20000000000"]];
+      const specialAmounts = [[toWei("2000"), usdAmount, usdAmount],
+      [linkAmount, "20000000000", usdAmount],
+      [linkAmount, usdAmount, "20000000000"]];
       //Check each validator's collateral
       //         bob			        david			        sarah
       //        LINK	USDC	USDT	LINK	USDC	USDT	LINK	USDC	USDT
@@ -632,12 +696,12 @@ contract("DelegatedStaking", function() {
       // SAM	  1000	10000	10000	1000	10000	10000	1000	10000	20000
 
       for (const validator of allValidatorsAddresses) {
-        for(const delegator of allDelegatorsAddresses) {
+        for (const delegator of allDelegatorsAddresses) {
           const indexValidator = allValidatorsAddresses.indexOf(validator);
           const indexDelegator = allDelegatorsAddresses.indexOf(delegator);
-          const linkDelegatorIndo = await this.delegatedStaking.getDelegatorsInfo(validator,  this.linkToken.address, delegator);
-          const usdcDelegatorIndo = await this.delegatedStaking.getDelegatorsInfo(validator,  this.usdcToken.address, delegator);
-          const usdtDelegatorIndo = await this.delegatedStaking.getDelegatorsInfo(validator,  this.usdtToken.address, delegator);
+          const linkDelegatorIndo = await this.delegatedStaking.getDelegatorsInfo(validator, this.linkToken.address, delegator);
+          const usdcDelegatorIndo = await this.delegatedStaking.getDelegatorsInfo(validator, this.usdcToken.address, delegator);
+          const usdtDelegatorIndo = await this.delegatedStaking.getDelegatorsInfo(validator, this.usdtToken.address, delegator);
           if (indexValidator == indexDelegator) {
             assert.equal(linkDelegatorIndo.shares.toString(), specialAmounts[indexDelegator][0]);
             assert.equal(usdcDelegatorIndo.shares.toString(), specialAmounts[indexDelegator][1]);
@@ -656,7 +720,7 @@ contract("DelegatedStaking", function() {
     });
 
     context("distribute rewards (1000 USDT)", async () => {
-      before(async function() {
+      before(async function () {
 
         console.log(`bob: ${bob}`);
         console.log(`david: ${david}`);
@@ -678,7 +742,7 @@ contract("DelegatedStaking", function() {
         await this.delegatedStaking.sendRewards(this.rewardCollateralAddress, this.rewardCollateralAmount);
         await this.delegatedStaking.distributeValidatorRewards(this.rewardCollateralAddress);
       });
-      it("Checks correct values", async function() {
+      it("Checks correct values", async function () {
         const collateralInfo = await this.delegatedStaking.collaterals(this.rewardCollateralAddress);
         assert.equal(this.prevCollateralInfo.totalLocked.add(this.rewardCollateralAmount).toString(), collateralInfo.totalLocked.toString());
         assert.equal(this.prevCollateralInfo.rewards.add(this.rewardCollateralAmount).toString(), collateralInfo.rewards.toString());
@@ -704,7 +768,7 @@ contract("DelegatedStaking", function() {
         //TOOD: check that other collaterals didn't change
       });
 
-      it("Alice unstake all USDT shares from bob", async function() {
+      it("Alice unstake all USDT shares from bob", async function () {
         console.log("Alice unstake all USDT shares from bob");
         const collateralAddress = this.usdtToken.address;
         const collateralToken = this.usdtToken;
@@ -720,10 +784,10 @@ contract("DelegatedStaking", function() {
         const currentDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
         let receipt = await unstakeTx.wait();
         console.log(receipt);
-        let unstakeRequestedEvent = receipt.events?.find((x) => {return x.event == "UnstakeRequested"});
-        console.log("shares: "+ unstakeRequestedEvent.args.shares.toString());
-        console.log("tokenAmount: "+ unstakeRequestedEvent.args.tokenAmount.toString());
-        console.log("index: "+ unstakeRequestedEvent.args.index.toString());
+        let unstakeRequestedEvent = receipt.events?.find((x) => { return x.event == "UnstakeRequested" });
+        console.log("shares: " + unstakeRequestedEvent.args.shares.toString());
+        console.log("tokenAmount: " + unstakeRequestedEvent.args.tokenAmount.toString());
+        console.log("index: " + unstakeRequestedEvent.args.index.toString());
 
         // assert.equal(prevDelegatorsInfo.shares.toString(), toWei("2000"));
         // assert.equal(currentDelegatorsInfo.shares.toString(), toWei("0"));
@@ -733,18 +797,18 @@ contract("DelegatedStaking", function() {
         let unstakeTxLINK = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, this.linkToken.address, alice, "7777777777777777777777");//prevDelegatorsInfo.shares.toString());
         receipt = await unstakeTxLINK.wait();
         console.log(receipt);
-        unstakeRequestedEvent = receipt.events?.find((x) => {return x.event == "UnstakeRequested"});
-        console.log("shares: "+ unstakeRequestedEvent.args.shares.toString());
-        console.log("tokenAmount: "+ unstakeRequestedEvent.args.tokenAmount.toString());
-        console.log("index: "+ unstakeRequestedEvent.args.index.toString());
+        unstakeRequestedEvent = receipt.events?.find((x) => { return x.event == "UnstakeRequested" });
+        console.log("shares: " + unstakeRequestedEvent.args.shares.toString());
+        console.log("tokenAmount: " + unstakeRequestedEvent.args.tokenAmount.toString());
+        console.log("index: " + unstakeRequestedEvent.args.index.toString());
         console.log("unstakeTxUSDC: -------------------------------------------- ");
         let unstakeTxUSDC = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, this.usdcToken.address, alice, "7777777777777777777777");//prevDelegatorsInfo.shares.toString());
         receipt = await unstakeTxUSDC.wait();
         console.log(receipt);
-        unstakeRequestedEvent = receipt.events?.find((x) => {return x.event == "UnstakeRequested"});
-        console.log("shares: "+ unstakeRequestedEvent.args.shares.toString());
-        console.log("tokenAmount: "+ unstakeRequestedEvent.args.tokenAmount.toString());
-        console.log("index: "+ unstakeRequestedEvent.args.index.toString());
+        unstakeRequestedEvent = receipt.events?.find((x) => { return x.event == "UnstakeRequested" });
+        console.log("shares: " + unstakeRequestedEvent.args.shares.toString());
+        console.log("tokenAmount: " + unstakeRequestedEvent.args.tokenAmount.toString());
+        console.log("index: " + unstakeRequestedEvent.args.index.toString());
 
         // assert.equal(balanceBefore.add(toWei("2000")).toString(), balanceAfter.toString());
 
@@ -929,7 +993,7 @@ contract("DelegatedStaking", function() {
   // });
 
   context("Test request unstaking of different amounts by oracle", async () => {
-    it("should unstake 0 tokens", async function() {
+    it("should unstake 0 tokens", async function () {
       const amount = 0;
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -939,11 +1003,11 @@ contract("DelegatedStaking", function() {
       assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
     });
 
-    before(async function() {
+    before(async function () {
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, bob, this.linkToken.address, toWei("5"));
     })
-    it("should unstake 5 tokens", async function() {
+    it("should unstake 5 tokens", async function () {
       const amount = toWei("5");
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -955,7 +1019,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("unstaking all balance in case of unstaking greater than balance", async function() {
+    it("unstaking all balance in case of unstaking greater than balance", async function () {
       const amount = toWei("3200000");
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -970,7 +1034,7 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test request unstaking of different amounts by delegator", async () => {
-    before(async function() {
+    before(async function () {
       const amount = toWei("100");
       const collateral = this.linkToken.address;
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: david });
@@ -980,7 +1044,7 @@ contract("DelegatedStaking", function() {
       await this.delegatedStaking.connect(eveAccount).stake(eveAccount.address, david, collateral, amount);
     });
 
-    it("should unstake 0 tokens", async function() {
+    it("should unstake 0 tokens", async function () {
       const amount = 0;
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -992,7 +1056,7 @@ contract("DelegatedStaking", function() {
       assert.equal(prevDelegation.shares.toString(), currentDelegation.shares.toString());
     });
 
-    it("should unstake 5 shares", async function() {
+    it("should unstake 5 shares", async function () {
       const amount = toWei("5");
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1014,11 +1078,11 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test request unstaking permissions", async () => {
-    before(async function() {
+    before(async function () {
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, bob, this.linkToken.address, toWei("10"));
     })
-    it("should unstake by admin", async function() {
+    it("should unstake by admin", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(bob, collateral, alice);
@@ -1030,7 +1094,7 @@ contract("DelegatedStaking", function() {
       const sharesBurned = amount * sharePrice
       console.log(sharesBurned.toString(), 'sharesBurned');
       assert.equal(
-        prevDelegation.shares.sub(toBN(sharesBurned)).toString(), 
+        prevDelegation.shares.sub(toBN(sharesBurned)).toString(),
         currentDelegation.shares.toString(),
         'shares amount mismatch'
       );
@@ -1042,14 +1106,14 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test execute unstaking of different amounts", async () => {
-    before(async function() {
+    before(async function () {
       const amount = toWei("100");
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, sarah, this.linkToken.address, amount);
       await this.delegatedStaking.requestUnstake(sarah, this.linkToken.address, alice, toWei("10"));
     })
 
-    it("fail in case of execute unstaking before timelock", async function() {
+    it("fail in case of execute unstaking before timelock", async function () {
       await this.delegatedStaking.requestUnstake(sarah, this.linkToken.address, alice, toWei("10"));
       await expectRevert(
         this.delegatedStaking.executeUnstake(sarah, [1]),
@@ -1057,14 +1121,14 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("fail in case of execute unstaking from future", async function() {
+    it("fail in case of execute unstaking from future", async function () {
       await expectRevert(
         this.delegatedStaking.executeUnstake(sarah, [10]),
         "WrongRequest(10)"
       );
     });
 
-    it("should execute unstake", async function() {
+    it("should execute unstake", async function () {
       await sleep(2000);
       const withdrawalId = 0;
       const prevWithdrawalInfo = await this.delegatedStaking.getWithdrawalRequest(sarah, withdrawalId)
@@ -1085,7 +1149,7 @@ contract("DelegatedStaking", function() {
       assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
     });
 
-    it("fail in case of execute unstaking twice", async function() {
+    it("fail in case of execute unstaking twice", async function () {
       await expectRevert(
         this.delegatedStaking.executeUnstake(sarah, [0]),
         "AlreadyExecuted(0)"
@@ -1094,14 +1158,14 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test cancel unstake", async () => {
-    before(async function() {
+    before(async function () {
       const amount = toWei("100");
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, sarah, this.linkToken.address, amount);
       //await this.delegatedStaking.requestUnstake(sarah, this.linkToken.address, alice, amount);
     });
 
-    it("should cancel unstake 10 shares", async function() {
+    it("should cancel unstake 10 shares", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       await this.delegatedStaking.requestUnstake(sarah, collateral, alice, amount);
@@ -1120,7 +1184,7 @@ contract("DelegatedStaking", function() {
         currentCollateral.totalLocked.toString()
       );
     });
-    it("should fail cancel unstake if already executed", async function() {
+    it("should fail cancel unstake if already executed", async function () {
       await expectRevert(
         this.delegatedStaking.cancelUnstake(sarah, [0]),
         "AlreadyExecuted(0)");
@@ -1128,13 +1192,13 @@ contract("DelegatedStaking", function() {
   });
 
   context.skip("Test liquidate different amounts", async () => {
-    before(async function() {
+    before(async function () {
       const amount = toWei("10");
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, bob, this.linkToken.address, amount);
     })
 
-    it("should execute liquidate 0 tokens", async function() {
+    it("should execute liquidate 0 tokens", async function () {
       const amount = toWei("0");
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1150,7 +1214,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("should execute liquidate of normal amount of tokens", async function() {
+    it("should execute liquidate of normal amount of tokens", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1166,7 +1230,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("fail in case of liquidate of too many tokens", async function() {
+    it("fail in case of liquidate of too many tokens", async function () {
       const amount = toWei("1000");
       const collateral = this.linkToken.address;
       await expectRevert(
@@ -1177,12 +1241,12 @@ contract("DelegatedStaking", function() {
   });
 
   context.skip("Test liquidate by different users", async () => {
-    before(async function() {
+    before(async function () {
       const amount = toWei("10");
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, bob, this.linkToken.address, amount);
     })
-    it("should execute liquidate by admin", async function() {
+    it("should execute liquidate by admin", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1198,7 +1262,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("fail in case of liquidate by non-admin", async function() {
+    it("fail in case of liquidate by non-admin", async function () {
       const amount = toWei("1");
       const collateral = this.linkToken.address;
       await expectRevert(
@@ -1209,14 +1273,14 @@ contract("DelegatedStaking", function() {
   });
 
   context.skip("Test withdraw different liquidated amounts", async () => {
-    before(async function() {
+    before(async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, bob, collateral, amount);
       await this.delegatedStaking['liquidate(address,address,uint256)'](bob, collateral, amount);
     })
-    it("should execute withdrawal of 0 liquidated tokens", async function() {
+    it("should execute withdrawal of 0 liquidated tokens", async function () {
       const amount = toWei("0");
       const collateral = this.linkToken.address;
       const recepient = alice;
@@ -1239,7 +1303,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("should execute liquidate of normal amount of tokens", async function() {
+    it("should execute liquidate of normal amount of tokens", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       const recepient = alice;
@@ -1262,7 +1326,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("fail in case of withdrawal of too many tokens", async function() {
+    it("fail in case of withdrawal of too many tokens", async function () {
       const amount = toWei("1000");
       const collateral = this.linkToken.address;
       await expectRevert(
@@ -1273,14 +1337,14 @@ contract("DelegatedStaking", function() {
   });
 
   context.skip("Test withdraw liquidated funds by different users", async () => {
-    before(async function() {
+    before(async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.delegatedStaking.stake(alice, bob, collateral, amount);
       await this.delegatedStaking['liquidate(address,address,uint256)'](bob, collateral, amount);
     })
-    it("should execute withdrawal by the admin", async function() {
+    it("should execute withdrawal by the admin", async function () {
       const amount = toWei("1");
       const collateral = this.linkToken.address;
       const recepient = alice;
@@ -1303,7 +1367,7 @@ contract("DelegatedStaking", function() {
       );
     });
 
-    it("fail in case of withdrawal by non-admin", async function() {
+    it("fail in case of withdrawal by non-admin", async function () {
       const amount = toWei("1");
       const collateral = this.linkToken.address;
       await expectRevert(
@@ -1314,12 +1378,12 @@ contract("DelegatedStaking", function() {
   });
 
   context("Test rewards distribution", async () => {
-    before(async function() {
+    before(async function () {
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
       await this.delegatedStaking.connect(eveAccount).stake(eveAccount.address, bob, this.linkToken.address, toWei("200"));
     });
-    it("should pay for oracle who set profit sharing as zero", async function() {
+    it("should pay for oracle who set profit sharing as zero", async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("100");
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1329,7 +1393,7 @@ contract("DelegatedStaking", function() {
 
       assert.equal(prevCollateral.totalLocked.add(toBN(amount)).toString(), currentCollateral.totalLocked.toString());
     });
-    it("should pay for oracle who shares profit with delegators", async function() {
+    it("should pay for oracle who shares profit with delegators", async function () {
       const collateral = this.linkToken.address;
       const dependsCollateral = this.usdcToken.address;
       const amount = toWei("100"), amountForDelegator = toWei("25");
@@ -1346,14 +1410,14 @@ contract("DelegatedStaking", function() {
       const currentSharePrice = await this.delegatedStaking.getPricePerFullValidatorShare(david, collateral);
 
       assert.equal(prevCollateral.totalLocked.add(toBN(amount)).toString(), currentCollateral.totalLocked.toString());
-      
+
       assert.equal(
         prevDelegation.shares.toString(),
         currentDelegation.shares.toString()
       );
       assert(prevSharePrice.toString() <= currentSharePrice.toString(), "tokenPrice does not increase");
     });
-    it("fail in case of reward collateral not enabled", async function() {
+    it("fail in case of reward collateral not enabled", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateCollateralEnabled(collateral, false);
@@ -1366,7 +1430,7 @@ contract("DelegatedStaking", function() {
   });
 
   context.skip("Test deposit to strategy", async () => {
-    it("should fail if strategy not enabled", async function() {
+    it("should fail if strategy not enabled", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address
       const strategy = this.mockAaveController.address;
@@ -1377,7 +1441,7 @@ contract("DelegatedStaking", function() {
       );
       await this.delegatedStaking.updateStrategy(strategy, collateral, true);
     });
-    it("should fail if delegator !exist", async function() {
+    it("should fail if delegator !exist", async function () {
       const amount = toWei("10");
       const strategy = this.mockAaveController.address;
       await expectRevert(
@@ -1385,7 +1449,7 @@ contract("DelegatedStaking", function() {
         "delegator !exist"
       );
     });
-    it("should update balances after deposit to aave", async function() {
+    it("should update balances after deposit to aave", async function () {
       const stakeAmount = toWei("100");
       const amount = toWei("10");
       const collateral = this.linkToken.address;
@@ -1421,7 +1485,7 @@ contract("DelegatedStaking", function() {
         currentStrategyStakes[1].toString()
       );
     });
-    it("should update balances after deposit to compound", async function() {
+    it("should update balances after deposit to compound", async function () {
       const stakeAmount = toWei("100");
       const amount = toWei("10");
       const collateral = this.linkToken.address;
@@ -1457,7 +1521,7 @@ contract("DelegatedStaking", function() {
         currentStrategyStakes[1].toString()
       );
     });
-    it("should update balances after deposit to yearn", async function() {
+    it("should update balances after deposit to yearn", async function () {
       const stakeAmount = toWei("100");
       const amount = toWei("10");
       const collateral = this.linkToken.address;
@@ -1493,7 +1557,7 @@ contract("DelegatedStaking", function() {
         currentStrategyStakes[1].toString()
       );
     });
-    it("should fail when deposit insufficient fund", async function() {
+    it("should fail when deposit insufficient fund", async function () {
       const amount = toWei("320000");
       const strategy = this.mockAaveController.address;
       await expectRevert(this.delegatedStaking.depositToStrategy(bob, amount, strategy, this.linkToken.address), "bad amount");
@@ -1501,22 +1565,22 @@ contract("DelegatedStaking", function() {
   });
 
   context.skip("Test withdraw from strategy", async () => {
-    before(async function() {
+    before(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
       const strategy = this.mockAaveController.address;
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
-      await this.delegatedStaking.stake(alice ,david, collateral, amount);
+      await this.delegatedStaking.stake(alice, david, collateral, amount);
       await this.delegatedStaking.stake(alice, bob, collateral, toWei("100"));
       await this.delegatedStaking.connect(eveAccount).stake(david, collateral, amount);
       await this.delegatedStaking.connect(eveAccount).stake(bob, collateral, amount);
       await this.delegatedStaking.depositToStrategy(david, toWei("10"), strategy, collateral);
       await this.delegatedStaking.depositToStrategy(bob, toWei("10"), strategy, collateral);
       await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("10"), strategy, collateral);
-      await this.lendingPool.increaseCurrentTime(60*24*60*60);
+      await this.lendingPool.increaseCurrentTime(60 * 24 * 60 * 60);
     });
-    it("should fail if strategy not enabled", async function() {
+    it("should fail if strategy not enabled", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
       const strategy = this.mockAaveController.address;
@@ -1527,7 +1591,7 @@ contract("DelegatedStaking", function() {
       );
       await this.delegatedStaking.updateStrategy(strategy, collateral, true);
     });
-    it("should fail if delegator !exist", async function() {
+    it("should fail if delegator !exist", async function () {
       const amount = toWei("10");
       const strategy = this.mockAaveController.address;
       await expectRevert(
@@ -1535,12 +1599,12 @@ contract("DelegatedStaking", function() {
         "delegator !exist"
       );
     });
-    it("should fail when withdraw insufficient share", async function() {
+    it("should fail when withdraw insufficient share", async function () {
       const amount = toWei("320000");
       const strategy = this.mockAaveController.address;
       await expectRevert(this.delegatedStaking.withdrawFromStrategy(bob, amount, strategy, this.linkToken.address), "bad amount");
     });
-    it("should decrement strategy and deposit info after withdraw from aave", async function() {
+    it("should decrement strategy and deposit info after withdraw from aave", async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("100");
       const strategy = this.mockAaveController.address;
@@ -1567,7 +1631,7 @@ contract("DelegatedStaking", function() {
         "shares decrease"
       );
     });
-    it("should increase staking after oracle withdraw from aave", async function() {
+    it("should increase staking after oracle withdraw from aave", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockAaveController.address;
 
@@ -1587,7 +1651,7 @@ contract("DelegatedStaking", function() {
       );
 
     });
-    it("should increase stakes after delegator withdraw from aave", async function() {
+    it("should increase stakes after delegator withdraw from aave", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockAaveController.address;
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eve);
@@ -1596,7 +1660,7 @@ contract("DelegatedStaking", function() {
 
       assert(prevDelegation.locked.toString() > currentDelegation.locked.toString());
     });
-    it("should decrement strategy and deposit info after withdraw from compound", async function() {
+    it("should decrement strategy and deposit info after withdraw from compound", async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("100");
       const strategy = this.mockAaveController.address;
@@ -1623,7 +1687,7 @@ contract("DelegatedStaking", function() {
         "shares decrease"
       );
     });
-    it("should increase staking after oracle withdraw from compound", async function() {
+    it("should increase staking after oracle withdraw from compound", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockCompoundController.address;
 
@@ -1643,7 +1707,7 @@ contract("DelegatedStaking", function() {
       );
 
     });
-    it("should increase stakes after delegator withdraw from compound", async function() {
+    it("should increase stakes after delegator withdraw from compound", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockCompoundController.address;
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eve);
@@ -1652,7 +1716,7 @@ contract("DelegatedStaking", function() {
 
       assert(prevDelegation.locked.toString() > currentDelegation.locked.toString());
     });
-    it("should decrement strategy and deposit info after withdraw from yearn", async function() {
+    it("should decrement strategy and deposit info after withdraw from yearn", async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("100");
       const strategy = this.mockCompoundController.address;
@@ -1679,7 +1743,7 @@ contract("DelegatedStaking", function() {
         "shares decrease"
       );
     });
-    it("should increase staking after oracle withdraw from yearn", async function() {
+    it("should increase staking after oracle withdraw from yearn", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockYearnController.address;
 
@@ -1699,7 +1763,7 @@ contract("DelegatedStaking", function() {
       );
 
     });
-    it("should increase stakes after delegator withdraw from yearn", async function() {
+    it("should increase stakes after delegator withdraw from yearn", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockYearnController.address;
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eve);
@@ -1708,7 +1772,7 @@ contract("DelegatedStaking", function() {
 
       assert(prevDelegation.locked.toString() > currentDelegation.locked.toString());
     });
-    it("should increment reward balances", async function() {
+    it("should increment reward balances", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockYearnController.address;
       const prevRewards = await this.delegatedStaking.getRewards(bob, collateral);
@@ -1723,8 +1787,8 @@ contract("DelegatedStaking", function() {
     });
   });
 
-  context.skip("Test emergency withdraw from strategy", async function() {
-    beforeEach(async function() {
+  context.skip("Test emergency withdraw from strategy", async function () {
+    beforeEach(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
       const strategy = this.mockAaveController.address;
@@ -1737,16 +1801,16 @@ contract("DelegatedStaking", function() {
       await this.delegatedStaking.depositToStrategy(david, toWei("100"), strategy, collateral);
       await this.delegatedStaking.depositToStrategy(bob, toWei("100"), strategy, collateral);
       await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("100"), strategy, collateral);
-      await this.lendingPool.increaseCurrentTime(60*24*60*60);
+      await this.lendingPool.increaseCurrentTime(60 * 24 * 60 * 60);
     });
-    it("should fail if not called by contract admin", async function() {
+    it("should fail if not called by contract admin", async function () {
       const strategy = this.mockAaveController.address;
       await expectRevert(
         this.delegatedStaking.connect(bobAccount).emergencyWithdrawFromStrategy(strategy, this.linkToken.address),
         "onlyAdmin"
       );
     });
-    it("should fail if strategy not enabled", async function() {
+    it("should fail if strategy not enabled", async function () {
       const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateStrategy(strategy, collateral, false);
@@ -1756,7 +1820,7 @@ contract("DelegatedStaking", function() {
       );
       await this.delegatedStaking.updateStrategy(strategy, collateral, true);
     });
-    it("should disable aave strategy and set recoverable", async function() {
+    it("should disable aave strategy and set recoverable", async function () {
       const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1775,9 +1839,9 @@ contract("DelegatedStaking", function() {
         prevStrategyStakes[0].toString() <=
         currentStrategyStakes[0].toString()
       );
-    await this.delegatedStaking.resetStrategy(strategy, collateral);
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
-    it("should disable compound strategy and set recoverable", async function() {
+    it("should disable compound strategy and set recoverable", async function () {
       const strategy = this.mockCompoundController.address;
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1796,9 +1860,9 @@ contract("DelegatedStaking", function() {
         prevStrategyStakes[0].toString() <=
         currentStrategyStakes[0].toString()
       );
-    await this.delegatedStaking.resetStrategy(strategy, collateral);
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
-    it("should disable yearn strategy and set recoverable", async function() {
+    it("should disable yearn strategy and set recoverable", async function () {
       const strategy = this.mockYearnController.address;
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1817,12 +1881,12 @@ contract("DelegatedStaking", function() {
         prevStrategyStakes[0].toString() <=
         currentStrategyStakes[0].toString()
       );
-    await this.delegatedStaking.resetStrategy(strategy, collateral);
+      await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
   });
 
   context.skip("Test recover from emergency", async () => {
-    beforeEach(async function() {
+    beforeEach(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
       const strategy = this.mockAaveController.address;
@@ -1838,10 +1902,10 @@ contract("DelegatedStaking", function() {
       await this.delegatedStaking.depositToStrategy(david, toWei("100"), strategy, collateral);
       await this.delegatedStaking.depositToStrategy(bob, toWei("100"), strategy, collateral);
       await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("100"), strategy, collateral);
-      await this.lendingPool.increaseCurrentTime(60*24*60*60);
+      await this.lendingPool.increaseCurrentTime(60 * 24 * 60 * 60);
       await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy, collateral);
     });
-    it("should fail if strategy enabled", async function() {
+    it("should fail if strategy enabled", async function () {
       const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateStrategy(strategy, collateral, true);
@@ -1850,7 +1914,7 @@ contract("DelegatedStaking", function() {
         "strategy enabled"
       );
     });
-    it("should fail if funds not recoverable", async function() {
+    it("should fail if funds not recoverable", async function () {
       const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       await this.delegatedStaking.updateStrategy(strategy, collateral, false);
@@ -1861,7 +1925,7 @@ contract("DelegatedStaking", function() {
       );
       await this.delegatedStaking.updateStrategyRecoverable(strategy, collateral, true);
     });
-    it("should succeed if called by non contract admin", async function() {
+    it("should succeed if called by non contract admin", async function () {
       const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       const txReceipt = await this.delegatedStaking.connect(samAccount).recoverFromEmergency(strategy, this.linkToken.address, [david, bob]);
@@ -1892,7 +1956,7 @@ contract("DelegatedStaking", function() {
         );
       await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
-    it("should decrease strategy shares and reserves", async function() {
+    it("should decrease strategy shares and reserves", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockAaveController.address;
       const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
@@ -1920,21 +1984,21 @@ contract("DelegatedStaking", function() {
       );
       await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
-    it("should reset oracle locked", async function() {
+    it("should reset oracle locked", async function () {
       const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       await this.delegatedStaking.recoverFromEmergency(strategy, collateral, [david, bob]);
       await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
-    it("should reset delegator locked", async function() {
+    it("should reset delegator locked", async function () {
       const strategy = this.mockAaveController.address;
       const collateral = this.linkToken.address;
       await this.delegatedStaking.recoverFromEmergency(strategy, collateral, [david, bob]);
       await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
   });
-  context.skip("Test simulate hack", async function() {
-    beforeEach(async function() {
+  context.skip("Test simulate hack", async function () {
+    beforeEach(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
       const strategy = this.mockAaveController.address;
@@ -1950,11 +2014,11 @@ contract("DelegatedStaking", function() {
       await this.delegatedStaking.depositToStrategy(david, toWei("100"), strategy, collateral);
       await this.delegatedStaking.depositToStrategy(bob, toWei("100"), strategy, collateral);
       await this.delegatedStaking.connect(eveAccount).depositToStrategy(david, toWei("100"), strategy, collateral);
-      await this.lendingPool.increaseCurrentTime(60*24*60*60);
+      await this.lendingPool.increaseCurrentTime(60 * 24 * 60 * 60);
       await this.aLinkToken.hack([bob, david, eve]);
       await this.delegatedStaking.emergencyWithdrawFromStrategy(strategy, collateral);
     });
-    it("should decrease stakes if funds are lost from hack", async function() {
+    it("should decrease stakes if funds are lost from hack", async function () {
       const collateral = this.linkToken.address;
       const strategy = this.mockAaveController.address;
       const prevStrategyStakes = await this.delegatedStaking.getStrategyStakes(strategy, collateral);
@@ -1984,17 +2048,17 @@ contract("DelegatedStaking", function() {
     });
   });
 
-  context.skip('Test upgrades', function() {
-    it('should succeed upgrading to v2', async function() {
+  context.skip('Test upgrades', function () {
+    it('should succeed upgrading to v2', async function () {
       const DelegatedStakingInitParams = require("../assets/delegatedStakingInitParams")["development"];
       const DelegatedStaking = await ethers.getContractFactory("DelegatedStaking");
       const DelegatedStakingV2 = await ethers.getContractFactory("DelegatedStakingV2");
       const collateral = this.linkToken.address;
       const instance = await upgrades.deployProxy(DelegatedStaking,
-      [
-        DelegatedStakingInitParams.timelock,
-        collateral
-      ]);
+        [
+          DelegatedStakingInitParams.timelock,
+          collateral
+        ]);
       const upgraded = await upgrades.upgradeProxy(instance.address, DelegatedStakingV2);
       const timelock = await upgraded.timelock();
       assert.equal(timelock.toString(), DelegatedStakingInitParams.timelock.toString());
