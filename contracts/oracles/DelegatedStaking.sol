@@ -1461,15 +1461,15 @@ contract DelegatedStaking is Initializable,
 
     /**
      * @dev Get withdrawal request.
-     * @param _delegator Delegator address.
+     * @param _validator Validator address.
      * @param _withdrawalId Withdrawal identifier.
      */
-    function getWithdrawalRequest(address _delegator, uint256 _withdrawalId)
+    function getWithdrawalRequest(address _validator, uint256 _withdrawalId)
         external
         view
         returns (WithdrawalInfo memory)
     {
-        return getWithdrawalRequests[_delegator].withdrawals[_withdrawalId];
+        return getWithdrawalRequests[_validator].withdrawals[_withdrawalId];
     }
 
     /**
