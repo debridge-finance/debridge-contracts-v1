@@ -68,7 +68,6 @@ contract DeBridgeGate is
     error GovMonitoringBadRole();
     error DebridgeNotFound();
 
-    error WrongChain();
     error WrongTargedChain();
     error WrongArgument();
     error WrongAutoArgument();
@@ -706,19 +705,19 @@ contract DeBridgeGate is
         bool _useAssetFee,
         uint32 _referralCode
     ) internal returns (uint256 newAmount, bytes32 debridgeId) {
-        // Run _permit first. Avoid Stack too deep,
+        // Run _permit first. Avoid Stack too deep
         if (_permit.length > 0) {
-                // call permit before transfering token
-                uint256 deadline = _permit.toUint256(0);
-                (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
-                IERC20Permit(_tokenAddress).permit(
-                    msg.sender,
-                    address(this),
-                    _amount,
-                    deadline,
-                    v,
-                    r,
-                    s);
+            // call permit before transfering token
+            uint256 deadline = _permit.toUint256(0);
+            (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
+            IERC20Permit(_tokenAddress).permit(
+                msg.sender,
+                address(this),
+                _amount,
+                deadline,
+                v,
+                r,
+                s);
         }
 
         TokenInfo memory nativeTokenInfo = getNativeInfo[_tokenAddress];
@@ -742,12 +741,14 @@ contract DeBridgeGate is
 
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) {
-            _addAsset(
-                debridgeId,
-                _tokenAddress == address(0) ? address(weth) : _tokenAddress,
-                abi.encodePacked(_tokenAddress),
-                getChainId()
-            );
+            if (isNativeToken) {
+                _addAsset(
+                    debridgeId,
+                    _tokenAddress == address(0) ? address(weth) : _tokenAddress,
+                    abi.encodePacked(_tokenAddress),
+                    getChainId()
+                );
+            } else revert DebridgeNotFound();
         }
 
         if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
@@ -776,8 +777,8 @@ contract DeBridgeGate is
             debridge.balance += _amount;
         }
         else {
-            IDeBridgeToken(debridge.tokenAddress).burn(_amount);
             debridge.balance -= _amount;
+            IDeBridgeToken(debridge.tokenAddress).burn(_amount);
         }
         return (_amount, debridgeId);
     }
@@ -909,9 +910,11 @@ contract DeBridgeGate is
         uint256 _amount,
         SubmissionAutoParamsFrom memory _autoParams
     ) internal {
-        _markAsUsed(_submissionId);
+        if (isSubmissionUsed[_submissionId]) revert SubmissionUsed();
+        isSubmissionUsed[_submissionId] = true;
 
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        if (!debridge.exist) revert DebridgeNotFound();
         // if (debridge.chainId != getChainId()) revert WrongChain();
         bool isMint = debridge.chainId != getChainId();
 
@@ -921,23 +924,8 @@ contract DeBridgeGate is
         else {
             debridge.balance -= _amount + _autoParams.executionFee;
         }
-        _processTransferFrom(
-            _submissionId,
-            debridge.tokenAddress,
-            _amount,
-            _receiver,
-            _autoParams,
-            isMint);
-    }
 
-    function _processTransferFrom(
-        bytes32 _submissionId,
-        address _token,
-        uint256 _amount,
-        address _receiver,
-        SubmissionAutoParamsFrom memory _autoParams,
-        bool isMint
-    ) internal {
+        address _token = debridge.tokenAddress;
         if (_autoParams.executionFee > 0) {
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isMint);
         }
@@ -969,6 +957,45 @@ contract DeBridgeGate is
         }
     }
 
+    // function _processTransferFrom(
+    //     bytes32 _submissionId,
+    //     address _token,
+    //     uint256 _amount,
+    //     address _receiver,
+    //     SubmissionAutoParamsFrom memory _autoParams,
+    //     bool isMint
+    // ) internal {
+    //     if (_autoParams.executionFee > 0) {
+    //         _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isMint);
+    //     }
+    //     if (_autoParams.data.length > 0) {
+    //         address callProxyAddress = _autoParams.flags.getFlag(Flags.PROXY_WITH_SENDER)
+    //             ? callProxyAddresses[Flags.PROXY_WITH_SENDER]
+    //             : callProxyAddresses[0];
+
+    //         _mintOrTransfer(_token, callProxyAddress, _amount, isMint);
+
+    //         bool status = ICallProxy(callProxyAddress).callERC20(
+    //             _token,
+    //             _autoParams.fallbackAddress,
+    //             _receiver,
+    //             _autoParams.data,
+    //             _autoParams.flags,
+    //             _autoParams.nativeSender
+    //         );
+    //         emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
+    //     } else if (!isMint
+    //         && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+    //         && _token == address(weth)
+    //     ) {
+    //         // transferring WETH with unwrap flag
+    //         weth.withdraw(_amount);
+    //         _safeTransferETH(_receiver, _amount);
+    //     } else {
+    //         _mintOrTransfer(_token, _receiver, _amount, isMint);
+    //     }
+    // }
+
     function _mintOrTransfer(
         address _token,
         address _receiver,
@@ -992,12 +1019,12 @@ contract DeBridgeGate is
         if (!success) revert EthTransferFailed();
     }
 
-    /// @dev Mark submission as used.
-    /// @param _submissionId Submission identifier.
-    function _markAsUsed(bytes32 _submissionId) internal {
-        if (isSubmissionUsed[_submissionId]) revert SubmissionUsed();
-        isSubmissionUsed[_submissionId] = true;
-    }
+    // // / @dev Mark submission as used.
+    // // / @param _submissionId Submission identifier.
+    // function _markAsUsed(bytes32 _submissionId) internal {
+    //     if (isSubmissionUsed[_submissionId]) revert SubmissionUsed();
+    //     isSubmissionUsed[_submissionId] = true;
+    // }
 
     /* VIEW */
 
