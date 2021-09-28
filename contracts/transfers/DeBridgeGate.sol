@@ -169,27 +169,28 @@ contract DeBridgeGate is
         uint32 _referralCode,
         bytes calldata _autoParams
     ) external payable override nonReentrant whenNotPaused {
-        bool isNativeToken;
+        // bool isNativeToken;
         bytes32 debridgeId;
+        FeeParams memory feeParams;
+        uint256 amountAfterFee;
         // the amount will be reduced by the protocol fee
-        (isNativeToken, _amount, debridgeId) = _send(
+        (amountAfterFee, debridgeId, feeParams) = _send(
             _permit,
             _tokenAddress,
             _amount,
             _chainIdTo,
-            _useAssetFee,
-            _referralCode
+            _useAssetFee
         );
 
-        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _amount);
-        _amount -= autoParams.executionFee;
+        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, amountAfterFee);
+        amountAfterFee -= autoParams.executionFee;
 
         //Avoid Stack too deep, try removing local variables
         bytes memory receiver = _receiver;
         bytes32 submissionId = getSubmissionIdTo(
             debridgeId,
             _chainIdTo,
-            _amount,
+            amountAfterFee,
             receiver,
             autoParams,
             _autoParams.length > 0
@@ -198,14 +199,15 @@ contract DeBridgeGate is
         emit Sent(
             submissionId,
             debridgeId,
-            _amount,
+            amountAfterFee,
             receiver,
             nonce,
             _chainIdTo,
             _referralCode,
+            feeParams,
             autoParams,
-            msg.sender,
-            isNativeToken
+            msg.sender
+            // isNativeToken
         );
         nonce++;
     }
@@ -604,13 +606,14 @@ contract DeBridgeGate is
         address _tokenAddress,
         uint256 _amount,
         uint256 _chainIdTo,
-        bool _useAssetFee,
-        uint32 _referralCode
+        bool _useAssetFee
     ) internal returns (
-        bool isNativeToken,
-        uint256 newAmount,
-        bytes32 debridgeId
+        // bool isNativeToken,
+        uint256 amountAfterFee,
+        bytes32 debridgeId,
+        FeeParams memory feeParams
     ) {
+        feeParams.receivedAmount = _amount;
         // Run _permit first. Avoid Stack too deep
         if (_permit.length > 0) {
             // call permit before transfering token
@@ -627,10 +630,11 @@ contract DeBridgeGate is
         }
 
         TokenInfo memory nativeTokenInfo = getNativeInfo[_tokenAddress];
-        isNativeToken = nativeTokenInfo.nativeChainId  == 0
+        bool isNativeToken = nativeTokenInfo.nativeChainId  == 0
             ? true // token not in mapping
             : nativeTokenInfo.nativeChainId == getChainId(); // token native chain id the same
 
+        feeParams.isNativeToken = isNativeToken;
         if (isNativeToken) {
             //We use WETH debridgeId for transfer ETH
             debridgeId = getDebridgeId(
@@ -671,62 +675,50 @@ contract DeBridgeGate is
             // Received real amount
             _amount = token.balanceOf(address(this)) - balanceBefore;
         }
-        _amount = _processFeeForTransfer(
-            debridgeId,
-            _amount,
-            _chainIdTo,
-            _useAssetFee,
-            _referralCode
-        );
+
+        //_processFeeForTransfer
+        {
+            ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
+            DiscountInfo memory discountInfo = feeDiscount[msg.sender];
+            DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[debridgeId];
+            uint256 assetsFixedFee;
+            if (_useAssetFee) {
+                assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
+                if (assetsFixedFee == 0) revert NotSupportedFixedFee();
+                //Calculate transfer fee with discount
+                assetsFixedFee = assetsFixedFee - (assetsFixedFee * discountInfo.discountFixBps) / BPS_DENOMINATOR;
+                feeParams.fixFee = assetsFixedFee;
+            } else {
+                // collect native fees
+                if (
+                    msg.value <
+                    chainSupportInfo.fixedNativeFee -
+                        (chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps) /
+                        BPS_DENOMINATOR
+                ) revert TransferAmountNotCoverFees();
+                bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
+                getDebridgeFeeInfo[nativeDebridgeId].collectedFees += msg.value;
+                feeParams.fixFee = msg.value;
+            }
+            // Calculate transfer fee with discount
+            uint256 transferFee = (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
+            transferFee = transferFee - (transferFee * discountInfo.discountTransferBps) / BPS_DENOMINATOR;
+            feeParams.transferFee = transferFee;
+            if (_amount < transferFee) revert TransferAmountNotCoverFees();
+            debridgeFee.collectedFees += transferFee + assetsFixedFee;
+            feeParams.transferFee = transferFee;
+            feeParams.useAssetFee = _useAssetFee;
+            amountAfterFee = _amount - transferFee - assetsFixedFee;
+        }
         // Is native token
         if (isNativeToken) {
-            debridge.balance += _amount;
+            debridge.balance += amountAfterFee;
         }
         else {
-            debridge.balance -= _amount;
-            IDeBridgeToken(debridge.tokenAddress).burn(_amount);
+            debridge.balance -= amountAfterFee;
+            IDeBridgeToken(debridge.tokenAddress).burn(amountAfterFee);
         }
-        return (isNativeToken, _amount, debridgeId);
-    }
-
-    function _processFeeForTransfer(
-        bytes32 _debridgeId,
-        uint256 _amount,
-        uint256 _chainIdTo,
-        bool _useAssetFee,
-        uint32 _referralCode
-    ) internal returns (uint256) {
-        ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
-        DiscountInfo memory discountInfo = feeDiscount[msg.sender];
-        DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        uint256 fixedFee;
-        if (_useAssetFee) {
-            fixedFee = debridgeFee.getChainFee[_chainIdTo];
-            if (fixedFee == 0) revert NotSupportedFixedFee();
-        } else {
-            // collect native fees
-            if (
-                msg.value <
-                chainSupportInfo.fixedNativeFee -
-                    (chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps) /
-                    BPS_DENOMINATOR
-            ) revert TransferAmountNotCoverFees();
-            bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
-            getDebridgeFeeInfo[nativeDebridgeId].collectedFees += msg.value;
-            emit CollectedFee(nativeDebridgeId, _referralCode, msg.value);
-        }
-        uint256 transferFee = (_amount * chainSupportInfo.transferFeeBps) /
-            BPS_DENOMINATOR +
-            fixedFee;
-        transferFee =
-            transferFee -
-            (transferFee * discountInfo.discountTransferBps) /
-            BPS_DENOMINATOR;
-        if (_amount < transferFee) revert TransferAmountNotCoverFees();
-        debridgeFee.collectedFees += transferFee;
-        emit CollectedFee(_debridgeId, _referralCode, transferFee);
-        _amount -= transferFee;
-        return _amount;
+        return (_amount, debridgeId, feeParams);
     }
 
     function _validateAutoParams(
