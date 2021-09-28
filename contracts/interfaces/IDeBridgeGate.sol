@@ -124,6 +124,7 @@ interface IDeBridgeGate {
     /* ========== EVENTS ========== */
 
     event Sent(
+        bool isNativeToken,
         bytes32 submissionId,
         bytes32 indexed debridgeId,
         uint256 amount,
@@ -136,6 +137,7 @@ interface IDeBridgeGate {
     ); // emited once the native tokens are locked to be sent to the other chain
 
     event Claimed(
+        bool isNativeToken,
         bytes32 submissionId,
         bytes32 indexed debridgeId,
         uint256 amount,

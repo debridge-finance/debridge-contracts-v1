@@ -169,9 +169,10 @@ contract DeBridgeGate is
         uint32 _referralCode,
         bytes calldata _autoParams
     ) external payable override nonReentrant whenNotPaused {
+        bool isNativeToken;
         bytes32 debridgeId;
         // the amount will be reduced by the protocol fee
-        (_amount, debridgeId) = _send(
+        (isNativeToken, _amount, debridgeId) = _send(
             _permit,
             _tokenAddress,
             _amount,
@@ -192,7 +193,9 @@ contract DeBridgeGate is
             _autoParams.length > 0
         );
 
+        // TODO: fix Stack too deep
         emit Sent(
+            isNativeToken,
             submissionId,
             debridgeId,
             _amount,
@@ -238,7 +241,7 @@ contract DeBridgeGate is
 
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
-        _claim(
+        bool isNativeToken =_claim(
             submissionId,
             _debridgeId,
             _receiver,
@@ -247,6 +250,7 @@ contract DeBridgeGate is
         );
 
         emit Claimed(
+            isNativeToken,
             submissionId,
             _debridgeId,
             _amount,
@@ -601,7 +605,11 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         bool _useAssetFee,
         uint32 _referralCode
-    ) internal returns (uint256 newAmount, bytes32 debridgeId) {
+    ) internal returns (
+        bool isNativeToken,
+        uint256 newAmount,
+        bytes32 debridgeId
+    ) {
         // Run _permit first. Avoid Stack too deep
         if (_permit.length > 0) {
             // call permit before transfering token
@@ -618,7 +626,7 @@ contract DeBridgeGate is
         }
 
         TokenInfo memory nativeTokenInfo = getNativeInfo[_tokenAddress];
-        bool isNativeToken = nativeTokenInfo.nativeChainId  == 0
+        isNativeToken = nativeTokenInfo.nativeChainId  == 0
             ? true // token not in mapping
             : nativeTokenInfo.nativeChainId == getChainId(); // token native chain id the same
 
@@ -677,7 +685,7 @@ contract DeBridgeGate is
             debridge.balance -= _amount;
             IDeBridgeToken(debridge.tokenAddress).burn(_amount);
         }
-        return (_amount, debridgeId);
+        return (isNativeToken, _amount, debridgeId);
     }
 
     function _processFeeForTransfer(
@@ -741,32 +749,31 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         SubmissionAutoParamsFrom memory _autoParams
-    ) internal {
+    ) internal returns (bool isNativeToken) {
         if (isSubmissionUsed[_submissionId]) revert SubmissionUsed();
         isSubmissionUsed[_submissionId] = true;
 
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
         // if (debridge.chainId != getChainId()) revert WrongChain();
-        bool isMint = debridge.chainId != getChainId();
+        isNativeToken = debridge.chainId == getChainId();
 
-        if (isMint) {
-            debridge.balance += _amount + _autoParams.executionFee;
-        }
-        else {
+        if (isNativeToken) {
             debridge.balance -= _amount + _autoParams.executionFee;
+        } else {
+            debridge.balance += _amount + _autoParams.executionFee;
         }
 
         address _token = debridge.tokenAddress;
         if (_autoParams.executionFee > 0) {
-            _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isMint);
+            _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isNativeToken);
         }
         if (_autoParams.data.length > 0) {
             address callProxyAddress = _autoParams.flags.getFlag(Flags.PROXY_WITH_SENDER)
                 ? callProxyAddresses[Flags.PROXY_WITH_SENDER]
                 : callProxyAddresses[0];
 
-            _mintOrTransfer(_token, callProxyAddress, _amount, isMint);
+            _mintOrTransfer(_token, callProxyAddress, _amount, isNativeToken);
 
             bool status = ICallProxy(callProxyAddress).callERC20(
                 _token,
@@ -777,7 +784,7 @@ contract DeBridgeGate is
                 _autoParams.nativeSender
             );
             emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
-        } else if (!isMint
+        } else if (isNativeToken
             && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
             && _token == address(weth)
         ) {
@@ -785,7 +792,7 @@ contract DeBridgeGate is
             weth.withdraw(_amount);
             _safeTransferETH(_receiver, _amount);
         } else {
-            _mintOrTransfer(_token, _receiver, _amount, isMint);
+            _mintOrTransfer(_token, _receiver, _amount, isNativeToken);
         }
     }
 
@@ -793,12 +800,12 @@ contract DeBridgeGate is
         address _token,
         address _receiver,
         uint256 _amount,
-        bool isMint
+        bool isNativeToken
     ) internal {
-        if (isMint) {
-            IDeBridgeToken(_token).mint(_receiver, _amount);
-        } else {
+        if (isNativeToken) {
             IERC20(_token).safeTransfer(_receiver, _amount);
+        } else {
+            IDeBridgeToken(_token).mint(_receiver, _amount);
         }
     }
 
