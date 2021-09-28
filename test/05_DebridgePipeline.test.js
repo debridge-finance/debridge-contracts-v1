@@ -745,6 +745,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         "AssetAlreadyExist()");
     });
 
+    it("should have same output for getDebridgeId/getbDebridgeId", async function () {
+      const chainIdFrom = await this.debridgeETH.chainId();
+      // const chainIdTo = await this.debridgeBSC.chainId();
+      const nativeDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, ZERO_ADDRESS);
+      const nativeDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, ZERO_ADDRESS);
+      assert.equal(nativeDebridgeIdFrom, nativeDebridgeIdTo);
+
+      const tokenDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, this.linkToken.address);
+      const tokenDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, this.linkToken.address);
+      assert.equal(tokenDebridgeIdFrom, tokenDebridgeIdTo);
+    });
   });
 
   //TODO: ADDDDD
