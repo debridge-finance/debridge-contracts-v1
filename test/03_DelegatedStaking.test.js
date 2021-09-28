@@ -33,38 +33,27 @@ async function deployPancakeSwapPairs({
   for (const { token, liquidityAmount, wethLiquidityAmount } of tokens) {
     try {
       await factory.createPair(token.address, weth.address)
-      console.log(liquidityAmount, 'liquidityAmount')
-      console.log(wethLiquidityAmount, 'wethLiquidityAmount')
-
       await token.approve(
         router.address,
         MaxUint256,
         { from: provider }
       )
-
-      const balance = await token.balanceOf(provider)
-      console.log(balance.toString(), 'balance')
-      const wethBalance = await current(provider)
-      console.log(wethBalance.toString(), 'wethBalance')
-
-      console.log(provider, 'provider')
-      console.log(router.signer.address, "router signer")
-      console.log(weth.signer.address, "weth signer")
+      await weth.deposit({ value: wethLiquidityAmount });
 
       await weth.approve(
         router.address,
         MaxUint256
       )
-
+      
       await router.addLiquidity(
-        token.address,
         weth.address,
-        liquidityAmount,
+        token.address,
         wethLiquidityAmount,
-        "1",
-        "1",
+        liquidityAmount,
+        0,
+        0,
         provider,
-        Math.floor(new Date().getTime() / 1000) + 10000000
+        9999999999
       )
     } catch (e) {
       console.log(e)
@@ -220,9 +209,9 @@ contract("DelegatedStaking", function () {
 
     await deployPancakeSwapPairs({
       tokens: [
-        { token: this.linkToken, liquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 2), wethLiquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 4) },
-        { token: this.usdcToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 1), wethLiquidityAmount: (10e18).toString() },
-        { token: this.usdtToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 1), wethLiquidityAmount: (10e18).toString() }
+        { token: this.linkToken, liquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 3), wethLiquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 4) },
+        { token: this.usdcToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 3), wethLiquidityAmount: (10e18).toString() },
+        { token: this.usdtToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 3), wethLiquidityAmount: (10e18).toString() }
       ],
       weth: this.weth,
       provider: alice,
@@ -554,7 +543,6 @@ contract("DelegatedStaking", function () {
         const delegarorAccount = eveAccount;
 
         const prevDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
-        console.log(prevDelegatorsInfo, 'prevDelegatorInfo')
         const balanceBefore = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
         const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
