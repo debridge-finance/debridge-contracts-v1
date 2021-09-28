@@ -225,7 +225,7 @@ contract DeBridgeGate is
         uint256 _nonce,
         bytes calldata _signatures,
         bytes calldata _autoParams
-    ) external override nonReentrant whenNotPaused {
+    ) external override whenNotPaused {
 
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
