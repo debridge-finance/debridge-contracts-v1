@@ -675,6 +675,7 @@ contract("DelegatedStaking", function() {
         this.rewardCollateralAmount = "1000000000"; //1000 USDT
         this.rewardCollateralAddress = this.usdtToken.address;
         this.prevCollateralInfo = await this.delegatedStaking.collaterals(this.rewardCollateralAddress);
+        await this.delegatedStaking.sendRewards(this.rewardCollateralAddress, this.rewardCollateralAmount);
         await this.delegatedStaking.distributeValidatorRewards(this.rewardCollateralAddress);
       });
       it("Checks correct values", async function() {
@@ -984,21 +985,11 @@ contract("DelegatedStaking", function() {
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eve);
-      const prevDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral);
       await this.delegatedStaking.connect(eveAccount).requestUnstake(david, collateral, alice, amount);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
       const currentDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eve);
-      const currentDelegatorStakes = await this.delegatedStaking.getDelegatorStakes(david, eve, collateral);
       assert.equal(prevCollateral.totalLocked.toString(), currentCollateral.totalLocked.toString());
       assert.equal(prevDelegation.shares.toString() > currentDelegation.shares.toString());
-      assert.equal(
-        prevDelegatorStakes[1].toString(),
-        currentDelegatorStakes[1].toString()
-      );
-      assert.equal(
-        prevDelegatorStakes[2].toString(),
-        currentDelegatorStakes[2].toString()
-      );
     });
 
     it("should unstake 5 shares", async function() {
