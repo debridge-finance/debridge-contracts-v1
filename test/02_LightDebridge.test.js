@@ -542,7 +542,7 @@ contract("DeBridgeGate light mode", function () {
       //     uint256 _nonce,
       //     bytes[] calldata _signatures
       // )
-      await this.debridge.mint(
+      await this.debridge.claim(
         debridgeId,
         chainId,
         receiver,
@@ -603,7 +603,7 @@ contract("DeBridgeGate light mode", function () {
       const wrongnonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(
+        this.debridge.claim(
           debridgeId,
           chainId,
           receiver,
@@ -623,7 +623,7 @@ contract("DeBridgeGate light mode", function () {
       const wrongnonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(
+        this.debridge.claim(
           debridgeId,
           chainId,
           receiver,
@@ -641,7 +641,7 @@ contract("DeBridgeGate light mode", function () {
     it("should reject minting twice", async function () {
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(
+        this.debridge.claim(
           debridgeId,
           chainId,
           receiver,
@@ -678,8 +678,8 @@ contract("DeBridgeGate light mode", function () {
         bobPrivKey
       );
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
-      await this.debridge.connect(bobAccount).burn(
-        debridgeId,
+      await this.debridge.connect(bobAccount).send(
+        deBridgeToken.address,
         receiver,
         amount,
         chainIdTo,
@@ -708,28 +708,28 @@ contract("DeBridgeGate light mode", function () {
       );
     });
 
-    it("should reject burning from current chain", async function () {
-      const tokenAddress = this.weth.address;
-      const chainId = await this.debridge.getChainId();
-      const receiver = bob;
-      const amount = toBN(toWei("1"));
-      const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      await expectRevert(
-        this.debridge.burn(
-          debridgeId,
-          receiver,
-          amount,
-          42,
-          [],
-          false,
-          referralCode,
-          [],
-          {
-            from: alice,
-          }),
-        "WrongChain()"
-      );
-    });
+    // it("should reject burning from current chain", async function () {
+    //   const tokenAddress = this.weth.address;
+    //   const chainId = await this.debridge.getChainId();
+    //   const receiver = bob;
+    //   const amount = toBN(toWei("1"));
+    //   const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
+    //   await expectRevert(
+    //     this.debridge.burn(
+    //       debridgeId,
+    //       receiver,
+    //       amount,
+    //       42,
+    //       [],
+    //       false,
+    //       referralCode,
+    //       [],
+    //       {
+    //         from: alice,
+    //       }),
+    //     "WrongChain()"
+    //   );
+    // });
 
     //TODO: check 'send: amount does not cover fees' when pay by token
     //   it("should reject burning too few tokens", async function() {

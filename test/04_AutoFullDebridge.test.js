@@ -561,7 +561,7 @@ contract("DeBridgeGate full with auto", function () {
 
       const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
 
-      await this.debridge.mint(
+      await this.debridge.claim(
         debridgeId,
         bscChainId,
         receiver,
@@ -587,7 +587,7 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeId = await this.debridge.getDebridgeId(bscChainId, tokenAddress);
       const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
       await expectRevert(
-        this.debridge.mint(
+        this.debridge.claim(
           debridgeId,
           bscChainId,
           receiver,
@@ -607,7 +607,7 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeId = await this.debridge.getDebridgeId(bscChainId, tokenAddress);
       const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
       await expectRevert(
-        this.debridge.mint(
+        this.debridge.claim(
           debridgeId,
           bscChainId,
           receiver,
@@ -646,8 +646,8 @@ contract("DeBridgeGate full with auto", function () {
       );
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
       const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
-      await this.debridge.connect(bobAccount).burn(
-        debridgeId,
+      await this.debridge.connect(bobAccount).send(
+        deBridgeToken.address,
         receiver,
         amount,
         chainIdTo,
@@ -676,27 +676,27 @@ contract("DeBridgeGate full with auto", function () {
       );
     });
 
-    it("should reject burning from current chain", async function () {
-      const receiver = bob;
-      const amount = toBN(toWei("1"));
-      const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
-      await expectRevert(
-        this.debridge.burn(
-          this.wethDebridgeId,
-          receiver,
-          amount,
-          42,
-          [],
-          false,
-          referralCode,
-          autoParams,
-          {
-            from: alice,
-          }
-        ),
-        "WrongChain()"
-      );
-    });
+    // it("should reject burning from current chain", async function () {
+    //   const receiver = bob;
+    //   const amount = toBN(toWei("1"));
+    //   const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
+    //   await expectRevert(
+    //     this.debridge.burn(
+    //       this.wethDebridgeId,
+    //       receiver,
+    //       amount,
+    //       42,
+    //       [],
+    //       false,
+    //       referralCode,
+    //       autoParams,
+    //       {
+    //         from: alice,
+    //       }
+    //     ),
+    //     "WrongChain()"
+    //   );
+    // });
   });
 
   context("Test claim method", () => {

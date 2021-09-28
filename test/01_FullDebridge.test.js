@@ -640,7 +640,7 @@ contract("DeBridgeGate full mode", function () {
 
               it("should reject native token without DSRM confirmation", async function () {
                 await expectRevert(
-                  this.debridge.mint(
+                  this.debridge.claim(
                     debridgeId,
                     chainId,
                     receiver,
@@ -674,7 +674,7 @@ contract("DeBridgeGate full mode", function () {
                   const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
 
                   await expectRevert(
-                    this.debridge.mint(
+                    this.debridge.claim(
                       debridgeId,
                       chainId,
                       receiver,
@@ -707,7 +707,7 @@ contract("DeBridgeGate full mode", function () {
                     expect(await this.debridge.isBlockedSubmission(submissionId)).to.equal(true);
 
                     await expectRevert(
-                      this.debridge.mint(
+                      this.debridge.claim(
                         debridgeId,
                         chainId,
                         receiver,
@@ -734,7 +734,7 @@ contract("DeBridgeGate full mode", function () {
                     const nonce = 4;
                     const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
                     await expectRevert(
-                      this.debridge.mint(
+                      this.debridge.claim(
                         debridgeId,
                         chainId,
                         receiver,
@@ -752,7 +752,7 @@ contract("DeBridgeGate full mode", function () {
                     beforeEach(async function () {
                       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
                       const balance = toBN("0");
-                      await this.debridge.mint(
+                      await this.debridge.claim(
                         debridgeId,
                         chainId,
                         receiver,
@@ -782,7 +782,7 @@ contract("DeBridgeGate full mode", function () {
                     it("should reject minting twice", async function () {
                       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
                       await expectRevert(
-                        this.debridge.mint(
+                        this.debridge.claim(
                           debridgeId,
                           chainId,
                           receiver,
@@ -851,8 +851,8 @@ contract("DeBridgeGate full mode", function () {
                           fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
                             toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
                           );
-                          await this.debridge.connect(bob).burn(
-                            debridgeId,
+                          await this.debridge.connect(bob).send(
+                            deBridgeToken.address,
                             alice.address,
                             amount,
                             chainIdTo,
@@ -919,8 +919,8 @@ contract("DeBridgeGate full mode", function () {
                             [chainIdTo],
                             [supportedChainInfo.fixedNativeFee]
                           );
-                          await this.debridge.connect(bob).burn(
-                            debridgeId,
+                          await this.debridge.connect(bob).send(
+                            deBridgeToken.address,
                             alice.address,
                             amount,
                             chainIdTo,
@@ -950,32 +950,32 @@ contract("DeBridgeGate full mode", function () {
                           );
                         });
 
-                        it("should reject burning from current chain", async function () {
-                          const tokenAddress = this.weth.address;
-                          const chainId = await this.debridge.getChainId();
-                          const receiver = bob.address;
-                          const amount = toBN(toWei("1"));
-                          const debridgeId = await this.debridge.getDebridgeId(
-                            chainId,
-                            tokenAddress
-                          );
-                          await expectRevert(
-                            this.debridge.burn(
-                              debridgeId,
-                              receiver,
-                              amount,
-                              42,
-                              [],
-                              false,
-                              referralCode,
-                              [],
-                              {
-                                from: alice.address,
-                              }
-                            ),
-                            "WrongChain()"
-                          );
-                        });
+                        // it("should reject burning from current chain", async function () {
+                        //   const tokenAddress = this.weth.address;
+                        //   const chainId = await this.debridge.getChainId();
+                        //   const receiver = bob.address;
+                        //   const amount = toBN(toWei("1"));
+                        //   const debridgeId = await this.debridge.getDebridgeId(
+                        //     chainId,
+                        //     tokenAddress
+                        //   );
+                        //   await expectRevert(
+                        //     this.debridge.burn(
+                        //       debridgeId,
+                        //       receiver,
+                        //       amount,
+                        //       42,
+                        //       [],
+                        //       false,
+                        //       referralCode,
+                        //       [],
+                        //       {
+                        //         from: alice.address,
+                        //       }
+                        //     ),
+                        //     "WrongChain()"
+                        //   );
+                        // });c
                       });
                     }
                   });
