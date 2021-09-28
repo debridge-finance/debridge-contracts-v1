@@ -60,6 +60,14 @@ interface IDeBridgeGate {
         bytes nativeSender;
     }
 
+    struct FeeParams {
+        uint256 receivedAmount;
+        uint256 fixFee;
+        uint256 transferFee;
+        bool useAssetFee;
+        bool isNativeToken;
+    }
+
     /* ========== FUNCTIONS ========== */
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
@@ -131,9 +139,10 @@ interface IDeBridgeGate {
         uint256 nonce,
         uint256 indexed chainIdTo,
         uint32 referralCode,
+        FeeParams feeParams,
         SubmissionAutoParamsTo autoParams,
-        address nativeSender,
-        bool isNativeToken
+        address nativeSender
+        // bool isNativeToken //added to feeParams 
     ); // emited once the native tokens are locked to be sent to the other chain
 
     event Claimed(
@@ -175,6 +184,5 @@ interface IDeBridgeGate {
         uint256 paid
     );
 
-    event CollectedFee(bytes32 debridgeId, uint32 referralCode, uint256 fee);
     event WithdrawnFee(bytes32 debridgeId, uint256 fee);
 }
