@@ -43,6 +43,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     error CantConvertAddress();
     error WrongArgument();
+    error EthTransferFailed();
 
     /* ========== MODIFIERS ========== */
 
@@ -167,7 +168,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
             if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
             address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
             //TODO: send 50% reward to slashing contract
-            payable(currentTreasuryAddress).transfer(amount);
+            _safeTransferETH(currentTreasuryAddress, amount);
         }
         //If we are not in Ethereum chain
         else {
@@ -276,5 +277,15 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         assembly {
             cid := chainid()
         }
+    }
+
+    /*
+    * @dev transfer ETH to an address, revert if it fails.
+    * @param to recipient of the transfer
+    * @param value the amount to send
+    */
+    function _safeTransferETH(address to, uint256 value) internal {
+        (bool success, ) = to.call{value: value}(new bytes(0));
+        if (!success) revert EthTransferFailed();
     }
 }

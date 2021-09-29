@@ -57,14 +57,14 @@ contract("DeBridgeGate light mode", function () {
       from: alice,
     });
     this.amountThreshold = toWei("1000");
-    this.minConfirmations = 4;
-    //this.confirmationAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
-    //this.aggregatorInstance = new web3.eth.Contract(
-    //  ConfirmationAggregator.abi,
-    //  this.confirmationAggregatorAddress
-    //);
+
+    this.minConfirmations = Math.floor(oracleKeys.length/2) + 2;
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
-    this.excessConfirmations = 4; //Confirmations count in case of excess activity.
+    this.excessConfirmations = 7; //Confirmations count in case of excess activity.
+
+    console.log("minConfirmations: " + this.minConfirmations);
+    console.log("confirmationThreshold: " + this.confirmationThreshold);
+    console.log("excessConfirmations: " + this.excessConfirmations);
 
     //   function initialize(
     //     uint256 _minConfirmations,
@@ -91,28 +91,17 @@ contract("DeBridgeGate light mode", function () {
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifier.deployed();
-    this.initialOracles = [
-      {
-        account: bobAccount,
-        address: bob,
-      },
-      {
-        account: carolAccount,
-        address: carol,
-      },
-      {
-        account: eveAccount,
-        address: eve,
-      },
-      {
-        account: feiAccount,
-        address: fei,
-      },
-      {
-        account: devidAccount,
-        address: devid,
-      },
-    ];
+
+    this.initialOracles= [];
+    const maxOraclesCount = Math.min(this.signers.length,10);
+    for (let i = 1; i <= maxOraclesCount; i++) {
+      this.initialOracles.push({
+        account: this.signers[i],
+        address: this.signers[i].address,
+      });
+    }
+    console.log("initialOracles.length: " + this.initialOracles.length);
+
     await this.signatureVerifier.addOracles(
       this.initialOracles.map(o => o.address),
       this.initialOracles.map(o => false),
@@ -242,58 +231,59 @@ contract("DeBridgeGate light mode", function () {
   context("Test managing assets", () => {
     const isSupported = true;
     it("should add external asset if called by the admin", async function () {
-      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
-      const chainId = 56;
-      const maxAmount = toWei("100000000000");
-      const amountThreshold = toWei("10000000000000");
-      const fixedFee = toWei("0.00001");
-      const supportedChainIds = [42, 3];
-      const name = "MUSD";
-      const symbol = "Magic Dollar";
-      const decimals = 18;
+      const tokenAddresses = ["0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "0xdac17f958d2ee523a2206206994597c13d831ec7", "0x6b175474e89094c44da98b954eedeac495271d0f"];
 
-      //   function confirmNewAsset(
-      //     address _tokenAddress,
-      //     uint256 _chainId,
-      //     string memory _name,
-      //     string memory _symbol,
-      //     uint8 _decimals,
-      //     bytes[] memory _signatures
-      // )
-      const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
-      //console.log('debridgeId '+debridgeId);
-      const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+      for (let tokenAddress of tokenAddresses) {
+        const chainId = 56;
+        const maxAmount = toWei("100000000000");
+        const amountThreshold = toWei("10000000000000");
+        const name = "MUSD";
+        const symbol = "Magic Dollar";
+        const decimals = 18;
 
-      let signatures = "0x";
-      for (let i = 0; i < oracleKeys.length; i++) {
-        const oracleKey = oracleKeys[i];
-        let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        // remove first 0x
-        signatures += currentSignature.substring(2, currentSignature.length);
+        //   function confirmNewAsset(
+        //     address _tokenAddress,
+        //     uint256 _chainId,
+        //     string memory _name,
+        //     string memory _symbol,
+        //     uint8 _decimals,
+        //     bytes[] memory _signatures
+        // )
+        const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+        //console.log('debridgeId '+debridgeId);
+        const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+
+        let signatures = "0x";
+        for (let i = 0; i < oracleKeys.length; i++) {
+          const oracleKey = oracleKeys[i];
+          let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
+          // remove first 0x
+          signatures += currentSignature.substring(2, currentSignature.length);
+        }
+        // Deploy token
+        await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
+
+        ////   function getDeployId(
+        ////     bytes32 _debridgeId,
+        ////     string memory _name,
+        ////     string memory _symbol,
+        ////     uint8 _decimals
+        //// )
+        ////function deployAsset(bytes32 _deployId)
+        //await this.signatureVerifier.deployAsset(deployId, {
+        //  from: this.initialOracles[0].address,
+        //});
+
+        await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
+        const debridge = await this.debridge.getDebridge(debridgeId);
+        const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
+        assert.equal(debridge.exist, true);
+        assert.equal(debridge.chainId, chainId);
+        assert.equal(debridge.maxAmount.toString(), maxAmount);
+        assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
+        assert.equal(debridge.balance.toString(), "0");
+        assert.equal(debridge.minReservesBps.toString(), minReservesBps);
       }
-      // Deploy token
-      await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
-
-      ////   function getDeployId(
-      ////     bytes32 _debridgeId,
-      ////     string memory _name,
-      ////     string memory _symbol,
-      ////     uint8 _decimals
-      //// )
-      ////function deployAsset(bytes32 _deployId)
-      //await this.signatureVerifier.deployAsset(deployId, {
-      //  from: this.initialOracles[0].address,
-      //});
-
-      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
-      const debridge = await this.debridge.getDebridge(debridgeId);
-      const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
-      assert.equal(debridge.exist, true);
-      assert.equal(debridge.chainId, chainId);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReservesBps.toString(), minReservesBps);
     });
 
     it("should reject add external asset without DSRM confirmation", async function () {
