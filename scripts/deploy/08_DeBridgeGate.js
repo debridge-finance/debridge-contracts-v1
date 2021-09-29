@@ -10,7 +10,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
   console.log(`MULTISIG_ACCOUNT: ${multisig}`);
   if (!multisig) {
-    console.error("env.MULTISIG_ACCOUNT is eampty");
+    console.error("ERROR. env.MULTISIG_ACCOUNT is eampty");
+    return;
+  }
+
+  if (multisig==deployer) {
+    console.error("ERROR. env.MULTISIG_ACCOUNT must be different from the deployer");
     return;
   }
 
