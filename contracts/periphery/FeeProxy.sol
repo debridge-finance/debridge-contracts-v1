@@ -288,4 +288,9 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         (bool success, ) = to.call{value: value}(new bytes(0));
         if (!success) revert EthTransferFailed();
     }
+
+    // ============ Version Control ============
+    function version() external pure returns (uint256) {
+        return 101; // 1.0.1
+    }
 }

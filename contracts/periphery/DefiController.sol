@@ -284,4 +284,9 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
     function unpause() external onlyAdmin whenPaused {
         _unpause();
     }
+
+    // ============ Version Control ============
+    function version() external pure returns (uint256) {
+        return 101; // 1.0.1
+    }
 }

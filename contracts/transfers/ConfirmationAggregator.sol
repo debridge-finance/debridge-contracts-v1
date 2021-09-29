@@ -143,4 +143,9 @@ contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
 
         return (submissionInfo.confirmations, submissionInfo.isConfirmed);
     }
+
+    // ============ Version Control ============
+    function version() external pure returns (uint256) {
+        return 101; // 1.0.1
+    }
 }
