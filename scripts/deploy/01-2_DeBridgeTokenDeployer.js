@@ -11,7 +11,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await deployProxy("DeBridgeTokenDeployer", deployer,
     [
       deToken,
-      deployInitParams.deTokenAdmin,
+      deployInitParams.deBridgeTokenAdmin,
       ethers.constants.AddressZero,
     ],
     true);
