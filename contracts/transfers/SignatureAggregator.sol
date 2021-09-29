@@ -129,4 +129,9 @@ contract SignatureAggregator is AggregatorBase, ISignatureAggregator {
         address oracle = ecrecover(_message.getUnsignedMsg(), v, r, s);
         if (msg.sender != oracle) revert SenderSignatureMismatch();
     }
+
+    // ============ Version Control ============
+    function version() external pure returns (uint256) {
+        return 101; // 1.0.1
+    }
 }
