@@ -1436,7 +1436,7 @@ contract DelegatedStaking is Initializable,
         if (collateral.isUSDStable)
             collateralPrice = 1e18;
         // All non-ETH (hence USD) pairs have 8 decimals, so pad output of priceConsumer to 18 decimals
-        else collateralPrice = priceConsumer.getPriceOfToken(_collateral) * 1e10;
+        else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
 
         return getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * collateralPrice
                 / (10 ** collateral.decimals);

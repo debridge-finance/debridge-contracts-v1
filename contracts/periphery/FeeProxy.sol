@@ -10,6 +10,7 @@ import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IWETH.sol";
+import "hardhat/console.sol";
 
 contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     using SafeERC20 for IERC20;
@@ -161,6 +162,9 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         address _receiver,
         uint256 _amount
     ) external override returns(uint256 amountOut) {
+        console.log("swap _fromToken %s _toToken %s",  _fromToken,_toToken);
+        console.log("_receiver %s _amount %s", _receiver,  _amount);
+
         IERC20(_fromToken).safeTransferFrom(msg.sender, address(this), _amount);
         amountOut = _swapExact(_fromToken, _toToken, _receiver, _amount);
         return amountOut;
