@@ -6,10 +6,10 @@ const chai = require("chai");
 chai.use(solidity);
 const { assert, expect } = chai;
 
-function parseHexString(str) { 
+function parseHexString(str) {
   var result = [];
   str = str.substring(2, str.length);
-  while (str.length >= 2) { 
+  while (str.length >= 2) {
       result.push(parseInt(str.substring(0, 2), 16));
 
       str = str.substring(2, str.length);
@@ -35,43 +35,30 @@ contract("SignatureAggregator", function () {
     devid = devidAccount.address;
 
     this.minConfirmations = 2;
+    this.excessConfirmations = 3;
 
     const SignatureAggregator = await ethers.getContractFactory("SignatureAggregator", alice);
 
     this.aggregator = await upgrades.deployProxy(SignatureAggregator, [
-      this.minConfirmations
+      this.minConfirmations, this.excessConfirmations
     ]);
-    this.initialOracles = [
-      {
-        address: alice,
-        admin: alice,
-      },
-      {
-        address: bob,
-        admin: carol,
-      },
-      {
-        address: eve,
-        admin: carol,
-      },
-    ];
     await this.aggregator.deployed();
-
-    for (let oracle of this.initialOracles) {
-      await this.aggregator
-        .connect(aliceAccount)
-        .addOracles([oracle.address], [oracle.admin], [false]);
-    }
+    await this.aggregator
+      .connect(aliceAccount)
+      .addOracles([alice, bob, eve], [false, false, false]);
   });
 
   it("should have correct initial values", async function () {
     const minConfirmations = await this.aggregator.minConfirmations();
     assert.equal(minConfirmations, this.minConfirmations);
+
+    const excessConfirmations = await this.aggregator.excessConfirmations();
+    assert.equal(excessConfirmations, this.excessConfirmations);
   });
 
   context("Test setting configurations by different users", () => {
     it("should set min confirmations if called by the admin", async function () {
-      const newConfirmations = 2;
+      const newConfirmations = 3;
       await this.aggregator.connect(aliceAccount).setMinConfirmations(newConfirmations);
       const minConfirmations = await this.aggregator.minConfirmations();
       assert.equal(minConfirmations, newConfirmations);
@@ -79,13 +66,12 @@ contract("SignatureAggregator", function () {
 
     it("should add new oracle if called by the admin", async function () {
       let isRequired = true;
-      await this.aggregator.connect(aliceAccount).addOracles([devid], [eve], [isRequired]);
+      await this.aggregator.connect(aliceAccount).addOracles([devid], [isRequired]);
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
       //oracleInfo is admin address of oracle
       assert.equal(oracleInfo.exist, true);
       assert.equal(oracleInfo.isValid, true);
       assert.equal(oracleInfo.required, isRequired);
-      assert.equal(oracleInfo.admin, eve);
 
       const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
       assert.equal(requiredOraclesCount, 1);
@@ -98,22 +84,9 @@ contract("SignatureAggregator", function () {
       assert.equal(oracleInfo.exist, true);
       assert.equal(oracleInfo.isValid, false);
       assert.equal(oracleInfo.required, false);
-      assert.equal(oracleInfo.admin, eve);
 
       const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
       assert.equal(requiredOraclesCount, 0);
-    });
-
-    it("should update oracles admin if called by the admin", async function () {
-      await this.aggregator.connect(aliceAccount).updateOracleAdminByOwner(devid, devid);
-      const oracleInfo = await this.aggregator.getOracleInfo(devid);
-
-      assert.equal(oracleInfo.exist, true);
-      assert.equal(oracleInfo.admin, devid);
-
-      await this.aggregator.connect(devidAccount).updateOracleAdmin(devid, alice);
-      const oracleInfo1 = await this.aggregator.getOracleInfo(devid);
-      assert.equal(oracleInfo1.admin, alice);
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function () {
@@ -126,7 +99,7 @@ contract("SignatureAggregator", function () {
 
     it("should reject adding the new oracle if called by the non-admin", async function () {
       await expectRevert(
-        this.aggregator.connect(bobAccount).addOracles([devid], [eve], [false]),
+        this.aggregator.connect(bobAccount).addOracles([devid], [false]),
         "AdminBadRole()"
       );
     });
@@ -205,7 +178,7 @@ contract("SignatureAggregator", function () {
     const name = "MUSD";
     const symbol = "Magic Dollar";
     const decimals = 18;
-  
+
     it("should add new asset if called by the oracle", async function () {
       const debridgeId = await this.aggregator.getDebridgeId(chainId, tokenAddress);
       const deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimals);
@@ -214,7 +187,7 @@ contract("SignatureAggregator", function () {
       await this.aggregator
         .connect(aliceAccount)
         .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signature);
-      
+
       const deployInfo = await this.aggregator.getDeployInfo(deployId);
       assert.equal(deployInfo.confirmations, 1);
       assert.equal(deployInfo.chainId, chainId);

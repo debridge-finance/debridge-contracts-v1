@@ -26,16 +26,4 @@ interface ISignatureVerifier {
         uint8 _excessConfirmations
     ) external;
 
-    function getWrappedAssetAddress(bytes32 _debridgeId)
-        external
-        view
-        returns (address _wrappedAssetAddress);
-
-    function deployAsset(bytes32 _debridgeId)
-        external
-        returns (
-            address wrappedAssetAddress,
-            bytes memory nativeAddress,
-            uint256 nativeChainId
-        );
 }

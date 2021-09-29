@@ -1,10 +1,10 @@
 const Web3 = require("web3");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-const { ZERO_ADDRESS, permitWithDeadline } = require("./utils.spec");
+const { permitWithDeadline } = require("./utils.spec");
 const { MAX_UINT256 } = require("@openzeppelin/test-helpers/src/constants");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const WrappedAsset = artifacts.require("WrappedAsset");
+const DeBridgeToken = artifacts.require("DeBridgeToken");
 const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
 const MAX = web3.utils.toTwosComplement(-1);
@@ -17,6 +17,7 @@ function toBN(number) {
   return BigNumber.from(number.toString());
 }
 
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 const transferFeeBps = 50;
 const minReservesBps = 3000;
 const BPS = toBN(10000);
@@ -56,7 +57,7 @@ contract("DeBridgeGate light mode", function () {
       from: alice,
     });
     this.amountThreshold = toWei("1000");
-    this.minConfirmations = 3;
+    this.minConfirmations = 4;
     //this.confirmationAggregatorAddress = "0x72736f8c88bd1e438b05acc28c58ac21c5dc76ce";
     //this.aggregatorInstance = new web3.eth.Contract(
     //  ConfirmationAggregator.abi,
@@ -69,15 +70,11 @@ contract("DeBridgeGate light mode", function () {
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
-    //     address _debridgeAddress
     // )
     this.confirmationAggregator = await upgrades.deployProxy(ConfirmationAggregator, [
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
 
     await this.confirmationAggregator.deployed();
@@ -85,56 +82,46 @@ contract("DeBridgeGate light mode", function () {
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
     //     address _debridgeAddress
     // )
     this.signatureVerifier = await upgrades.deployProxy(SignatureVerifier, [
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifier.deployed();
     this.initialOracles = [
-      // {
-      //   address: alice,
-      //   admin: alice,
-      // },
       {
         account: bobAccount,
         address: bob,
-        admin: carol,
       },
       {
         account: carolAccount,
         address: carol,
-        admin: eve,
       },
       {
         account: eveAccount,
         address: eve,
-        admin: carol,
       },
       {
         account: feiAccount,
         address: fei,
-        admin: eve,
       },
       {
         account: devidAccount,
         address: devid,
-        admin: carol,
       },
     ];
-    for (let oracle of this.initialOracles) {
-      await this.signatureVerifier.addOracles([oracle.address], [oracle.address], [false], {
+    await this.signatureVerifier.addOracles(
+      this.initialOracles.map(o => o.address),
+      this.initialOracles.map(o => false),
+      {
         from: alice,
       });
-    }
 
-    //Alice is required oracle
-    await this.signatureVerifier.addOracles([alice], [alice], [true], {
+    // Alice is required oracle
+    await this.signatureVerifier.addOracles([alice], [true], {
       from: alice,
     });
 
@@ -155,6 +142,17 @@ contract("DeBridgeGate light mode", function () {
     //     IDefiController _defiController,
     // )
 
+    const DeBridgeTokenFactory = await ethers.getContractFactory("DeBridgeToken", alice);
+    const deBridgeToken = await DeBridgeTokenFactory.deploy();
+    const DeBridgeTokenDeployerFactory = await ethers.getContractFactory("DeBridgeTokenDeployer", alice);
+    const deBridgeTokenDeployer = await upgrades.deployProxy(
+      DeBridgeTokenDeployerFactory,
+      [
+        deBridgeToken.address,
+        alice,
+        ZERO_ADDRESS,
+      ]);
+
     this.debridge = await upgrades.deployProxy(
       Debridge,
       [
@@ -164,6 +162,7 @@ contract("DeBridgeGate light mode", function () {
         this.callProxy.address.toString(),
         this.weth.address,
         ZERO_ADDRESS,
+        deBridgeTokenDeployer.address,
         ZERO_ADDRESS,
         1, //overrideChainId
       ],
@@ -194,6 +193,7 @@ contract("DeBridgeGate light mode", function () {
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();
     await this.debridge.grantRole(GOVMONITORING_ROLE, alice);
     await this.signatureVerifier.setDebridgeAddress(this.debridge.address.toString());
+    await deBridgeTokenDeployer.setDebridgeAddress(this.debridge.address);
 
     this.wethDebridgeId = await this.debridge.getDebridgeId(1, this.weth.address);
     this.nativeDebridgeId = await this.debridge.getDebridgeId(1, ZERO_ADDRESS);
@@ -268,12 +268,11 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         signatures += currentSignature.substring(2, currentSignature.length);
       }
-      await this.signatureVerifier
-        .connect(this.initialOracles[0].account)
-        .confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
+      // Deploy token
+      await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
 
       ////   function getDeployId(
       ////     bytes32 _debridgeId,
@@ -286,11 +285,11 @@ contract("DeBridgeGate light mode", function () {
       //  from: this.initialOracles[0].address,
       //});
 
-      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold, {
-        from: alice,
-      });
+      await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
       const debridge = await this.debridge.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
+      assert.equal(debridge.exist, true);
+      assert.equal(debridge.chainId, chainId);
       assert.equal(debridge.maxAmount.toString(), maxAmount);
       assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
       assert.equal(debridge.balance.toString(), "0");
@@ -313,21 +312,18 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 1; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         signatures += currentSignature.substring(2, currentSignature.length);
       }
 
       await expectRevert(
-        this.signatureVerifier.confirmNewAsset(
+        this.debridge.deployNewAsset(
           tokenAddress,
           chainId,
           name,
           symbol,
           decimals,
-          signatures,
-          {
-            from: alice,
-          }
+          signatures
         ),
         "NotConfirmedByRequiredOracles()"
       );
@@ -349,23 +345,20 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 0; i < this.minConfirmations - 1; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         signatures += currentSignature.substring(2, currentSignature.length);
       }
 
       await expectRevert(
-        this.signatureVerifier.confirmNewAsset(
+        this.debridge.deployNewAsset(
           tokenAddress,
           chainId,
           name,
           symbol,
           decimals,
-          signatures,
-          {
-            from: alice,
-          }
+          signatures
         ),
-        "DeployNotConfirmed()"
+        "SubmissionNotConfirmed()"
       );
     });
   });
@@ -385,10 +378,19 @@ contract("DeBridgeGate light mode", function () {
         .mul(amount)
         .div(BPS)
         .add(toBN(supportedChainInfo.fixedNativeFee));
-      await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-        value: amount,
-        from: alice,
-      });
+      await this.debridge.send(
+        tokenAddress,
+        receiver,
+        amount,
+        chainIdTo,
+        [],
+        false,
+        referralCode,
+        [],
+        {
+          value: amount,
+          from: alice,
+        });
       const newBalance = toBN(await this.weth.balanceOf(this.debridge.address));
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeWethId);
       assert.equal(balance.add(amount).toString(), newBalance.toString());
@@ -416,10 +418,19 @@ contract("DeBridgeGate light mode", function () {
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
-      await this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-        value: supportedChainInfo.fixedNativeFee,
-        from: alice,
-      });
+      await this.debridge.send(
+        tokenAddress,
+        receiver,
+        amount,
+        chainIdTo,
+        [],
+        false,
+        referralCode,
+        [],
+        {
+          value: supportedChainInfo.fixedNativeFee,
+          from: alice,
+        });
       const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
         this.nativeDebridgeId
       );
@@ -444,10 +455,19 @@ contract("DeBridgeGate light mode", function () {
       const chainIdTo = 42;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-          value: toWei("0.1"),
-          from: alice,
-        }),
+        this.debridge.send(
+          tokenAddress,
+          receiver,
+          amount,
+          chainIdTo,
+          [],
+          false,
+          referralCode,
+          [],
+          {
+            value: toWei("0.1"),
+            from: alice,
+          }),
         "AmountMismatch()"
       );
     });
@@ -460,10 +480,19 @@ contract("DeBridgeGate light mode", function () {
       const chainIdTo = chainId;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.send(tokenAddress, receiver, amount, chainIdTo, false, referralCode, {
-          value: amount,
-          from: alice,
-        }),
+        this.debridge.send(
+          tokenAddress,
+          receiver,
+          amount,
+          chainIdTo,
+          [],
+          false,
+          referralCode,
+          [],
+          {
+            value: amount,
+            from: alice,
+          }),
         "WrongTargedChain()"
       );
     });
@@ -495,7 +524,7 @@ contract("DeBridgeGate light mode", function () {
       for (let i = 0; i < oracleKeys.length; i++) {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(submission, oracleKey)).signature;
-        //HACK remove first 0x
+        // remove first 0x
         this.signatures += currentSignature.substring(2, currentSignature.length);
       }
     });
@@ -512,13 +541,21 @@ contract("DeBridgeGate light mode", function () {
       //     uint256 _nonce,
       //     bytes[] calldata _signatures
       // )
-      await this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
-        from: alice,
-      });
+      await this.debridge.claim(
+        debridgeId,
+        chainId,
+        receiver,
+        amount,
+        nonce,
+        this.signatures,
+        [],
+        {
+          from: alice,
+        });
       const debridge = await this.debridge.getDebridge(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
+      const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
 
-      const newBalance = toBN(await wrappedAsset.balanceOf(receiver));
+      const newBalance = toBN(await deBridgeToken.balanceOf(receiver));
       const submissionId = await this.debridge.getSubmissionId(
         debridgeId,
         chainId,
@@ -565,10 +602,18 @@ contract("DeBridgeGate light mode", function () {
       const wrongnonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, [], {
-          //will call IConfirmationAggregator
-          from: alice,
-        }),
+        this.debridge.claim(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          wrongnonce,
+          [],
+          [],
+          {
+            //will call IConfirmationAggregator
+            from: alice,
+          }),
         "SubmissionNotConfirmed()"
       );
     });
@@ -577,9 +622,17 @@ contract("DeBridgeGate light mode", function () {
       const wrongnonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, wrongnonce, this.signatures, {
-          from: alice,
-        }),
+        this.debridge.claim(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          wrongnonce,
+          this.signatures,
+          [],
+          {
+            from: alice,
+          }),
         "NotConfirmedByRequiredOracles()"
       );
     });
@@ -587,9 +640,17 @@ contract("DeBridgeGate light mode", function () {
     it("should reject minting twice", async function () {
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       await expectRevert(
-        this.debridge.mint(debridgeId, chainId, receiver, amount, nonce, this.signatures, {
-          from: alice,
-        }),
+        this.debridge.claim(
+          debridgeId,
+          chainId,
+          receiver,
+          amount,
+          nonce,
+          this.signatures,
+          [],
+          {
+            from: alice,
+          }),
         "SubmissionUsed()"
       );
     });
@@ -604,11 +665,11 @@ contract("DeBridgeGate light mode", function () {
       const debridgeId = await this.debridge.getDebridgeId(chainIdTo, tokenAddress);
       const debridge = await this.debridge.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
-      const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-      const balance = toBN(await wrappedAsset.balanceOf(bob));
+      const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
+      const balance = toBN(await deBridgeToken.balanceOf(bob));
       const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
       const permitParameter = await permitWithDeadline(
-        wrappedAsset,
+        deBridgeToken,
         bob,
         this.debridge.address,
         amount,
@@ -616,14 +677,15 @@ contract("DeBridgeGate light mode", function () {
         bobPrivKey
       );
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
-      await this.debridge.connect(bobAccount).burn(
-        debridgeId,
+      await this.debridge.connect(bobAccount).send(
+        deBridgeToken.address,
         receiver,
         amount,
         chainIdTo,
         permitParameter,
         false,
         referralCode,
+        [],
         {
           value: supportedChainInfo.fixedNativeFee,
         }
@@ -631,7 +693,7 @@ contract("DeBridgeGate light mode", function () {
       const newNativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
         this.nativeDebridgeId
       );
-      const newBalance = toBN(await wrappedAsset.balanceOf(bob));
+      const newBalance = toBN(await deBridgeToken.balanceOf(bob));
       assert.equal(balance.sub(amount).toString(), newBalance.toString());
       const newDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
@@ -645,20 +707,28 @@ contract("DeBridgeGate light mode", function () {
       );
     });
 
-    it("should reject burning from current chain", async function () {
-      const tokenAddress = this.weth.address;
-      const chainId = await this.debridge.getChainId();
-      const receiver = bob;
-      const amount = toBN(toWei("1"));
-      const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      const permit = "0x";
-      await expectRevert(
-        this.debridge.burn(debridgeId, receiver, amount, 42, permit, false, referralCode, {
-          from: alice,
-        }),
-        "WrongChain()"
-      );
-    });
+    // it("should reject burning from current chain", async function () {
+    //   const tokenAddress = this.weth.address;
+    //   const chainId = await this.debridge.getChainId();
+    //   const receiver = bob;
+    //   const amount = toBN(toWei("1"));
+    //   const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
+    //   await expectRevert(
+    //     this.debridge.burn(
+    //       debridgeId,
+    //       receiver,
+    //       amount,
+    //       42,
+    //       [],
+    //       false,
+    //       referralCode,
+    //       [],
+    //       {
+    //         from: alice,
+    //       }),
+    //     "WrongChain()"
+    //   );
+    // });
 
     //TODO: check 'send: amount does not cover fees' when pay by token
     //   it("should reject burning too few tokens", async function() {
@@ -671,13 +741,13 @@ contract("DeBridgeGate light mode", function () {
     //       tokenAddress
     //       );
     //     const debridge = await this.debridge.getDebridge(debridgeId);
-    //     const wrappedAsset = await WrappedAsset.at(debridge.tokenAddress);
-    //     //const balance = toBN(await wrappedAsset.balanceOf(bob));
+    //     const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
+    //     //const balance = toBN(await deBridgeToken.balanceOf(bob));
     //     const deadline = 0;
     //     const supportedChainInfo = await this.debridge.getChainSupport(chainIdTo);
     //     //const signature = "0x";
     //     const signature = await permit(
-    //           wrappedAsset,
+    //           deBridgeToken,
     //           bob,
     //           this.debridge.address,
     //           amount,
@@ -731,7 +801,7 @@ contract("DeBridgeGate light mode", function () {
         const oracleKey = oracleKeys[i];
         let _currentSignature = (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
           .signature;
-        //HACK remove first 0x
+        // remove first 0x
         this.ethSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       const erc20Submission = await this.debridge.getSubmissionId(
@@ -748,7 +818,7 @@ contract("DeBridgeGate light mode", function () {
         const oracleKey = oracleKeys[i];
         let currentSignature = (await bscWeb3.eth.accounts.sign(erc20Submission, oracleKey))
           .signature;
-        //HACK remove first 0x
+        // remove first 0x
         this.erc20Signatures += currentSignature.substring(2, currentSignature.length);
       }
     });
@@ -759,13 +829,21 @@ contract("DeBridgeGate light mode", function () {
         const oracleKey = oracleKeys[i];
         let _currentSignature = (await bscWeb3.eth.accounts.sign(curentChainSubmission, oracleKey))
           .signature;
-        //HACK remove first 0x
+        // remove first 0x
         currentSignatures += _currentSignature.substring(2, _currentSignature.length);
       }
       await expectRevert(
-        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, currentSignatures, {
-          from: alice,
-        }),
+        this.debridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          currentSignatures,
+          [],
+          {
+            from: alice,
+          }),
         "NotConfirmedByRequiredOracles()"
       );
     });
@@ -780,6 +858,7 @@ contract("DeBridgeGate light mode", function () {
         amount,
         nonce,
         this.ethSignatures,
+        [],
         {
           from: alice,
         }
@@ -813,6 +892,7 @@ contract("DeBridgeGate light mode", function () {
         amount,
         nonce,
         this.erc20Signatures,
+        [],
         {
           from: alice,
         }
@@ -846,6 +926,7 @@ contract("DeBridgeGate light mode", function () {
           amount,
           wrongnonce,
           this.ethSignatures,
+          [],
           {
             from: alice,
           }
@@ -856,9 +937,17 @@ contract("DeBridgeGate light mode", function () {
 
     it("should reject claiming twice", async function () {
       await expectRevert(
-        this.debridge.claim(debridgeId, chainIdFrom, receiver, amount, nonce, this.ethSignatures, {
-          from: alice,
-        }),
+        this.debridge.claim(
+          debridgeId,
+          chainIdFrom,
+          receiver,
+          amount,
+          nonce,
+          this.ethSignatures,
+          [],
+          {
+            from: alice,
+          }),
         "SubmissionUsed()"
       );
     });

@@ -29,38 +29,18 @@ contract("ConfirmationAggregator", function () {
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
     //     uint256 _excessConfirmations,
-    //     address _wrappedAssetAdmin,
-    //     address _debridgeAddress
     // )
 
     this.aggregator = await upgrades.deployProxy(ConfirmationAggregator, [
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
-      alice,
-      ZERO_ADDRESS,
     ]);
-    this.initialOracles = [
-      {
-        address: alice,
-        admin: alice,
-      },
-      {
-        address: bob,
-        admin: carol,
-      },
-      {
-        address: eve,
-        admin: carol,
-      },
-    ];
+    this.initialOracles = [alice, bob, eve];
     await this.aggregator.deployed();
-
-    for (let oracle of this.initialOracles) {
-      await this.aggregator
-        .connect(aliceAccount)
-        .addOracles([oracle.address], [oracle.admin], [false]);
-    }
+    await this.aggregator
+      .connect(aliceAccount)
+      .addOracles(this.initialOracles, this.initialOracles.map(o => false));
   });
 
   it("should have correct initial values", async function () {
@@ -94,18 +74,55 @@ contract("ConfirmationAggregator", function () {
       assert.equal(confirmationThreshold, newThreshold);
     });
 
+    it("should revert adding new oracle if minConfirmations will be too low", async function () {
+      await expectRevert(
+        this.aggregator.connect(aliceAccount).addOracles([devid], [true]),
+        "LowMinConfirmations()"
+      );
+    });
+
+    it("should increase minConfirmations before adding new oracle", async function () {
+      const newConfirmations = 3;
+      await this.aggregator.connect(aliceAccount).setMinConfirmations(newConfirmations);
+      const minConfirmations = await this.aggregator.minConfirmations();
+      assert.equal(minConfirmations, newConfirmations);
+    });
+
     it("should add new oracle if called by the admin", async function () {
       let isRequired = true;
-      await this.aggregator.connect(aliceAccount).addOracles([devid], [eve], [isRequired]);
+      await this.aggregator.connect(aliceAccount).addOracles([devid], [isRequired]);
       const oracleInfo = await this.aggregator.getOracleInfo(devid);
       //oracleInfo is admin address of oracle
       assert.equal(oracleInfo.exist, true);
       assert.equal(oracleInfo.isValid, true);
       assert.equal(oracleInfo.required, isRequired);
-      assert.equal(oracleInfo.admin, eve);
 
       const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
       assert.equal(requiredOraclesCount, 1);
+
+      const oracleAddressesExpected = [...this.initialOracles, devid];
+      // fetch all oracleAddresses array items one by - array getter works only for certain index
+      let oracleAddresses = [];
+      for(let i = 0; true; i++) {
+        try {
+          const val = await this.aggregator.oracleAddresses(i);
+          oracleAddresses.push(val);
+        } catch (e) {
+          break;
+        }
+      }
+      // compare 2 arrays
+      assert.equal(
+        JSON.stringify(oracleAddressesExpected.sort()),
+        JSON.stringify(oracleAddresses.sort())
+      );
+    });
+
+    it("should revert decreasing minConfirmations if value is too low", async function () {
+      await expectRevert(
+        this.aggregator.connect(aliceAccount).setMinConfirmations(2),
+        "LowMinConfirmations()"
+      );
     });
 
     it("should updateOracle oracle (disable) if called by the admin", async function () {
@@ -115,19 +132,40 @@ contract("ConfirmationAggregator", function () {
       assert.equal(oracleInfo.exist, true);
       assert.equal(oracleInfo.isValid, false);
       assert.equal(oracleInfo.required, false);
-      assert.equal(oracleInfo.admin, eve);
 
       const requiredOraclesCount = await this.aggregator.requiredOraclesCount();
       assert.equal(requiredOraclesCount, 0);
+
+      const oracleAddressesExpected = [...this.initialOracles];
+      // fetch all oracleAddresses array items one by - array getter works only for certain index
+      let oracleAddresses = [];
+      for(let i = 0; true; i++) {
+        try {
+          const val = await this.aggregator.oracleAddresses(i);
+          oracleAddresses.push(val);
+        } catch (e) {
+          break;
+        }
+      }
+      // compare 2 arrays
+      assert.equal(
+        JSON.stringify(oracleAddressesExpected.sort()),
+        JSON.stringify(oracleAddresses.sort())
+      );
     });
 
-    it("should update oracles admin if called by the admin", async function () {
-      //TODO: fix test need to check role
-      await this.aggregator.connect(aliceAccount).updateOracleAdminByOwner(devid, devid);
-      const oracleInfo = await this.aggregator.getOracleInfo(devid);
+    it("should decrease minConfirmations after disabling oracle", async function () {
+      const newConfirmations = 2;
+      await this.aggregator.connect(aliceAccount).setMinConfirmations(newConfirmations);
+      const minConfirmations = await this.aggregator.minConfirmations();
+      assert.equal(minConfirmations, newConfirmations);
+    });
 
-      assert.equal(oracleInfo.exist, true);
-      assert.equal(oracleInfo.admin, devid);
+    it("should revert enabling oracle if minConfirmations will be too low", async function () {
+      await expectRevert(
+        this.aggregator.connect(aliceAccount).updateOracle(devid, true, false),
+        "LowMinConfirmations()"
+      );
     });
 
     it("should reject setting min confirmations if called by the non-admin", async function () {
@@ -156,7 +194,7 @@ contract("ConfirmationAggregator", function () {
 
     it("should reject adding the new oracle if called by the non-admin", async function () {
       await expectRevert(
-        this.aggregator.connect(bobAccount).addOracles([devid], [eve], [false]),
+        this.aggregator.connect(bobAccount).addOracles([devid], [false]),
         "AdminBadRole()"
       );
     });

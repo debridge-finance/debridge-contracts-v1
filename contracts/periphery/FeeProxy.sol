@@ -87,6 +87,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     }
 
     function setDeEthToken(address _deEthToken) external onlyAdmin {
+        if (_deEthToken == address(0)) revert WrongArgument();
         deEthToken = _deEthToken;
     }
 
@@ -106,7 +107,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         if (feeProxyAddresses[nativeChain].length == 0) revert EmptyFeeProxyAddress(nativeChain);
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
-        address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
+        address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
 
         debridgeGate.withdrawFee(debridgeId);
         uint256 amount = IERC20(_tokenAddress).balanceOf(address(this));
@@ -116,7 +117,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
             //If token is deETH
             if (_tokenAddress == deEthToken) {
                 //Create transfer to Ehereum netrowk ETH
-                _burnTransfer(debridgeId, _tokenAddress, amount, nativeChain, msg.value);
+                _burnTransfer(_tokenAddress, amount, nativeChain, msg.value);
             }
             //For others tokens
             else {
@@ -124,10 +125,10 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
                 if (_tokenAddress != address(weth)) {
                     _swap(_tokenAddress, address(weth), address(this));
                 }
-                //If we are in Ethereum chain transfer to Treasery
+                //If we are in Ethereum chain transfer to Treasury
                 if (chainId == ETH_CHAINID) {
                     IERC20(address(weth)).safeTransfer(
-                        address(currentTreaseryAddress),
+                        address(currentTreasuryAddress),
                         weth.balanceOf(address(this))
                     );
                 } else {
@@ -135,13 +136,13 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
                     _swap(address(weth), deEthToken, address(this));
                     //transfer deETH to Ethereum
                     uint256 deEthAmount = IERC20(deEthToken).balanceOf(address(this));
-                    _burnTransfer(debridgeId, deEthToken, deEthAmount, ETH_CHAINID, msg.value);
+                    _burnTransfer(deEthToken, deEthAmount, ETH_CHAINID, msg.value);
                 }
             }
         }
         //create transfer if different chains
         else {
-            _burnTransfer(debridgeId, _tokenAddress, amount, nativeChain, msg.value);
+            _burnTransfer(_tokenAddress, amount, nativeChain, msg.value);
         }
     }
 
@@ -151,13 +152,12 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         //DebridgeId of weth in ethereum network
         //TODO: can be set as contstant
         (, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(deEthToken);
-        bytes32 wethEthNetworkDebridgeId = getbDebridgeId(ETH_CHAINID, nativeAddress);
         if (feeProxyAddresses[chainId].length == 0) revert EmptyFeeProxyAddress(chainId);
 
         // TODO: treasuryAddresses can keep only for ETH network
         // if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
-        // address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
+        // address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
         debridgeGate.withdrawFee(getDebridgeId(chainId, address(0)));
         uint256 amount = address(this).balance - msg.value;
 
@@ -165,9 +165,9 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         //If we are in Ethereum chain
         if (chainId == ETH_CHAINID) {
             if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
-            address currentTreaseryAddress = toAddress(treasuryAddresses[chainId]);
+            address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
             //TODO: send 50% reward to slashing contract
-            payable(currentTreaseryAddress).transfer(amount);
+            payable(currentTreasuryAddress).transfer(amount);
         }
         //If we are not in Ethereum chain
         else {
@@ -178,7 +178,6 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
             uint256 deEthBalance = IERC20(deEthToken).balanceOf(address(this));
             //transfer deETH to Ethereum
             _burnTransfer(
-                wethEthNetworkDebridgeId,
                 deEthToken,
                 deEthBalance,
                 ETH_CHAINID,
@@ -211,21 +210,21 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     /// @dev Create auto burn transfer with data that will call Transfer fee method in the target network
     function _burnTransfer(
-        bytes32 _debridgeId,
         address _erc20Token,
         uint256 _amount,
         uint256 _nativeChain,
         uint256 _nativeFixFee
     ) private {
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
-        debridgeGate.burn{value: _nativeFixFee}(
-            _debridgeId,
+        debridgeGate.send{value: _nativeFixFee}(
+            _erc20Token,
             feeProxyAddresses[_nativeChain], //_receiver,
             _amount,
             _nativeChain, //_chainIdTo,
             "", //_deadline + _signature,
             false, //_useAssetFee,
-            0 //_referralCode
+            0, //_referralCode
+            "" // _autoParams
         );
     }
 
