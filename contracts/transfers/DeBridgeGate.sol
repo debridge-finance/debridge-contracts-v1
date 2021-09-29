@@ -294,7 +294,7 @@ contract DeBridgeGate is
         string memory _symbol,
         uint8 _decimals,
         bytes memory _signatures
-    ) external {
+    ) external nonReentrant whenNotPaused{
         bytes32 debridgeId = getbDebridgeId(_nativeChainId, _nativeTokenAddress);
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
