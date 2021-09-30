@@ -766,16 +766,33 @@ contract DeBridgeGate is
                 ? callProxyAddresses[Flags.PROXY_WITH_SENDER]
                 : callProxyAddresses[0];
 
-            _mintOrTransfer(_token, callProxyAddress, _amount, isNativeToken);
+            bool status;
+            if (isNativeToken
+                && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+                && _token == address(weth)
+            ) {
+                weth.withdraw(_amount);
 
-            bool status = ICallProxy(callProxyAddress).callERC20(
-                _token,
-                _autoParams.fallbackAddress,
-                _receiver,
-                _autoParams.data,
-                _autoParams.flags,
-                _autoParams.nativeSender
-            );
+                status = ICallProxy(callProxyAddress).call{value: _amount}(
+                    _autoParams.fallbackAddress,
+                    _receiver,
+                    _autoParams.data,
+                    _autoParams.flags,
+                    _autoParams.nativeSender
+                );
+            }
+            else {
+                _mintOrTransfer(_token, callProxyAddress, _amount, isNativeToken);
+
+                status = ICallProxy(callProxyAddress).callERC20(
+                    _token,
+                    _autoParams.fallbackAddress,
+                    _receiver,
+                    _autoParams.data,
+                    _autoParams.flags,
+                    _autoParams.nativeSender
+                );
+            }
             emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
         } else if (isNativeToken
             && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
