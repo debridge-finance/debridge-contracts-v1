@@ -2,8 +2,8 @@
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IUniswapV2Pair.sol";
-import "../interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IPriceConsumer.sol";
 
@@ -16,23 +16,41 @@ contract PriceConsumer is IPriceConsumer, Ownable {
      * @dev get Price of Token in WETH
      * @param _token address of token
      */
-    function getPriceOfToken(address _token) external override view returns(uint256){
-        address pairAddress = getPair(_token, WETH);
+    function getPriceOfToken(address _token) external override view returns (uint256){
+        return getRate(_token, WETH);
+    }
+
+    /**
+     * @dev get Price of Token in another token
+     * @param _base address of base token
+     * @param _quote address of quote token
+     * ETH/USD = 3000 (ETH is base, USD is quote)
+     * Rate = reserveQuote / reserveBase
+     */
+    function getRate(address _base, address _quote) external override view returns (uint256){
+        address pairAddress = getPairAddress(_base, _quote);
         if (pairAddress != address(0)) {
             IUniswapV2Pair pair = IUniswapV2Pair(pairAddress);
-            IUniswapV2ERC20 token0 = IUniswapV2ERC20(pair.token0());
-            IUniswapV2ERC20 token1 = IUniswapV2ERC20(pair.token1());
-            (uint Res0, uint Res1,) = pair.getReserves();
+            address token0address = pair.token0();
+            IERC20 token0 = IERC20(token0address);
+            IERC20 token1 = IERC20(pair.token1());
+            (uint reserve0, uint reserve1,) = pair.getReserves();
 
-            // decimals
-            uint res0 = Res0*(10**token1.decimals());
-            return((amount*res0)/Res1); // return amount of token0 needed to buy token1
+            if (token0address == _base) {
+                // token0 = _base, token1 = _quote
+                // rate = reserve1 / reserve0
+                return (reserve1 / 10 ** token1.decimals()) / (reserve0 / 10 ** token0.decimals());
+            } else {
+                // token0 = _quote, token1 = _base
+                // rate = reserve0 / reserve1
+                return (reserve0 / 10 ** token0.decimals()) / (reserve1 / 10 ** token1.decimals());
+            }
         } else {
             return 0;
         }
     }
 
-    function getPair(address _from, address _to) internal view returns(address) {
+    function getPairAddress(address _from, address _to) internal view returns (address) {
         IUniswapV2Factory factory = IUniswapV2Factory(UNISWAP_FACTORY);
         return factory.getPair(_from, _to);
     }
