@@ -2,21 +2,27 @@
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IPriceConsumer.sol";
 
-contract MockPriceConsumer is IPriceConsumer, Ownable {
-    address public constant WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-    address public constant UNISWAP_FACTORY = address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
+contract MockPriceConsumer is IPriceConsumer, Ownable, Initializable {
+    address public weth;
+    address public factory;
     mapping(address => uint256) public priceFeeds;
+
+    function initialize(address _weth, address _factory) public initializer {
+        weth = _weth;
+        factory = _factory;
+    }
 
     /**
      * @dev get Price of Token in WETH
      * @param _token address of token
      */
-    function getPriceOfToken(address _token) external override view returns (uint256){
+    function getPriceOfToken(address _token) external view override returns (uint256) {
         return priceFeeds[_token];
     }
 
@@ -27,35 +33,37 @@ contract MockPriceConsumer is IPriceConsumer, Ownable {
      * ETH/USD = 3000 (ETH is base, USD is quote)
      * Rate = reserveQuote / reserveBase
      */
-    function getRate(address _base, address _quote) public override view returns (uint256){
+    function getRate(address _base, address _quote) public view override returns (uint256) {
         address pairAddress = getPairAddress(_base, _quote);
         if (pairAddress != address(0)) {
             IUniswapV2Pair pair = IUniswapV2Pair(pairAddress);
             address token0address = pair.token0();
             IUniswapV2ERC20 token0 = IUniswapV2ERC20(token0address);
             IUniswapV2ERC20 token1 = IUniswapV2ERC20(pair.token1());
-            (uint reserve0, uint reserve1,) = pair.getReserves();
+            (uint256 reserve0, uint256 reserve1, ) = pair.getReserves();
 
             if (token0address == _base) {
                 // token0 = _base, token1 = _quote
                 // rate = reserve1 / reserve0
-                return (reserve1 / 10 ** token1.decimals()) / (reserve0 / 10 ** token0.decimals());
+                uint256 res1 = reserve1 * (10**token0.decimals());
+                return res1 / reserve0;
             } else {
                 // token0 = _quote, token1 = _base
                 // rate = reserve0 / reserve1
-                return (reserve0 / 10 ** token0.decimals()) / (reserve1 / 10 ** token1.decimals());
+                uint256 res0 = reserve0 * (10**token1.decimals());
+                return res0 / reserve1;
             }
         } else {
             return 0;
         }
     }
 
-    function getPairAddress(address _token0, address _token1) public override view returns (address) {
-        IUniswapV2Factory factory = IUniswapV2Factory(UNISWAP_FACTORY);
+    function getPairAddress(address _token0, address _token1) public view override returns (address) {
+        IUniswapV2Factory factory = IUniswapV2Factory(factory);
         return factory.getPair(_token0, _token1);
     }
 
-    function addPriceFeed(address _token, uint256 _price) external onlyOwner() {
+    function addPriceFeed(address _token, uint256 _price) external onlyOwner {
         priceFeeds[_token] = _price;
     }
 }

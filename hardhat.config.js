@@ -75,11 +75,7 @@ module.exports = {
   networks: {
     hardhat: {
       accounts:{mnemonic:process.env.MNEMONIC, count: 300},
-      chainId: 1,
-      gas: 6.9e6,
-      forking: {
-        url: "https://mainnet.infura.io/v3/" + process.env.INFURA_ID,
-      }
+      chainId: 1
     },
     development: {
       url: "http://127.0.0.1:8545",
