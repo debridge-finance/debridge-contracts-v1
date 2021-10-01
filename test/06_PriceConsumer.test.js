@@ -77,9 +77,9 @@ describe("PriceConsumer", function () {
       expect(+ethUsdtPrice).to.be.equal(parseInt(expectedEthUsdtPrice * 10 ** decimals), 'usdtEthPrice is incorrect');
     });
 
-    it("getPriceOfToken always considers WETH as quote", async function () {
-      const price = await this.priceConsumer.getPriceOfToken(this.usdtToken.address);
-      expect(price).to.be.equal(usdtEthPrice, 'getPriceOfToken is incorrect');
+    it("getPriceOfTokenInWETH always considers WETH as quote", async function () {
+      const price = await this.priceConsumer.getPriceOfTokenInWETH(this.usdtToken.address);
+      expect(price).to.be.equal(usdtEthPrice, 'getPriceOfTokenInWETH is incorrect');
     });
   });
 })

@@ -22,7 +22,7 @@ contract MockPriceConsumer is IPriceConsumer, Ownable, Initializable {
      * @dev get Price of Token in WETH
      * @param _token address of token
      */
-    function getPriceOfToken(address _token) external view override returns (uint256) {
+    function getPriceOfTokenInWETH(address _token) external view override returns (uint256) {
         return priceFeeds[_token];
     }
 
