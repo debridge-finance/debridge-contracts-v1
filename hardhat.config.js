@@ -123,6 +123,6 @@ module.exports = {
       gasPrice: 51e9,
       gas: 6.9e6,
       chainId: 1
-    },
+    }
   },
 }
