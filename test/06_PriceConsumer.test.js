@@ -7,7 +7,7 @@ const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
 
 describe("PriceConsumer", function () {
   let wethAmount, usdtAmount;
-  const decimals = 6
+  const usdtDecimals = 6
 
   before(async function () {
     [deployer, other] = await ethers.getSigners();
@@ -19,7 +19,7 @@ describe("PriceConsumer", function () {
     
     this.weth = await WETH9Factory.deploy();
     this.factory = await UniswapV2Factory.deploy(deployer.address);
-    this.usdtToken = await MockToken.new("USDT Token", "dUSDT", decimals);
+    this.usdtToken = await MockToken.new("USDT Token", "dUSDT", usdtDecimals);
 
     await this.factory.createPair(
       this.usdtToken.address,
@@ -31,7 +31,7 @@ describe("PriceConsumer", function () {
     
     // setup
     wethAmount = toWei("27"); // 27 ETH
-    usdtAmount = "78000000000"; // 78k USDT with decimals 6
+    usdtAmount = "78000000000"; // 78k USDT with usdtDecimals 6
 
     await this.weth.connect(other).deposit({
       value: wethAmount,
@@ -68,13 +68,13 @@ describe("PriceConsumer", function () {
       console.log('actual USDT/ETH price in wei', +usdtEthPrice)
       console.log('actual ETH/USDT price in wei', +ethUsdtPrice);
 
-      const expectedUsdtEthPrice = ((wethAmount / 10 ** 18) / (usdtAmount / 10 ** decimals))
-      const expectedEthUsdtPrice = ((usdtAmount / 10 ** decimals) / (wethAmount / 10 ** 18))
+      const expectedUsdtEthPrice = ((wethAmount / 10 ** 18) / (usdtAmount / 10 ** usdtDecimals))
+      const expectedEthUsdtPrice = ((usdtAmount / 10 ** usdtDecimals) / (wethAmount / 10 ** 18))
       console.log('expected USDT/ETH price', expectedUsdtEthPrice)
       console.log('expected ETH/USDT price', expectedEthUsdtPrice)
 
       expect(+usdtEthPrice).to.be.equal(parseInt(expectedUsdtEthPrice * 10 ** 18), 'ethUsdPrice is incorrect');
-      expect(+ethUsdtPrice).to.be.equal(parseInt(expectedEthUsdtPrice * 10 ** decimals), 'usdtEthPrice is incorrect');
+      expect(+ethUsdtPrice).to.be.equal(parseInt(expectedEthUsdtPrice * 10 ** usdtDecimals), 'usdtEthPrice is incorrect');
     });
 
     it("getPriceOfTokenInWETH always considers WETH as quote", async function () {

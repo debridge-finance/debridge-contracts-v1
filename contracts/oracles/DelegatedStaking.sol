@@ -1425,10 +1425,10 @@ contract DelegatedStaking is Initializable,
     }
 
     /**
-     * @dev Get USD amount of validator collateral
+     * @dev Get ETH amount of validator collateral
      * @param _validator Address of validator
      * @param _collateral Address of collateral
-     * @return USD amount with decimals 18
+     * @return ETH amount with decimals 18
      */
     function getPoolETHAmount(address _validator, address _collateral) public view returns(uint256) {
         uint256 collateralPrice = priceConsumer.getPriceOfTokenInWETH(_collateral);
@@ -1436,7 +1436,7 @@ contract DelegatedStaking is Initializable,
     }
 
     /**
-     * @dev Get total USD amount of validator collateral
+     * @dev Get total ETH amount of validator collateral
      * @param _validator Address of validator
      */
     function getTotalETHAmount(address _validator) public view
