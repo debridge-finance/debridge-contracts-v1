@@ -481,14 +481,14 @@ contract("DelegatedStaking", function () {
         const prevDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
 
         const balanceBefore = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
-        const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
+        const totalUSDAmountBefore = await this.delegatedStaking.getTotalETHAmount(validatorAddress);
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const prevCollateral = await this.delegatedStaking.collaterals(collateralAddress);
 
         await this.delegatedStaking.connect(delegarorAccount).stake(delegarorAccount.address, validatorAddress, collateralAddress, amount);
 
         const balanceAfter = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
-        const totalUSDAmountAfter = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
+        const totalUSDAmountAfter = await this.delegatedStaking.getTotalETHAmount(validatorAddress);
         const currentDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
         const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const currentCollateral = await this.delegatedStaking.collaterals(collateralAddress);
@@ -522,7 +522,7 @@ contract("DelegatedStaking", function () {
         assert.equal(prevValidatorCollateral.accumulatedRewards.toString(), "0");
         assert.equal(prevValidatorCollateral.accumulatedRewards.toString(), currentValidatorCollateral.accumulatedRewards.toString());
         // check increase USD pool cost
-        //TODO: check getTotalUSDAmount!!!
+        //TODO: check getTotalETHAmount!!!
         // console.log("totalUSDAmountAfter");
         // console.log(totalUSDAmountAfter.toString());
         // console.log(totalUSDAmountBefore.toString());
@@ -544,12 +544,12 @@ contract("DelegatedStaking", function () {
 
         const prevDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
         const balanceBefore = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
-        const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
+        const totalUSDAmountBefore = await this.delegatedStaking.getTotalETHAmount(validatorAddress);
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const prevCollateral = await this.delegatedStaking.collaterals(collateralAddress);
         await this.delegatedStaking.connect(delegarorAccount).stake(delegarorAccount.address, validatorAddress, collateralAddress, amount);
         const balanceAfter = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
-        const totalUSDAmountAfter = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
+        const totalUSDAmountAfter = await this.delegatedStaking.getTotalETHAmount(validatorAddress);
         const currentDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
         const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const currentCollateral = await this.delegatedStaking.collaterals(collateralAddress);
@@ -588,12 +588,12 @@ contract("DelegatedStaking", function () {
         const prevDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
 
         const balanceBefore = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
-        const totalUSDAmountBefore = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
+        const totalUSDAmountBefore = await this.delegatedStaking.getTotalETHAmount(validatorAddress);
         const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const prevCollateral = await this.delegatedStaking.collaterals(collateralAddress);
         await this.delegatedStaking.connect(delegarorAccount).stake(delegarorAccount.address, validatorAddress, collateralAddress, amount);
         const balanceAfter = toBN(await collateralToken.balanceOf(this.delegatedStaking.address));
-        const totalUSDAmountAfter = await this.delegatedStaking.getTotalUSDAmount(validatorAddress);
+        const totalUSDAmountAfter = await this.delegatedStaking.getTotalETHAmount(validatorAddress);
         const currentDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
         const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(validatorAddress, collateralAddress);
         const currentCollateral = await this.delegatedStaking.collaterals(collateralAddress);
@@ -719,10 +719,10 @@ contract("DelegatedStaking", function () {
         console.log(`usdc: ${this.usdcToken.address}`);
 
 
-        console.log(`Bob totalUSDAmount: ${(await this.delegatedStaking.getTotalUSDAmount(bob)).toString()}`);
-        console.log(`Bob link pool usd: ${(await this.delegatedStaking.getPoolUSDAmount(bob, this.linkToken.address)).toString()}`);
-        console.log(`Bob usdt pool usd: ${(await this.delegatedStaking.getPoolUSDAmount(bob, this.usdtToken.address)).toString()}`);
-        console.log(`Bob usdc pool usd: ${(await this.delegatedStaking.getPoolUSDAmount(bob, this.usdcToken.address)).toString()}`);
+        console.log(`Bob totalUSDAmount: ${(await this.delegatedStaking.getTotalETHAmount(bob)).toString()}`);
+        console.log(`Bob link pool usd: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.linkToken.address)).toString()}`);
+        console.log(`Bob usdt pool usd: ${(await this.delegatedStaking.getPoolEThAmount(bob, this.usdtToken.address)).toString()}`);
+        console.log(`Bob usdc pool usd: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.usdcToken.address)).toString()}`);
 
         this.rewardCollateralAmount = "1000000000"; //1000 USDT
         this.rewardCollateralAddress = this.usdtToken.address;
