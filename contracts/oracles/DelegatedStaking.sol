@@ -646,11 +646,11 @@ contract DelegatedStaking is Initializable,
             uint256 validatorAmount = validator.rewardWeightCoefficient * _rewardAmount / weightCoefficientDenominator;
             uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
 
-            (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount) = getTotalUSDAmount(validatorAddress);
+            (uint256[] memory poolsETHAmounts, uint256 totalETHAmount) = getTotalETHAmount(validatorAddress);
 
             uint256[] memory tempValidatorRewards = new uint256[](collateralLength);
             for (uint256 c = 0; c < collateralLength; c++) {
-                uint256 delegatorReward = delegatorsAmount * poolsUSDAmounts[c] / totalUSDAmount;
+                uint256 delegatorReward = delegatorsAmount * poolsETHAmounts[c] / totalETHAmount;
                 if (rewardToken == collateralAddresses[c]){
                     ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[rewardToken];
                     validatorRewardCollateral.stakedAmount += delegatorReward;
@@ -1425,38 +1425,31 @@ contract DelegatedStaking is Initializable,
     }
 
     /**
-     * @dev Get USD amount of validator collateral
+     * @dev Get ETH amount of validator collateral
      * @param _validator Address of validator
      * @param _collateral Address of collateral
-     * @return USD amount with decimals 18
+     * @return ETH amount with decimals 18
      */
-    function getPoolUSDAmount(address _validator, address _collateral) public view returns(uint256) {
-        uint256 collateralPrice;
-        Collateral storage collateral = collaterals[_collateral];
-        if (collateral.isUSDStable)
-            collateralPrice = 1e18;
-        // All non-ETH (hence USD) pairs have 8 decimals, so pad output of priceConsumer to 18 decimals
-        else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
-
-        return getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * collateralPrice
-                / (10 ** collateral.decimals);
+    function getPoolETHAmount(address _validator, address _collateral) public view returns(uint256) {
+        uint256 collateralPrice = priceConsumer.getPriceOfTokenInWETH(_collateral);
+        return getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * collateralPrice;
     }
 
     /**
-     * @dev Get total USD amount of validator collateral
+     * @dev Get total ETH amount of validator collateral
      * @param _validator Address of validator
      */
-    function getTotalUSDAmount(address _validator) public view
-        returns (uint256[] memory poolsUSDAmounts, uint256 totalUSDAmount
+    function getTotalETHAmount(address _validator) public view
+        returns (uint256[] memory poolsAmounts, uint256 totalAmount
     ) {
-        poolsUSDAmounts = new uint256[](collateralAddresses.length);
+        poolsAmounts = new uint256[](collateralAddresses.length);
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            uint256 poolUSDAmount = getPoolUSDAmount(_validator, collateralAddresses[i]);
-            totalUSDAmount += poolUSDAmount;
-            poolsUSDAmounts[i] = poolUSDAmount;
+            uint256 poolAmount = getPoolETHAmount(_validator, collateralAddresses[i]);
+            totalAmount += poolAmount;
+            poolsAmounts[i] = poolAmount;
         }
-        console.log("getTotalUSDAmount %s totalUSDAmount: %s", _validator, totalUSDAmount);
-        return (poolsUSDAmounts, totalUSDAmount);
+        console.log("getTotalAmount %s totalAmount: %s", _validator, totalAmount);
+        return (poolsAmounts, totalAmount);
     }
 
     /**

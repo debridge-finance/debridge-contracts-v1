@@ -670,12 +670,12 @@ contract DelegatedStakingV2 is AccessControl, Initializable {
         oracle.accumulatedRewards[_collateral] += _amount - delegatorsAmount;
 
         // All colaterals of the oracle valued in usd
-        uint256 totalUSDAmount = getTotalUSDAmount(_oracle);
+        uint256 totalUSDAmount = getTotalETHAmount(_oracle);
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
             address currentCollateral = collateralAddresses[i];
             // How many rewards each collateral receives
             uint256 accTokens = delegatorsAmount *
-                getPoolUSDAmount(_oracle, currentCollateral) /
+                getPoolETHAmount(_oracle, currentCollateral) /
                 totalUSDAmount;
 
             uint256 accTokensPerShare = oracle.delegation[currentCollateral].shares > 0
@@ -1037,31 +1037,26 @@ contract DelegatedStakingV2 is AccessControl, Initializable {
     }
 
     /**
-     * @dev Get USD amount of oracle collateral
+     * @dev Get ETH amount of validator collateral
      * @param _oracle Address of oracle
      * @param _collateral Address of collateral
-     * @return USD amount with decimals 18 
+     * @return ETH amount with decimals 18
      */
-    function getPoolUSDAmount(address _oracle, address _collateral) public view returns(uint256) {
-        uint256 collateralPrice;
-        Collateral storage collateral = collaterals[_collateral];
-        if (collateral.isUSDStable)
-            collateralPrice = 1e18;
-        else collateralPrice = priceConsumer.getPriceOfToken(_collateral);
-        return getUserInfo[_oracle].delegation[_collateral].stakedAmount * collateralPrice
-                / (10 ** collateral.decimals);
+    function getPoolETHAmount(address _oracle, address _collateral) public view returns(uint256) {
+        uint256 collateralPrice = priceConsumer.getPriceOfTokenInWETH(_collateral);
+        return getUserInfo[_oracle].delegation[_collateral].stakedAmount * collateralPrice;
     }
 
     /**
-     * @dev Get total USD amount of oracle collateral
+     * @dev Get total ETH amount of oracle collateral
      * @param _oracle Address of oracle
      */
-    function getTotalUSDAmount(address _oracle) public view returns(uint256) {
-        uint256 totalUSDAmount = 0;
+    function getTotalETHAmount(address _oracle) public view returns(uint256) {
+        uint256 totalAmount = 0;
         for (uint256 i = 0; i < collateralAddresses.length; i++) {
-            totalUSDAmount += getPoolUSDAmount(_oracle, collateralAddresses[i]);
+            totalAmount += getPoolETHAmount(_oracle, collateralAddresses[i]);
         }
-        return totalUSDAmount;
+        return totalAmount;
     }
 
     /**
