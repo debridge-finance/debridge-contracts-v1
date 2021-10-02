@@ -30,26 +30,30 @@ async function deployPancakeSwapPairs({
   router
 }) {
 
-  for (const { token, liquidityAmount, wethLiquidityAmount } of tokens) {
+  for (const { token1, liquidityAmount1, liquidityAmount2, token2 } of tokens) {
     try {
-      await factory.createPair(token.address, weth.address)
-      await token.approve(
+      await factory.createPair(token1.address, token2.address)
+      await token1.approve(
         router.address,
         MaxUint256,
         { from: provider }
       )
-      await weth.deposit({ value: wethLiquidityAmount });
 
-      await weth.approve(
+      if (token2 === weth) {
+        await weth.deposit({ value: liquidityAmount2 });
+      }
+
+      await token2.approve(
         router.address,
-        MaxUint256
+        MaxUint256,
+        { from: provider }
       )
-      
+
       await router.addLiquidity(
-        weth.address,
-        token.address,
-        wethLiquidityAmount,
-        liquidityAmount,
+        token1.address,
+        token2.address,
+        liquidityAmount1,
+        liquidityAmount2,
         0,
         0,
         provider,
@@ -209,9 +213,30 @@ contract("DelegatedStaking", function () {
 
     await deployPancakeSwapPairs({
       tokens: [
-        { token: this.linkToken, liquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 3), wethLiquidityAmount: mintLinkAmount.slice(0, mintLinkAmount.length - 4) },
-        { token: this.usdcToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 3), wethLiquidityAmount: (10e18).toString() },
-        { token: this.usdtToken, liquidityAmount: mintUSDAmount.slice(0, mintUSDAmount.length - 3), wethLiquidityAmount: (10e18).toString() }
+        {
+          token1: this.linkToken, liquidityAmount1: mintLinkAmount.slice(0, mintLinkAmount.length - 3),
+          token2: this.usdcToken, liquidityAmount2: mintUSDAmount.slice(0, mintUSDAmount.length - 3)
+        },
+        {
+          token1: this.linkToken, liquidityAmount1: mintLinkAmount.slice(0, mintLinkAmount.length - 3),
+          token2: this.usdtToken, liquidityAmount2: mintUSDAmount.slice(0, mintUSDAmount.length - 3)
+        },
+        {
+          token1: this.linkToken, liquidityAmount1: mintLinkAmount.slice(0, mintLinkAmount.length - 3),
+          token2: this.weth, liquidityAmount2: (10e18).toString()
+        },
+        {
+          token1: this.usdcToken, liquidityAmount1: mintUSDAmount.slice(0, mintUSDAmount.length - 3),
+          token2: this.usdtToken, liquidityAmount2: mintUSDAmount.slice(0, mintUSDAmount.length - 3)
+        },
+        {
+          token1: this.usdtToken, liquidityAmount1: mintUSDAmount.slice(0, mintUSDAmount.length - 3),
+          token2: this.weth, liquidityAmount2: (10e18).toString()
+        },
+        {
+          token1: this.usdcToken, liquidityAmount1: mintUSDAmount.slice(0, mintUSDAmount.length - 3),
+          token2: this.weth, liquidityAmount2: (10e18).toString()
+        }
       ],
       weth: this.weth,
       provider: alice,
@@ -721,7 +746,7 @@ contract("DelegatedStaking", function () {
 
         console.log(`Bob totalUSDAmount: ${(await this.delegatedStaking.getTotalETHAmount(bob)).toString()}`);
         console.log(`Bob link pool usd: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.linkToken.address)).toString()}`);
-        console.log(`Bob usdt pool usd: ${(await this.delegatedStaking.getPoolEThAmount(bob, this.usdtToken.address)).toString()}`);
+        console.log(`Bob usdt pool usd: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.usdtToken.address)).toString()}`);
         console.log(`Bob usdc pool usd: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.usdcToken.address)).toString()}`);
 
         this.rewardCollateralAmount = "1000000000"; //1000 USDT
