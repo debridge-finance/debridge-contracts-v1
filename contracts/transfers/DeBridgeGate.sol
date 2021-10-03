@@ -718,7 +718,7 @@ contract DeBridgeGate is
             debridge.balance -= amountAfterFee;
             IDeBridgeToken(debridge.tokenAddress).burn(amountAfterFee);
         }
-        return (_amount, debridgeId, feeParams);
+        return (amountAfterFee, debridgeId, feeParams);
     }
 
     function _validateAutoParams(
@@ -946,6 +946,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 102; // 1.0.2
     }
 }
