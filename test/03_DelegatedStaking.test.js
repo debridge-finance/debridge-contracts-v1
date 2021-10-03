@@ -1096,24 +1096,26 @@ contract("DelegatedStaking", function () {
       await this.delegatedStaking.stake(alice, bob, this.linkToken.address, toWei("10"));
     })
     it("should unstake by admin", async function () {
-      const amount = toWei("10");
+      const amount = toWei("1");
       const collateral = this.linkToken.address;
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(bob, collateral, alice);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
+      const sharePrice = await this.delegatedStaking.getPricePerFullValidatorShare(bob, collateral);
+      console.log(sharePrice, 'sharePrice')
       await this.delegatedStaking.requestUnstake(bob, collateral, alice, amount);
       const currentDelegation = await this.delegatedStaking.getDelegatorsInfo(bob, collateral, alice);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const sharePrice = await this.delegatedStaking.getPricePerFullValidatorShare(bob, collateral);
-      const sharesBurned = amount * sharePrice
-      console.log(sharesBurned.toString(), 'sharesBurned');
+      const amountUnlocked = amount * sharePrice
+      console.log(amountUnlocked, 'amountUnlocked')
       assert.equal(
-        prevDelegation.shares.sub(toBN(sharesBurned)).toString(),
-        currentDelegation.shares.toString(),
+        prevDelegation.shares.sub(currentDelegation.shares).toString(),
+        amount.toString(),
         'shares amount mismatch'
       );
       assert.equal(
-        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollateral.totalLocked.toString()
+        prevCollateral.totalLocked.sub(toBN(amountUnlocked)).toString(),
+        currentCollateral.totalLocked.toString(),
+        "total locked amount mismatch"
       );
     });
   });
@@ -1417,9 +1419,10 @@ contract("DelegatedStaking", function () {
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eveAccount.address);
 
       const prevSharePrice = await this.delegatedStaking.getPricePerFullValidatorShare(david, collateral);
+      await this.delegatedStaking.sendRewards(collateral, amount);
       await this.delegatedStaking.distributeValidatorRewards(collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const currentDelegation = await this.delegatedStaking.getDelegationInfo(david, collateral, eveAccount.address);
+      const currentDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eveAccount.address);
       const currentSharePrice = await this.delegatedStaking.getPricePerFullValidatorShare(david, collateral);
 
       assert.equal(prevCollateral.totalLocked.add(toBN(amount)).toString(), currentCollateral.totalLocked.toString());
