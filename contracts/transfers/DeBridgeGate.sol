@@ -361,9 +361,9 @@ contract DeBridgeGate is
 
     /// @dev Set proxy address.
     /// @param _address Address of the proxy that executes external calls.
-    function setCallProxy(uint256 version, address _address) external onlyAdmin {
-        callProxyAddresses[version] = _address;
-        emit CallProxyUpdated(version, _address);
+    function setCallProxy(uint256 variation, address _address) external onlyAdmin {
+        callProxyAddresses[variation] = _address;
+        emit CallProxyUpdated(variation, _address);
     }
 
     /// @dev Add support for the asset.
