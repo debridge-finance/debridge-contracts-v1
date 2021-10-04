@@ -721,10 +721,13 @@ contract DelegatedStaking is Initializable,
             IERC20(_rewardToken).safeApprove(address(feeProxy), tokenRewardAmount);
             //TODO: can check beforeAmount, afterAmount
             tokenRewardAmount = feeProxy.swap(_rewardToken, currentCollateral, address(this), tokenRewardAmount);
-            console.log(tokenRewardAmount,"tokenRewardAmount after swap");
+
+            console.log(collaterals[currentCollateral].totalLocked,"collaterals[currentCollateral].totalLocked before math");
 
             collaterals[currentCollateral].totalLocked += tokenRewardAmount;
             collaterals[currentCollateral].rewards += tokenRewardAmount;
+
+            console.log(collaterals[currentCollateral].totalLocked,"collaterals[currentCollateral].totalLocked after math");
 
             // now we need to split amountOut for each current collateral between validator pools
             uint256 postSwapRewardAmount;

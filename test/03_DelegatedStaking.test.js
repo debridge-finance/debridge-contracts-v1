@@ -764,8 +764,8 @@ contract("DelegatedStaking", function () {
         const collateralInfo = await this.delegatedStaking.collaterals(this.rewardCollateralAddress);
         console.log(this.prevCollateralInfo, 'prevCollateralInfo')
         console.log(collateralInfo, 'collateralInfo');
-        //assert(this.prevCollateralInfo.totalLocked < collateralInfo.totalLocked, "total locked mismatch");
-        //assert(this.prevCollateralInfo.rewards < collateralInfo.rewards, "rewards mismatch");
+        assert(this.prevCollateralInfo.totalLocked < collateralInfo.totalLocked, "total locked mismatch");
+        assert(this.prevCollateralInfo.rewards < collateralInfo.rewards, "rewards mismatch");
         // we heve next validators
         // await this.delegatedStaking.addValidator(bob, alice, 1, 2500);
         // await this.delegatedStaking.addValidator(david, alice, 1, 5000);
