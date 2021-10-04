@@ -622,10 +622,6 @@ contract DelegatedStaking is Initializable,
         getRewardsInfo[_rewardToken].totalAmount += _amount;
 
         emit RewardsReceived(_rewardToken, _amount);
-
-        console.log("_amount %s", _amount);
-        console.log("getRewardsInfo[_rewardToken].totalAmount %s", getRewardsInfo[_rewardToken].totalAmount);
-        console.log("getRewardsInfo[_rewardToken].distributed %s", getRewardsInfo[_rewardToken].distributed);
     }
 
     /**
@@ -645,12 +641,17 @@ contract DelegatedStaking is Initializable,
             ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
             uint256 validatorAmount = validator.rewardWeightCoefficient * _rewardAmount / weightCoefficientDenominator;
             uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
+            console.log(delegatorsAmount,"delegatorsAmount _calculateValidatorRewards");
+            console.log(validatorAmount,"validatorAmount _calculateValidatorRewards");
 
             (uint256[] memory poolsETHAmounts, uint256 totalETHAmount) = getTotalETHAmount(validatorAddress);
+
+            console.log(totalETHAmount,"totalETHAmount _calculateValidatorRewards");
 
             uint256[] memory tempValidatorRewards = new uint256[](collateralLength);
             for (uint256 c = 0; c < collateralLength; c++) {
                 uint256 delegatorReward = delegatorsAmount * poolsETHAmounts[c] / totalETHAmount;
+                console.log(delegatorReward,"delegatorReward _calculateValidatorRewards");
                 if (rewardToken == collateralAddresses[c]){
                     ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[rewardToken];
                     validatorRewardCollateral.stakedAmount += delegatorReward;
@@ -710,12 +711,17 @@ contract DelegatedStaking is Initializable,
             address currentCollateral = collateralAddresses[cc];
             uint256 tokenRewardAmount = collectedRewards[cc];
 
-            if (currentCollateral == _rewardToken || tokenRewardAmount == 0) continue;
+            if (currentCollateral == _rewardToken || tokenRewardAmount == 0) {
+                console.log("Warn  %s _rewardToken: %s tokenRewardAmount %s", currentCollateral, _rewardToken, tokenRewardAmount);
+                continue;
+            }
+
             //TODO: can create direct transfer to swapContract
             IERC20(_rewardToken).safeApprove(address(feeProxy), 0);
             IERC20(_rewardToken).safeApprove(address(feeProxy), tokenRewardAmount);
             //TODO: can check beforeAmount, afterAmount
             tokenRewardAmount = feeProxy.swap(_rewardToken, currentCollateral, address(this), tokenRewardAmount);
+            console.log(tokenRewardAmount,"tokenRewardAmount after swap");
 
             collaterals[currentCollateral].totalLocked += tokenRewardAmount;
             collaterals[currentCollateral].rewards += tokenRewardAmount;
@@ -1420,8 +1426,9 @@ contract DelegatedStaking is Initializable,
         returns (uint256)
     {
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
+        Collateral memory collateral = collaterals[_collateral];
         if (validatorCollateral.shares == 0) revert ZeroAmount();
-        return validatorCollateral.stakedAmount/validatorCollateral.shares;
+        return (validatorCollateral.stakedAmount * 10 ** collateral.decimals) / validatorCollateral.shares;
     }
 
     /**
@@ -1432,8 +1439,8 @@ contract DelegatedStaking is Initializable,
      */
     function getPoolETHAmount(address _validator, address _collateral) public view returns(uint256) {
         uint256 collateralPrice = priceConsumer.getPriceOfTokenInWETH(_collateral);
-        console.log(collateralPrice, "collateralPrice");
-        return ( getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * collateralPrice ) / 10 ** 18;
+        Collateral memory collateral = collaterals[_collateral];
+        return ( getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * 10 ** (18 - collateral.decimals) * collateralPrice ) / 10 ** 18;
     }
 
     /**
@@ -1449,7 +1456,6 @@ contract DelegatedStaking is Initializable,
             totalAmount += poolAmount;
             poolsAmounts[i] = poolAmount;
         }
-        console.log("getTotalAmount %s totalAmount: %s", _validator, totalAmount);
         return (poolsAmounts, totalAmount);
     }
 

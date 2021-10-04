@@ -7,6 +7,7 @@ import "../interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IPriceConsumer.sol";
+import "hardhat/console.sol";
 
 contract PriceConsumer is IPriceConsumer, Ownable, Initializable {
     address public weth;
