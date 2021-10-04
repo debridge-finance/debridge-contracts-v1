@@ -439,7 +439,9 @@ contract("DelegatedStaking", function () {
 
   context("Test management strategies", async () => {
     it("should add if called by admin", async function () {
-      this.linkPrice = toWei("0.1");
+      // TODO: get prices from deployed liquidity pair
+      // Replace MockPriceConsumer to PriceConsumer
+      this.linkPrice = toWei("0.01");
       this.usdtPrice = toWei("0.0003");
       this.usdcPrice = toWei("0.0003");
       await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, this.linkPrice);
@@ -1025,17 +1027,18 @@ contract("DelegatedStaking", function () {
 
     before(async function () {
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
-      await this.delegatedStaking.stake(alice, bob, this.linkToken.address, toWei("5"));
+      await this.delegatedStaking.stake(alice, bob, this.linkToken.address, toWei("10"));
     })
     it("should unstake 5 tokens", async function () {
       const amount = toWei("5");
       const collateral = this.linkToken.address;
-      const prevCollateral = await this.delegatedStaking.collaterals(collateral);
+      const prevValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(bob, collateral);
       await this.delegatedStaking.requestUnstake(bob, collateral, alice, amount);
-      const currentCollateral = await this.delegatedStaking.collaterals(collateral);
+      const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(bob, collateral);
       assert.equal(
-        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollateral.totalLocked.toString()
+        prevValidatorCollateral.shares.sub(amount).toString(),
+        currentValidatorCollateral.shares.toString(),
+        "shares mismatch"
       );
     });
 
@@ -1079,19 +1082,20 @@ contract("DelegatedStaking", function () {
     it("should unstake 5 shares", async function () {
       const amount = toWei("5");
       const collateral = this.linkToken.address;
-      const prevCollateral = await this.delegatedStaking.collaterals(collateral);
+      const prevCollateral = await this.delegatedStaking.getValidatorCollateral(david, collateral);
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eve);
       await this.delegatedStaking.connect(eveAccount).requestUnstake(david, collateral, eve, amount);
-      const currentCollateral = await this.delegatedStaking.collaterals(collateral);
+      const currentCollateral = await this.delegatedStaking.getValidatorCollateral(david, collateral);
       const currentDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eve);
       assert.equal(
-        prevCollateral.totalLocked.sub(toBN(amount)).toString(),
-        currentCollateral.totalLocked.toString()
+        prevCollateral.shares.sub(toBN(amount)).toString(),
+        currentCollateral.shares.toString(),
+        "number of validator collateral shares mismatch"
       );
       assert.equal(
         prevDelegation.shares.sub(toBN(amount)).toString(),
         currentDelegation.shares.toString(),
-        "number of shares decrease"
+        "number of delegators shares mismatch"
       );
     });
 
@@ -1108,24 +1112,15 @@ contract("DelegatedStaking", function () {
       const prevDelegation = await this.delegatedStaking.getDelegatorsInfo(bob, collateral, alice);
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
       const sharePrice = await this.delegatedStaking.getPricePerFullValidatorShare(bob, collateral);
-      console.log(sharePrice, 'sharePrice')
       await this.delegatedStaking.requestUnstake(bob, collateral, alice, amount);
       const currentDelegation = await this.delegatedStaking.getDelegatorsInfo(bob, collateral, alice);
-      const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      const amountUnlocked = amount * sharePrice
-      console.log(amountUnlocked, 'amountUnlocked')
       assert.equal(
         prevDelegation.shares.sub(currentDelegation.shares).toString(),
         amount.toString(),
         'shares amount mismatch'
       );
-      assert.equal(
-        prevCollateral.totalLocked.sub(toBN(amountUnlocked)).toString(),
-        currentCollateral.totalLocked.toString(),
-        "total locked amount mismatch"
-      );
     });
-  });
+  }); 
 
   context("Test execute unstaking of different amounts", async () => {
     before(async function () {
@@ -1198,12 +1193,13 @@ contract("DelegatedStaking", function () {
       const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(sarah, collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
       assert.equal(
-        prevValidatorCollateral[1].add(toBN(amount)).toString(),
-        currentValidatorCollateral[1].toString()
+        prevValidatorCollateral.shares.add(amount).toString(),
+        currentValidatorCollateral.shares.toString(),
+        "shares mismtach"
       );
-      assert.equal(
-        prevCollateral.totalLocked.add(toBN(amount)).toString(),
-        currentCollateral.totalLocked.toString()
+      assert(
+        prevCollateral.totalLocked < currentCollateral.totalLocked,
+        "total locked mismatch"
       );
     });
     it("should fail cancel unstake if already executed", async function () {
@@ -1413,7 +1409,7 @@ contract("DelegatedStaking", function () {
       await this.delegatedStaking.distributeValidatorRewards(collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
 
-      assert.equal(prevCollateral.totalLocked.add(toBN(amount)).toString(), currentCollateral.totalLocked.toString());
+      assert(prevCollateral.totalLocked < currentCollateral.totalLocked);
     });
     it("should pay for oracle who shares profit with delegators", async function () {
       const collateral = this.linkToken.address;
@@ -1432,11 +1428,12 @@ contract("DelegatedStaking", function () {
       const currentDelegation = await this.delegatedStaking.getDelegatorsInfo(david, collateral, eveAccount.address);
       const currentSharePrice = await this.delegatedStaking.getPricePerFullValidatorShare(david, collateral);
 
-      assert.equal(prevCollateral.totalLocked.add(toBN(amount)).toString(), currentCollateral.totalLocked.toString());
+      assert(prevCollateral.totalLocked < currentCollateral.totalLocked);
 
       assert.equal(
         prevDelegation.shares.toString(),
-        currentDelegation.shares.toString()
+        currentDelegation.shares.toString(),
+        "shares mismatch"
       );
       assert(prevSharePrice.toString() <= currentSharePrice.toString(), "tokenPrice does not increase");
     });
