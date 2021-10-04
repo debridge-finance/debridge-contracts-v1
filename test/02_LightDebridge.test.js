@@ -115,7 +115,7 @@ contract("DeBridgeGate light mode", function () {
     });
 
     this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
-    this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
+    this.callProxy = await upgrades.deployProxy(CallProxyFactory, [0]);
     const maxAmount = toWei("100000000000");
     const fixedNativeFee = toWei("0.00001");
     const isSupported = true;

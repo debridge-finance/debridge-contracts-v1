@@ -10,7 +10,7 @@ describe("CallProxy", function () {
 
   beforeEach(async function () {
     this.proxyFactory = await ethers.getContractFactory("CallProxy", deployer);
-    this.proxy = await upgrades.deployProxy(this.proxyFactory, []);
+    this.proxy = await upgrades.deployProxy(this.proxyFactory, [0]);
 
     const DEBRIDGE_GATE_ROLE = await this.proxy.DEBRIDGE_GATE_ROLE();
     await this.proxy.grantRole(DEBRIDGE_GATE_ROLE, deployer.address);

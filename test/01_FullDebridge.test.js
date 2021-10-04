@@ -45,7 +45,7 @@ contract("DeBridgeGate full mode", function () {
   });
 
   beforeEach(async function () {
-    this.callProxy = await upgrades.deployProxy(this.CallProxyFactory, []);
+    this.callProxy = await upgrades.deployProxy(this.CallProxyFactory, [0]);
 
     //-------Deploy weth contracts
     this.weth = await this.WETH9Factory.deploy();

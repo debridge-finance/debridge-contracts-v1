@@ -172,7 +172,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     // console.log(`feeProxyHECO: ${this.feeProxyHECO.address.toString()}`);
 
     //-------Deploy callProxy contracts
-    this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
+    this.callProxy = await upgrades.deployProxy(CallProxyFactory, [0]);
 
     //-------Deploy defiController contracts
     this.defiControllerETH = await upgrades.deployProxy(DefiControllerFactory, []);
@@ -2321,7 +2321,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       it("should set callProxy with sender", async function() {
         const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
-        callProxyWithSender = await upgrades.deployProxy(CallProxyFactory, []);
+        callProxyWithSender = await upgrades.deployProxy(CallProxyFactory, [PROXY_WITH_SENDER]);
 
         await expect(
           this.debridgeETH.setCallProxy(PROXY_WITH_SENDER, callProxyWithSender.address)
