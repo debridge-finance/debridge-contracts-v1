@@ -83,7 +83,7 @@ interface IDeBridgeGate {
         bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode,
-        bytes memory _autoParams
+        bytes calldata _autoParams
     ) external payable;
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -97,8 +97,8 @@ interface IDeBridgeGate {
         address _receiver,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures,
-        bytes memory _autoParams
+        bytes calldata _signatures,
+        bytes calldata _autoParams
     ) external;
 
     function flash(
@@ -142,7 +142,7 @@ interface IDeBridgeGate {
         FeeParams feeParams,
         SubmissionAutoParamsTo autoParams,
         address nativeSender
-        // bool isNativeToken //added to feeParams 
+        // bool isNativeToken //added to feeParams
     ); // emited once the native tokens are locked to be sent to the other chain
 
     event Claimed(
