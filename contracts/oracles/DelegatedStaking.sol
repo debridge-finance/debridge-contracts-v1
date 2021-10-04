@@ -1432,7 +1432,8 @@ contract DelegatedStaking is Initializable,
      */
     function getPoolETHAmount(address _validator, address _collateral) public view returns(uint256) {
         uint256 collateralPrice = priceConsumer.getPriceOfTokenInWETH(_collateral);
-        return getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * collateralPrice;
+        console.log(collateralPrice, "collateralPrice");
+        return ( getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount * collateralPrice ) / 10 ** 18;
     }
 
     /**
