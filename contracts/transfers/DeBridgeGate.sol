@@ -613,7 +613,6 @@ contract DeBridgeGate is
         bytes32 debridgeId,
         FeeParams memory feeParams
     ) {
-        feeParams.receivedAmount = _amount;
         // Run _permit first. Avoid Stack too deep
         if (_permit.length > 0) {
             // call permit before transfering token
@@ -634,7 +633,6 @@ contract DeBridgeGate is
             ? true // token not in mapping
             : nativeTokenInfo.nativeChainId == getChainId(); // token native chain id the same
 
-        feeParams.isNativeToken = isNativeToken;
         if (isNativeToken) {
             //We use WETH debridgeId for transfer ETH
             debridgeId = getDebridgeId(
@@ -703,13 +701,17 @@ contract DeBridgeGate is
             // Calculate transfer fee with discount
             uint256 transferFee = (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
             transferFee = transferFee - (transferFee * discountInfo.discountTransferBps) / BPS_DENOMINATOR;
-            feeParams.transferFee = transferFee;
             if (_amount < transferFee) revert TransferAmountNotCoverFees();
             debridgeFee.collectedFees += transferFee + assetsFixedFee;
+            amountAfterFee = _amount - transferFee - assetsFixedFee;
+
+            // initialize feeParams
             feeParams.transferFee = transferFee;
             feeParams.useAssetFee = _useAssetFee;
-            amountAfterFee = _amount - transferFee - assetsFixedFee;
+            feeParams.receivedAmount = _amount;
+            feeParams.isNativeToken = isNativeToken;
         }
+
         // Is native token
         if (isNativeToken) {
             debridge.balance += amountAfterFee;
