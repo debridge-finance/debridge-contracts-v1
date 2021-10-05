@@ -1,25 +1,11 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { ethers } = require("hardhat");
-const { deployProxy, getLastDeployedProxy } = require("../deploy-utils");
+const { FLAGS, deployProxy, getLastDeployedProxy } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
-  const multisig = process.env.MULTISIG_ACCOUNT;
-
-  console.log(`MULTISIG_ACCOUNT: ${multisig}`);
-  if (!multisig) {
-    console.error("ERROR. env.MULTISIG_ACCOUNT is empty");
-    return;
-  }
-
-  if (multisig==deployer) {
-    console.error("ERROR. env.MULTISIG_ACCOUNT must be different from the deployer");
-    return;
-  }
-
-  const DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
   console.log("Start 08_DeBridgeGate");
 
@@ -31,20 +17,14 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   let confirmationAggregator;
   if (deployInitParams.deploy.ConfirmationAggregator) {
     confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
-    console.log("confirmationAggregator grantRole DEFAULT_ADMIN_ROLE for multisig");
-    await confirmationAggregator.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-    console.log("confirmationAggregator revokeRole DEFAULT_ADMIN_ROLE for deployer");
-    await confirmationAggregator.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
   }
 
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
   const feeProxy = await getLastDeployedProxy("FeeProxy", deployer);
   const deBridgeTokenDeployer = await getLastDeployedProxy("DeBridgeTokenDeployer", deployer);
 
-  // TODO: don't hardcode flag value
-  const PROXY_WITH_SENDER_FLAG = 2;
   const callProxy = await getLastDeployedProxy("CallProxy", deployer, [0]);
-  const callProxyWithSender = await getLastDeployedProxy("CallProxy", deployer, [PROXY_WITH_SENDER_FLAG]);
+  const callProxyWithSender = await getLastDeployedProxy("CallProxy", deployer, [FLAGS.PROXY_WITH_SENDER]);
   if (callProxy.address == callProxyWithSender.address) {
     console.error("ERROR. CallProxy and CallProxy with sender are the same");
     return;
@@ -137,12 +117,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // console.log(updateAssetFixedFeesReceipt);
 
   console.log("Set callProxy with sender for deBridgeGate");
-  await deBridgeGateInstance.setCallProxy(PROXY_WITH_SENDER_FLAG, callProxyWithSender.address);
-
-  console.log("deBridgeGate grantRole DEFAULT_ADMIN_ROLE for multisig");
-  await deBridgeGateInstance.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-  console.log("deBridgeGate revokeRole DEFAULT_ADMIN_ROLE for deployer");
-  await deBridgeGateInstance.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
+  await deBridgeGateInstance.setCallProxy(FLAGS.PROXY_WITH_SENDER, callProxyWithSender.address);
 
 
   // --------------------------------
@@ -153,24 +128,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const DEBRIDGE_GATE_ROLE = await callProxy.DEBRIDGE_GATE_ROLE();
   console.log("callProxy grantRole DEBRIDGE_GATE_ROLE for deBridgeGate");
   await callProxy.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
-  console.log("callProxy grantRole DEFAULT_ADMIN_ROLE for multisig");
-  await callProxy.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-  console.log("callProxy revokeRole DEFAULT_ADMIN_ROLE for deployer");
-  await callProxy.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
 
   console.log("callProxyWithSender grantRole DEBRIDGE_GATE_ROLE for deBridgeGate");
   await callProxyWithSender.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
-  console.log("callProxyWithSender grantRole DEFAULT_ADMIN_ROLE for multisig");
-  await callProxyWithSender.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-  console.log("callProxyWithSender revokeRole DEFAULT_ADMIN_ROLE for deployer");
-  await callProxyWithSender.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
 
   console.log("feeProxy setDebridgeGate");
   await feeProxy.setDebridgeGate( deBridgeGateInstance.address);
-  console.log("feeProxy grantRole DEFAULT_ADMIN_ROLE for multisig");
-  await feeProxy.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-  console.log("feeProxy revokeRole DEFAULT_ADMIN_ROLE for deployer");
-  await feeProxy.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
 
   // --------------------------------
   //    setting debridge address for contracts
@@ -178,21 +141,10 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log("deBridgeTokenDeployer setDebridgeAddress");
   await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
 
-  console.log("deBridgeTokenDeployer grantRole DEFAULT_ADMIN_ROLE for multisig");
-  await deBridgeTokenDeployer.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-  console.log("deBridgeTokenDeployer revokeRole DEFAULT_ADMIN_ROLE for deployer");
-  await deBridgeTokenDeployer.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
-
   if (signatureVerifier) {
     console.log("signatureVerifier setDebridgeAddress");
     await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
-    console.log("signatureVerifier grantRole DEFAULT_ADMIN_ROLE for multisig");
-    await signatureVerifier.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-    console.log("signatureVerifier revokeRole DEFAULT_ADMIN_ROLE for deployer");
-    await signatureVerifier.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
   }
-
-  // TODO: grant admin role for multisig in defiController
 };
 
 module.exports.tags = ["08_DeBridgeGate"]
