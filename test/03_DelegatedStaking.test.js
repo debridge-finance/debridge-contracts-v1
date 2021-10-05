@@ -22,6 +22,15 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function getLiquidityAmountByExpectedPrice({price, token0, token1, token0amount}) {
+  const [decimals0, decimals1] = await Promise.all([
+    token0.decimals(),
+    token1.decimals()
+  ])
+  price = 0.008
+  return toBN(token0amount).mul(price)
+}
+
 async function deployPancakeSwapPairs({
   tokens,
   weth,
@@ -162,8 +171,41 @@ contract("DelegatedStaking", function () {
     await this.mockYController.setVault(this.linkToken.address, this.mockYearnVault.address);
     await this.yRegistry.addVault(this.mockYearnVault.address);
 
+
+    // SETUP STARTS
+
     const mintUSDAmount = "100000000000"; //100k
     const mintLinkAmount = toWei("100000"); //100k
+    const linkPriceInUsd = 24;
+    const ethPriceInUsd = 3000;
+    const usdtPriceInEth = 1 / ethPriceInUsd;
+    const linkPriceInEth = linkPriceInUsd / ethPriceInUsd; // 0.008
+    const ethPriceInLink = ethPriceInUsd / linkPriceInUsd; // 125
+
+    // SETUP ENDS
+
+    const usdtAmount = mintUSDAmount.slice(0, mintUSDAmount.length - 3);
+    const linkAmount = mintLinkAmount.slice(0, mintLinkAmount.length - 3)
+    const linkEthLiquidity = await getLiquidityAmountByExpectedPrice({
+      price: linkPriceInEth,
+      token0: this.linkToken,
+      token1: this.weth,
+      token0amount: linkAmount
+    })
+
+    const usdtEthLiquidity = await getLiquidityAmountByExpectedPrice({
+      price: usdtPriceInEth,
+      token0: this.usdt,
+      token1: this.weth,
+      token0amount: usdtAmount
+    })
+
+    const linkUsdtLiquidity = await getLiquidityAmountByExpectedPrice({
+      price: linkPriceInUsd,
+      token0: this.linkToken,
+      token1: this.usdt,
+      token0amount: linkAmount
+    })
 
     await this.linkToken.mint(alice, mintLinkAmount);
     await this.usdcToken.mint(alice, mintUSDAmount);
@@ -214,28 +256,28 @@ contract("DelegatedStaking", function () {
     await deployPancakeSwapPairs({
       tokens: [
         {
-          token1: this.linkToken, liquidityAmount1: mintLinkAmount.slice(0, mintLinkAmount.length - 3),
-          token2: this.usdcToken, liquidityAmount2: mintUSDAmount.slice(0, mintUSDAmount.length - 3)
+          token1: this.linkToken, liquidityAmount1: linkAmount,
+          token2: this.usdcToken, liquidityAmount2: linkUsdtLiquidity
         },
         {
-          token1: this.linkToken, liquidityAmount1: mintLinkAmount.slice(0, mintLinkAmount.length - 3),
-          token2: this.usdtToken, liquidityAmount2: mintUSDAmount.slice(0, mintUSDAmount.length - 3)
+          token1: this.linkToken, liquidityAmount1: linkAmount,
+          token2: this.usdtToken, liquidityAmount2: linkUsdtLiquidity
         },
         {
-          token1: this.linkToken, liquidityAmount1: mintLinkAmount.slice(0, mintLinkAmount.length - 3),
-          token2: this.weth, liquidityAmount2: (10e18).toString()
+          token1: this.linkToken, liquidityAmount1: linkAmount,
+          token2: this.weth, liquidityAmount2: linkEthLiquidity
         },
         {
-          token1: this.usdcToken, liquidityAmount1: mintUSDAmount.slice(0, mintUSDAmount.length - 3),
-          token2: this.usdtToken, liquidityAmount2: mintUSDAmount.slice(0, mintUSDAmount.length - 3)
+          token1: this.usdcToken, liquidityAmount1: usdtAmount,
+          token2: this.usdtToken, liquidityAmount2: usdtAmount
         },
         {
-          token1: this.usdtToken, liquidityAmount1: mintUSDAmount.slice(0, mintUSDAmount.length - 3),
-          token2: this.weth, liquidityAmount2: (10e18).toString()
+          token1: this.usdtToken, liquidityAmount1: usdtAmount,
+          token2: this.weth, liquidityAmount2: usdtEthLiquidity
         },
         {
-          token1: this.usdcToken, liquidityAmount1: mintUSDAmount.slice(0, mintUSDAmount.length - 3),
-          token2: this.weth, liquidityAmount2: (10e18).toString()
+          token1: this.usdcToken, liquidityAmount1: usdtAmount,
+          token2: this.weth, liquidityAmount2: usdtEthLiquidity
         }
       ],
       weth: this.weth,
@@ -749,7 +791,7 @@ contract("DelegatedStaking", function () {
         this.rewardCollateralAmount = "1000000000"; //1000 USDT
         this.rewardCollateralAddress = this.usdtToken.address;
         this.prevCollateralInfo = await this.delegatedStaking.collaterals(this.rewardCollateralAddress);
-        
+
         await this.delegatedStaking.sendRewards(this.rewardCollateralAddress, this.rewardCollateralAmount);
         await this.delegatedStaking.distributeValidatorRewards(this.rewardCollateralAddress);
       });
@@ -1111,7 +1153,7 @@ contract("DelegatedStaking", function () {
         'shares amount mismatch'
       );
     });
-  }); 
+  });
 
   context("Test execute unstaking of different amounts", async () => {
     before(async function () {
