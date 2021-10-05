@@ -9,7 +9,7 @@ const { upgrades, artifacts, ethers } = require('hardhat');
 const ether = require("@openzeppelin/test-helpers/src/ether");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
-const MockPriceConsumer = artifacts.require('MockPriceConsumer');
+const PriceConsumer = artifacts.require('PriceConsumer');
 const MockFeeProxy = artifacts.require('MockFeeProxy');
 const { toWei } = web3.utils;
 
@@ -246,12 +246,12 @@ contract("DelegatedStaking", function () {
 
     this.timelock = 1;
     this.slashingTreasuryAddress = alice;
-    this.mockPriceConsumer = await MockPriceConsumer.new();
+    this.priceConsumer = await PriceConsumer.new();
     this.mockFeeProxy = await MockFeeProxy.new(this.uniswapFactory.address, this.weth.address, this.slashingTreasuryAddress);
     this.DelegatedStaking = await ethers.getContractFactory("DelegatedStaking", alice);
     this.delegatedStaking = await upgrades.deployProxy(this.DelegatedStaking, [
       this.timelock,
-      this.mockPriceConsumer.address,
+      this.priceConsumer.address,
       this.mockFeeProxy.address,
       this.slashingTreasuryAddress
     ]);
@@ -286,7 +286,6 @@ contract("DelegatedStaking", function () {
     assert.equal(await this.delegatedStaking.withdrawTimelock(), this.timelock);
 
     assert.equal((await this.delegatedStaking.minProfitSharingBPS()).toString(), 5000);
-    assert.exists(await this.mockPriceConsumer.priceFeeds(this.linkToken.address));
   });
 
   context("Test management main properties", async () => {
@@ -439,14 +438,6 @@ contract("DelegatedStaking", function () {
 
   context("Test management strategies", async () => {
     it("should add if called by admin", async function () {
-      // TODO: get prices from deployed liquidity pair
-      // Replace MockPriceConsumer to PriceConsumer
-      this.linkPrice = toWei("0.01");
-      this.usdtPrice = toWei("0.0003");
-      this.usdcPrice = toWei("0.0003");
-      await this.mockPriceConsumer.addPriceFeed(this.linkToken.address, this.linkPrice);
-      await this.mockPriceConsumer.addPriceFeed(this.usdtToken.address, this.usdtPrice);
-      await this.mockPriceConsumer.addPriceFeed(this.usdcToken.address, this.usdcPrice);
       await this.delegatedStaking.addStrategy(this.mockAaveController.address, this.linkToken.address, this.linkToken.address);
       await this.delegatedStaking.addStrategy(this.mockYearnController.address, this.linkToken.address, this.linkToken.address);
       await this.delegatedStaking.addStrategy(this.mockCompoundController.address, this.linkToken.address, this.linkToken.address);
