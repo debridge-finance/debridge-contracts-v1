@@ -22,9 +22,12 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getLiquidityAmountByExpectedPrice({price, token1decimals, token0amount}) {
-  const priceBn = toBN(parseInt(price * 10 ** token1decimals))
-  return toBN(token0amount).mul(priceBn).div(toBN(10 ** token1decimals))
+function getLiquidityAmountByExpectedPrice({ price, decimals0, decimals1, token0amount }) {
+  const PRECISION = 10**12;
+  const token0AmountNumber = parseFloat(ethers.utils.formatUnits(token0amount, decimals0));
+  const token1AmountNumber = token0AmountNumber * price;
+  const token1AmountBn = ethers.utils.parseUnits((token1AmountNumber * PRECISION).toString() , decimals1);
+  return token1AmountBn.div(PRECISION)
 }
 
 async function deployPancakeSwapPairs({
@@ -174,34 +177,34 @@ contract("DelegatedStaking", function () {
     const mintLinkAmount = toWei("100000"); //100k
     const linkPriceInUsd = 24;
     const ethPriceInUsd = 3000;
-    const usdtPriceInEth = 1 / ethPriceInUsd;
+    const usdtPriceInEth = 1 / ethPriceInUsd; // 0.0003333333333333333
     const linkPriceInEth = linkPriceInUsd / ethPriceInUsd; // 0.008
 
     // SETUP ENDS
 
-    const usdtAmount = mintUSDAmount.slice(0, mintUSDAmount.length - 3);
-    const linkAmount = mintLinkAmount.slice(0, mintLinkAmount.length - 3)
-    const linkEthLiquidity = await getLiquidityAmountByExpectedPrice({
+    const usdtAmount = mintUSDAmount.slice(0, mintUSDAmount.length - 3); // 1k
+    const linkAmount = mintLinkAmount.slice(0, mintLinkAmount.length - 3); // 1k
+
+    const linkEthLiquidity = getLiquidityAmountByExpectedPrice({
       price: linkPriceInEth,
-      token1decimals: 18,
+      decimals0: 18,
+      decimals1: 18,
       token0amount: linkAmount
     })
 
-    const usdtEthLiquidity = await getLiquidityAmountByExpectedPrice({
+    const usdtEthLiquidity = getLiquidityAmountByExpectedPrice({
       price: usdtPriceInEth,
-      token1decimals: 18,
+      decimals0: 6,
+      decimals1: 18,
       token0amount: usdtAmount
     })
 
-    const linkUsdtLiquidity = await getLiquidityAmountByExpectedPrice({
+    const linkUsdtLiquidity = getLiquidityAmountByExpectedPrice({
       price: linkPriceInUsd,
-      token1decimals: 6,
+      decimals0: 18,
+      decimals1: 6,
       token0amount: linkAmount
     })
-
-    console.log(linkEthLiquidity,'linkEthLiquidity')
-    console.log(linkUsdtLiquidity,'linkUsdtLiquidity')
-    console.log(usdtEthLiquidity,'usdtEthLiquidity')
 
     await this.linkToken.mint(alice, mintLinkAmount);
     await this.usdcToken.mint(alice, mintUSDAmount);
@@ -285,6 +288,7 @@ contract("DelegatedStaking", function () {
     this.timelock = 1;
     this.slashingTreasuryAddress = alice;
     this.priceConsumer = await PriceConsumer.new();
+    await this.priceConsumer.initialize(this.weth.address, this.uniswapFactory.address)
     this.mockFeeProxy = await MockFeeProxy.new(this.uniswapFactory.address, this.weth.address, this.slashingTreasuryAddress);
     this.DelegatedStaking = await ethers.getContractFactory("DelegatedStaking", alice);
     this.delegatedStaking = await upgrades.deployProxy(this.DelegatedStaking, [
@@ -793,8 +797,10 @@ contract("DelegatedStaking", function () {
       });
       it("Checks correct values", async function () {
         const collateralInfo = await this.delegatedStaking.collaterals(this.rewardCollateralAddress);
-        console.log(this.prevCollateralInfo, 'prevCollateralInfo')
-        console.log(collateralInfo, 'collateralInfo');
+        console.log(this.prevCollateralInfo.totalLocked.toString(), 'this.prevCollateralInfo.totalLocked')
+        console.log(this.prevCollateralInfo.rewards.toString(), 'this.prevCollateralInfo.rewards')
+        console.log(collateralInfo.totalLocked.toString(), 'collateralInfo.totalLocked')
+        console.log(collateralInfo.rewards.toString(), 'collateralInfo.rewards')
         assert(this.prevCollateralInfo.totalLocked < collateralInfo.totalLocked, "total locked mismatch");
         assert(this.prevCollateralInfo.rewards < collateralInfo.rewards, "rewards mismatch");
         // we heve next validators
