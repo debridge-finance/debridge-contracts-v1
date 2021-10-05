@@ -121,7 +121,7 @@ contract("DeBridgeGate full with auto", function () {
       from: alice,
     });
 
-    this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
+    this.callProxy = await upgrades.deployProxy(CallProxyFactory, [0]);
     this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     const maxAmount = toWei("1000000");
     const fixedNativeFee = toWei("0.00001");
