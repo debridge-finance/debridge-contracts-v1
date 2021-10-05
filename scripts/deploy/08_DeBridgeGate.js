@@ -148,5 +148,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 };
 
 module.exports.tags = ["08_DeBridgeGate"]
-// TODO: set dependencies
-// module.exports.dependencies = ['07_DefiController'];
+module.exports.dependencies = [
+  '01-2_DeBridgeTokenDeployer',
+  '02_SignatureAggregator',
+  '03_SignatureVerifier',
+  '04_ConfirmationAggregator',
+  '05_CallProxy',
+  '06_FeeProxy',
+  '07_DefiController',
+];

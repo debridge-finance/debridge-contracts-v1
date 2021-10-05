@@ -18,3 +18,4 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 };
 
 module.exports.tags = ["01-2_DeBridgeTokenDeployer"]
+module.exports.dependencies = ['01-1_DeBridgeToken'];
