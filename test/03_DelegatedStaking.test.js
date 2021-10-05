@@ -22,13 +22,9 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function getLiquidityAmountByExpectedPrice({price, token0, token1, token0amount}) {
-  const [decimals0, decimals1] = await Promise.all([
-    token0.decimals(),
-    token1.decimals()
-  ])
-  price = 0.008
-  return toBN(token0amount).mul(price)
+async function getLiquidityAmountByExpectedPrice({price, token1decimals, token0amount}) {
+  const priceBn = toBN(parseInt(price * 10 ** token1decimals))
+  return toBN(token0amount).mul(priceBn).div(toBN(10 ** token1decimals))
 }
 
 async function deployPancakeSwapPairs({
@@ -180,7 +176,6 @@ contract("DelegatedStaking", function () {
     const ethPriceInUsd = 3000;
     const usdtPriceInEth = 1 / ethPriceInUsd;
     const linkPriceInEth = linkPriceInUsd / ethPriceInUsd; // 0.008
-    const ethPriceInLink = ethPriceInUsd / linkPriceInUsd; // 125
 
     // SETUP ENDS
 
@@ -188,24 +183,25 @@ contract("DelegatedStaking", function () {
     const linkAmount = mintLinkAmount.slice(0, mintLinkAmount.length - 3)
     const linkEthLiquidity = await getLiquidityAmountByExpectedPrice({
       price: linkPriceInEth,
-      token0: this.linkToken,
-      token1: this.weth,
+      token1decimals: 18,
       token0amount: linkAmount
     })
 
     const usdtEthLiquidity = await getLiquidityAmountByExpectedPrice({
       price: usdtPriceInEth,
-      token0: this.usdt,
-      token1: this.weth,
+      token1decimals: 18,
       token0amount: usdtAmount
     })
 
     const linkUsdtLiquidity = await getLiquidityAmountByExpectedPrice({
       price: linkPriceInUsd,
-      token0: this.linkToken,
-      token1: this.usdt,
+      token1decimals: 6,
       token0amount: linkAmount
     })
+
+    console.log(linkEthLiquidity,'linkEthLiquidity')
+    console.log(linkUsdtLiquidity,'linkUsdtLiquidity')
+    console.log(usdtEthLiquidity,'usdtEthLiquidity')
 
     await this.linkToken.mint(alice, mintLinkAmount);
     await this.usdcToken.mint(alice, mintUSDAmount);
