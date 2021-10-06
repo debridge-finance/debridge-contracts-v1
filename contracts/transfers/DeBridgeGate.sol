@@ -202,7 +202,7 @@ contract DeBridgeGate is
             _chainIdTo,
             _referralCode,
             feeParams,
-            autoParams,
+            _autoParams,
             msg.sender
         );
         nonce++;
@@ -944,6 +944,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 102; // 1.0.2
+        return 103; // 1.0.3
     }
 }

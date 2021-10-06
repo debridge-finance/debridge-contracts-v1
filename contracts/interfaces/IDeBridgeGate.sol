@@ -140,7 +140,7 @@ interface IDeBridgeGate {
         uint256 indexed chainIdTo,
         uint32 referralCode,
         FeeParams feeParams,
-        SubmissionAutoParamsTo autoParams,
+        bytes autoParams,
         address nativeSender
         // bool isNativeToken //added to feeParams
     ); // emited once the native tokens are locked to be sent to the other chain
