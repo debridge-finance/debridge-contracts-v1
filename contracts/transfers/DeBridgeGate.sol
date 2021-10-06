@@ -161,15 +161,14 @@ contract DeBridgeGate is
     /// @param _permit deadline + signature for approving the spender by signature.
     function send(
         address _tokenAddress,
-        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        bytes memory _receiver,
         bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode,
         bytes calldata _autoParams
     ) external payable override nonReentrant whenNotPaused {
-        // bool isNativeToken;
         bytes32 debridgeId;
         FeeParams memory feeParams;
         uint256 amountAfterFee;
@@ -185,13 +184,11 @@ contract DeBridgeGate is
         SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, amountAfterFee);
         amountAfterFee -= autoParams.executionFee;
 
-        //Avoid Stack too deep, try removing local variables
-        bytes memory receiver = _receiver;
         bytes32 submissionId = getSubmissionIdTo(
             debridgeId,
             _chainIdTo,
             amountAfterFee,
-            receiver,
+            _receiver,
             autoParams,
             _autoParams.length > 0
         );
@@ -200,14 +197,13 @@ contract DeBridgeGate is
             submissionId,
             debridgeId,
             amountAfterFee,
-            receiver,
+            _receiver,
             nonce,
             _chainIdTo,
             _referralCode,
             feeParams,
             autoParams,
             msg.sender
-            // isNativeToken
         );
         nonce++;
     }
@@ -219,9 +215,9 @@ contract DeBridgeGate is
     /// @param _nonce Submission id.
     function claim(
         bytes32 _debridgeId,
+        uint256 _amount,
         uint256 _chainIdFrom,
         address _receiver,
-        uint256 _amount,
         uint256 _nonce,
         bytes calldata _signatures,
         bytes calldata _autoParams

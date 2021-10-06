@@ -219,9 +219,9 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
         debridgeGate.send{value: _nativeFixFee}(
             _erc20Token,
-            feeProxyAddresses[_nativeChain], //_receiver,
             _amount,
             _nativeChain, //_chainIdTo,
+            feeProxyAddresses[_nativeChain], //_receiver,
             "", //_deadline + _signature,
             false, //_useAssetFee,
             0, //_referralCode

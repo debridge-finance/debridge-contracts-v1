@@ -844,9 +844,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         let sendTx = await this.debridgeETH.send(
           tokenAddress,
-          receiver,
           amount,
           chainIdTo,
+          receiver,
           [],
           false,
           referralCode,
@@ -905,9 +905,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
         let sendTx = await this.debridgeETH.send(
           tokenAddress,
-          receiver,
           amount,
           chainIdTo,
+          receiver,
           [],
           false,
           referralCode,
@@ -984,9 +984,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         let sendTx = await this.debridgeETH.send(
           tokenAddress,
-          receiver,
           amount,
           chainIdTo,
+          receiver,
           permit,
           false,
           referralCode,
@@ -1037,9 +1037,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         await expectRevert(
           this.debridgeETH.send(
             tokenAddress,
-            receiver,
             amount,
             chainIdTo,
+            receiver,
             [],
             false,
             referralCode,
@@ -1060,9 +1060,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         await expectRevert(
           this.debridgeETH.send(
             tokenAddress,
-            receiver,
             amount,
             chainIdTo,
+            receiver,
             [],
             false,
             referralCode,
@@ -1080,9 +1080,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         for (const receiver of this.non_evm_receivers) {
           const tx = await this.debridgeETH.send(
             ZERO_ADDRESS,
-            receiver,
             amount,
             bscChainId,
+            receiver,
             [],
             false,
             referralCode,
@@ -1142,9 +1142,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeBSC.claim(
           this.debridgeWethId,
+          this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
-          this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
           [],
           [],
@@ -1221,9 +1221,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeBSC.claim(
           this.debridgeWethId,
+          this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
-          this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
           [],
           [],
@@ -1263,9 +1263,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       await this.debridgeBSC.claim(
         this.debridgeWethId,
+        this.nativeSubmission.args.amount,
         ethChainId,
         receiver,
-        this.nativeSubmission.args.amount,
         this.nativeSubmission.args.nonce,
         [],
         [],
@@ -1312,9 +1312,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       await this.debridgeBSC.claim(
         this.linkDebridgeId,
+        this.linkSubmission.args.amount,
         ethChainId,
         this.linkSubmission.args.receiver,
-        this.linkSubmission.args.amount,
         this.linkSubmission.args.nonce,
         [],
         [],
@@ -1347,9 +1347,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeBSC.claim(
           this.debridgeWethId,
+          this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
-          this.nativeSubmission.args.amount,
           wrongNonce,
           [],
           [],
@@ -1365,9 +1365,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeBSC.claim(
           this.debridgeWethId,
+          this.nativeSubmission.args.amount,
           ethChainId,
           this.nativeSubmission.args.receiver,
-          this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
           [],
           [],
@@ -1424,9 +1424,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           );
           let burnTx = await this.debridgeBSC.connect(bobAccount).send(
             currentToken,
-            receiver,
             amount,
             chainIdTo,
+            receiver,
             permitParameter,
             false,
             referralCode,
@@ -1522,9 +1522,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           );
           const tx = await this.debridgeBSC.connect(bobAccount).send(
             currentToken,
-            receiver,
             amount,
             ethChainId,
+            receiver,
             permitParameter,
             false,
             referralCode,
@@ -1590,9 +1590,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeETH.claim(
           this.debridgeWethId,
+          this.nativeSubmission.args.amount,
           bscChainId,
           this.nativeSubmission.args.receiver,
-          this.nativeSubmission.args.amount,
           this.nativeSubmission.args.nonce,
           this.nativeSignatures,
           [],
@@ -1627,9 +1627,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeETH.claim(
           debridgeId,
+          amount,
           bscChainId,
           receiver,
-          amount,
           nonce,
           signaturesWithDublicate,
           [],
@@ -1651,9 +1651,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       //console.log("signatures count: " + this.nativeSignatures.length);
       await this.debridgeETH.claim(
         debridgeId,
+        amount,
         bscChainId,
         receiver,
-        amount,
         nonce,
         this.nativeSignatures,
         [],
@@ -1681,9 +1681,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       const nonce = this.linkSubmission.args.nonce;
       await this.debridgeETH.claim(
         debridgeId,
+        amount,
         bscChainId,
         receiver,
-        amount,
         nonce,
         this.linkSignatures,
         [],
@@ -1710,9 +1710,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeETH.claim(
           debridgeId,
+          amount,
           bscChainId,
           receiver,
-          amount,
           wrongNonce,
           this.linkSignatures,
           [],
@@ -1731,9 +1731,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       await expectRevert(
         this.debridgeETH.claim(
           debridgeId,
+          amount,
           bscChainId,
           receiver,
-          amount,
           nonce,
           this.linkSignatures,
           [],
@@ -1770,9 +1770,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let sendTx = await this.debridgeBSC.send(
         tokenAddress,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         [],
         false,
         0,
@@ -1825,9 +1825,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
       let sendTx = await this.debridgeBSC.send(
         tokenAddress,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         [],
         false,
         0,
@@ -1880,9 +1880,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       await this.debridgeHECO.claim(
         this.debridgeWethBSCId,
+        this.nativeSubmission.args.amount,
         bscChainId,
         this.nativeSubmission.args.receiver,
-        this.nativeSubmission.args.amount,
         this.nativeSubmission.args.nonce,
         [],
         [],
@@ -1930,9 +1930,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let mintTx = await this.debridgeHECO.claim(
         this.cakeDebridgeId,
+        this.cakeSubmission.args.amount,
         bscChainId,
         this.cakeSubmission.args.receiver,
-        this.cakeSubmission.args.amount,
         this.cakeSubmission.args.nonce,
         [],
         [],
@@ -1983,9 +1983,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       // fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS));
       let burnTx = await this.debridgeHECO.connect(bobAccount).send(
         currentToken,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         permitParameter,
         false,
         referralCode,
@@ -2013,9 +2013,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         .connect(sender)
         .send(
           ZERO_ADDRESS,
-          receiver.address,
           amount,
           bscChainId,
+          receiver.address,
           [],
           false,
           referralCode,
@@ -2098,9 +2098,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         .connect(ethAccount)
         .send(
           ZERO_ADDRESS,
-          bscAccount.address,
           amount,
           bscChainId,
+          bscAccount.address,
           [],
           false,
           referralCode,
@@ -2137,9 +2137,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         .connect(bscAccount)
         .claim(
           this.debridgeWethId,
+          sentEvent.args.amount,
           ethChainId,
           bscAccount.address,
-          sentEvent.args.amount,
           sentEvent.args.nonce,
           [],
           [],
@@ -2163,9 +2163,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           .connect(bscAccount)
           .send(
             deETHToken.address,
-            ethAccount.address,
             sentEvent.args.amount,
             ethChainId,
+            ethAccount.address,
             [],
             false,
             referralCode,
@@ -2195,9 +2195,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           .connect(workerAccount)
           .claim(
             burnEvent.args.debridgeId,
+            burnEvent.args.amount,
             bscChainId,
             ethAccount.address,
-            burnEvent.args.amount,
             burnEvent.args.nonce,
             await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
             packSubmissionAutoParamsFrom(
@@ -2234,9 +2234,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           .connect(bscAccount)
           .send(
             deETHToken.address,
-            receiverContract.address,
             sentEvent.args.amount,
             ethChainId,
+            receiverContract.address,
             [],
             false,
             referralCode,
@@ -2273,9 +2273,9 @@ contract("DeBridgeGate real pipeline mode", function () {
             .connect(workerAccount)
             .claim(
               burnEvent.args.debridgeId,
+              burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
-              burnEvent.args.amount,
               burnEvent.args.nonce,
               await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
               packSubmissionAutoParamsFrom(
@@ -2345,9 +2345,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           .connect(bscAccount)
           .send(
             deETHToken.address,
-            receiverContract.address,
             sentEvent.args.amount,
             ethChainId,
+            receiverContract.address,
             [],
             false,
             referralCode,
@@ -2381,9 +2381,9 @@ contract("DeBridgeGate real pipeline mode", function () {
             .connect(workerAccount)
             .claim(
               burnEvent.args.debridgeId,
+              burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
-              burnEvent.args.amount,
               burnEvent.args.nonce,
               await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
               packSubmissionAutoParamsFrom(
@@ -2435,9 +2435,9 @@ contract("DeBridgeGate real pipeline mode", function () {
           .connect(bscAccount)
           .send(
             deETHToken.address,
-            receiverContract.address,
             sentEvent.args.amount,
             ethChainId,
+            receiverContract.address,
             [],
             false,
             referralCode,
@@ -2466,9 +2466,9 @@ contract("DeBridgeGate real pipeline mode", function () {
             .connect(workerAccount)
             .claim(
               burnEvent.args.debridgeId,
+              burnEvent.args.amount,
               bscChainId,
               receiverContract.address,
-              burnEvent.args.amount,
               burnEvent.args.nonce,
               await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
               packSubmissionAutoParamsFrom(
@@ -2733,9 +2733,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let sendTx = await this.debridgeETH.claim(
         currentBurnEvent.args.debridgeId,
+        currentBurnEvent.args.amount,
         chainFrom,
         currentBurnEvent.args.receiver,
-        currentBurnEvent.args.amount,
         currentBurnEvent.args.nonce,
         signatures,
         [],
@@ -2816,9 +2816,9 @@ contract("DeBridgeGate real pipeline mode", function () {
 
       let sendTx = await this.debridgeBSC.claim(
         debridgeId,
+        currentBurnEvent.args.amount,
         chainFrom,
         currentBurnEvent.args.receiver,
-        currentBurnEvent.args.amount,
         currentBurnEvent.args.nonce,
         [],
         [],
