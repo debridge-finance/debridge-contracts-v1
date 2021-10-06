@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../interfaces/IFeeProxy.sol";
+import "../interfaces/ISwapProxy.sol";
 import "../interfaces/IStrategy.sol";
 import "../interfaces/IPriceConsumer.sol";
 import "hardhat/console.sol";
@@ -144,7 +144,7 @@ contract DelegatedStaking is Initializable,
     address[] public strategyControllerAddresses;
     mapping(address => bool) public strategyControllerExists;
     IPriceConsumer public priceConsumer;
-    IFeeProxy public feeProxy; // proxy to convert the collected rewards into other collaterals
+    ISwapProxy public swapProxy; // proxy to convert the collected rewards into other collaterals
     address public slashingTreasury;
 
     /* ========== ERRORS ========== */
@@ -245,7 +245,7 @@ contract DelegatedStaking is Initializable,
     function initialize(
         uint256 _withdrawTimelock,
         IPriceConsumer _priceConsumer,
-        IFeeProxy _feeProxy,
+        ISwapProxy _swapProxy,
         address _slashingTreasury
     ) public initializer {
         // Grant the contract deployer the default admin role: it will be able
@@ -254,7 +254,7 @@ contract DelegatedStaking is Initializable,
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         withdrawTimelock = _withdrawTimelock;
         priceConsumer = _priceConsumer;
-        feeProxy = _feeProxy;
+        swapProxy = _swapProxy;
         slashingTreasury = _slashingTreasury;
         minProfitSharingBPS = 5000;
     }
@@ -653,7 +653,7 @@ contract DelegatedStaking is Initializable,
                     validatorRewardCollateral.stakedAmount += delegatorReward;
                     validatorRewardCollateral.accumulatedRewards += validatorAmount;
                     validatorRewardCollateral.rewardsForWithdrawal += validatorAmount - delegatorsAmount;
-                    
+
                     collaterals[rewardToken].totalLocked += delegatorReward;
                     collaterals[rewardToken].rewards += delegatorReward;
                     // tempValidatorRewards[c] = 0;
@@ -715,11 +715,14 @@ contract DelegatedStaking is Initializable,
                 continue;
             }
 
-            //TODO: can create direct transfer to swapContract
-            IERC20(_rewardToken).safeApprove(address(feeProxy), 0);
-            IERC20(_rewardToken).safeApprove(address(feeProxy), tokenRewardAmount);
-            //TODO: can check beforeAmount, afterAmount
-            tokenRewardAmount = feeProxy.swap(_rewardToken, currentCollateral, address(this), tokenRewardAmount);
+            // transfer direct to our swap contract
+            IERC20(_rewardToken).safeTransfer(address(swapProxy), tokenRewardAmount);
+
+            uint256 balanceBefore = IERC20(currentCollateral).balanceOf(address(this));
+            swapProxy.swap(_rewardToken, currentCollateral, address(this));
+            uint256 balanceAfter = IERC20(currentCollateral).balanceOf(address(this));
+            // override amount to received swapped tokens
+            tokenRewardAmount = balanceAfter - balanceBefore;
 
             collaterals[currentCollateral].totalLocked += tokenRewardAmount;
             collaterals[currentCollateral].rewards += tokenRewardAmount;
@@ -1199,11 +1202,11 @@ contract DelegatedStaking is Initializable,
     }
 
     /**
-     * @dev Set fee converter proxy.
-     * @param _feeProxy Fee proxy address.
+     * @dev Set swap converter proxy.
+     * @param _swapProxy Swap proxy address.
      */
-    function setFeeProxy(IFeeProxy _feeProxy) external onlyAdmin() {
-        feeProxy = _feeProxy;
+    function setSwapProxy(ISwapProxy _swapProxy) external onlyAdmin() {
+        swapProxy = _swapProxy;
     }
 
     /**
