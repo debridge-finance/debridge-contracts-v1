@@ -371,9 +371,9 @@ contract("DeBridgeGate light mode", function () {
         .add(toBN(supportedChainInfo.fixedNativeFee));
       await this.debridge.send(
         tokenAddress,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         [],
         false,
         referralCode,
@@ -411,9 +411,9 @@ contract("DeBridgeGate light mode", function () {
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
       await this.debridge.send(
         tokenAddress,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         [],
         false,
         referralCode,
@@ -448,9 +448,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.send(
           tokenAddress,
-          receiver,
           amount,
           chainIdTo,
+          receiver,
           [],
           false,
           referralCode,
@@ -473,9 +473,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.send(
           tokenAddress,
-          receiver,
           amount,
           chainIdTo,
+          receiver,
           [],
           false,
           referralCode,
@@ -670,9 +670,9 @@ contract("DeBridgeGate light mode", function () {
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
       await this.debridge.connect(bobAccount).send(
         deBridgeToken.address,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         permitParameter,
         false,
         referralCode,

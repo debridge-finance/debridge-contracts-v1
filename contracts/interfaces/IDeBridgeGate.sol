@@ -77,9 +77,9 @@ interface IDeBridgeGate {
     /// @param _chainIdTo Chain id of the target chain.
     function send(
         address _tokenAddress,
-        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        bytes memory _receiver,
         bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode,

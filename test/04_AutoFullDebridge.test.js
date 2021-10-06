@@ -355,9 +355,9 @@ contract("DeBridgeGate full with auto", function () {
 
       await this.debridge.send(
         tokenAddress,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         [],
         false,
         referralCode,
@@ -399,9 +399,9 @@ contract("DeBridgeGate full with auto", function () {
 
       await this.debridge.send(
         tokenAddress,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         [],
         false,
         referralCode,
@@ -436,9 +436,9 @@ contract("DeBridgeGate full with auto", function () {
       await expectRevert(
         this.debridge.send(
           tokenAddress,
-          receiver,
           amount,
           chainIdTo,
+          receiver,
           [],
           false,
           referralCode,
@@ -462,9 +462,9 @@ contract("DeBridgeGate full with auto", function () {
       await expectRevert(
         this.debridge.send(
           tokenAddress,
-          receiver,
           amount,
           chainIdTo,
+          receiver,
           [],
           false,
           referralCode,
@@ -648,9 +648,9 @@ contract("DeBridgeGate full with auto", function () {
       const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
       await this.debridge.connect(bobAccount).send(
         deBridgeToken.address,
-        receiver,
         amount,
         chainIdTo,
+        receiver,
         permitParameter,
         false,
         referralCode,

@@ -375,9 +375,9 @@ contract("DeBridgeGate full mode", function () {
         //We need to create debridge
         await this.debridge.send(
           this.mockToken.address,
-          alice.address,
           amount,
           chainIdTo,
+          alice.address,
           [],
           false,
           0,
@@ -853,9 +853,9 @@ contract("DeBridgeGate full mode", function () {
                           );
                           await this.debridge.connect(bob).send(
                             deBridgeToken.address,
-                            alice.address,
                             amount,
                             chainIdTo,
+                            alice.address,
                             permitParameter,
                             false,
                             referralCode,
@@ -921,9 +921,9 @@ contract("DeBridgeGate full mode", function () {
                           );
                           await this.debridge.connect(bob).send(
                             deBridgeToken.address,
-                            alice.address,
                             amount,
                             chainIdTo,
+                            alice.address,
                             permitParameter,
                             true,
                             referralCode,
@@ -1209,9 +1209,9 @@ contract("DeBridgeGate full mode", function () {
                     feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
                     await this.debridge.send(
                       tokenAddress,
-                      receiver,
                       amount,
                       chainIdTo,
+                      receiver,
                       [],
                       false,
                       referralCode,
@@ -1256,9 +1256,9 @@ contract("DeBridgeGate full mode", function () {
 
                     await this.debridge.send(
                       tokenAddress,
-                      receiver,
                       amount,
                       chainIdTo,
+                      receiver,
                       [],
                       false,
                       referralCode,
@@ -1486,9 +1486,9 @@ contract("DeBridgeGate full mode", function () {
                   feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
                   await this.debridge.send(
                     tokenAddress,
-                    receiver,
                     amount,
                     chainIdTo,
+                    receiver,
                     [],
                     false,
                     referralCode,
@@ -1529,9 +1529,9 @@ contract("DeBridgeGate full mode", function () {
                   fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
                   await this.debridge.send(
                     tokenAddress,
-                    receiver,
                     amount,
                     chainIdTo,
+                    receiver,
                     [],
                     false,
                     referralCode,
@@ -1589,9 +1589,9 @@ contract("DeBridgeGate full mode", function () {
                   );
                   await this.debridge.send(
                     tokenAddress,
-                    receiver,
                     amount,
                     chainIdTo,
+                    receiver,
                     [],
                     true,
                     referralCode,
@@ -1638,9 +1638,9 @@ contract("DeBridgeGate full mode", function () {
                   await expectRevert(
                     this.debridge.send(
                       tokenAddress,
-                      receiver,
                       amount,
                       chainIdTo,
+                      receiver,
                       [],
                       false,
                       referralCode,
@@ -1664,9 +1664,9 @@ contract("DeBridgeGate full mode", function () {
                   await expectRevert(
                     this.debridge.send(
                       tokenAddress,
-                      receiver,
                       amount,
                       chainIdTo,
+                      receiver,
                       [],
                       false,
                       0,
@@ -1689,9 +1689,9 @@ contract("DeBridgeGate full mode", function () {
                   await expectRevert(
                     this.debridge.send(
                       tokenAddress,
-                      receiver,
                       amount,
                       chainIdTo,
+                      receiver,
                       [],
                       false,
                       referralCode,
@@ -1718,9 +1718,9 @@ contract("DeBridgeGate full mode", function () {
                     await expectRevert(
                       this.debridge.send(
                         tokenAddress,
-                        receiver,
                         amount,
                         chainIdTo,
+                        receiver,
                         [],
                         false,
                         referralCode,
