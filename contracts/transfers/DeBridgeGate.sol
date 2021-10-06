@@ -63,7 +63,7 @@ contract DeBridgeGate is
     address public feeContractUpdater; // contract address that can override globalFixedNativeFee
 
     uint256 globalFixedNativeFee;
-    uint16 globalTransferFeeBps;
+    uint256 globalTransferFeeBps;
 
     /* ========== ERRORS ========== */
 
@@ -349,7 +349,7 @@ contract DeBridgeGate is
 
     function updateGlobalFee(
         uint256 _globalFixedNativeFee,
-        uint16 _globalTransferFeeBps
+        uint256 _globalTransferFeeBps
     ) external onlyAdmin {
         globalFixedNativeFee = _globalFixedNativeFee;
         globalTransferFeeBps = _globalTransferFeeBps;
