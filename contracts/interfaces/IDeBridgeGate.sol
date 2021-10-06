@@ -93,9 +93,9 @@ interface IDeBridgeGate {
     /// @param _nonce Submission id.
     function claim(
         bytes32 _debridgeId,
+        uint256 _amount,
         uint256 _chainIdFrom,
         address _receiver,
-        uint256 _amount,
         uint256 _nonce,
         bytes calldata _signatures,
         bytes calldata _autoParams

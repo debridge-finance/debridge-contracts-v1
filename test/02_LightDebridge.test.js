@@ -534,9 +534,9 @@ contract("DeBridgeGate light mode", function () {
       // )
       await this.debridge.claim(
         debridgeId,
+        amount,
         chainId,
         receiver,
-        amount,
         nonce,
         this.signatures,
         [],
@@ -595,9 +595,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.claim(
           debridgeId,
+          amount,
           chainId,
           receiver,
-          amount,
           wrongnonce,
           [],
           [],
@@ -615,9 +615,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.claim(
           debridgeId,
+          amount,
           chainId,
           receiver,
-          amount,
           wrongnonce,
           this.signatures,
           [],
@@ -633,9 +633,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.claim(
           debridgeId,
+          amount,
           chainId,
           receiver,
-          amount,
           nonce,
           this.signatures,
           [],
@@ -826,9 +826,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.claim(
           debridgeId,
+          amount,
           chainIdFrom,
           receiver,
-          amount,
           nonce,
           currentSignatures,
           [],
@@ -844,9 +844,9 @@ contract("DeBridgeGate light mode", function () {
       const balance = toBN(await this.weth.balanceOf(receiver));
       await this.debridge.claim(
         debridgeId,
+        amount,
         chainIdFrom,
         receiver,
-        amount,
         nonce,
         this.ethSignatures,
         [],
@@ -878,9 +878,9 @@ contract("DeBridgeGate light mode", function () {
       const balance = toBN(await this.mockToken.balanceOf(receiver));
       await this.debridge.claim(
         erc20DebridgeId,
+        amount,
         chainIdFrom,
         receiver,
-        amount,
         nonce,
         this.erc20Signatures,
         [],
@@ -912,9 +912,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.claim(
           debridgeId,
+          amount,
           chainIdFrom,
           receiver,
-          amount,
           wrongnonce,
           this.ethSignatures,
           [],
@@ -930,9 +930,9 @@ contract("DeBridgeGate light mode", function () {
       await expectRevert(
         this.debridge.claim(
           debridgeId,
+          amount,
           chainIdFrom,
           receiver,
-          amount,
           nonce,
           this.ethSignatures,
           [],

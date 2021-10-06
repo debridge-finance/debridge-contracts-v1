@@ -642,9 +642,9 @@ contract("DeBridgeGate full mode", function () {
                 await expectRevert(
                   this.debridge.claim(
                     debridgeId,
+                    amount,
                     chainId,
                     receiver,
-                    amount,
                     nonce,
                     [],
                     [],
@@ -676,9 +676,9 @@ contract("DeBridgeGate full mode", function () {
                   await expectRevert(
                     this.debridge.claim(
                       debridgeId,
+                      amount,
                       chainId,
                       receiver,
-                      amount,
                       nonce,
                       [],
                       [],
@@ -709,9 +709,9 @@ contract("DeBridgeGate full mode", function () {
                     await expectRevert(
                       this.debridge.claim(
                         debridgeId,
+                        amount,
                         chainId,
                         receiver,
-                        amount,
                         nonce,
                         [],
                         [],
@@ -736,9 +736,9 @@ contract("DeBridgeGate full mode", function () {
                     await expectRevert(
                       this.debridge.claim(
                         debridgeId,
+                        amount,
                         chainId,
                         receiver,
-                        amount,
                         nonce,
                         [],
                         [],
@@ -754,9 +754,9 @@ contract("DeBridgeGate full mode", function () {
                       const balance = toBN("0");
                       await this.debridge.claim(
                         debridgeId,
+                        amount,
                         chainId,
                         receiver,
-                        amount,
                         nonce,
                         [],
                         [],
@@ -784,9 +784,9 @@ contract("DeBridgeGate full mode", function () {
                       await expectRevert(
                         this.debridge.claim(
                           debridgeId,
+                          amount,
                           chainId,
                           receiver,
-                          amount,
                           nonce,
                           [],
                           [],
@@ -1070,9 +1070,9 @@ contract("DeBridgeGate full mode", function () {
                 await expectRevert(
                   this.debridge.claim(
                     this.wethDebridgeId,
+                    amount,
                     chainIdFrom,
                     receiver,
-                    amount,
                     nonce,
                     [],
                     [],
@@ -1116,9 +1116,9 @@ contract("DeBridgeGate full mode", function () {
                   await expectRevert(
                     this.debridge.claim(
                       this.wethDebridgeId,
+                      amount,
                       chainIdFrom,
                       receiver,
-                      amount,
                       nonce,
                       [],
                       [],
@@ -1314,9 +1314,9 @@ contract("DeBridgeGate full mode", function () {
                     const balance = toBN(await this.mockToken.balanceOf(receiver));
                     await this.debridge.claim(
                       erc20DebridgeId,
+                      amount,
                       chainIdFrom,
                       receiver,
-                      amount,
                       nonce,
                       [],
                       [],
@@ -1349,9 +1349,9 @@ contract("DeBridgeGate full mode", function () {
                     await expectRevert(
                       this.debridge.claim(
                         this.wethDebridgeId,
+                        amount,
                         chainIdFrom,
                         receiver,
-                        amount,
                         nonce,
                         [],
                         [],
@@ -1368,9 +1368,9 @@ contract("DeBridgeGate full mode", function () {
                     await expectRevert(
                       this.debridge.claim(
                         outsideDebridgeId,
+                        amount,
                         chainIdFrom,
                         receiver,
-                        amount,
                         nonce,
                         [],
                         [],
@@ -1390,9 +1390,9 @@ contract("DeBridgeGate full mode", function () {
                       const receivebalance = toBN(await this.weth.balanceOf(receiver));
                       await this.debridge.claim(
                         this.wethDebridgeId,
+                        amount,
                         chainIdFrom,
                         receiver,
-                        amount,
                         nonce,
                         [],
                         [],
@@ -1424,9 +1424,9 @@ contract("DeBridgeGate full mode", function () {
                       await expectRevert(
                         this.debridge.claim(
                           this.wethDebridgeId,
+                          amount,
                           chainIdFrom,
                           receiver,
-                          amount,
                           nonce,
                           [],
                           [],
