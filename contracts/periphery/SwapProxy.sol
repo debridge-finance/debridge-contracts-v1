@@ -102,7 +102,7 @@ contract SwapProxy  is Initializable, AccessControlUpgradeable, PausableUpgradea
         uint256 amountIn,
         uint256 reserveIn,
         uint256 reserveOut
-    ) private pure returns (uint256 amountOut) {
+    ) public pure returns (uint256 amountOut) {
         require(amountIn > 0, "insuffient amount");
         require(reserveIn > 0 && reserveOut > 0, "insuffient liquidity");
         uint256 amountInWithFee = amountIn * 997;

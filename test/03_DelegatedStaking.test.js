@@ -366,6 +366,7 @@ contract("DelegatedStaking", function () {
 
   context("Test management validators", async () => {
     it("should add if called by admin", async function () {
+
       await this.delegatedStaking.addValidator(bob, alice, 1, 2500);
       await this.delegatedStaking.addValidator(david, alice, 1, 5000);
       await this.delegatedStaking.addValidator(sarah, alice, 2, 10000);
@@ -794,11 +795,16 @@ contract("DelegatedStaking", function () {
         console.log(`usdt: ${this.usdtToken.address}`);
         console.log(`usdc: ${this.usdcToken.address}`);
 
+        const totalValidatorAmounts = await this.delegatedStaking.getTotalETHAmount(bob);
+        this.totalValidatorETHAmount = totalValidatorAmounts[totalValidatorAmounts.length - 1];
+        this.linkETHAmount = await this.delegatedStaking.getPoolETHAmount(bob, this.linkToken.address);
+        this.usdtETHAmount = await this.delegatedStaking.getPoolETHAmount(bob, this.usdtToken.address);
+        this.usdcETHAmount = await this.delegatedStaking.getPoolETHAmount(bob, this.usdcToken.address);
 
-        console.log(`Bob totalETHAmount: ${(await this.delegatedStaking.getTotalETHAmount(bob)).toString()}`);
-        console.log(`Bob link pool in ETH: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.linkToken.address)).toString()}`);
-        console.log(`Bob usdt pool in ETH: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.usdtToken.address)).toString()}`);
-        console.log(`Bob usdc pool in ETH: ${(await this.delegatedStaking.getPoolETHAmount(bob, this.usdcToken.address)).toString()}`);
+        console.log(`Bob totalETHAmount: ${this.totalValidatorETHAmount.toString()}`);
+        console.log(`Bob link pool in ETH: ${(this.linkETHAmount).toString()}`);
+        console.log(`Bob usdt pool in ETH: ${(this.usdtETHAmount).toString()}`);
+        console.log(`Bob usdc pool in ETH: ${(this.usdcETHAmount).toString()}`);
 
         this.rewardCollateralAmount = "1000000000"; //1000 USDT
         this.rewardCollateralAddress = this.usdtToken.address;
@@ -830,6 +836,19 @@ contract("DelegatedStaking", function () {
       });
 
       it("should distribute rewards", async function () {
+
+        async function getReserves(token0, token1, factory) {
+          const pairAddress = await factory.getPair(token0, token1);
+          const UniswapV2PairArtifact = await deployments.getArtifact("UniswapV2Pair");
+          const Pair = await ethers.getContractAt(UniswapV2PairArtifact.abi, pairAddress);//UniswapV2PairArtifact.at(pairAddress)
+          //const Pair = await UniswapV2Pair.at(pairAddress)
+          const reserves = await Pair.getReserves()
+          return {
+            isToken0Base: await Pair.token0() === token0,
+            reserves: [reserves[0],reserves[1]]
+          }
+        }
+
         const getRewardsInfoBefore =  await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
         const balanceLinkBefore = toBN(await this.linkToken.balanceOf(this.delegatedStaking.address));
         const balanceUSDCBefore = toBN(await this.usdcToken.balanceOf(this.delegatedStaking.address));
@@ -854,6 +873,28 @@ contract("DelegatedStaking", function () {
         //check tokens balances
         //TODO: check exact tokens
         //We created swap usdt for link/usdc token
+
+        const bobRewardsAmountForDelegators = (this.rewardCollateralAmount / 4) * 0.25 // 25% of all validators and 25% as bps
+
+        console.log(bobRewardsAmountForDelegators,'bobRewardsAmountForDelegators')
+
+        const linkUSDTAmount = bobRewardsAmountForDelegators * (this.linkETHAmount / this.totalValidatorETHAmount);
+        const usdtUSDTAmount = bobRewardsAmountForDelegators * (this.usdtETHAmount / this.totalValidatorETHAmount);
+        const usdcUSDTAmount = bobRewardsAmountForDelegators * (this.usdcETHAmount / this.totalValidatorETHAmount);
+
+        console.log(linkUSDTAmount,"linkUSDTAmount")
+        console.log(usdtUSDTAmount,"usdtUSDTAmount")
+        console.log(usdcUSDTAmount,"usdcUSDTAmount")
+
+        const linkUsdtReserves = await getReserves(this.linkToken.address, this.usdtToken.address, this.uniswapFactory);
+        const usdcUsdtReserves = await getReserves(this.usdcToken.address, this.usdtToken.address, this.uniswapFactory);
+        console.log(linkUsdtReserves, 'linkUsdtReserves')
+        console.log(usdcUsdtReserves, 'usdcUsdtReserves')
+
+        console.log(balanceLinkAfter - balanceLinkBefore,"linkRewardAmount diff")
+        console.log(balanceUSDCAfter - balanceUSDCBefore,"usdcRewardAmount diff")
+        console.log(balanceUSDTBefore - balanceUSDTAfter,"usdtRewardAmount diff")
+
         assert(balanceUSDTBefore > balanceUSDTAfter, "USDT balance must be reduced");
         assert(balanceLinkBefore < balanceLinkAfter, "LINK balance must be increases");
         assert(balanceUSDCBefore < balanceUSDCAfter, "USDC balance must be increases");
