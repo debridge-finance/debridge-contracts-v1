@@ -716,8 +716,8 @@ contract DeBridgeGate is
             if (_useAssetFee) {
                 assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
                 if (assetsFixedFee == 0) revert NotSupportedFixedFee();
-                //Calculate transfer fee with discount
-                assetsFixedFee = assetsFixedFee - (assetsFixedFee * discountInfo.discountFixBps) / BPS_DENOMINATOR;
+                // Apply discount for a fixed fee
+                assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
                 feeParams.fixFee = assetsFixedFee;
             } else {
                 // collect native fees
@@ -733,7 +733,7 @@ contract DeBridgeGate is
             }
             // Calculate transfer fee with discount
             uint256 transferFee = (_amount * feeInfo.transferFeeBps) / BPS_DENOMINATOR;
-            transferFee = transferFee - (transferFee * discountInfo.discountTransferBps) / BPS_DENOMINATOR;
+            transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
             if (_amount < transferFee) revert TransferAmountNotCoverFees();
             debridgeFee.collectedFees += transferFee + assetsFixedFee;
             amountAfterFee = _amount - transferFee - assetsFixedFee;
