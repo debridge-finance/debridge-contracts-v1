@@ -10,7 +10,6 @@ const ether = require("@openzeppelin/test-helpers/src/ether");
 const MockLinkToken = artifacts.require("MockLinkToken");
 const MockToken = artifacts.require("MockToken");
 const PriceConsumer = artifacts.require('PriceConsumer');
-const MockFeeProxy = artifacts.require('MockFeeProxy');
 const { toWei } = web3.utils;
 
 
@@ -289,16 +288,29 @@ contract("DelegatedStaking", function () {
     this.slashingTreasuryAddress = alice;
     this.priceConsumer = await PriceConsumer.new();
     await this.priceConsumer.initialize(this.weth.address, this.uniswapFactory.address)
-    this.mockFeeProxy = await MockFeeProxy.new(this.uniswapFactory.address, this.weth.address, this.slashingTreasuryAddress);
+    const SwapProxyFactory = await ethers.getContractFactory("SwapProxy", alice);
+
+    this.swapProxy = await upgrades.deployProxy(
+      SwapProxyFactory,
+      [this.uniswapFactory.address],
+      {
+        initializer: "initialize",
+        kind: "transparent",
+      }
+    );
+
+
     this.DelegatedStaking = await ethers.getContractFactory("DelegatedStaking", alice);
     this.delegatedStaking = await upgrades.deployProxy(this.DelegatedStaking, [
       this.timelock,
       this.priceConsumer.address,
-      this.mockFeeProxy.address,
+      this.swapProxy.address,
       this.slashingTreasuryAddress
     ]);
     await this.delegatedStaking.deployed();
 
+    const SYSTEM_ROLE = await this.swapProxy.SYSTEM_ROLE();
+    await this.swapProxy.grantRole(SYSTEM_ROLE, this.delegatedStaking.address);
 
     await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
     await this.linkToken.approve(this.delegatedStaking.address, MaxUint256, { from: eve });
@@ -791,9 +803,60 @@ contract("DelegatedStaking", function () {
         this.rewardCollateralAmount = "1000000000"; //1000 USDT
         this.rewardCollateralAddress = this.usdtToken.address;
         this.prevCollateralInfo = await this.delegatedStaking.collaterals(this.rewardCollateralAddress);
+      });
+      it("should send rewards to delegatedStaking contract", async function () {
+        const currentTokenInctance = await MockToken.at(this.rewardCollateralAddress);
+        const getRewardsInfoBefore =  await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
+        const balanceBefore = toBN(await currentTokenInctance.balanceOf(this.delegatedStaking.address));
+        let tx = await this.delegatedStaking.sendRewards(this.rewardCollateralAddress, this.rewardCollateralAmount);
+        const balanceAfter = toBN(await currentTokenInctance.balanceOf(this.delegatedStaking.address));
+        const getRewardsInfoAfter =  await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
 
-        await this.delegatedStaking.sendRewards(this.rewardCollateralAddress, this.rewardCollateralAmount);
-        await this.delegatedStaking.distributeValidatorRewards(this.rewardCollateralAddress);
+        let receipt = await tx.wait();
+        let sentEvent = receipt.events.find((x) => {
+          return x.event == "RewardsReceived";
+        });
+        // check event
+        // event RewardsReceived(address token,  uint256 amount);
+        assert.equal(sentEvent.args.token, this.rewardCollateralAddress);
+        assert.equal(sentEvent.args.amount, this.rewardCollateralAmount);
+
+        assert.equal(balanceBefore.add(this.rewardCollateralAmount).toString(), balanceAfter.toString());
+        // struct RewardInfo {
+        //   uint256 totalAmount; // total rewards
+        //   uint256 distributed; // distributed rewards
+        // }
+        assert.equal(getRewardsInfoBefore.totalAmount.add(this.rewardCollateralAmount).toString(), getRewardsInfoAfter.totalAmount.toString());
+      });
+
+      it("should distribute rewards", async function () {
+        const getRewardsInfoBefore =  await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
+        const balanceLinkBefore = toBN(await this.linkToken.balanceOf(this.delegatedStaking.address));
+        const balanceUSDCBefore = toBN(await this.usdcToken.balanceOf(this.delegatedStaking.address));
+        const balanceUSDTBefore = toBN(await this.usdtToken.balanceOf(this.delegatedStaking.address));
+        let tx = await this.delegatedStaking.distributeValidatorRewards(this.rewardCollateralAddress);
+        const getRewardsInfoAfter = await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
+        const balanceLinkAfter = toBN(await this.linkToken.balanceOf(this.delegatedStaking.address));
+        const balanceUSDCAfter = toBN(await this.usdcToken.balanceOf(this.delegatedStaking.address));
+        const balanceUSDTAfter = toBN(await this.usdtToken.balanceOf(this.delegatedStaking.address));
+
+        let receipt = await tx.wait();
+        // check event
+        //    event RewardsDistributed(address rewardToken, uint256 rewardAmount);
+        let rewardsDistributedEvent = receipt.events.find((x) => {
+          return x.event == "RewardsDistributed";
+        });
+        assert.equal(rewardsDistributedEvent.args.rewardToken, this.rewardCollateralAddress);
+        assert.equal(rewardsDistributedEvent.args.rewardAmount.toString(), this.rewardCollateralAmount.toString());
+
+        assert.equal(getRewardsInfoBefore.distributed.add(this.rewardCollateralAmount).toString(), getRewardsInfoAfter.distributed.toString());
+        assert.equal(getRewardsInfoAfter.totalAmount.toString(), getRewardsInfoAfter.distributed.toString());
+        //check tokens balances
+        //TODO: check exact tokens
+        //We created swap usdt for link/usdc token
+        assert(balanceUSDTBefore > balanceUSDTAfter, "USDT balance must be reduced");
+        assert(balanceLinkBefore < balanceLinkAfter, "LINK balance must be increases");
+        assert(balanceUSDCBefore < balanceUSDCAfter, "USDC balance must be increases");
       });
       it("Checks correct values", async function () {
         const collateralInfo = await this.delegatedStaking.collaterals(this.rewardCollateralAddress);
