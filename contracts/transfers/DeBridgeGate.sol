@@ -62,8 +62,8 @@ contract DeBridgeGate is
 
     address public feeContractUpdater; // contract address that can override globalFixedNativeFee
 
-    uint256 globalFixedNativeFee;
-    uint256 globalTransferFeeBps;
+    uint256 public globalFixedNativeFee;
+    uint256 public globalTransferFeeBps;
 
     /* ========== ERRORS ========== */
 
