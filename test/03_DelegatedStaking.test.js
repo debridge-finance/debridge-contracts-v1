@@ -1290,9 +1290,9 @@ contract("DelegatedStaking", function () {
       await this.delegatedStaking.cancelUnstake(sarah, [lastWithdrawalId - 1]);
       const currentValidatorCollateral = await this.delegatedStaking.getValidatorCollateral(sarah, collateral);
       const currentCollateral = await this.delegatedStaking.collaterals(collateral);
-      assert.equal(
-        prevValidatorCollateral.shares.add(amount).toString(),
-        currentValidatorCollateral.shares.toString(),
+      const delta =  Math.abs(prevValidatorCollateral.shares.add(amount).sub(currentValidatorCollateral.shares).toNumber());
+      assert(
+        delta < 2, //1 wei is delta
         "shares mismtach"
       );
       assert(
