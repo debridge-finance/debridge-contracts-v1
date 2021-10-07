@@ -734,10 +734,11 @@ contract DeBridgeGate is
             // Calculate transfer fee with discount
             uint256 transferFee = (_amount * feeInfo.transferFeeBps) / BPS_DENOMINATOR;
             transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
-            if (_amount < transferFee + assetsFixedFee) revert TransferAmountNotCoverFees();
 
-            debridgeFee.collectedFees += transferFee + assetsFixedFee;
-            amountAfterFee = _amount - transferFee - assetsFixedFee;
+            uint256 totalFee = transferFee + assetsFixedFee;
+            if (_amount < totalFee) revert TransferAmountNotCoverFees();
+            debridgeFee.collectedFees += totalFee;
+            amountAfterFee = _amount - totalFee;
 
             // initialize feeParams
             feeParams.transferFee = transferFee;
