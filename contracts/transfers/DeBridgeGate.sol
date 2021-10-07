@@ -63,7 +63,7 @@ contract DeBridgeGate is
     address public feeContractUpdater; // contract address that can override globalFixedNativeFee
 
     uint256 public globalFixedNativeFee;
-    uint256 public globalTransferFeeBps;
+    uint16 public globalTransferFeeBps;
 
     /* ========== ERRORS ========== */
 
@@ -349,7 +349,7 @@ contract DeBridgeGate is
 
     function updateGlobalFee(
         uint256 _globalFixedNativeFee,
-        uint256 _globalTransferFeeBps
+        uint16 _globalTransferFeeBps
     ) external onlyAdmin {
         globalFixedNativeFee = _globalFixedNativeFee;
         globalTransferFeeBps = _globalTransferFeeBps;
@@ -691,7 +691,8 @@ contract DeBridgeGate is
             } else revert DebridgeNotFound();
         }
 
-        if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
+        ChainSupportInfo memory chainFees = getChainSupport[_chainIdTo];
+        if (!chainFees.isSupported) revert WrongTargedChain();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
@@ -708,31 +709,36 @@ contract DeBridgeGate is
 
         //_processFeeForTransfer
         {
-            //use struct. avoid stack too deep
-            (FeeInfo memory feeInfo) = getFeeInfo(_chainIdTo);
             DiscountInfo memory discountInfo = feeDiscount[msg.sender];
             DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[debridgeId];
+
+            // calculate fixed fee
             uint256 assetsFixedFee;
             if (_useAssetFee) {
                 assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
                 if (assetsFixedFee == 0) revert NotSupportedFixedFee();
                 // Apply discount for a fixed fee
                 assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
-                feeParams.fixFee = assetsFixedFee;
             } else {
                 // collect native fees
-                if (
-                    msg.value <
-                    feeInfo.fixedNativeFee -
-                        (feeInfo.fixedNativeFee * discountInfo.discountFixBps) /
-                        BPS_DENOMINATOR
+                if (chainFees.fixedNativeFee == 0) {
+                    // use globalFixedNativeFee if value for chain is not setted
+                    chainFees.fixedNativeFee = globalFixedNativeFee;
+                }
+                if (msg.value < chainFees.fixedNativeFee -
+                    chainFees.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR
                 ) revert TransferAmountNotCoverFees();
                 bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
                 getDebridgeFeeInfo[nativeDebridgeId].collectedFees += msg.value;
-                feeParams.fixFee = msg.value;
             }
-            // Calculate transfer fee with discount
-            uint256 transferFee = (_amount * feeInfo.transferFeeBps) / BPS_DENOMINATOR;
+
+            // Calculate transfer fee
+            if (chainFees.transferFeeBps == 0) {
+                // use globalTransferFeeBps if value for chain is not setted
+                chainFees.transferFeeBps = globalTransferFeeBps;
+            }
+            uint256 transferFee = (_amount * chainFees.transferFeeBps) / BPS_DENOMINATOR;
+            // apply discount for a transfer fee
             transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
             if (_amount < transferFee + assetsFixedFee) revert TransferAmountNotCoverFees();
 
@@ -740,6 +746,7 @@ contract DeBridgeGate is
             amountAfterFee = _amount - transferFee - assetsFixedFee;
 
             // initialize feeParams
+            feeParams.fixFee = _useAssetFee ? assetsFixedFee : msg.value;
             feeParams.transferFee = transferFee;
             feeParams.useAssetFee = _useAssetFee;
             feeParams.receivedAmount = _amount;
@@ -972,17 +979,6 @@ contract DeBridgeGate is
     {
         TokenInfo memory tokenInfo = getNativeInfo[currentTokenAddress];
         return (tokenInfo.nativeChainId, tokenInfo.nativeAddress);
-    }
-
-    function getFeeInfo(uint256 _chainIdTo)
-        public
-        view
-        returns (FeeInfo memory feeInfo)
-    {
-        ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
-        feeInfo.fixedNativeFee = chainSupportInfo.fixedNativeFee > 0 ? chainSupportInfo.fixedNativeFee : globalFixedNativeFee;
-        feeInfo.transferFeeBps = chainSupportInfo.transferFeeBps > 0 ? chainSupportInfo.transferFeeBps : globalTransferFeeBps;
-        return feeInfo;
     }
 
     function getChainId() public view virtual returns (uint256 cid) {

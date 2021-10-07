@@ -36,11 +36,6 @@ interface IDeBridgeGate {
         uint16 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
     }
 
-    struct FeeInfo {
-        uint256 fixedNativeFee; // transfer fixed fee
-        uint256 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
-    }
-
     struct DiscountInfo {
         uint16 discountFixBps; // fix discount in BPS
         uint16 discountTransferBps; // transfer % discount in BPS
