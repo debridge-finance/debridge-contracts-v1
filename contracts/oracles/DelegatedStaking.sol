@@ -66,7 +66,6 @@ contract DelegatedStaking is Initializable,
         uint256 amount; // amount of withdrawn token
         uint256 slashingAmount; // slashing amount by governance
         uint256 timelock; // time till the asset is locked
-        uint256 shares;
         address receiver; // token receiver
         address collateral; // collateral identifier
         bool executed; // whether is executed
@@ -349,7 +348,6 @@ contract DelegatedStaking is Initializable,
         withdraw.delegator = msg.sender;
         withdraw.amount = withdrawTokenAmount;
         withdraw.timelock = timelock;
-        withdraw.shares = _shares;
         withdraw.receiver = _recipient;
         withdraw.collateral = _collateral;
         //TODO: we can start from 1. If will be changed change everywhere 'currentWithdrawId >= maxCount' to 'currentWithdrawId > maxCount'
@@ -418,10 +416,11 @@ contract DelegatedStaking is Initializable,
             DelegatorsInfo storage delegator = validatorCollateral.delegators[withdrawal.delegator];
 
             withdrawal.executed = true;
+            uint256 _shares = DelegatedStakingHelper._calculateShares(withdrawal.amount, validatorCollateral.shares, validatorCollateral.stakedAmount);
 
             collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
-            delegator.shares += withdrawal.shares;
-            validatorCollateral.shares += withdrawal.shares;
+            delegator.shares += _shares;
+            validatorCollateral.shares += _shares;
             validatorCollateral.stakedAmount += withdrawal.amount;
             emit UnstakeCancelled(withdrawal.delegator, _validator, currentWithdrawId);
         }
@@ -642,20 +641,22 @@ contract DelegatedStaking is Initializable,
             ValidatorInfo storage validator = getValidatorInfo[validatorAddress];
             uint256 validatorAmount = validator.rewardWeightCoefficient * _rewardAmount / weightCoefficientDenominator;
             uint256 delegatorsAmount = validatorAmount * validator.profitSharingBPS / BPS_DENOMINATOR;
+            console.log(delegatorsAmount,"delegatorsAmount _calculateValidatorRewards");
+            console.log(validatorAmount,"validatorAmount _calculateValidatorRewards");
 
             (uint256[] memory poolsETHAmounts, uint256 totalETHAmount) = getTotalETHAmount(validatorAddress);
+
+            console.log(totalETHAmount,"totalETHAmount _calculateValidatorRewards");
 
             uint256[] memory tempValidatorRewards = new uint256[](collateralLength);
             for (uint256 c = 0; c < collateralLength; c++) {
                 uint256 delegatorReward = delegatorsAmount * poolsETHAmounts[c] / totalETHAmount;
+                console.log(delegatorReward,"delegatorReward _calculateValidatorRewards");
                 if (rewardToken == collateralAddresses[c]){
                     ValidatorCollateral storage validatorRewardCollateral = validator.collateralPools[rewardToken];
                     validatorRewardCollateral.stakedAmount += delegatorReward;
                     validatorRewardCollateral.accumulatedRewards += validatorAmount;
                     validatorRewardCollateral.rewardsForWithdrawal += validatorAmount - delegatorsAmount;
-                    
-                    collaterals[rewardToken].totalLocked += delegatorReward;
-                    collaterals[rewardToken].rewards += delegatorReward;
                     // tempValidatorRewards[c] = 0;
                     // collectedRewards[c] += 0;
                 } else {
@@ -721,8 +722,12 @@ contract DelegatedStaking is Initializable,
             //TODO: can check beforeAmount, afterAmount
             tokenRewardAmount = feeProxy.swap(_rewardToken, currentCollateral, address(this), tokenRewardAmount);
 
+            console.log(collaterals[currentCollateral].totalLocked,"collaterals[currentCollateral].totalLocked before math");
+
             collaterals[currentCollateral].totalLocked += tokenRewardAmount;
             collaterals[currentCollateral].rewards += tokenRewardAmount;
+
+            console.log(collaterals[currentCollateral].totalLocked,"collaterals[currentCollateral].totalLocked after math");
 
             // now we need to split amountOut for each current collateral between validator pools
             uint256 postSwapRewardAmount;
