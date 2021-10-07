@@ -66,7 +66,6 @@ contract DelegatedStaking is Initializable,
         uint256 amount; // amount of withdrawn token
         uint256 slashingAmount; // slashing amount by governance
         uint256 timelock; // time till the asset is locked
-        uint256 shares;
         address receiver; // token receiver
         address collateral; // collateral identifier
         bool executed; // whether is executed
@@ -349,7 +348,6 @@ contract DelegatedStaking is Initializable,
         withdraw.delegator = msg.sender;
         withdraw.amount = withdrawTokenAmount;
         withdraw.timelock = timelock;
-        withdraw.shares = _shares;
         withdraw.receiver = _recipient;
         withdraw.collateral = _collateral;
         //TODO: we can start from 1. If will be changed change everywhere 'currentWithdrawId >= maxCount' to 'currentWithdrawId > maxCount'
@@ -418,10 +416,11 @@ contract DelegatedStaking is Initializable,
             DelegatorsInfo storage delegator = validatorCollateral.delegators[withdrawal.delegator];
 
             withdrawal.executed = true;
+            uint256 _shares = DelegatedStakingHelper._calculateShares(withdrawal.amount, validatorCollateral.shares, validatorCollateral.stakedAmount);
 
             collaterals[withdrawal.collateral].totalLocked += withdrawal.amount;
-            delegator.shares += withdrawal.shares;
-            validatorCollateral.shares += withdrawal.shares;
+            delegator.shares += _shares;
+            validatorCollateral.shares += _shares;
             validatorCollateral.stakedAmount += withdrawal.amount;
             emit UnstakeCancelled(withdrawal.delegator, _validator, currentWithdrawId);
         }
