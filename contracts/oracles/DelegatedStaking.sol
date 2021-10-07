@@ -1576,4 +1576,9 @@ contract DelegatedStaking is Initializable,
     {
         return getValidatorInfo[_validator].collateralPools[_stakeToken].delegators[_delegator].strategyShares[_strategy];
     }
+
+    // ============ Version Control ============
+    function version() external pure returns (uint256) {
+        return 101; // 1.0.1
+    }
 }

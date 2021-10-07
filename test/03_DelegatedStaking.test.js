@@ -2168,18 +2168,11 @@ contract("DelegatedStaking", function () {
 
   context.skip('Test upgrades', function () {
     it('should succeed upgrading to v2', async function () {
-      const DelegatedStakingInitParams = require("../assets/delegatedStakingInitParams")["development"];
-      const DelegatedStaking = await ethers.getContractFactory("DelegatedStaking");
-      const DelegatedStakingV2 = await ethers.getContractFactory("DelegatedStakingV2");
-      const collateral = this.linkToken.address;
-      const instance = await upgrades.deployProxy(DelegatedStaking,
-        [
-          DelegatedStakingInitParams.timelock,
-          collateral
-        ]);
-      const upgraded = await upgrades.upgradeProxy(instance.address, DelegatedStakingV2);
-      const timelock = await upgraded.timelock();
-      assert.equal(timelock.toString(), DelegatedStakingInitParams.timelock.toString());
+      //TODO: check other params
+      const MockDelegatedStakingFactory = await ethers.getContractFactory("MockDelegatedStaking");
+      const upgraded = await upgrades.upgradeProxy( this.delegatedStaking.address, MockDelegatedStakingFactory);
+      const version = await upgraded.version2();
+      assert.equal(version.toString(),  "102");
     });
   });
 });
