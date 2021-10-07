@@ -328,7 +328,7 @@ contract DeBridgeGate is
         uint256 _globalFixedNativeFee
     ) external onlyFeeContractUpdater {
         globalFixedNativeFee = _globalFixedNativeFee;
-        emit AutoUpdateFixedNativeFee(_globalFixedNativeFee);
+        emit FixedNativeFeeAutoUpdated(_globalFixedNativeFee);
     }
 
     /* ========== ADMIN ========== */
@@ -353,7 +353,7 @@ contract DeBridgeGate is
     ) external onlyAdmin {
         globalFixedNativeFee = _globalFixedNativeFee;
         globalTransferFeeBps = _globalTransferFeeBps;
-        emit UpdatedGlobalFee(_globalFixedNativeFee, _globalTransferFeeBps);
+        emit FixedNativeFeeUpdated(_globalFixedNativeFee, _globalTransferFeeBps);
     }
 
     /// @dev Update asset's fees.
