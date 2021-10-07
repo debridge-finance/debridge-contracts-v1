@@ -60,10 +60,16 @@ contract DeBridgeGate is
     address public feeProxy; // proxy to convert the collected fees into Link's
     IWETH public weth; // wrapped native token contract
 
+    address public feeContractUpdater; // contract address that can override globalFixedNativeFee
+
+    uint256 public globalFixedNativeFee;
+    uint16 public globalTransferFeeBps;
+
     /* ========== ERRORS ========== */
 
     error FeeProxyBadRole();
     error DefiControllerBadRole();
+    error FeeContractUpdaterBadRole();
     error AdminBadRole();
     error GovMonitoringBadRole();
     error DebridgeNotFound();
@@ -103,6 +109,11 @@ contract DeBridgeGate is
 
     modifier onlyDefiController() {
         if (defiController != msg.sender) revert DefiControllerBadRole();
+        _;
+    }
+
+    modifier onlyFeeContractUpdater() {
+        if (feeContractUpdater != msg.sender) revert FeeContractUpdaterBadRole();
         _;
     }
 
@@ -311,6 +322,14 @@ contract DeBridgeGate is
         _addAsset(debridgeId, deBridgeTokenAddress, _nativeTokenAddress, _nativeChainId);
     }
 
+    /// @dev Update native fix fee. called by our fee update contract
+    /// @param _globalFixedNativeFee  new value
+    function autoUpdateFixedNativeFee(
+        uint256 _globalFixedNativeFee
+    ) external onlyFeeContractUpdater {
+        globalFixedNativeFee = _globalFixedNativeFee;
+        emit FixedNativeFeeAutoUpdated(_globalFixedNativeFee);
+    }
 
     /* ========== ADMIN ========== */
 
@@ -321,10 +340,20 @@ contract DeBridgeGate is
         uint256[] memory _supportedChainIds,
         ChainSupportInfo[] memory _chainSupportInfo
     ) external onlyAdmin {
+        if (_supportedChainIds.length != _chainSupportInfo.length) revert WrongArgument();
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
         }
         emit ChainsSupportUpdated(_supportedChainIds);
+    }
+
+    function updateGlobalFee(
+        uint256 _globalFixedNativeFee,
+        uint16 _globalTransferFeeBps
+    ) external onlyAdmin {
+        globalFixedNativeFee = _globalFixedNativeFee;
+        globalTransferFeeBps = _globalTransferFeeBps;
+        emit FixedNativeFeeUpdated(_globalFixedNativeFee, _globalTransferFeeBps);
     }
 
     /// @dev Update asset's fees.
@@ -336,6 +365,7 @@ contract DeBridgeGate is
         uint256[] memory _supportedChainIds,
         uint256[] memory _assetFeesInfo
     ) external onlyAdmin {
+        if (_supportedChainIds.length != _assetFeesInfo.length) revert WrongArgument();
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
         for (uint256 i = 0; i < _supportedChainIds.length; i++) {
             debridgeFee.getChainFee[_supportedChainIds[i]] = _assetFeesInfo[i];
@@ -402,6 +432,12 @@ contract DeBridgeGate is
     function setDefiController(address _defiController) external onlyAdmin {
         // TODO: claim all the reserves before
         defiController = _defiController;
+    }
+
+    /// @dev Set fee contract updater, that can update fix native fee
+    /// @param _value new contract address.
+    function setFeeContractUpdater(address _value) external onlyAdmin {
+        feeContractUpdater = _value;
     }
 
     /// @dev Stop all transfers.
@@ -655,7 +691,8 @@ contract DeBridgeGate is
             } else revert DebridgeNotFound();
         }
 
-        if (!getChainSupport[_chainIdTo].isSupported) revert WrongTargedChain();
+        ChainSupportInfo memory chainFees = getChainSupport[_chainIdTo];
+        if (!chainFees.isSupported) revert WrongTargedChain();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
@@ -672,36 +709,45 @@ contract DeBridgeGate is
 
         //_processFeeForTransfer
         {
-            ChainSupportInfo memory chainSupportInfo = getChainSupport[_chainIdTo];
             DiscountInfo memory discountInfo = feeDiscount[msg.sender];
             DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[debridgeId];
+
+            // calculate fixed fee
             uint256 assetsFixedFee;
             if (_useAssetFee) {
                 assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
                 if (assetsFixedFee == 0) revert NotSupportedFixedFee();
-                //Calculate transfer fee with discount
-                assetsFixedFee = assetsFixedFee - (assetsFixedFee * discountInfo.discountFixBps) / BPS_DENOMINATOR;
-                feeParams.fixFee = assetsFixedFee;
+                // Apply discount for a fixed fee
+                assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
             } else {
                 // collect native fees
-                if (
-                    msg.value <
-                    chainSupportInfo.fixedNativeFee -
-                        (chainSupportInfo.fixedNativeFee * discountInfo.discountFixBps) /
-                        BPS_DENOMINATOR
+                if (chainFees.fixedNativeFee == 0) {
+                    // use globalFixedNativeFee if value for chain is not setted
+                    chainFees.fixedNativeFee = globalFixedNativeFee;
+                }
+                if (msg.value < chainFees.fixedNativeFee -
+                    chainFees.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR
                 ) revert TransferAmountNotCoverFees();
                 bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
                 getDebridgeFeeInfo[nativeDebridgeId].collectedFees += msg.value;
-                feeParams.fixFee = msg.value;
             }
-            // Calculate transfer fee with discount
-            uint256 transferFee = (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
-            transferFee = transferFee - (transferFee * discountInfo.discountTransferBps) / BPS_DENOMINATOR;
-            if (_amount < transferFee) revert TransferAmountNotCoverFees();
-            debridgeFee.collectedFees += transferFee + assetsFixedFee;
-            amountAfterFee = _amount - transferFee - assetsFixedFee;
+
+            // Calculate transfer fee
+            if (chainFees.transferFeeBps == 0) {
+                // use globalTransferFeeBps if value for chain is not setted
+                chainFees.transferFeeBps = globalTransferFeeBps;
+            }
+            uint256 transferFee = (_amount * chainFees.transferFeeBps) / BPS_DENOMINATOR;
+            // apply discount for a transfer fee
+            transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
+
+            uint256 totalFee = transferFee + assetsFixedFee;
+            if (_amount < totalFee) revert TransferAmountNotCoverFees();
+            debridgeFee.collectedFees += totalFee;
+            amountAfterFee = _amount - totalFee;
 
             // initialize feeParams
+            feeParams.fixFee = _useAssetFee ? assetsFixedFee : msg.value;
             feeParams.transferFee = transferFee;
             feeParams.useAssetFee = _useAssetFee;
             feeParams.receivedAmount = _amount;

@@ -185,4 +185,10 @@ interface IDeBridgeGate {
     );
 
     event WithdrawnFee(bytes32 debridgeId, uint256 fee);
+
+    event FixedNativeFeeUpdated(
+        uint256 globalFixedNativeFee,
+        uint256 globalTransferFeeBps);
+
+    event FixedNativeFeeAutoUpdated(uint256 globalFixedNativeFee);
 }
