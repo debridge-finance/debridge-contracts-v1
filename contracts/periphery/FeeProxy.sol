@@ -10,7 +10,6 @@ import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IFeeProxy.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IWETH.sol";
-import "hardhat/console.sol";
 
 contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
     using SafeERC20 for IERC20;
@@ -156,20 +155,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
         }
     }
 
-    function swap(
-        address _fromToken,
-        address _toToken,
-        address _receiver,
-        uint256 _amount
-    ) external override returns(uint256 amountOut) {
-        console.log("swap _fromToken %s _toToken %s",  _fromToken,_toToken);
-        console.log("_receiver %s _amount %s", _receiver,  _amount);
-
-        IERC20(_fromToken).safeTransferFrom(msg.sender, address(this), _amount);
-        amountOut = _swapExact(_fromToken, _toToken, _receiver, _amount);
-        return amountOut;
-    }
-
     //Used when weth.withdraw
     fallback() external payable {}
 
@@ -221,29 +206,6 @@ contract FeeProxy is CallProxy, AccessControl, IFeeProxy{
             uint256 amountOut = getAmountOut(_amount, reserve1, reserve0);
             uniswapPair.swap(amountOut, 0, _receiver, "");
         }
-    }
-
-    function _swapExact(
-        address _fromToken,
-        address _toToken,
-        address _receiver,
-        uint256 _amount
-    ) private returns(uint256 amountOut) {
-        IERC20 erc20 = IERC20(_fromToken);
-        IUniswapV2Pair uniswapPair = IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
-        erc20.safeTransfer(address(uniswapPair), _amount);
-
-        bool toFirst = _toToken < _fromToken;
-
-        (uint256 reserve0, uint256 reserve1, ) = uniswapPair.getReserves();
-        if (toFirst) {
-            amountOut = getAmountOut(_amount, reserve1, reserve0);
-            uniswapPair.swap(amountOut, 0, _receiver, "");
-        } else {
-            amountOut = getAmountOut(_amount, reserve0, reserve1);
-            uniswapPair.swap(0, amountOut, _receiver, "");
-        }
-        return amountOut;
     }
 
     function getAmountOut(

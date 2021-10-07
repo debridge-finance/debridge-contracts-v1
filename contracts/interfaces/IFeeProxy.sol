@@ -7,13 +7,6 @@ interface IFeeProxy {
     //     address _receiver
     // ) external;
 
-    function swap(
-        address _fromToken,
-        address _toToken,
-        address _receiver,
-        uint256 _amount
-    ) external returns(uint256);
-
     function transferToTreasury(
         bytes32 _debridgeId,
         // address _erc20Token,
