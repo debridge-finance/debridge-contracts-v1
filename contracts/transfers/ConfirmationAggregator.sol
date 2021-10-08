@@ -3,6 +3,7 @@ pragma solidity 0.8.7;
 
 import "./AggregatorBase.sol";
 import "../interfaces/IConfirmationAggregator.sol";
+import "hardhat/console.sol";
 
 contract ConfirmationAggregator is AggregatorBase, IConfirmationAggregator {
     /* ========== STATE VARIABLES ========== */

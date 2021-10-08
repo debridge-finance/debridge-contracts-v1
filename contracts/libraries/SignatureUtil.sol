@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
+
+import "hardhat/console.sol";
+
 library SignatureUtil {
     /* ========== ERRORS ========== */
 
@@ -18,7 +21,7 @@ library SignatureUtil {
     /// @param _signature Signature bytes in format r+s+v.
     function splitSignature(bytes memory _signature)
         internal
-        pure
+        view
         returns (
             bytes32 r,
             bytes32 s,
@@ -31,7 +34,7 @@ library SignatureUtil {
 
     function parseSignature(bytes memory _signatures, uint256 offset)
         internal
-        pure
+        view
         returns (
             bytes32 r,
             bytes32 s,
