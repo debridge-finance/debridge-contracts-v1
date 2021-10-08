@@ -849,15 +849,50 @@ contract("DelegatedStaking", function () {
           }
         }
 
+        const bobRewardsAmountForDelegators = (this.rewardCollateralAmount / 4) * 0.25 // 25% of all validators and 25% as bps
+
+        console.log(bobRewardsAmountForDelegators,'bobRewardsAmountForDelegators')
+
+        const linkUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.linkETHAmount / this.totalValidatorETHAmount)).toString();
+        const usdtUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.usdtETHAmount / this.totalValidatorETHAmount)).toString();
+        const usdcUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.usdcETHAmount / this.totalValidatorETHAmount)).toString();
+
+        console.log(linkUSDTAmount,"linkUSDTAmount")
+        console.log(usdtUSDTAmount,"usdtUSDTAmount")
+        console.log(usdcUSDTAmount,"usdcUSDTAmount")
+
+        const linkUsdtReserves = await getReserves(this.linkToken.address, this.usdtToken.address, this.uniswapFactory);
+        const usdcUsdtReserves = await getReserves(this.usdcToken.address, this.usdtToken.address, this.uniswapFactory);
+
+        const linkRewardAmount = linkUsdtReserves.isToken0Base
+            ? await this.swapProxy.getAmountOut(linkUSDTAmount, linkUsdtReserves.reserves[1], linkUsdtReserves.reserves[0])
+            : await this.swapProxy.getAmountOut(linkUSDTAmount, linkUsdtReserves.reserves[0], linkUsdtReserves.reserves[1])
+
+        const usdcRewardAmount = usdcUsdtReserves.isToken0Base
+            ? await this.swapProxy.getAmountOut(usdcUSDTAmount, usdcUsdtReserves.reserves[1], usdcUsdtReserves.reserves[0])
+            : await this.swapProxy.getAmountOut(usdcUSDTAmount, usdcUsdtReserves.reserves[0], usdcUsdtReserves.reserves[1])
+
+        const usdtRewardAmount = usdtUSDTAmount;
+
+        console.log(linkRewardAmount.toString(),'linkRewardAmount');
+        console.log(usdcRewardAmount.toString(),'usdcRewardAmount');
+        console.log(usdtRewardAmount,'usdtRewardAmount');
+
         const getRewardsInfoBefore =  await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
         const balanceLinkBefore = toBN(await this.linkToken.balanceOf(this.delegatedStaking.address));
         const balanceUSDCBefore = toBN(await this.usdcToken.balanceOf(this.delegatedStaking.address));
         const balanceUSDTBefore = toBN(await this.usdtToken.balanceOf(this.delegatedStaking.address));
+        const usdtCollateralBefore = await this.delegatedStaking.getValidatorCollateral(bob, this.usdtToken.address)
+        const usdcCollateralBefore = await this.delegatedStaking.getValidatorCollateral(bob, this.usdcToken.address)
+        const linkCollateralBefore = await this.delegatedStaking.getValidatorCollateral(bob, this.linkToken.address)
         let tx = await this.delegatedStaking.distributeValidatorRewards(this.rewardCollateralAddress);
         const getRewardsInfoAfter = await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
         const balanceLinkAfter = toBN(await this.linkToken.balanceOf(this.delegatedStaking.address));
         const balanceUSDCAfter = toBN(await this.usdcToken.balanceOf(this.delegatedStaking.address));
         const balanceUSDTAfter = toBN(await this.usdtToken.balanceOf(this.delegatedStaking.address));
+        const usdtCollateralAfter = await this.delegatedStaking.getValidatorCollateral(bob, this.usdtToken.address)
+        const usdcCollateralAfter = await this.delegatedStaking.getValidatorCollateral(bob, this.usdcToken.address)
+        const linkCollateralAfter = await this.delegatedStaking.getValidatorCollateral(bob, this.linkToken.address)
 
         let receipt = await tx.wait();
         // check event
@@ -870,30 +905,13 @@ contract("DelegatedStaking", function () {
 
         assert.equal(getRewardsInfoBefore.distributed.add(this.rewardCollateralAmount).toString(), getRewardsInfoAfter.distributed.toString());
         assert.equal(getRewardsInfoAfter.totalAmount.toString(), getRewardsInfoAfter.distributed.toString());
-        //check tokens balances
-        //TODO: check exact tokens
-        //We created swap usdt for link/usdc token
 
-        const bobRewardsAmountForDelegators = (this.rewardCollateralAmount / 4) * 0.25 // 25% of all validators and 25% as bps
-
-        console.log(bobRewardsAmountForDelegators,'bobRewardsAmountForDelegators')
-
-        const linkUSDTAmount = bobRewardsAmountForDelegators * (this.linkETHAmount / this.totalValidatorETHAmount);
-        const usdtUSDTAmount = bobRewardsAmountForDelegators * (this.usdtETHAmount / this.totalValidatorETHAmount);
-        const usdcUSDTAmount = bobRewardsAmountForDelegators * (this.usdcETHAmount / this.totalValidatorETHAmount);
-
-        console.log(linkUSDTAmount,"linkUSDTAmount")
-        console.log(usdtUSDTAmount,"usdtUSDTAmount")
-        console.log(usdcUSDTAmount,"usdcUSDTAmount")
-
-        const linkUsdtReserves = await getReserves(this.linkToken.address, this.usdtToken.address, this.uniswapFactory);
-        const usdcUsdtReserves = await getReserves(this.usdcToken.address, this.usdtToken.address, this.uniswapFactory);
-        console.log(linkUsdtReserves, 'linkUsdtReserves')
-        console.log(usdcUsdtReserves, 'usdcUsdtReserves')
-
-        console.log(balanceLinkAfter - balanceLinkBefore,"linkRewardAmount diff")
-        console.log(balanceUSDCAfter - balanceUSDCBefore,"usdcRewardAmount diff")
-        console.log(balanceUSDTBefore - balanceUSDTAfter,"usdtRewardAmount diff")
+        console.log(usdtCollateralBefore.stakedAmount.toString(),"usdtCollateralBefore")
+        console.log(usdcCollateralBefore.stakedAmount.toString(),"usdcCollateralBefore")
+        console.log(linkCollateralBefore.stakedAmount.toString(),"linkCollateralBefore")
+        console.log(usdtCollateralAfter.stakedAmount.toString(),"usdtCollateralAfter")
+        console.log(usdcCollateralAfter.stakedAmount.toString(),"usdcCollateralAfter")
+        console.log(linkCollateralAfter.stakedAmount.toString(),"linkCollateralAfter")
 
         assert(balanceUSDTBefore > balanceUSDTAfter, "USDT balance must be reduced");
         assert(balanceLinkBefore < balanceLinkAfter, "LINK balance must be increases");

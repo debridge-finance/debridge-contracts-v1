@@ -722,7 +722,7 @@ contract DelegatedStaking is Initializable,
             uint256 balanceAfter = IERC20(currentCollateral).balanceOf(address(this));
             // override amount to received swapped tokens
             tokenRewardAmount = balanceAfter - balanceBefore;
-
+            console.log("tokenReward amount: %s for %s", tokenRewardAmount, currentCollateral);
             collaterals[currentCollateral].totalLocked += tokenRewardAmount;
             collaterals[currentCollateral].rewards += tokenRewardAmount;
 
@@ -731,6 +731,7 @@ contract DelegatedStaking is Initializable,
             for (uint256 vv=0; vv<validatorAddresses.length; vv++) {
                 postSwapRewardAmount = validatorRewards[vv][cc] * tokenRewardAmount / collectedRewards[cc];
                 ValidatorCollateral storage validatorCollateral = getValidatorInfo[validatorAddresses[vv]].collateralPools[currentCollateral];
+                console.log("postSwapRewardAmount amount: %s for %s and validator %s", postSwapRewardAmount, currentCollateral, validatorAddresses[vv]);
                 validatorCollateral.stakedAmount += postSwapRewardAmount;
                 validatorCollateral.accumulatedRewards += postSwapRewardAmount;
             }
