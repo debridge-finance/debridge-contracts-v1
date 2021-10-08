@@ -172,8 +172,8 @@ contract("DelegatedStaking", function () {
 
     // SETUP STARTS
 
-    const mintUSDAmount = "100000000000"; //100k
-    const mintLinkAmount = toWei("100000"); //100k
+    const mintUSDAmount = "1000000000000000"; //100k
+    const mintLinkAmount = toWei("1000000000"); //100k
     const linkPriceInUsd = 24;
     const ethPriceInUsd = 3000;
     const usdtPriceInEth = 1 / ethPriceInUsd; // 0.0003333333333333333
@@ -937,7 +937,7 @@ contract("DelegatedStaking", function () {
         //how many reward tokens was earned
         assert.equal(bobValidatorCollateral.accumulatedRewards.toString(), "250000000"); //1000*1/4=250 USDT
         assert.equal(davidValidatorCollateral.accumulatedRewards.toString(), "250000000"); //1000*1/4=250 USDT
-        assert.equal(sarahValidatorCollateral.accumulatedRewards.toString(), "500000000"); //1000*2/4=250 USDT
+        assert.equal(sarahValidatorCollateral.accumulatedRewards.toString(), "500000000"); //1000*2/4=500 USDT
         //how many reward tokens validator can withdrawal
         assert.equal(bobValidatorCollateral.rewardsForWithdrawal.toString(), "187500000"); //250*75%=187,5 USDT
         assert.equal(davidValidatorCollateral.rewardsForWithdrawal.toString(), "125000000"); //250*50%=125 USDT
