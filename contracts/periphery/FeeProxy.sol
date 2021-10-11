@@ -219,9 +219,9 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
         debridgeGate.send{value: _nativeFixFee}(
             _erc20Token,
-            feeProxyAddresses[_nativeChain], //_receiver,
             _amount,
             _nativeChain, //_chainIdTo,
+            feeProxyAddresses[_nativeChain], //_receiver,
             "", //_deadline + _signature,
             false, //_useAssetFee,
             0, //_referralCode
@@ -287,5 +287,10 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     function _safeTransferETH(address to, uint256 value) internal {
         (bool success, ) = to.call{value: value}(new bytes(0));
         if (!success) revert EthTransferFailed();
+    }
+
+    // ============ Version Control ============
+    function version() external pure returns (uint256) {
+        return 101; // 1.0.1
     }
 }

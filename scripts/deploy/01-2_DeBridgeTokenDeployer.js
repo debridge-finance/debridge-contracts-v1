@@ -11,10 +11,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await deployProxy("DeBridgeTokenDeployer", deployer,
     [
       deToken,
-      deployInitParams.deTokenAdmin,
+      deployInitParams.deBridgeTokenAdmin,
       ethers.constants.AddressZero,
     ],
     true);
 };
 
 module.exports.tags = ["01-2_DeBridgeTokenDeployer"]
+module.exports.dependencies = ['01-1_DeBridgeToken'];

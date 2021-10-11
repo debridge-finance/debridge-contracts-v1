@@ -2,16 +2,6 @@
 pragma solidity 0.8.7;
 
 interface ISignatureVerifier {
-    /* ========== STRUCTS ========== */
-
-    struct DebridgeDeployInfo {
-        uint256 chainId; //native chainId
-        bytes nativeAddress; //native token address
-        uint8 decimals;
-        uint8 confirmations; // received confirmations count
-        string name;
-        string symbol;
-    }
 
     /* ========== EVENTS ========== */
 

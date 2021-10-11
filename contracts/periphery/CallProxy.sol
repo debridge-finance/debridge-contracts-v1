@@ -15,6 +15,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== STATE VARIABLES ========== */
 
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
+    uint256 public variation;
+
 
     /* ========== ERRORS ========== */
 
@@ -32,7 +34,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize() public initializer {
+    function initialize(uint256 _variation) public initializer {
+        variation = _variation;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -113,5 +116,10 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             )
         }
         return result;
+    }
+
+    // ============ Version Control ============
+    function version() external pure returns (uint256) {
+        return 102; // 1.0.2
     }
 }
