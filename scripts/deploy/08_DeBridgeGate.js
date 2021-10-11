@@ -19,7 +19,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
   }
 
-  const wethAddress = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
+  const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
   const feeProxy = await getLastDeployedProxy("FeeProxy", deployer);
   const deBridgeTokenDeployer = await getLastDeployedProxy("DeBridgeTokenDeployer", deployer);
 

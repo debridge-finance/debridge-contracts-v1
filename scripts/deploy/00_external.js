@@ -10,9 +10,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // deploy external dependencies only if they aren't specified in debridgeInitParams.json
 
   if (!deployInitParams.external.WETH) {
-    await deploy("WETH9", {
+
+
+
+    await deploy("MockWeth", {
       from: deployer,
-      args: [],
+      args: [deployInitParams.external.WETHName, deployInitParams.external.WETHSymbol],
       // deterministicDeployment: true,
       log: true,
     });
