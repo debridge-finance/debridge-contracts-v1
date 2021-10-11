@@ -795,33 +795,16 @@ contract("DelegatedStaking", function () {
         console.log(`usdt: ${this.usdtToken.address}`);
         console.log(`usdc: ${this.usdcToken.address}`);
 
-        const totalValidatorAmountsBob = await this.delegatedStaking.getTotalETHAmount(bob);
-        this.totalValidatorETHAmountBob = totalValidatorAmountsBob[totalValidatorAmountsBob.length - 1];
-        this.linkETHAmountBob = await this.delegatedStaking.getPoolETHAmount(bob, this.linkToken.address);
-        this.usdtETHAmountBob = await this.delegatedStaking.getPoolETHAmount(bob, this.usdtToken.address);
-        this.usdcETHAmountBob = await this.delegatedStaking.getPoolETHAmount(bob, this.usdcToken.address);
+        const totalValidatorAmounts = await this.delegatedStaking.getTotalETHAmount(bob);
+        this.totalValidatorETHAmount = totalValidatorAmounts[totalValidatorAmounts.length - 1];
+        this.linkETHAmount = await this.delegatedStaking.getPoolETHAmount(bob, this.linkToken.address);
+        this.usdtETHAmount = await this.delegatedStaking.getPoolETHAmount(bob, this.usdtToken.address);
+        this.usdcETHAmount = await this.delegatedStaking.getPoolETHAmount(bob, this.usdcToken.address);
 
-        const totalValidatorAmountsAlice = await this.delegatedStaking.getTotalETHAmount(alice);
-        this.totalValidatorETHAmountAlice = totalValidatorAmountsAlice[totalValidatorAmountsAlice.length - 1];
-        this.linkETHAmountAlice = await this.delegatedStaking.getPoolETHAmount(alice, this.linkToken.address);
-        this.usdtETHAmountAlice = await this.delegatedStaking.getPoolETHAmount(alice, this.usdtToken.address);
-        this.usdcETHAmountAlice = await this.delegatedStaking.getPoolETHAmount(alice, this.usdcToken.address);
-
-        const totalValidatorAmountsSarah = await this.delegatedStaking.getTotalETHAmount(sarah);
-        this.totalValidatorETHAmountSarah = totalValidatorAmountsSarah[totalValidatorAmountsSarah.length - 1];
-        this.linkETHAmountSarah = await this.delegatedStaking.getPoolETHAmount(sarah, this.linkToken.address);
-        this.usdtETHAmountSarah = await this.delegatedStaking.getPoolETHAmount(sarah, this.usdtToken.address);
-        this.usdcETHAmountSarah = await this.delegatedStaking.getPoolETHAmount(sarah, this.usdcToken.address);
-
-        this.linkETHAmount = toBN(this.linkETHAmountBob).add(toBN(this.linkETHAmountAlice)).add(toBN(this.linkETHAmountSarah))
-        this.usdtETHAmount = toBN(this.usdtETHAmountBob).add(toBN(this.usdtETHAmountAlice)).add(toBN(this.usdtETHAmountSarah))
-        this.usdcETHAmount = toBN(this.usdcETHAmountBob).add(toBN(this.usdcETHAmountAlice)).add(toBN(this.usdcETHAmountSarah))
-        this.totalValidatorETHAmount = toBN(this.totalValidatorETHAmountBob).add(toBN(this.totalValidatorETHAmountAlice)).add(toBN(this.totalValidatorETHAmountSarah))
-
-        console.log(`totalETHAmount: ${this.totalValidatorETHAmount.toString()}`);
-        console.log(`link pool in ETH: ${(this.linkETHAmount).toString()}`);
-        console.log(`usdt pool in ETH: ${(this.usdtETHAmount).toString()}`);
-        console.log(`usdc pool in ETH: ${(this.usdcETHAmount).toString()}`);
+        console.log(`Bob totalETHAmount: ${this.totalValidatorETHAmount.toString()}`);
+        console.log(`Bob link pool in ETH: ${(this.linkETHAmount).toString()}`);
+        console.log(`Bob usdt pool in ETH: ${(this.usdtETHAmount).toString()}`);
+        console.log(`Bob usdc pool in ETH: ${(this.usdcETHAmount).toString()}`);
 
         this.rewardCollateralAmount = "1000000000"; //1000 USDT
         this.rewardCollateralAddress = this.usdtToken.address;
@@ -866,16 +849,13 @@ contract("DelegatedStaking", function () {
           }
         }
 
-        const bobRewardsAmountForDelegators = (this.rewardCollateralAmount / 4) * 0.25;
-        const aliceRewardsAmountForDelegators = (this.rewardCollateralAmount / 4) * 0.50; 
-        const sarahRewardsAmountForDelegators = (this.rewardCollateralAmount / 2) * 0; // sarah has 2 weight coefficient
-        const totalRewardsAmountForDelegators = bobRewardsAmountForDelegators + aliceRewardsAmountForDelegators + sarahRewardsAmountForDelegators;
+        const bobRewardsAmountForDelegators = (this.rewardCollateralAmount / 4) * 0.25 // 25% of all validators and 25% as bps
 
-        console.log(totalRewardsAmountForDelegators,'totalRewardsAmountForDelegators')
+        console.log(bobRewardsAmountForDelegators,'bobRewardsAmountForDelegators')
 
-        const linkUSDTAmount = parseInt(totalRewardsAmountForDelegators * (this.linkETHAmount / this.totalValidatorETHAmount)).toString();
-        const usdtUSDTAmount = parseInt(totalRewardsAmountForDelegators * (this.usdtETHAmount / this.totalValidatorETHAmount)).toString();
-        const usdcUSDTAmount = parseInt(totalRewardsAmountForDelegators * (this.usdcETHAmount / this.totalValidatorETHAmount)).toString();
+        const linkUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.linkETHAmount / this.totalValidatorETHAmount)).toString();
+        const usdtUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.usdtETHAmount / this.totalValidatorETHAmount)).toString();
+        const usdcUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.usdcETHAmount / this.totalValidatorETHAmount)).toString();
 
         console.log(linkUSDTAmount,"linkUSDTAmount")
         console.log(usdtUSDTAmount,"usdtUSDTAmount")
@@ -897,14 +877,6 @@ contract("DelegatedStaking", function () {
         console.log(linkRewardAmount.toString(),'linkRewardAmount');
         console.log(usdcRewardAmount.toString(),'usdcRewardAmount');
         console.log(usdtRewardAmount,'usdtRewardAmount');
-
-        const bobLinkRewardAmount = linkRewardAmount / 4;
-        const bobUsdcRewardAmount = usdcRewardAmount / 4;
-        const bobUsdtRewardAmount = usdtRewardAmount / 4;
-
-        console.log(bobLinkRewardAmount,'bobLinkRewardAmount');
-        console.log(bobUsdcRewardAmount,'bobUsdcRewardAmount');
-        console.log(bobUsdtRewardAmount,'bobUsdtRewardAmount');
 
         const getRewardsInfoBefore =  await this.delegatedStaking.getRewardsInfo(this.rewardCollateralAddress);
         const balanceLinkBefore = toBN(await this.linkToken.balanceOf(this.delegatedStaking.address));
