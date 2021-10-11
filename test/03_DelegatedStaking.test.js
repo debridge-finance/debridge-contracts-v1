@@ -857,10 +857,6 @@ contract("DelegatedStaking", function () {
         const usdtUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.usdtETHAmount / this.totalValidatorETHAmount)).toString();
         const usdcUSDTAmount = parseInt(bobRewardsAmountForDelegators * (this.usdcETHAmount / this.totalValidatorETHAmount)).toString();
 
-        console.log(linkUSDTAmount,"linkUSDTAmount")
-        console.log(usdtUSDTAmount,"usdtUSDTAmount")
-        console.log(usdcUSDTAmount,"usdcUSDTAmount")
-
         const linkUsdtReserves = await getReserves(this.linkToken.address, this.usdtToken.address, this.uniswapFactory);
         const usdcUsdtReserves = await getReserves(this.usdcToken.address, this.usdtToken.address, this.uniswapFactory);
 
@@ -905,6 +901,13 @@ contract("DelegatedStaking", function () {
 
         assert.equal(getRewardsInfoBefore.distributed.add(this.rewardCollateralAmount).toString(), getRewardsInfoAfter.distributed.toString());
         assert.equal(getRewardsInfoAfter.totalAmount.toString(), getRewardsInfoAfter.distributed.toString());
+
+        const usdcRewardAmountDIff = Math.abs(usdcRewardAmount - (usdcCollateralAfter.stakedAmount - usdcCollateralBefore.stakedAmount));
+        const linkRewardAmountDIff = Math.abs(linkRewardAmount - (linkCollateralAfter.stakedAmount - linkCollateralBefore.stakedAmount));
+
+        assert(usdcRewardAmountDIff < 1700, 'usdcRewardAmount mismatch')
+        assert(linkRewardAmountDIff < 22033499655168, 'linkRewardAmount mismatch')
+        assert.equal(usdtRewardAmount.toString(), usdtCollateralAfter.stakedAmount - usdtCollateralBefore.stakedAmount, "usdtRewardAmount mismatch")
 
         console.log(usdtCollateralBefore.stakedAmount.toString(),"usdtCollateralBefore")
         console.log(usdcCollateralBefore.stakedAmount.toString(),"usdcCollateralBefore")
