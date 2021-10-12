@@ -84,7 +84,7 @@ module.exports = {
     kovan: {
       url: "https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      // gasPrice: 2e9,
+      gasPrice: 3e9,
       gas: 6.9e6,
       chainId: 42
     },
@@ -104,6 +104,13 @@ module.exports = {
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       // gasPrice: 1e9,
       chainId: 421611
+    },
+    mumbai: {
+      // url: "https://rpc-mumbai.maticvigil.com",
+      url:"https://apis.ankr.com/28e515e83aba427a8334cf38d63d0ae6/363542f636c41556afec7d1feb0f0a88/polygon/full/test",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      // gasPrice: 1e9,
+      chainId: 80001
     },
     bsc: {
       url: "https://bsc-dataseed.binance.org/",

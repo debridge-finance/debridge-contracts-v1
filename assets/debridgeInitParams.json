@@ -219,6 +219,56 @@
       }
     ]
   },
+  "mumbai": {
+    "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "minConfirmations": 2,
+    "confirmationThreshold": 3,
+    "excessConfirmations": 3,
+    "oracles": [
+      "0x0022798ad168952c1da80157c0314d5c64f87e22",
+      "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
+      "0x2b4e172043527a9435f31688fef6f3589356d1aa"
+    ],
+    "deploy": {
+      "DBR": false,
+      "SignatureVerifier": true,
+      "SignatureAggregator": false,
+      "ConfirmationAggregator": false,
+      "DefiController": false
+    },
+    "external": {
+      "WETH": "",
+      "WETHName": "Wrapped MATIC",
+      "WETHSymbol": "WMATIC",
+      "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+    },
+    "supportedChains": [256, 42, 97, 421611],
+    "fixedNativeFee": ["100000000000000", "100000000000000", "100000000000000", "100000000000000"],
+    "globalFixedNativeFee": "100000000000000",
+    "globalTransferFeeBps": "50",
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      }
+    ]
+  },
   "development": {
     "deBridgeTokenAdmin": "0x6CDf260c39A390fE3249d7FA3ba4986b17d109E0",
     "minConfirmations": 2,
