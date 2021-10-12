@@ -1,0 +1,163 @@
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy  --network hecotest
+Nothing to compile
+deploying "MockWeth" (tx: 0x9716711266e5f6c16906b7d24c7ef3c6b5172c39024193d0433bc61b699f505c)...: deployed at 0x21D03141aCfc7A53252c513F25C361485082Cc82 with 578721 gas
+sleepInterval 15000
+deploying "DeBridgeToken" (tx: 0xc54a2e41d03011c034deccafbc3cb258975b7a3b0ec6799f6cb115cc9cd7f8ec)...: deployed at 0x2C898393595386d889aF7F348314D8d63F4353Df with 1612378 gas
+sleepInterval 15000
+
+*** Deploying proxy for DeBridgeTokenDeployer ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [
+  '0x2C898393595386d889aF7F348314D8d63F4353Df',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23',
+  '0x0000000000000000000000000000000000000000'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x49D0EE55d2Edf8B8EccDC4Bb83C2f79873A88D81
+        New proxy deployed:  0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3
+sleepInterval 15000
+
+*** Deploying proxy for SignatureVerifier ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ 2, 3, 3, '0x0000000000000000000000000000000000000000' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x57Bc06611321cF3c5c332efb580FA4DEa8A0E105
+        New proxy deployed:  0xe867E7269C733795445388cadD08cDcFe7FAe91a
+sleepInterval 15000
+add non required oracles:
+[
+  '0x0022798ad168952c1da80157c0314d5c64f87e22',
+  '0x9b4cbd1c7e82cf9c217002eddb320a1286f47738',
+  '0x2b4e172043527a9435f31688fef6f3589356d1aa'
+]
+sleepInterval 15000
+
+*** Deploying proxy for CallProxy ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ 0 ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        New proxy deployed:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+sleepInterval 15000
+
+*** Deploying proxy for CallProxy ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ 2 ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        New proxy deployed:  0x6a36E204576B8B72F9d301aD2ab23423f8f220A2
+sleepInterval 15000
+
+*** Deploying proxy for FeeProxy ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [
+  '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
+  '0x21D03141aCfc7A53252c513F25C361485082Cc82'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0xa57ff684859D460C0B42ac0ed507561D686D21BE
+        New proxy deployed:  0x3A7F21142Dd28be6369723100262282023e395ad
+sleepInterval 15000
+Start 08_DeBridgeGate
+deployProxy DeBridgeGate
+
+*** Deploying proxy for DeBridgeGate ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [
+  3,
+  '0xe867E7269C733795445388cadD08cDcFe7FAe91a',
+  '0x0000000000000000000000000000000000000000',
+  '0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669',
+  '0x21D03141aCfc7A53252c513F25C361485082Cc82',
+  '0x3A7F21142Dd28be6369723100262282023e395ad',
+  '0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3',
+  '0x0000000000000000000000000000000000000000'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0xc59Afc2649d96aA6Ee2785047C754967FdB480CC
+        New proxy deployed:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+sleepInterval 15000
+chainId: 256
+wethDebridgeId: 0x652405436ec6c88eaf426637f10e6671ab079d28fd3d2904145da964acc5b065
+updateChainSupport
+[ 97, 42, 421611 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+sleepInterval 15000
+deployInitParams.supportedChains:  [ 97, 42, 421611 ]
+deployInitParams.fixedNativeFee:  [ '100000000000000', '100000000000000', '100000000000000' ]
+deBridgeGate updateAssetFixedFeesTx for WETH
+sleepInterval 15000
+Set callProxy with sender for deBridgeGate
+sleepInterval 15000
+deBridgeGate updateGlobalFee
+sleepInterval 15000
+callProxy grantRole
+callProxy grantRole DEBRIDGE_GATE_ROLE for deBridgeGate
+sleepInterval 15000
+callProxyWithSender grantRole DEBRIDGE_GATE_ROLE for deBridgeGate
+sleepInterval 15000
+feeProxy setDebridgeGate
+sleepInterval 15000
+deBridgeTokenDeployer setDebridgeAddress
+sleepInterval 15000
+signatureVerifier setDebridgeAddress
+sleepInterval 15000
+********************************************************************************
+        Start transfering DEFAULT_ADMIN_ROLE role for contracts
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        to MULTISIG 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Transfering admin role for DeBridgeTokenDeployer | 0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for SignatureVerifier | 0xe867E7269C733795445388cadD08cDcFe7FAe91a
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for CallProxy | 0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for CallProxyWithSender | 0x6a36E204576B8B72F9d301aD2ab23423f8f220A2
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for FeeProxy | 0x3A7F21142Dd28be6369723100262282023e395ad
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for DeBridgeGate | 0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+PS D:\Projects\Debridge\debridge-contracts-v1> 
