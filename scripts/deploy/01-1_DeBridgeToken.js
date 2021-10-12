@@ -1,6 +1,6 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { ethers } = require("hardhat");
-const { deployProxy } = require("../deploy-utils");
+const { deployProxy, sleepInterval } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deploy } = deployments;
@@ -14,6 +14,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     // deterministicDeployment: true,
     log: true,
   });
+  await sleepInterval();
 };
 
 module.exports.tags = ["01-1_DeBridgeToken"]

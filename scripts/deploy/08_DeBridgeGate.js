@@ -1,6 +1,6 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { ethers } = require("hardhat");
-const { FLAGS, deployProxy, getLastDeployedProxy } = require("../deploy-utils");
+const { FLAGS, deployProxy, getLastDeployedProxy, sleepInterval } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
@@ -92,6 +92,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   );
 
   const updateChainSupportReceipt = await updateChainSupportTx.wait();
+  await sleepInterval();
   // console.log(updateChainSupportReceipt);
 
   console.log("deployInitParams.supportedChains: ", deployInitParams.supportedChains);
@@ -114,11 +115,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   );
 
   const updateAssetFixedFeesReceipt = await updateAssetFixedFeesTx.wait();
+  await sleepInterval();
   // console.log(updateAssetFixedFeesReceipt);
 
   console.log("Set callProxy with sender for deBridgeGate");
   await deBridgeGateInstance.setCallProxy(FLAGS.PROXY_WITH_SENDER, callProxyWithSender.address);
-
+  await sleepInterval();
   // --------------------------------
   //    calling updateGlobalFee
   // --------------------------------
@@ -134,6 +136,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   );
 
   const updateGlobalFeeReceipt = await updateGlobalFeeTx.wait();
+  await sleepInterval();
   // console.log(updateGlobalFeeReceipt);
 
   // --------------------------------
@@ -144,22 +147,23 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const DEBRIDGE_GATE_ROLE = await callProxy.DEBRIDGE_GATE_ROLE();
   console.log("callProxy grantRole DEBRIDGE_GATE_ROLE for deBridgeGate");
   await callProxy.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
-
+  await sleepInterval();
   console.log("callProxyWithSender grantRole DEBRIDGE_GATE_ROLE for deBridgeGate");
   await callProxyWithSender.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
-
+  await sleepInterval();
   console.log("feeProxy setDebridgeGate");
   await feeProxy.setDebridgeGate( deBridgeGateInstance.address);
-
+  await sleepInterval();
   // --------------------------------
   //    setting debridge address for contracts
   // --------------------------------
   console.log("deBridgeTokenDeployer setDebridgeAddress");
   await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
-
+  await sleepInterval();
   if (signatureVerifier) {
     console.log("signatureVerifier setDebridgeAddress");
     await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
+    await sleepInterval();
   }
 };
 

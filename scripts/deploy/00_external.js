@@ -1,4 +1,5 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
+const { sleepInterval } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deploy } = deployments;
@@ -15,6 +16,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
       // deterministicDeployment: true,
       log: true,
     });
+    await sleepInterval();
   }
 
   if (!deployInitParams.external.UniswapFactory) {
@@ -24,6 +26,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
       // deterministicDeployment: true,
       log: true,
     });
+    await sleepInterval();
   }
 };
 

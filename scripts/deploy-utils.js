@@ -129,6 +129,8 @@ async function deployProxy(contractName, deployer, args, reuseProxy) {
     console.log('\tNo deployed proxies found, deploying a new one');
   }
 
+  await sleepInterval();
+
   // real deploy
   const proxy = await hre.upgrades.deployProxy(Factory, args);
   const receipt = await proxy.deployed();
@@ -137,6 +139,8 @@ async function deployProxy(contractName, deployer, args, reuseProxy) {
   const implementation = await getImplementationAddress(hre.ethers.provider, proxy.address)
   console.log('\tImplementation address:', implementation);
   console.log('\tNew proxy deployed: ', proxy.address);
+
+  await sleepInterval();
 
   return {
     contract: proxy,
@@ -178,9 +182,17 @@ async function getLastDeployedProxy(contractName, deployer, args) {
   throw `No deployed proxy found for "${contractName}"`;
 }
 
+async function sleepInterval() {
+  const ms = 15000;
+  console.log(`sleepInterval ${ms}`)
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
 module.exports = {
   FLAGS,
   deployProxy,
   getDeployedProxies,
-  getLastDeployedProxy
+  getLastDeployedProxy,
+  sleepInterval
 };
