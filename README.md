@@ -5,12 +5,12 @@
 UI deployed on [testv2.debridge.finance](https://testv2.debridge.finance/)
 
 List contracts addresses
-DeBridgeTokenDeployer 0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3
-SignatureVerifier  0xe867E7269C733795445388cadD08cDcFe7FAe91a
-CallProxy 0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
-CallProxyWithSender 0x6a36E204576B8B72F9d301aD2ab23423f8f220A2
-FeeProxy  0x3A7F21142Dd28be6369723100262282023e395ad
-DeBridgeGate 0x68D936Cb4723BdD38C488FD50514803f96789d2D
+- DeBridgeTokenDeployer 0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3
+- SignatureVerifier  0xe867E7269C733795445388cadD08cDcFe7FAe91a
+- CallProxy 0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+- CallProxyWithSender 0x6a36E204576B8B72F9d301aD2ab23423f8f220A2
+- FeeProxy  0x3A7F21142Dd28be6369723100262282023e395ad
+- DeBridgeGate 0x68D936Cb4723BdD38C488FD50514803f96789d2D
 
 The contracts directory contains the following subfolders:
 
