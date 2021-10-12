@@ -119,6 +119,22 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log("Set callProxy with sender for deBridgeGate");
   await deBridgeGateInstance.setCallProxy(FLAGS.PROXY_WITH_SENDER, callProxyWithSender.address);
 
+  // --------------------------------
+  //    calling updateGlobalFee
+  // --------------------------------
+
+  // function updateGlobalFee(
+  //     uint256 _globalFixedNativeFee,
+  //     uint16 _globalTransferFeeBps
+  // )
+  console.log("deBridgeGate updateGlobalFee");
+  const updateGlobalFeeTx = await deBridgeGateInstance.updateGlobalFee(
+    deployInitParams.globalFixedNativeFee,
+    deployInitParams.globalTransferFeeBps
+  );
+
+  const updateGlobalFeeReceipt = await updateGlobalFeeTx.wait();
+  // console.log(updateGlobalFeeReceipt);
 
   // --------------------------------
   //    granting role for debridge in CallProxy
