@@ -2934,4 +2934,38 @@ contract("DeBridgeGate real pipeline mode", function () {
     //   );
     // });
   });
+
+
+  context("Test calculating ids", () => {
+    it("should has same debridgeId", async function() {
+      const chainId = 100;
+      const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+      const debridgeId = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
+      console.log(debridgeId);
+      const debridgeIdSignatureVerifier = await this.signatureVerifierETH.getDebridgeId(chainId, tokenAddress);
+      const debridgeIdConfirmationAggregator = await this.confirmationAggregatorBSC.getDebridgeId(chainId, tokenAddress);
+
+      assert.equal(debridgeId, debridgeIdSignatureVerifier);
+      assert.equal(debridgeIdSignatureVerifier, debridgeIdConfirmationAggregator);
+
+      const calculatedDebridgeId = ethers.utils.solidityKeccak256(['uint256', 'bytes'], [chainId, tokenAddress]);
+      assert.equal(debridgeId, calculatedDebridgeId);
+    })
+
+    it("should has same deployId", async function() {
+      const debridgeId = "0x8ee3dbcdef0876763610fbdbed3ff2f4c14425bc81d10df7378e47a83e42b253";
+      const name = "TEST_TOKEN";
+      const symbol = "TEST";
+      const decimals = 18;
+      const deployIdSignatureVerifier = await this.signatureVerifierETH.getDeployId(debridgeId, name, symbol, decimals);
+      const deployIdConfirmationAggregator = await this.confirmationAggregatorBSC.getDeployId(debridgeId, name, symbol, decimals);
+
+      assert.equal(deployIdSignatureVerifier, deployIdConfirmationAggregator);
+
+      const calculatedDeployId = ethers.utils.solidityKeccak256(
+        ['bytes32', 'string', 'string', 'uint8'],
+        [debridgeId, name, symbol, decimals]);
+      assert.equal(deployIdSignatureVerifier, calculatedDeployId);
+    });
+  });
 });
