@@ -31,7 +31,7 @@ contract MockWeth {
     error EthTransferFailed();
 
     constructor(string memory _name, string memory  _symbol) {
-        name = name;
+        name = _name;
         symbol = _symbol;
     }
 
