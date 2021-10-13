@@ -1,6 +1,6 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { ethers } = require("hardhat");
-const { deployProxy, sleepInterval } = require("../deploy-utils");
+const { deployProxy, waitTx } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
@@ -37,8 +37,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
       // )
 
       const tx = await signatureVerifierInstance.addOracles(oracleAddresses, required);
-      await tx.wait();
-      await sleepInterval();
+      await waitTx(tx);
     }
   }
 };

@@ -1,6 +1,6 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { ethers } = require("hardhat");
-const { FLAGS, getLastDeployedProxy, sleepInterval } = require("../deploy-utils");
+const { FLAGS, getLastDeployedProxy, waitTx } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
@@ -31,8 +31,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     if (!multisigHasAdminRole) {
       console.log(`\tcall grantRole for multisig`);
       const tx = await contract.grantRole(DEFAULT_ADMIN_ROLE, multisig);
-      // console.log(tx);
-      await sleepInterval();
+      await waitTx(tx);
     } else {
       console.log(`\tmultisig already has an admin role, skip calling grantRole`);
     }
@@ -40,8 +39,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     if (deployerHasAdminRole) {
       console.log(`\tcall revokeRole for deployer`);
       const tx = await contract.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
-      // console.log(tx);
-      await sleepInterval();
+      await waitTx(tx);
     } else {
       console.log(`\tdeployer already doesn't have an admin role, skip calling revokeRole`);
     }
