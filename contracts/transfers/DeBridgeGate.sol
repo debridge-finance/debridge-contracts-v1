@@ -19,7 +19,6 @@ import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
 import "../libraries/Flags.sol";
-import "hardhat/console.sol";
 
 contract DeBridgeGate is
     Initializable,

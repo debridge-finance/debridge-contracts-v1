@@ -1,7 +1,6 @@
-const { waffle, ethers } = require("hardhat")
+const { waffle, ethers, expect } = require("hardhat")
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
-const { expect } = require("chai");
 const ConfirmationAggregator = artifacts.require("MockConfirmationAggregator");
 const { toWei, fromWei, toBN } = web3.utils;
 const ZERO_ADDRESS   = "0x0000000000000000000000000000000000000000";
@@ -79,9 +78,9 @@ contract("ConfirmationAggregator", function() {
   })
 
   it("should set min confirmations, as admin, should succeed", async function(){
- 
     await this.aggregator.setMinConfirmations(5,{from:alice});
-
+    let minConfirmations = await this.aggregator.minConfirmations();
+    expect(minConfirmations.toNumber()).to.be.equal(5);
   })
 
   it('should set min confirmations, not as admin, should fail', async function(){
@@ -102,13 +101,12 @@ contract("ConfirmationAggregator", function() {
     const decimal = 18;
     const debridgeId = await this.aggregator.getDebridgeId(chainId, tokenAddress);
     const deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimal)
-    await this.aggregator.mock_setWrappedAssetAddress(debridgeId, MOCK_ADDRESS);
     await this.aggregator.mock_set_debridgeInfoHasVerrified(deployId, bob, true);
     await expectRevert(this.aggregator.confirmNewAsset(tokenAddress,chainId,name,symbol,decimal,{from:bob}),"SubmittedAlready");
   })
 
 
-  it('should confirm new asset, oracle required true', async function(){
+  it('should confirm new asset, oracle required true', async function() {
     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
     const chainId = 56;
     const name = "Token";
@@ -116,10 +114,31 @@ contract("ConfirmationAggregator", function() {
     const decimal = 18;
     const debridgeId = await this.aggregator.getDebridgeId(chainId, tokenAddress);
     const deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimal)
-    await this.aggregator.mock_setWrappedAssetAddress(debridgeId, ZERO_ADDRESS);
     await this.aggregator.mock_set_debridgeInfoHasVerrified(deployId, bob, false);
     await this.aggregator.mock_set_oracle_required(bob,true);
-    this.aggregator.confirmNewAsset(tokenAddress,chainId,name,symbol,decimal,{from:bob});
+    const receipt = await this.aggregator.confirmNewAsset(
+      tokenAddress,
+      chainId,
+      name,
+      symbol,
+      decimal,
+      {
+        from:bob
+      });
+    expectEvent(receipt,'DeployConfirmed',
+    {
+      deployId: deployId,
+      operator: bob,
+    })
+    let deployInfo = await this.aggregator.getDeployInfo(deployId);
+    expect(deployInfo.name).to.be.equal(name);
+    expect(deployInfo.symbol).to.be.equal(symbol);
+    expect(deployInfo.nativeAddress).to.be.equal(tokenAddress);
+    expect(deployInfo.decimals.toNumber()).to.be.equal(decimal);
+    expect(deployInfo.chainId.toNumber()).to.be.equal(chainId);
+
+    let confirmedDeployInfo = await this.aggregator.confirmedDeployInfo(debridgeId);
+    expect(confirmedDeployInfo).to.be.not.equal(deployId);
   })
 
   it('should confirm new asset, oracle required false and min confirmation 0', async function(){
@@ -131,10 +150,31 @@ contract("ConfirmationAggregator", function() {
     const debridgeId = await this.aggregator.getDebridgeId(chainId, tokenAddress);
     const deployId = await this.aggregator.getDeployId(debridgeId, name, symbol, decimal)
     await this.aggregator.mock_set_minConfirmations(0);
-    await this.aggregator.mock_setWrappedAssetAddress(debridgeId, ZERO_ADDRESS);
     await this.aggregator.mock_set_debridgeInfoHasVerrified(deployId, bob, false);
     await this.aggregator.mock_set_oracle_required(bob,false);
-    this.aggregator.confirmNewAsset(tokenAddress,chainId,name,symbol,decimal, {from:bob});
+    const receipt = await this.aggregator.confirmNewAsset(
+      tokenAddress,
+      chainId,
+      name,
+      symbol,
+      decimal, 
+      {
+        from:bob
+      });
+      expectEvent(receipt,'DeployConfirmed',
+      {
+        deployId: deployId,
+        operator: bob,
+      })
+      let deployInfo = await this.aggregator.getDeployInfo(deployId);
+      expect(deployInfo.name).to.be.equal(name);
+      expect(deployInfo.symbol).to.be.equal(symbol);
+      expect(deployInfo.nativeAddress).to.be.equal(tokenAddress);
+      expect(deployInfo.decimals.toNumber()).to.be.equal(decimal);
+      expect(deployInfo.chainId.toNumber()).to.be.equal(chainId);
+
+      let confirmedDeployInfo = await this.aggregator.confirmedDeployInfo(debridgeId);
+      expect(confirmedDeployInfo).to.be.equal(deployId);
   })
 
   it('should call internal submit function if path', async function(){
@@ -146,7 +186,26 @@ contract("ConfirmationAggregator", function() {
     await this.aggregator.mock_set_confirmationThreashold(100);
     await this.aggregator.mock_set_requiredOraclesCount(3);
     await this.aggregator.mock_set_submmisionInfo(MOCK_ADDRESS, sender, confirmations, hasVerified, isConfirmed,requiredConfirmations);
-    await this.aggregator.call_internal_submit(MOCK_ADDRESS);
+    let oldSubmissionsInBlock = await this.aggregator.submissionsInBlock();
+    const receipt = await this.aggregator.call_internal_submit(MOCK_ADDRESS);
+
+    expectEvent(receipt,'Confirmed',
+    {
+      submissionId: MOCK_ADDRESS.concat('000000000000000000000000'),
+      operator: alice,
+    })
+
+
+    expectEvent(receipt,'SubmissionApproved',
+    {
+      submissionId: MOCK_ADDRESS.concat('000000000000000000000000'),
+    })
+
+    let submisionInfo = await this.aggregator.getSubmissionInfo(MOCK_ADDRESS);
+    expect(submisionInfo.isConfirmed).to.be.equal(true);
+
+    let submissionsInBlock = await this.aggregator.submissionsInBlock();
+    expect(submissionsInBlock.toNumber()).to.be.above(oldSubmissionsInBlock.toNumber());
   })
 
 
@@ -235,8 +294,21 @@ contract("ConfirmationAggregator", function() {
     await this.aggregator.mock_set_oracle_required(bob, true)
     const currentBlock = await ethers.provider.getBlockNumber();
     await this.aggregator.mock_set_blockConfirmationsInfoIsConfirmed(MOCK_ADDRESS,currentBlock+3,false)
-    await this.aggregator.submit(MOCK_ADDRESS, {from:bob});
+    const receipt = await this.aggregator.submit(MOCK_ADDRESS, {from:bob});
+
+    expectEvent(receipt,'Confirmed',
+    {
+      submissionId: MOCK_ADDRESS.concat('000000000000000000000000'),
+      operator: bob,
+    })
+
+    let submisionInfo = await this.aggregator.getSubmissionInfo(MOCK_ADDRESS);
+    expect(submisionInfo.isConfirmed).to.be.equal(false);
+
+    let submissionsInBlock = await this.aggregator.submissionsInBlock();
+    expect(submissionsInBlock.toNumber()).to.be.equal(0);
   })
+
 
   it('should call submit, as oracle, required true, not go inside block confirmations condition', async function(){
     await this.aggregator.mock_set_minConfirmations(0);
@@ -244,7 +316,24 @@ contract("ConfirmationAggregator", function() {
     await this.aggregator.mock_set_oracle_required(bob, true)
     const currentBlock = await ethers.provider.getBlockNumber();
     await this.aggregator.mock_set_blockConfirmationsInfoIsConfirmed(MOCK_ADDRESS,currentBlock+2,true)
-    await this.aggregator.submit(MOCK_ADDRESS, {from:bob});
+    const receipt = await this.aggregator.submit(MOCK_ADDRESS, {from:bob});
+
+    expectEvent(receipt,'Confirmed',
+    {
+      submissionId: MOCK_ADDRESS.concat('000000000000000000000000'),
+      operator: bob,
+    })
+
+    expectEvent.notEmitted(receipt,'SubmissionApproved',
+    {
+      submissionId: MOCK_ADDRESS.concat('000000000000000000000000'),
+    })
+
+    let submisionInfo = await this.aggregator.getSubmissionInfo(MOCK_ADDRESS);
+    expect(submisionInfo.isConfirmed).to.be.equal(false);
+
+    let submissionsInBlock = await this.aggregator.submissionsInBlock();
+    expect(submissionsInBlock.toNumber()).to.be.equal(0);
   })
 
   it('should call submit, as oracle, current block same value ', async function(){
@@ -253,17 +342,26 @@ contract("ConfirmationAggregator", function() {
     await this.aggregator.mock_set_oracle_required(bob, true)
     const currentBlock = await ethers.provider.getBlockNumber();
     await this.aggregator.mock_set_currentBlock(currentBlock+2);
-    await this.aggregator.submit(MOCK_ADDRESS, {from:bob});
+    const receipt = await this.aggregator.submit(MOCK_ADDRESS, {from:bob});
+
+    expectEvent(receipt,'Confirmed',
+    {
+      submissionId: MOCK_ADDRESS.concat('000000000000000000000000'),
+      operator: bob,
+    })
+
+    expectEvent.notEmitted(receipt,'SubmissionApproved',
+    {
+      submissionId: MOCK_ADDRESS.concat('000000000000000000000000'),
+    })
+
+    let submisionInfo = await this.aggregator.getSubmissionInfo(MOCK_ADDRESS);
+    expect(submisionInfo.isConfirmed).to.be.equal(false);
+
+    let submissionsInBlock = await this.aggregator.submissionsInBlock();
+    expect(submissionsInBlock.toNumber()).to.be.equal(0);
   })
 
-  it('should call submit, as oracle, submissions if path taken ', async function(){
-    await this.aggregator.mock_set_minConfirmations(0);
-    await this.aggregator.mock_set_requiredOraclesCount('255')
-    await this.aggregator.mock_set_oracle_required(bob, true)
-    const currentBlock = await ethers.provider.getBlockNumber();
-    await this.aggregator.mock_set_blockConfirmationsInfoIsConfirmed(MOCK_ADDRESS,currentBlock+2,true)
-    await this.aggregator.submit(MOCK_ADDRESS, {from:bob});
-  })
 
   it('should call submit, as oracle, fail submitted already', async function(){
     await this.aggregator.mock_set_minConfirmations(0);
@@ -307,31 +405,58 @@ contract("ConfirmationAggregator", function() {
     await expectRevert(this.aggregator.addOracles([bob],[true]),"OracleAlreadyExist()");
   })
 
-  it('should add oracle, should work requried teuw ', async function(){
+  it('should add oracle, should work requried true ', async function(){
     await this.aggregator.mock_set_minConfirmations(255);
-    await this.aggregator.addOracles([alice],[true]);
+    const receipt = await this.aggregator.addOracles([alice],[true]);
+    expectEvent(receipt, 'AddOracle', 
+    {
+      oracle: alice,
+      required: true,
+    })
+
+    let oracleInfo = await this.aggregator.getOracleInfo(alice);
+    expect(oracleInfo.exist).to.be.equal(true);
+    expect(oracleInfo.isValid).to.be.equal(true);
+    expect(oracleInfo.required).to.be.equal(true);
   })
 
   it('should update oracle, oracle info is valid true and is valid local false, oracle on index', async function(){
     await this.aggregator.mock_set_oracle_exist(bob,true);
     await this.aggregator.mock_set_oracle_required(bob,false);
     await this.aggregator.mock_set_oracle_isValid(bob,true);
-    await this.aggregator.updateOracle(bob,false,false);
+    const receipt = await this.aggregator.updateOracle(bob,false,false);
+    expectEvent(receipt, 'UpdateOracle', 
+    {
+      oracle: bob,
+      required: false,
+      isValid: false,
+    })
+
+    let oracleInfo = await this.aggregator.getOracleInfo(bob);
+    expect(oracleInfo.exist).to.be.equal(true);
+    expect(oracleInfo.isValid).to.be.equal(false);
+    expect(oracleInfo.required).to.be.equal(false);
   })
 
   it('should update oracle, oracle info is valid true and is valid local false, oracle not on index', async function(){
     await this.aggregator.mock_set_oracle_exist(alice,true);
     await this.aggregator.mock_set_oracle_required(alice,false);
     await this.aggregator.mock_set_oracle_isValid(alice,true);
-    await this.aggregator.updateOracle(alice,false,false);
+    const receipt = await this.aggregator.updateOracle(alice,false,false);
+
+    expectEvent(receipt, 'UpdateOracle', 
+    {
+      oracle: alice,
+      required: false,
+      isValid: false,
+    })
+
+    let oracleInfo = await this.aggregator.getOracleInfo(alice);
+    expect(oracleInfo.exist).to.be.equal(true);
+    expect(oracleInfo.isValid).to.be.equal(false);
+    expect(oracleInfo.required).to.be.equal(false);
   })
 
-  it('should update oracle, oracle info is valid false and is valid local true', async function(){
-    await this.aggregator.mock_set_oracle_exist(alice,true);
-    await this.aggregator.mock_set_oracle_required(alice,false);
-    await this.aggregator.mock_set_oracle_isValid(alice,false);
-    await this.aggregator.updateOracle(alice,true,false);
-  })
 
   it('should update oracle, oracle info is valid false and is valid local true, fail min confirmations', async function(){
     await this.aggregator.mock_set_oracle_exist(alice,true);

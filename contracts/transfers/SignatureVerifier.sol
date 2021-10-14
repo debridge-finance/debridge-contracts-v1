@@ -4,7 +4,6 @@ pragma solidity 0.8.7;
 import "./AggregatorBase.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../libraries/SignatureUtil.sol";
-import "hardhat/console.sol";
 
 contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     using SignatureUtil for bytes;

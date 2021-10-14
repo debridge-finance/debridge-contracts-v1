@@ -10,6 +10,7 @@ const {
   toUtf8Bytes,
   solidityPack,
 } = require("ethers/lib/utils");
+const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 
 
 describe('WrappedAsset', () =>{
@@ -106,7 +107,23 @@ describe('WrappedAsset', () =>{
         const s = signature.s.toString('hex').slice(-64);
         const v_decimal = parseInt(signature.v.toString(16),16);
         
-        await this.wrappedAsset.permit(bob,alice,amount,deadline, v_decimal, '0x'+r, '0x'+s, {from:bob});
+        const receipt = await this.wrappedAsset.permit(
+          bob,
+          alice,
+          amount,
+          deadline, 
+          v_decimal, 
+          '0x'+r, 
+          '0x'+s, 
+          {
+            from:bob
+          });
+
+        expectEvent(receipt, 'Approval', {
+          owner: bob,
+          spender: alice,
+          value: amount.toString(),
+        })
     })
 
     it('should call permit with invalid signature', async()=>{

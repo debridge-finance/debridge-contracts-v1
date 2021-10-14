@@ -14,6 +14,7 @@ const {
   toUtf8Bytes,
   solidityPack,
 } = require("ethers/lib/utils");
+const expectEvent = require("@openzeppelin/test-helpers/src/expectEvent");
 
 function parseHexString(str) {
   var result = [];
@@ -119,17 +120,32 @@ contract("SignatureVerifier", () =>{
     await expectRevert(this.signatureVerifier.submit(submissionId, signature,this.excessConfirmations),"SubmissionNotConfirmed()");
   })
 
-  it('should call submit, oracle is valid true, submision has verified false', async()=>{
+  it('should call submit, oracle is valid false, submision has verified false', async()=>{
     const submissionId='0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed'; 
     const signature = await bobAccount.signMessage(parseHexString(submissionId))
-    const oracle=ZERO_ADDRESS;
-    const _block= 1; 
-    const _confirmations=0; 
-    const _hasVerified= false;
-    await this.signatureVerifier.mock_set_oracle_valid(oracle,true);
+    const oracle=bob;
+    await this.signatureVerifier.mock_set_oracle_valid(oracle,false);
     await this.signatureVerifier.mock_set_min_confirmations(0);
     await this.signatureVerifier.setDebridgeAddress(alice);
-    await this.signatureVerifier.submit(submissionId, signature, 0);
+    const recipe = await this.signatureVerifier.submit(
+      submissionId, 
+      signature, 
+      0
+    )
+
+    expectEvent.notEmitted(recipe, 'Confirmed', 
+    {
+      submissionId: submissionId,
+      operator: oracle,
+    })
+
+    expectEvent(recipe, 'SubmissionApproved', 
+    {
+      submissionId: submissionId
+    })
+
+    let submissionsInBlock = await this.signatureVerifier.submissionsInBlock();
+    expect(submissionsInBlock.toNumber()).to.be.equal(1);
   })
 
   it('should call submit, fail not confirmed by required oracle', async()=>{
@@ -147,30 +163,54 @@ contract("SignatureVerifier", () =>{
   it('should call submit, oracle required true', async()=>{
     const submissionId='0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed'; 
     const signature = await bobAccount.signMessage(parseHexString(submissionId))
-    const _block= 1; 
-    const _confirmations=0; 
-    const _hasVerified= false;
     await this.signatureVerifier.mock_set_oracle_valid(bob,true);
     await this.signatureVerifier.mock_set_min_confirmations(0);
     await this.signatureVerifier.setDebridgeAddress(alice);
     await this.signatureVerifier.mock_set_oracle_requires(bob,true);
     await this.signatureVerifier.mock_set_required_oracles_count(1);
-    await this.signatureVerifier.submit(submissionId, signature,0);
+    const recipe = await this.signatureVerifier.submit(
+      submissionId, 
+      signature, 
+      0
+    )
+
+    expectEvent(recipe, 'Confirmed', 
+    {
+      submissionId: submissionId,
+      operator: bob,
+    })
+
+    expectEvent(recipe, 'SubmissionApproved', 
+    {
+      submissionId: submissionId
+    })
+
+    let submissionsInBlock = await this.signatureVerifier.submissionsInBlock();
+    expect(submissionsInBlock.toNumber()).to.be.equal(1);
   })
 
   it('should call submit, oracle is valid true, block is confirmed', async()=>{
     const submissionId='0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed'; 
     const signature = await bobAccount.signMessage(parseHexString(submissionId))
     const oracle=ZERO_ADDRESS;
-    const _block= 1; 
-    const _confirmations=0; 
-    const _hasVerified= false;
     await this.signatureVerifier.mock_set_oracle_valid(oracle,true);
     await this.signatureVerifier.mock_set_min_confirmations(0);
     await this.signatureVerifier.setDebridgeAddress(alice);
+    await this.signatureVerifier.mock_set_submissionsInBlock(1);
+    let oldSubmissionsInBlock = await this.signatureVerifier.submissionsInBlock();
+    expect(oldSubmissionsInBlock.toNumber()).to.be.equal(1);
+
     const block = await ethers.provider.getBlockNumber();
     await this.signatureVerifier.mock_set_currentBlock(block+2);
-    await this.signatureVerifier.submit(submissionId, signature,0);
+    const reciept = await this.signatureVerifier.submit(submissionId, signature,0);
+    expectEvent(reciept, 'SubmissionApproved', 
+    {
+      submissionId: submissionId
+    })
+
+    let submissionsInBlock = await this.signatureVerifier.submissionsInBlock();
+    expect(submissionsInBlock.toNumber()).to.be.above(oldSubmissionsInBlock.toNumber());
+
   })
 
 
@@ -202,7 +242,12 @@ contract("SignatureVerifier", () =>{
     await this.signatureVerifier.mock_set_required_oracles_count(1);
     await this.signatureVerifier.setDebridgeAddress(alice);
     await this.signatureVerifier.mock_set_excessConfirmations(0);
-    await this.signatureVerifier.submit(submissionId, signature,0);
+    const receipt = await this.signatureVerifier.submit(submissionId, signature,0);
+
+    expectEvent(receipt, 'SubmissionApproved', 
+    {
+      submissionId: submissionId
+    })
   })
 
   it('should call submit, fail debridge gate bad role', async()=>{

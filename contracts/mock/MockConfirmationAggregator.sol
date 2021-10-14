@@ -1,7 +1,6 @@
 pragma solidity =0.8.7;
 
 import "../transfers/ConfirmationAggregator.sol";
-import "hardhat/console.sol";
 
 contract MockConfirmationAggregator is ConfirmationAggregator {
 
@@ -22,9 +21,6 @@ contract MockConfirmationAggregator is ConfirmationAggregator {
         confirmationThreshold = amount;
     }
 
-    function mock_setWrappedAssetAddress(bytes32  id, address addressToSet) public {
-       // getWrappedAssetAddress[id]=addressToSet;
-    }
 
     function mock_set_debridgeInfoHasVerrified(bytes32 deployId, address setter, bool value) public {
         getDeployInfo[deployId].hasVerified[setter] = value;

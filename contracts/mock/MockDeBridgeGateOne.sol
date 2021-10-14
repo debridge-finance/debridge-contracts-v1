@@ -23,11 +23,9 @@ contract MockDeBridgeGateOne is DeBridgeGate {
         info.tokenAddress=token; // asset address on the current chain
         info.chainId=chainId; // native chain id
         info.maxAmount=maxAmount; // minimal amount to transfer
-        //info.collectedFees=collectedFees; // total collected fees that can be used to buy LINK
         info.balance=balance; // total locked assets
         info.lockedInStrategies=lookedInStragegis; // total locked assets in strategy (AAVE, Compound, etc)
         info.minReservesBps=minReserveBps; // minimal hot reserves in basis points (1/10000)
-        //info.getChainFee[chainId]=chainFee; // whether the chain for the asset is supported
         info.exist=exist;
     }
 
@@ -45,28 +43,6 @@ contract MockDeBridgeGateOne is DeBridgeGate {
     function mock_set_deFiController(address controller) public {
        defiController=controller;
        
-    }
-
-    function mock_set_collectedFees(uint256 amount) public {
-        //collectedFees=amount;
-    }
-
-    function mock_set_chainId(uint256 id) public {
-       // chainId=id;
-    }
-
-    function mock_set_aggregatorLightVersion(uint8 version) public {
-        //aggregatorLightVersion=version;
-    }
-
-    function mock_set_aggregatorFullVersion(uint8 version) public {
-        //aggregatorFullVersion=version;
-    }
-
-    function mock_set_AggregatorInfoForOlgSinatureVerifier(uint8 version, address _aggregator, bool value) public {
-       // AggregatorInfo storage infos = getOldSignatureVerifier[version];
-       // infos.aggregator=_aggregator;
-       // infos.isValid=value;
     }
 
     function mock_set_amountThreshold(bytes32 debridgeId, uint256 amount) public {
@@ -87,17 +63,6 @@ contract MockDeBridgeGateOne is DeBridgeGate {
         info.collectedFees=amount;
     }
     
-    function call_internal_burn(
-        bytes32 debridgeId, 
-        uint256 amount,  
-        uint256 chainIdTo, 
-        uint256 deadline,
-        bytes memory signatures, 
-        bool useAssetFee
-    ) public {
-      // _burn(debridgeId, amount, chainIdTo, deadline, signatures, useAssetFee);
-    }
-
     function call_internal_claim(
         bytes32 _submissionId,
         bytes32 _debridgeId,
@@ -130,39 +95,6 @@ contract MockDeBridgeGateOne is DeBridgeGate {
         _send(permit, tokenAddress, amount, chainIdTo, useAssetFee);
     }
 
-    function call_internal_checkAndDeployAsset(bytes32 debridgeId, address aggregator) public {
-       // _checkAndDeployAsset(debridgeId, aggregator);
-    }
-
-    function call_internal_ensureReserve(bytes32 debridgeId, uint256 _amount) public {
-       // DebridgeInfo storage info = getDebridge[debridgeId];
-       // _ensureReserves(info, _amount);
-    }
-
-
-    function call_internal_mint( 
-        bytes32 _submissionId,
-        bytes32 _debridgeId,
-        address _receiver,
-        uint256 _amount,
-        address _fallbackAddress,
-        uint256 _executionFee,
-        bytes memory _data) public {
-            //_mint(  _submissionId,
-            //        _debridgeId,
-            //        _receiver,
-            //        _amount,
-            //        _fallbackAddress,
-            //        _executionFee,
-            //        _data
-             //   );
-        }
-
-    function mock_set_defi_controller(address _defi) public {
-       // IDefiController controller = IDefiController(_defi);
-       // defiController = controller;
-    }
-
     function mock_set_weth(address wethAdrs) public {
         IWETH _weth = IWETH(wethAdrs);
         weth = _weth;
@@ -174,10 +106,6 @@ contract MockDeBridgeGateOne is DeBridgeGate {
 
     function mock_set_gov_monitoring(address account) public {
         grantRole(GOVMONITORING_ROLE, account);
-    }
-
-    function mock_set_worker(address account) public {
-       // grantRole(WORKER_ROLE, account);
     }
 
     function mock_set_debridge_maxAmount(bytes32 debridgeId, uint256 maxAmount) public {
@@ -231,6 +159,12 @@ contract MockDeBridgeGateOne is DeBridgeGate {
     ) public returns(bytes32){
         bytes32 _deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
         return _deployId;
+    }
+
+    function get_chain_fee_map(bytes32 debridgeId, uint256 supportedChainId) public view returns (uint256){
+        DebridgeFeeInfo storage info = getDebridgeFeeInfo[debridgeId];
+        uint256 fee = info.getChainFee[supportedChainId];
+        return fee;
     }
 
     function receiveEther() external payable {}
