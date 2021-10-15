@@ -61,7 +61,7 @@ module.exports.packSubmissionAutoParamsTo = async (executionFee, flags, fallback
     name: "SubmissionAutoParamsTo",
     components: [
       { name: "executionFee", type: 'uint256' },
-      { name: "flags", type: 'uint8' },
+      { name: "flags", type: 'uint256' },
       { name: "fallbackAddress", type:'bytes' },
       { name: "data", type:'bytes' },
     ]}],
@@ -76,7 +76,7 @@ module.exports.packSubmissionAutoParamsFrom = async (executionFee, flags, fallba
     name: "SubmissionAutoParamsFrom",
     components: [
       { name: "executionFee", type: 'uint256' },
-      { name: "flags", type: 'uint8' },
+      { name: "flags", type: 'uint256' },
       { name: "fallbackAddress", type:'address' },
       { name: "data", type:'bytes' },
       { name: "nativeSender", type:'bytes' },
