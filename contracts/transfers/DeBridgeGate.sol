@@ -266,7 +266,7 @@ contract DeBridgeGate is
             _receiver,
             _nonce,
             _chainIdFrom,
-            autoParams,
+            _autoParams,
             isNativeToken
         );
     }
