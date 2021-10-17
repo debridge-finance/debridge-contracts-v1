@@ -80,7 +80,7 @@ contract DelegatedStaking is Initializable,
     struct DelegatorsInfo {
         uint256 shares; // delegator share of collateral tokens
         uint256 locked; // share locked by depositing to strategy
-        mapping(address => uint256) strategyShares; // map strategy(aave/compound/yearn) for each collateral
+        // mapping(address => uint256) strategyShares; // map strategy(aave/compound/yearn) for each collateral
         uint256 accumulatedRewards; // info how many reward tokens were earned
     }
 
@@ -88,7 +88,7 @@ contract DelegatedStaking is Initializable,
         uint256 stakedAmount; // total tokens staked by delegators
         uint256 shares; // total share of collateral tokens
         uint256 locked; // total share locked by depositing to strategy
-        mapping(address => uint256) strategyShares;
+        // mapping(address => uint256) strategyShares;
         mapping(address => DelegatorsInfo) delegators; // delegation info for each delegator
         uint256 accumulatedRewards; // how many reward tokens were earned
         uint256 rewardsForWithdrawal; // how many reward tokens validator can withdrawal
@@ -115,17 +115,17 @@ contract DelegatedStaking is Initializable,
         bool exists;
     }
 
-    struct Strategy {
-        address stakeToken;
-        address strategyToken;
-        address rewardToken;
-        uint256 totalShares;
-        uint256 totalReserves;
-        uint256 rewards;
-        bool isEnabled;
-        bool exists;
-        bool isRecoverable;
-    }
+    // struct Strategy {
+    //     address stakeToken;
+    //     address strategyToken;
+    //     address rewardToken;
+    //     uint256 totalShares;
+    //     uint256 totalReserves;
+    //     uint256 rewards;
+    //     bool isEnabled;
+    //     bool exists;
+    //     bool isRecoverable;
+    // }
 
     mapping(address => RewardInfo) public getRewardsInfo;
     mapping(address => ValidatorInfo) public getValidatorInfo; // validator address => validator details
@@ -139,9 +139,9 @@ contract DelegatedStaking is Initializable,
     mapping(address => Collateral) public collaterals;
     address[] public validatorAddresses;
     address[] public collateralAddresses;
-    mapping(address => mapping(address => Strategy)) public strategies;
-    address[] public strategyControllerAddresses;
-    mapping(address => bool) public strategyControllerExists;
+    // mapping(address => mapping(address => Strategy)) public strategies;
+    // address[] public strategyControllerAddresses;
+    // mapping(address => bool) public strategyControllerExists;
     IPriceConsumer public priceConsumer;
     ISwapProxy public swapProxy; // proxy to convert the collected rewards into other collaterals
     address public slashingTreasury;
@@ -914,89 +914,89 @@ contract DelegatedStaking is Initializable,
     //     _liquidateDelegator(_validator, _delegator, _collateral, _bpsAmount);
     // }
 
-    /**
-     * @dev Confiscates collateral deposited to strategy
-     * @param _validator Validator address.
-     * @param _collateral Collateral address.
-     * @param _bpsAmount Basis points to slash.
-     */
-    function _slashValidatorCollateralStrategyDeposits(address _validator, address _collateral, uint256 _bpsAmount) internal returns(uint256) {
-        Collateral storage collateral = collaterals[_collateral];
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        uint256 slashingFraction = _bpsAmount / BPS_DENOMINATOR;
-        uint256 totalSlashed;
-        for (uint256 j=0; j<strategyControllerAddresses.length; j++) {
-            address _strategyController = strategyControllerAddresses[j];
-            Strategy storage strategy = strategies[_strategyController][_collateral];
-            uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
-            strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-            uint256 _strategyShares = validatorCollateral.strategyShares[_strategyController] * slashingFraction;
-            uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
-                _strategyShares, strategy.totalReserves, strategy.totalShares
-            );
-            strategy.totalShares -= _strategyShares;
-            IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
-            IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
-            IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
-            uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
-            strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-            uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
-            collateral.rewards += rewardAmount;
-            strategy.rewards += rewardAmount;
-            validatorCollateral.stakedAmount -= stakeTokenCollateral;
-            collateral.slashedAmount += receivedAmount;
-            totalSlashed += receivedAmount;
-        }
-        return totalSlashed;
-    }
+    // /**
+    //  * @dev Confiscates collateral deposited to strategy
+    //  * @param _validator Validator address.
+    //  * @param _collateral Collateral address.
+    //  * @param _bpsAmount Basis points to slash.
+    //  */
+    // function _slashValidatorCollateralStrategyDeposits(address _validator, address _collateral, uint256 _bpsAmount) internal returns(uint256) {
+    //     Collateral storage collateral = collaterals[_collateral];
+    //     ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
+    //     uint256 slashingFraction = _bpsAmount / BPS_DENOMINATOR;
+    //     uint256 totalSlashed;
+    //     for (uint256 j=0; j<strategyControllerAddresses.length; j++) {
+    //         address _strategyController = strategyControllerAddresses[j];
+    //         Strategy storage strategy = strategies[_strategyController][_collateral];
+    //         uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
+    //         strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //         uint256 _strategyShares = validatorCollateral.strategyShares[_strategyController] * slashingFraction;
+    //         uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
+    //             _strategyShares, strategy.totalReserves, strategy.totalShares
+    //         );
+    //         strategy.totalShares -= _strategyShares;
+    //         IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
+    //         IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
+    //         IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
+    //         uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
+    //         strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //         uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
+    //         collateral.rewards += rewardAmount;
+    //         strategy.rewards += rewardAmount;
+    //         validatorCollateral.stakedAmount -= stakeTokenCollateral;
+    //         collateral.slashedAmount += receivedAmount;
+    //         totalSlashed += receivedAmount;
+    //     }
+    //     return totalSlashed;
+    // }
 
-    /**
-     * @dev Confiscates delegator collateral deposited to strategy
-     * @param _validator Validator address.
-     * @param _delegator Delegator address.
-     * @param _collateral Collateral address.
-     * @param _bpsAmount Basis points to slash.
-     */
-    function _slashDelegatorStrategyDeposits(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) internal returns(uint256) {
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
-        Collateral storage collateral = collaterals[_collateral];
-        uint256 slashingFraction = _bpsAmount/BPS_DENOMINATOR;
-        uint256 totalSlashed;
-        for (uint i=0; i<strategyControllerAddresses.length; i++) {
-            address _strategyController = strategyControllerAddresses[i];
-            Strategy storage strategy = strategies[_strategyController][_collateral];
-            uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
-            strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-            uint256 _strategyShares = delegator.strategyShares[_strategyController] * slashingFraction;
-            uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
-                _strategyShares, strategy.totalReserves, strategy.totalShares
-            );
-            delegator.strategyShares[_strategyController] -= _strategyShares;
-            validatorCollateral.strategyShares[_strategyController] -= _strategyShares;
-            strategy.totalShares -= _strategyShares;
-            IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
-            IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
-            IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
-            uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
-            strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-            uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
-            uint256 slashedStrategyShares = DelegatedStakingHelper._calculateShares(
-                    stakeTokenCollateral,
-                    validatorCollateral.shares,
-                    validatorCollateral.stakedAmount);
-            collateral.rewards += rewardAmount;
-            strategy.rewards += rewardAmount;
-            delegator.shares -= slashedStrategyShares;
-            validatorCollateral.shares -= slashedStrategyShares;
-            delegator.locked -= slashedStrategyShares;
-            validatorCollateral.locked -= slashedStrategyShares;
-            validatorCollateral.stakedAmount -= stakeTokenCollateral;
-            collateral.slashedAmount += receivedAmount;
-            totalSlashed += receivedAmount;
-        }
-        return totalSlashed;
-    }
+    // /**
+    //  * @dev Confiscates delegator collateral deposited to strategy
+    //  * @param _validator Validator address.
+    //  * @param _delegator Delegator address.
+    //  * @param _collateral Collateral address.
+    //  * @param _bpsAmount Basis points to slash.
+    //  */
+    // function _slashDelegatorStrategyDeposits(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) internal returns(uint256) {
+    //     ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
+    //     DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
+    //     Collateral storage collateral = collaterals[_collateral];
+    //     uint256 slashingFraction = _bpsAmount/BPS_DENOMINATOR;
+    //     uint256 totalSlashed;
+    //     for (uint i=0; i<strategyControllerAddresses.length; i++) {
+    //         address _strategyController = strategyControllerAddresses[i];
+    //         Strategy storage strategy = strategies[_strategyController][_collateral];
+    //         uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
+    //         strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //         uint256 _strategyShares = delegator.strategyShares[_strategyController] * slashingFraction;
+    //         uint256 stakeTokenCollateral = DelegatedStakingHelper._calculateFromShares(
+    //             _strategyShares, strategy.totalReserves, strategy.totalShares
+    //         );
+    //         delegator.strategyShares[_strategyController] -= _strategyShares;
+    //         validatorCollateral.strategyShares[_strategyController] -= _strategyShares;
+    //         strategy.totalShares -= _strategyShares;
+    //         IERC20(strategy.strategyToken).safeApprove(_strategyController, 0);
+    //         IERC20(strategy.strategyToken).safeApprove(_strategyController, _strategyShares);
+    //         IStrategy(_strategyController).withdraw(_collateral, _strategyShares);
+    //         uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
+    //         strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
+    //         uint256 rewardAmount = receivedAmount - stakeTokenCollateral;
+    //         uint256 slashedStrategyShares = DelegatedStakingHelper._calculateShares(
+    //                 stakeTokenCollateral,
+    //                 validatorCollateral.shares,
+    //                 validatorCollateral.stakedAmount);
+    //         collateral.rewards += rewardAmount;
+    //         strategy.rewards += rewardAmount;
+    //         delegator.shares -= slashedStrategyShares;
+    //         validatorCollateral.shares -= slashedStrategyShares;
+    //         delegator.locked -= slashedStrategyShares;
+    //         validatorCollateral.locked -= slashedStrategyShares;
+    //         validatorCollateral.stakedAmount -= stakeTokenCollateral;
+    //         collateral.slashedAmount += receivedAmount;
+    //         totalSlashed += receivedAmount;
+    //     }
+    //     return totalSlashed;
+    // }
 
     /**
      * @dev Updates slashing treasury address.
@@ -1127,31 +1127,31 @@ contract DelegatedStaking is Initializable,
         emit UpdateRewardWeight(_validator, _value);
     }
 
-    /**
-     * @dev Add a new strategy controller
-     * @param _strategyController Strategy controller address
-     */
-    function addStrategyController(address _strategyController) external onlyAdmin {
-        if (strategyControllerExists[_strategyController]) revert AlreadyExists();
-        strategyControllerAddresses.push(_strategyController);
-        strategyControllerExists[_strategyController] = true;
-    }
+    // /**
+    //  * @dev Add a new strategy controller
+    //  * @param _strategyController Strategy controller address
+    //  */
+    // function addStrategyController(address _strategyController) external onlyAdmin {
+    //     if (strategyControllerExists[_strategyController]) revert AlreadyExists();
+    //     strategyControllerAddresses.push(_strategyController);
+    //     strategyControllerExists[_strategyController] = true;
+    // }
 
-    /**
-     * @dev Add a new strategy
-     * @param _strategyController address to strategy
-     * @param _stakeToken collateralId of stakeToken
-     * @param _rewardToken collateralId of rewardToken
-     */
-    function addStrategy(address _strategyController, address _stakeToken, address _rewardToken) external onlyAdmin {
-        Strategy storage strategy = strategies[_strategyController][_stakeToken];
-        if (strategy.exists)  revert AlreadyExists();
-        strategy.stakeToken = _stakeToken;
-        strategy.strategyToken = IStrategy(_strategyController).strategyToken(_stakeToken);
-        strategy.rewardToken = _rewardToken;
-        strategy.isEnabled = true;
-        strategy.exists = true;
-    }
+    // /**
+    //  * @dev Add a new strategy
+    //  * @param _strategyController address to strategy
+    //  * @param _stakeToken collateralId of stakeToken
+    //  * @param _rewardToken collateralId of rewardToken
+    //  */
+    // function addStrategy(address _strategyController, address _stakeToken, address _rewardToken) external onlyAdmin {
+    //     Strategy storage strategy = strategies[_strategyController][_stakeToken];
+    //     if (strategy.exists)  revert AlreadyExists();
+    //     strategy.stakeToken = _stakeToken;
+    //     strategy.strategyToken = IStrategy(_strategyController).strategyToken(_stakeToken);
+    //     strategy.rewardToken = _rewardToken;
+    //     strategy.isEnabled = true;
+    //     strategy.exists = true;
+    // }
 
     // /**
     //  * @dev enable strategy
@@ -1368,12 +1368,12 @@ contract DelegatedStaking is Initializable,
 
     /* ========== VIEW ========== */
 
-    /**
-     * @dev checks strategy reserves
-     * @param _strategyController Strategy controller address
-     * @param _validator Validator address
-     * @param _collateral Collateral address
-     */
+    // /**
+    //  * @dev checks strategy reserves
+    //  * @param _strategyController Strategy controller address
+    //  * @param _validator Validator address
+    //  * @param _collateral Collateral address
+    //  */
     // NOTE: this doesnt work for multiple validators staked to same strategy as the gain/loss needs to be shared between them
     // function _checkReserves(address _strategyController, address _validator, address _collateral) internal {
     //     Strategy storage strategy = strategies[_strategyController][_collateral];
@@ -1401,20 +1401,20 @@ contract DelegatedStaking is Initializable,
     //     }
     // }
 
-    /**
-     * @dev Get price per share
-     * @param _strategy Address of strategy
-     * @param _collateral Address of collateral
-     */
-    function getPricePerFullStrategyShare(address _strategy, address _stakeToken, address _collateral)
-        external
-        view
-        returns (uint256)
-    {
-        if (strategies[_strategy][_stakeToken].totalShares == 0) revert ZeroAmount();
-        uint256 totalStrategyTokenReserves = IStrategy(_strategy).updateReserves(address(this), _collateral);
-        return totalStrategyTokenReserves/strategies[_strategy][_stakeToken].totalShares;
-    }
+    // /**
+    //  * @dev Get price per share
+    //  * @param _strategy Address of strategy
+    //  * @param _collateral Address of collateral
+    //  */
+    // function getPricePerFullStrategyShare(address _strategy, address _stakeToken, address _collateral)
+    //     external
+    //     view
+    //     returns (uint256)
+    // {
+    //     if (strategies[_strategy][_stakeToken].totalShares == 0) revert ZeroAmount();
+    //     uint256 totalStrategyTokenReserves = IStrategy(_strategy).updateReserves(address(this), _collateral);
+    //     return totalStrategyTokenReserves/strategies[_strategy][_stakeToken].totalShares;
+    // }
 
     /**
      * @dev Get price per validator share
@@ -1473,14 +1473,14 @@ contract DelegatedStaking is Initializable,
         return getWithdrawalRequests[_validator].withdrawals[_withdrawalId];
     }
 
-    /**
-     * @dev Get strategy info
-     * @param _strategy Strategy address
-     * @param _stakeToken Stake token address
-     */
-    function getStrategy(address _strategy, address _stakeToken) external view returns (Strategy memory) {
-        return strategies[_strategy][_stakeToken];
-    }
+    // /**
+    //  * @dev Get strategy info
+    //  * @param _strategy Strategy address
+    //  * @param _stakeToken Stake token address
+    //  */
+    // function getStrategy(address _strategy, address _stakeToken) external view returns (Strategy memory) {
+    //     return strategies[_strategy][_stakeToken];
+    // }
 
     /**
      * @dev get delegator, collateral and protocol rewards
@@ -1539,44 +1539,44 @@ contract DelegatedStaking is Initializable,
          );
     }
 
-    /**
-     * @dev Get total stake to strategy: returns total reserve amount, total shares and total rewards
-     * @param _strategy Address of strategy
-     */
-    function getStrategyStakes(address _strategy, address _stakeToken) external view returns(uint256, uint256, uint256) {
-        return (
-            strategies[_strategy][_stakeToken].totalReserves,
-            strategies[_strategy][_stakeToken].totalShares,
-            strategies[_strategy][_stakeToken].rewards
-        );
-    }
+    // /**
+    //  * @dev Get total stake to strategy: returns total reserve amount, total shares and total rewards
+    //  * @param _strategy Address of strategy
+    //  */
+    // function getStrategyStakes(address _strategy, address _stakeToken) external view returns(uint256, uint256, uint256) {
+    //     return (
+    //         strategies[_strategy][_stakeToken].totalReserves,
+    //         strategies[_strategy][_stakeToken].totalShares,
+    //         strategies[_strategy][_stakeToken].rewards
+    //     );
+    // }
 
-    /**
-     * @dev Gets total strategy shares for validator
-     * @param _validator Validator address
-     * @param _strategy Strategy address
-     */
-    function getStrategyDepositInfo(address _validator, address _strategy, address _stakeToken)
-        external
-        view
-        returns(uint256)
-    {
-        return getValidatorInfo[_validator].collateralPools[_stakeToken].strategyShares[_strategy];
-    }
+    // /**
+    //  * @dev Gets total strategy shares for validator
+    //  * @param _validator Validator address
+    //  * @param _strategy Strategy address
+    //  */
+    // function getStrategyDepositInfo(address _validator, address _strategy, address _stakeToken)
+    //     external
+    //     view
+    //     returns(uint256)
+    // {
+    //     return getValidatorInfo[_validator].collateralPools[_stakeToken].strategyShares[_strategy];
+    // }
 
-    /**
-     * @dev Gets delegator strategy shares
-     * @param _validator Validator address
-     * @param _delegator Delegator address
-     * @param _strategy Strategy address
-     */
-    function getStrategyDepositInfo(address _validator, address _delegator, address _strategy, address _stakeToken)
-        external
-        view
-        returns(uint256)
-    {
-        return getValidatorInfo[_validator].collateralPools[_stakeToken].delegators[_delegator].strategyShares[_strategy];
-    }
+    // /**
+    //  * @dev Gets delegator strategy shares
+    //  * @param _validator Validator address
+    //  * @param _delegator Delegator address
+    //  * @param _strategy Strategy address
+    //  */
+    // function getStrategyDepositInfo(address _validator, address _delegator, address _strategy, address _stakeToken)
+    //     external
+    //     view
+    //     returns(uint256)
+    // {
+    //     return getValidatorInfo[_validator].collateralPools[_stakeToken].delegators[_delegator].strategyShares[_strategy];
+    // }
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {

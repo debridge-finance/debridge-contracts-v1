@@ -491,7 +491,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context("Test management strategies", async () => {
+  context.skip("Test management strategies", async () => {
     it("should add if called by admin", async function () {
       await this.delegatedStaking.addStrategy(this.mockAaveController.address, this.linkToken.address, this.linkToken.address);
       await this.delegatedStaking.addStrategy(this.mockYearnController.address, this.linkToken.address, this.linkToken.address);
