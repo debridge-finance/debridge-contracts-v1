@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -45,6 +45,9 @@ library DelegatedStakingHelper {
         pure
         returns(uint256)
     {
+        if (_totalShares == 0) {
+            return 0;
+        }
         return _shares * _totalAmount / _totalShares;
     }
 }
@@ -54,6 +57,7 @@ contract DelegatedStaking is Initializable,
                          PausableUpgradeable,
                          ReentrancyGuardUpgradeable
 {
+    uint256 public constant UINT_MAX_VALUE = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
     using SafeERC20 for IERC20;
 
     struct RewardInfo {
@@ -111,7 +115,6 @@ contract DelegatedStaking is Initializable,
         uint256 maxStakeAmount; // maximum stake for each validator's collateral
         uint8 decimals;
         bool isEnabled;
-        bool isUSDStable;
         bool exists;
     }
 
@@ -160,6 +163,7 @@ contract DelegatedStaking is Initializable,
     error RequestPaused(uint256 id);
     error Timelock();
     error AlreadyExists();
+    error NotExists();
     error ZeroAmount();
     error ZeroAddress();
     error WrongAmount();
@@ -171,6 +175,15 @@ contract DelegatedStaking is Initializable,
         _;
     }
 
+    modifier collateralEnabled(address _collateral) {
+        if (!collaterals[_collateral].isEnabled) revert CollateralDisabled();
+        _;
+    }
+
+    modifier notZeroAddress(address _address) {
+        if (_address == address(0)) revert ZeroAddress();
+        _;
+    }
     /* ========== Events ========== */
 
     event Staked(address sender, address receiver, address validator, address collateral, uint256 stakeAmount, uint256 receivedShares);
@@ -187,7 +200,6 @@ contract DelegatedStaking is Initializable,
     event ValidatorRewardsExchanged(
         address _validator,
         address _admin,
-        address _caller,
         address _collateral,
         uint256 _rewardAmount);
 
@@ -249,7 +261,11 @@ contract DelegatedStaking is Initializable,
     ) public initializer {
         // Grant the contract deployer the default admin role: it will be able
         // to grant and revoke any roles
-        if (_slashingTreasury == address(0)) revert ZeroAddress();
+        if (_slashingTreasury == address(0)
+            || address(_swapProxy) == address(0)
+            || address(_priceConsumer) == address(0)) revert ZeroAddress();
+        if (_withdrawTimelock == 0) revert WrongAmount();
+
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         withdrawTimelock = _withdrawTimelock;
         priceConsumer = _priceConsumer;
@@ -270,13 +286,17 @@ contract DelegatedStaking is Initializable,
         address _validator,
         address _collateral,
         uint256 _amount
-    ) external nonReentrant whenNotPaused {
+    ) external
+        nonReentrant
+        whenNotPaused
+        collateralEnabled(_collateral)
+        notZeroAddress(_receiver)
+    {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         if (validator.delegatorActionPaused) revert DelegatorActionPaused();
         Collateral storage collateral = collaterals[_collateral];
-        if (!collateral.isEnabled) revert CollateralDisabled();
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
-        if (validatorCollateral.stakedAmount + _amount > collateral.maxStakeAmount) revert CollateralLimited();
+        if (validatorCollateral.stakedAmount + _amount > collaterals[_collateral].maxStakeAmount) revert CollateralLimited();
         DelegatorsInfo storage delegator = validatorCollateral.delegators[_receiver];
 
         IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
@@ -316,7 +336,11 @@ contract DelegatedStaking is Initializable,
         address _collateral,
         address _recipient,
         uint256 _shares
-    ) external nonReentrant whenNotPaused {
+    ) external
+        nonReentrant
+        whenNotPaused
+        notZeroAddress(_recipient)
+    {
         console.log("requestUnstake _validator %s", _validator);
         console.log("requestUnstake _collateral %s", _collateral);
         ValidatorInfo storage validator = getValidatorInfo[_validator];
@@ -325,16 +349,23 @@ contract DelegatedStaking is Initializable,
         WithdrawalRequests storage withdrawalRequests =  getWithdrawalRequests[_validator];
         DelegatorsInfo storage delegator = validatorCollateral.delegators[msg.sender];
 
-        if (_shares > delegator.shares) {
+
+        //if amount is equal to uint(-1), the user wants to redeem everything
+        if(_shares == UINT_MAX_VALUE){
             _shares = delegator.shares;
             console.log("set max delegators shares %s", _shares);
+        } else if (_shares > delegator.shares) {
+            revert WrongAmount();
         }
+
         console.log("requestUnstake _shares %s", _shares);
 
         uint256 withdrawTokenAmount = DelegatedStakingHelper._calculateFromShares(
             _shares, validatorCollateral.stakedAmount,
             validatorCollateral.shares
         );
+
+        if (withdrawTokenAmount == 0) revert ZeroAmount();
 
         delegator.shares -= _shares;
         console.log("new  delegator.shares %s", delegator.shares);
@@ -616,8 +647,11 @@ contract DelegatedStaking is Initializable,
     function sendRewards(
         address _rewardToken,
         uint256 _amount
-    ) external nonReentrant whenNotPaused {
-        if (!collaterals[_rewardToken].isEnabled) revert CollateralDisabled();
+    ) external
+        nonReentrant
+        whenNotPaused
+        collateralEnabled(_rewardToken)
+    {
         IERC20(_rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
         getRewardsInfo[_rewardToken].totalAmount += _amount;
 
@@ -629,7 +663,7 @@ contract DelegatedStaking is Initializable,
      * @param _rewardToken address of reward token
      * @param _rewardAmount amount of reward token
      */
-    function _calculateValidatorRewards(address _rewardToken, uint256 _rewardAmount
+    function _calculateAndUpdateValidatorRewards(address _rewardToken, uint256 _rewardAmount
     ) internal returns (uint256[] memory, uint256[][] memory) {
         uint256 collateralLength = collateralAddresses.length;
         uint256[] memory collectedRewards = new uint256[](collateralLength);
@@ -671,9 +705,12 @@ contract DelegatedStaking is Initializable,
      * @dev Distributes validator rewards to validator/delegators
      * @param _rewardToken address of reward token
      */
-    function distributeValidatorRewards(address _rewardToken) external nonReentrant whenNotPaused {
-        if (!collaterals[_rewardToken].isEnabled) revert CollateralDisabled();
-
+    function distributeValidatorRewards(address _rewardToken)
+        external
+        nonReentrant
+        whenNotPaused
+        collateralEnabled(_rewardToken)
+    {
         RewardInfo storage rewardInfo = getRewardsInfo[_rewardToken];
         uint256 _rewardAmount = rewardInfo.totalAmount - rewardInfo.distributed;
         if (_rewardAmount == 0) revert ZeroAmount();
@@ -703,7 +740,7 @@ contract DelegatedStaking is Initializable,
         // uint256[] memory collectedRewards = new uint256[](collateralAddresses.length);
         // uint256[][] memory validatorRewards = new uint256[][](validatorAddresses.length);
         (uint256[] memory collectedRewards, uint256[][] memory validatorRewards) =
-            _calculateValidatorRewards(_rewardToken, _rewardAmount);
+            _calculateAndUpdateValidatorRewards(_rewardToken, _rewardAmount);
 
         for (uint256 cc=0; cc<collateralAddresses.length; cc++) {
             address currentCollateral = collateralAddresses[cc];
@@ -749,6 +786,7 @@ contract DelegatedStaking is Initializable,
         DelegatorsInfo storage admin = validatorCollateral.delegators[validator.admin];
         uint256 rewardAmount = validatorCollateral.rewardsForWithdrawal;
         uint256 rewardShares = DelegatedStakingHelper._calculateShares(rewardAmount, validatorCollateral.shares, validatorCollateral.stakedAmount);
+        if (rewardShares == 0) revert ZeroAmount();
 
         validatorCollateral.rewardsForWithdrawal -= rewardAmount;
         collaterals[_collateral].totalLocked += rewardAmount;
@@ -759,7 +797,6 @@ contract DelegatedStaking is Initializable,
         emit ValidatorRewardsExchanged(
             _validator,
             validator.admin,
-            msg.sender,
             _collateral,
             rewardAmount);
     }
@@ -1002,8 +1039,9 @@ contract DelegatedStaking is Initializable,
      * @dev Updates slashing treasury address.
      * @param _newTreasury New slashing treasury address.
      */
-    function updateSlashingTreasury(address _newTreasury) external onlyAdmin {
-        if (_newTreasury == address(0)) revert ZeroAddress();
+    function updateSlashingTreasury(address _newTreasury) external onlyAdmin
+        notZeroAddress(_newTreasury)
+    {
         slashingTreasury = _newTreasury;
         emit UpdateSlashingTreasury(_newTreasury);
     }
@@ -1020,6 +1058,8 @@ contract DelegatedStaking is Initializable,
         uint256 _profitSharingBPS
     )   external
         onlyAdmin
+        notZeroAddress(_validator)
+        notZeroAddress(_admin)
     {
         if (_profitSharingBPS < minProfitSharingBPS
             || _profitSharingBPS > BPS_DENOMINATOR) revert WrongArgument();
@@ -1041,7 +1081,7 @@ contract DelegatedStaking is Initializable,
      * @param _validator Validator address.
      * @param _isEnabled Is validator enabled.
      */
-    function updateValidator(address _validator, bool _isEnabled) external onlyAdmin {
+    function setValidatorEnabled(address _validator, bool _isEnabled) external onlyAdmin {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         if (!validator.exists || validator.isEnabled == _isEnabled) revert WrongArgument();
         // If we enable validator
@@ -1067,15 +1107,16 @@ contract DelegatedStaking is Initializable,
      */
     function addCollateral(
         address _token,
-        bool _isUSDStable,
         uint256 _maxStakeAmount
-    ) external onlyAdmin {
+    ) external
+        onlyAdmin
+        notZeroAddress(_token)
+    {
         Collateral storage collateral = collaterals[_token];
         if (collateral.exists) revert AlreadyExists();
 
         collateral.exists = true;
         collateral.isEnabled = true;
-        collateral.isUSDStable = _isUSDStable;
         collateral.decimals = ERC20(_token).decimals();
         collateral.maxStakeAmount = _maxStakeAmount;
         collateralAddresses.push(_token);
@@ -1121,6 +1162,8 @@ contract DelegatedStaking is Initializable,
     */
     function updateRewardWeight(address _validator, uint256 _value) external onlyAdmin {
         ValidatorInfo storage validator = getValidatorInfo[_validator];
+        if (!validator.exists) revert NotExists();
+        if (_value == 0) revert WrongAmount();
         weightCoefficientDenominator -= validator.rewardWeightCoefficient;
         validator.rewardWeightCoefficient = _value;
         weightCoefficientDenominator += _value;
@@ -1197,7 +1240,10 @@ contract DelegatedStaking is Initializable,
      * @dev Set Price Consumer
      * @param _priceConsumer address of price consumer
      */
-    function setPriceConsumer(IPriceConsumer _priceConsumer) external onlyAdmin {
+    function setPriceConsumer(IPriceConsumer _priceConsumer) external
+        onlyAdmin
+        notZeroAddress(address(_priceConsumer))
+    {
         priceConsumer = _priceConsumer;
     }
 
@@ -1205,7 +1251,11 @@ contract DelegatedStaking is Initializable,
      * @dev Set swap converter proxy.
      * @param _swapProxy Swap proxy address.
      */
-    function setSwapProxy(ISwapProxy _swapProxy) external onlyAdmin() {
+    function setSwapProxy(ISwapProxy _swapProxy) external
+        onlyAdmin
+        notZeroAddress(address(_swapProxy))
+    {
+        if (address(_swapProxy) == address(0)) revert ZeroAddress();
         swapProxy = _swapProxy;
     }
 
@@ -1214,6 +1264,7 @@ contract DelegatedStaking is Initializable,
      * @param _newTimelock New timelock.
      */
     function setWithdrawTimelock(uint256 _newTimelock) external onlyAdmin {
+        if (_newTimelock == 0) revert WrongAmount();
         withdrawTimelock = _newTimelock;
         emit WithdrawTimelockUpdated(_newTimelock);
     }
@@ -1298,6 +1349,7 @@ contract DelegatedStaking is Initializable,
         address[] calldata _collaterals,
         uint256[] calldata _slashAmounts
     ) external onlyAdmin {
+        if (_collaterals.length != _slashAmounts.length) revert WrongArgument();
         for (uint256 i = 0; i < _collaterals.length; i++) {
             address collateralAddress = _collaterals[i];
             uint256 slashAmount = _slashAmounts[i];
@@ -1323,6 +1375,7 @@ contract DelegatedStaking is Initializable,
         address[] calldata _collaterals,
         uint256[] calldata _slashShares
     ) external onlyAdmin {
+        if (_collaterals.length != _slashShares.length) revert WrongArgument();
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         for (uint256 i = 0; i < _collaterals.length; i++) {
             address collateralAddress = _collaterals[i];

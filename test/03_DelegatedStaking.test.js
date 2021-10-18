@@ -425,18 +425,18 @@ contract("DelegatedStaking", function () {
     it("should update validator", async function () {
       const bobOracle = await this.delegatedStaking.getValidatorInfo(bob);
       assert.equal(bobOracle.isEnabled, true);
-      await this.delegatedStaking.updateValidator(bob, false);
+      await this.delegatedStaking.setValidatorEnabled(bob, false);
       const bobOracleAfter = await this.delegatedStaking.getValidatorInfo(bob);
       assert.equal(bobOracleAfter.isEnabled, false);
-      await this.delegatedStaking.updateValidator(bob, true);
+      await this.delegatedStaking.setValidatorEnabled(bob, true);
       const bobOracleReset = await this.delegatedStaking.getValidatorInfo(bob);
       assert.equal(bobOracleReset.isEnabled, true);
       await expectRevert(
-        this.delegatedStaking.updateValidator(bob, true),
+        this.delegatedStaking.setValidatorEnabled(bob, true),
         "WrongArgument()"
       );
       await expectRevert(
-        this.delegatedStaking.updateValidator(sam, true),
+        this.delegatedStaking.setValidatorEnabled(sam, true),
         "WrongArgument()"
       );
     });
@@ -444,9 +444,9 @@ contract("DelegatedStaking", function () {
 
   context("Test management collaterals", async () => {
     it("should add if called by admin", async function () {
-      await this.delegatedStaking.addCollateral(this.linkToken.address, false, MaxUint256);
-      await this.delegatedStaking.addCollateral(this.usdcToken.address, true, MaxUint256);
-      await this.delegatedStaking.addCollateral(this.usdtToken.address, true, MaxUint256);
+      await this.delegatedStaking.addCollateral(this.linkToken.address, MaxUint256);
+      await this.delegatedStaking.addCollateral(this.usdcToken.address, MaxUint256);
+      await this.delegatedStaking.addCollateral(this.usdtToken.address, MaxUint256);
 
       const linkCollateral = await this.delegatedStaking.collaterals(this.linkToken.address);
       const usdcCollateral = await this.delegatedStaking.collaterals(this.usdcToken.address);
@@ -477,7 +477,7 @@ contract("DelegatedStaking", function () {
     });
     it("should fail if called by non admin", async function () {
       await expectRevert(
-        this.delegatedStaking.connect(eveAccount).addCollateral(this.usdtToken.address, true, MaxUint256),
+        this.delegatedStaking.connect(eveAccount).addCollateral(this.usdtToken.address, MaxUint256),
         "AdminBadRole()"
       );
       await expectRevert(
@@ -961,7 +961,7 @@ contract("DelegatedStaking", function () {
         const prevDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
         const balanceBefore = toBN(await collateralToken.balanceOf(delegarorAddress));
         //Unstake all link shares
-        let unstakeTx = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, collateralAddress, alice, "7777777777777777777777");//prevDelegatorsInfo.shares.toString());
+        let unstakeTx = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, collateralAddress, alice, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");//prevDelegatorsInfo.shares.toString());
         const balanceAfter = toBN(await collateralToken.balanceOf(delegarorAddress));
         const currentDelegatorsInfo = await this.delegatedStaking.getDelegatorsInfo(validatorAddress, collateralAddress, delegarorAddress);
         let receipt = await unstakeTx.wait();
@@ -976,7 +976,7 @@ contract("DelegatedStaking", function () {
 
 
         console.log("unstakeTxLINK: -------------------------------------------- ");
-        let unstakeTxLINK = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, this.linkToken.address, alice, "7777777777777777777777");//prevDelegatorsInfo.shares.toString());
+        let unstakeTxLINK = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, this.linkToken.address, alice, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");//prevDelegatorsInfo.shares.toString());
         receipt = await unstakeTxLINK.wait();
         //console.log(receipt);
         unstakeRequestedEvent = receipt.events?.find((x) => { return x.event == "UnstakeRequested" });
@@ -984,7 +984,7 @@ contract("DelegatedStaking", function () {
         console.log("tokenAmount: " + unstakeRequestedEvent.args.tokenAmount.toString());
         console.log("index: " + unstakeRequestedEvent.args.index.toString());
         console.log("unstakeTxUSDC: -------------------------------------------- ");
-        let unstakeTxUSDC = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, this.usdcToken.address, alice, "7777777777777777777777");//prevDelegatorsInfo.shares.toString());
+        let unstakeTxUSDC = await this.delegatedStaking.connect(delegarorAccount).requestUnstake(bob, this.usdcToken.address, alice, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");//prevDelegatorsInfo.shares.toString());
         receipt = await unstakeTxUSDC.wait();
         //console.log(receipt);
         unstakeRequestedEvent = receipt.events?.find((x) => { return x.event == "UnstakeRequested" });
@@ -1175,7 +1175,7 @@ contract("DelegatedStaking", function () {
   // });
 
   context("Test request unstaking of different amounts by oracle", async () => {
-    it("should unstake 0 tokens", async function () {
+    it.skip("should unstake 0 tokens", async function () {
       const amount = 0;
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
@@ -1202,8 +1202,8 @@ contract("DelegatedStaking", function () {
       );
     });
 
-    it("unstaking all balance in case of unstaking greater than balance", async function () {
-      const amount = toWei("3200000");
+    it("unstaking all balance in case of UINT_MAX_VALUE", async function () {
+      const amount = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
       const prevStakerBalance = await prevCollateral.delegators;
@@ -1227,7 +1227,7 @@ contract("DelegatedStaking", function () {
       await this.delegatedStaking.connect(eveAccount).stake(eveAccount.address, david, collateral, amount);
     });
 
-    it("should unstake 0 tokens", async function () {
+    it.skip("should unstake 0 tokens", async function () {
       const amount = 0;
       const collateral = this.linkToken.address;
       const prevCollateral = await this.delegatedStaking.collaterals(collateral);
