@@ -4,9 +4,11 @@ import {LendingPoolAddressesProvider} from "./LendingPoolAddressesProvider.sol";
 import {MockAToken} from "./MockAToken.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {WadRayMath} from "./libraries/WadRayMath.sol";
 
 contract LendingPool {
     using SafeERC20 for IERC20;
+    using WadRayMath for uint256;
 
     struct ReserveData {
         //stores the reserve configuration
@@ -42,6 +44,8 @@ contract LendingPool {
 
     event Withdraw(address asset, address user, address onBehalfOf, uint256 amount);
 
+    uint256 public currentTime;
+    uint256 internal constant SECONDS_PER_YEAR = 365 days;
     LendingPoolAddressesProvider public _addressesProvider;
     mapping(address => ReserveData) internal _reserves;
 
@@ -52,9 +56,9 @@ contract LendingPool {
     function addReserveAsset(address underlyingAsset, address aTokenAddress) public {
         _reserves[underlyingAsset] = ReserveData(
             false,
-            0,
-            0,
-            0,
+            1000888888888888888888888888,
+            0,  
+            1001999999999999999999999999,
             0,
             0,
             0,
@@ -91,16 +95,16 @@ contract LendingPool {
 
         address aToken = reserve.aTokenAddress;
 
-        uint256 userBalance = MockAToken(aToken).balanceOf(to);
+        uint256 userBalance = MockAToken(aToken).balanceOfAToken(msg.sender);
         uint256 amountToWithdraw = amount;
 
-        if (amount == type(uint256).max) {
+        if (amount == type(uint256).max || amount > userBalance) {
             amountToWithdraw = userBalance;
         }
 
-        MockAToken(aToken).burn(to, to, amountToWithdraw, reserve.liquidityIndex);
+        MockAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
-        emit Withdraw(asset, to, to, amountToWithdraw);
+        emit Withdraw(asset, msg.sender, to, amountToWithdraw);
 
         return amountToWithdraw;
     }
@@ -108,4 +112,51 @@ contract LendingPool {
     function getReserveData(address asset) external view returns (ReserveData memory) {
         return _reserves[asset];
     }
+
+    function getReserveNormalizedIncome(address asset)
+        external
+        view
+    returns (uint256) 
+    {
+        ReserveData storage reserve = _reserves[asset];
+        uint40 timestamp = reserve.lastUpdateTimestamp;
+
+        //solium-disable-next-line
+        if (timestamp == _now()) {
+        //if the index was updated in the same block, no need to perform any calculation
+        return reserve.liquidityIndex;
+        }
+        
+        uint256 cumulated =
+        calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(
+            reserve.liquidityIndex
+        );
+
+        return cumulated;
+    }
+
+
+    function calculateLinearInterest(uint256 rate, uint40 lastUpdateTimestamp)
+        internal
+        view
+        returns (uint256)
+    {
+        //solium-disable-next-line
+        uint256 timeDifference = _now() - uint256(lastUpdateTimestamp);
+
+        return (rate * timeDifference / SECONDS_PER_YEAR) + WadRayMath.ray();
+    }
+
+    function setCurrentTime(uint256 _currentTime) public {
+        currentTime = _currentTime;
+    }
+
+    function increaseCurrentTime(uint256 _timeDelta) public {
+        currentTime = currentTime + _timeDelta;
+    }
+
+    function _now() virtual internal view returns (uint256) {
+        return currentTime;
+    }
+
 }

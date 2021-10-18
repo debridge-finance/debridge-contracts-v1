@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -7,11 +7,11 @@ import "../interfaces/IUniswapV2ERC20.sol";
 import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IPriceConsumer.sol";
-import "hardhat/console.sol";
 
-contract PriceConsumer is IPriceConsumer, Ownable, Initializable {
+contract MockPriceConsumer is IPriceConsumer, Ownable, Initializable {
     address public weth;
     address public factory;
+    mapping(address => uint256) public priceFeeds;
 
     function initialize(address _weth, address _factory) public initializer {
         weth = _weth;
@@ -23,12 +23,11 @@ contract PriceConsumer is IPriceConsumer, Ownable, Initializable {
      * @param _token address of token
      */
     function getPriceOfTokenInWETH(address _token) external view override returns (uint256) {
-        return getRate(_token, weth);
+        return priceFeeds[_token];
     }
 
     /**
-     * @dev get Price of Token in another token.
-     * returns price in decimals of quote token
+     * @dev get Price of Token in another token
      * @param _base address of base token
      * @param _quote address of quote token
      * ETH/USD = 3000 (ETH is base, USD is quote)
@@ -62,5 +61,9 @@ contract PriceConsumer is IPriceConsumer, Ownable, Initializable {
     function getPairAddress(address _token0, address _token1) public view override returns (address) {
         IUniswapV2Factory factory = IUniswapV2Factory(factory);
         return factory.getPair(_token0, _token1);
+    }
+
+    function addPriceFeed(address _token, uint256 _price) external onlyOwner {
+        priceFeeds[_token] = _price;
     }
 }

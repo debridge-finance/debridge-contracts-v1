@@ -48,6 +48,15 @@ module.exports = {
         }
       },
       {
+        version: "0.8.7",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      {
         version: "0.6.11",
         settings: {
           optimizer: {
@@ -70,7 +79,7 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      accounts:{mnemonic:process.env.MNEMONIC},
+      accounts:{mnemonic:process.env.MNEMONIC, count: 300},
       chainId: 1
     },
     development: {
@@ -118,6 +127,6 @@ module.exports = {
       gasPrice: 51e9,
       gas: 6.9e6,
       chainId: 1
-    },
+    }
   },
 }
