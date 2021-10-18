@@ -18,13 +18,11 @@ contract("AaveController (AaveInteractor)", function () {
     this.LendingPoolFactory = await ethers.getContractFactory("LendingPool");
     this.AddressesProviderFactory = await ethers.getContractFactory("LendingPoolAddressesProvider");
 
-    this.AaveControllerFactory = await ethers.getContractFactory("AaveInteractor");
+    this.AaveControllerFactory = await ethers.getContractFactory("AaveController");
+    this.IncentivesControllerFactory = await ethers.getContractFactory("IncentivesController");
   });
 
   beforeEach(async function () {
-    this.uToken = await this.TokenFactory.deploy("uToken", "uTKN", 18);
-    this.aToken = await this.TokenAFactory.deploy("aToken", "aTKN", 18, this.uToken.address);
-
     this.addressProvider = await this.AddressesProviderFactory.deploy();
     await this.addressProvider.deployed();
 
@@ -36,6 +34,21 @@ contract("AaveController (AaveInteractor)", function () {
     this.lendingPool = await this.LendingPoolFactory.deploy();
     await this.lendingPool.deployed();
     await this.lendingPool.initialize(this.addressProvider.address);
+
+    this.stkAAVEToken = await this.TokenFactory.deploy("Staked AAVE Token", "stkAAVE", 18);
+    this.incentivesController = await this.IncentivesControllerFactory.deploy(this.stkAAVEToken.address);
+
+    this.uToken = await this.TokenFactory.deploy("uToken", "uTKN", 18);
+
+    this.aToken = await this.TokenAFactory.deploy(
+      this.lendingPool.address,
+      this.incentivesController.address,
+      "aToken",
+      "aTKN",
+      18,
+      this.uToken.address
+    );
+
     await this.addressProvider.setLendingPool(this.lendingPool.address);
     await this.lendingPool.addReserveAsset(this.uToken.address, this.aToken.address);
 
@@ -51,7 +64,7 @@ contract("AaveController (AaveInteractor)", function () {
       expect(await this.aaveController.lendingPool()).to.equal(this.lendingPool.address);
     });
     it("has atoken", async function () {
-      expect(await this.aaveController.aToken(this.uToken.address)).to.equal(this.aToken.address);
+      expect(await this.aaveController.strategyToken(this.uToken.address)).to.equal(this.aToken.address);
     });
     it("asset configured", async function () {
       expect((await this.lendingPool.getReserveData(this.uToken.address)).aTokenAddress).to.equal(
@@ -85,9 +98,10 @@ contract("AaveController (AaveInteractor)", function () {
         .to.emit(this.aToken, "Transfer")
         .withArgs(ZERO_ADDRESS, this.alice.address, this.depositAmount);
 
+      const reserve = await this.lendingPool.getReserveData(this.uToken.address);
       await expect(this.depositTx)
         .to.emit(this.aToken, "Mint")
-        .withArgs(this.alice.address, this.depositAmount, 0);
+        .withArgs(this.alice.address, this.depositAmount, reserve.liquidityIndex);
     });
 
     it("uToken transferred and aToken paid back", async function () {
@@ -107,7 +121,7 @@ contract("AaveController (AaveInteractor)", function () {
       beforeEach(async function () {
         this.withdrawAmount = 50;
         this.withdrawTx = await this.aaveController.withdraw(
-          this.aToken.address,
+          this.uToken.address,
           this.withdrawAmount
         );
       });
@@ -117,18 +131,23 @@ contract("AaveController (AaveInteractor)", function () {
           .to.emit(this.lendingPool, "Withdraw")
           .withArgs(
             this.uToken.address,
-            this.alice.address,
+            this.aaveController.address,
             this.alice.address,
             this.withdrawAmount
           );
 
         await expect(this.withdrawTx)
           .to.emit(this.aToken, "Transfer")
-          .withArgs(this.alice.address, ZERO_ADDRESS, this.withdrawAmount);
+          .withArgs(this.aaveController.address, ZERO_ADDRESS, this.withdrawAmount);
 
+        const reserve = await this.lendingPool.getReserveData(this.uToken.address);
         await expect(this.withdrawTx)
           .to.emit(this.aToken, "Burn")
-          .withArgs(this.alice.address, this.alice.address, this.withdrawAmount, 0);
+          .withArgs(
+            this.aaveController.address,
+            this.alice.address,
+            this.withdrawAmount,
+            reserve.liquidityIndex);
       });
 
       it("aToken and uToken balances are correct ", async function () {
@@ -142,7 +161,7 @@ contract("AaveController (AaveInteractor)", function () {
 
       describe("after all remaining aTokens withdrawn", function () {
         beforeEach(async function () {
-          this.withdrawAllTx = await this.aaveController.withdrawAll(this.aToken.address);
+          this.withdrawAllTx = await this.aaveController.withdrawAll(this.uToken.address);
         });
 
         it("events emitted", async function () {
@@ -150,22 +169,23 @@ contract("AaveController (AaveInteractor)", function () {
             .to.emit(this.lendingPool, "Withdraw")
             .withArgs(
               this.uToken.address,
-              this.alice.address,
+              this.aaveController.address,
               this.alice.address,
               this.depositAmount - this.withdrawAmount
             );
 
           await expect(this.withdrawAllTx)
             .to.emit(this.aToken, "Transfer")
-            .withArgs(this.alice.address, ZERO_ADDRESS, 150);
+            .withArgs(this.aaveController.address, ZERO_ADDRESS, 150);
 
+          const reserve = await this.lendingPool.getReserveData(this.uToken.address);
           await expect(this.withdrawAllTx)
             .to.emit(this.aToken, "Burn")
             .withArgs(
-              this.alice.address,
+              this.aaveController.address,
               this.alice.address,
               this.depositAmount - this.withdrawAmount,
-              0
+              reserve.liquidityIndex,
             );
         });
 

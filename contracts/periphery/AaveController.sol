@@ -10,7 +10,7 @@ import "../interfaces/aave/IAToken.sol";
 import "../interfaces/IStrategy.sol";
 
 contract AaveController is IStrategy {
-    
+
   using SafeERC20 for IERC20;
 
   address public lendingPoolProvider;
@@ -34,11 +34,11 @@ contract AaveController is IStrategy {
     return newATokenAddress;
   }
 
-  function updateReserves(address _account, address _token) 
-    external 
-    view 
-    override 
-    returns (uint256) 
+  function updateReserves(address _account, address _token)
+    external
+    view
+    override
+    returns (uint256)
   {
     return IERC20(_token).balanceOf(_account);
   }
@@ -85,11 +85,11 @@ contract AaveController is IStrategy {
 
     _collectProtocolToken(aToken, amountToWithdraw/maxAmount);
 
-    require(
-      amountWithdrawn == _amount ||
-      (_amount == type(uint256).max && maxAmount == IERC20(_token).balanceOf(address(this))),
-      "Didn't withdraw requested amount"
-    );
+require(
+  amountWithdrawn == _amount ||
+  (_amount == type(uint256).max && maxAmount == amountWithdrawn),
+  "Didn't withdraw requested amount"
+);
   }
 
   // Collect stkAAVE
