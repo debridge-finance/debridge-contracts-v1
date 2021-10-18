@@ -85,11 +85,11 @@ contract AaveController is IStrategy {
 
     _collectProtocolToken(aToken, amountToWithdraw/maxAmount);
 
-require(
-  amountWithdrawn == _amount ||
-  (_amount == type(uint256).max && maxAmount == amountWithdrawn),
-  "Didn't withdraw requested amount"
-);
+    require(
+      amountWithdrawn == _amount ||
+      (_amount == type(uint256).max && maxAmount == amountWithdrawn),
+      "Didn't withdraw requested amount"
+    );
   }
 
   // Collect stkAAVE
