@@ -152,7 +152,7 @@ interface IDeBridgeGate {
         address indexed receiver,
         uint256 nonce,
         uint256 indexed chainIdFrom,
-        SubmissionAutoParamsFrom autoParams,
+        bytes autoParams,
         bool isNativeToken
     ); // emited once the tokens are withdrawn on native chain
 
