@@ -30,4 +30,8 @@ contract MockStrategy is IStrategy {
     {
         return balance;
     }
+
+    function strategyToken(address token) external view override returns(address){
+        return address(0);
+    }
 }

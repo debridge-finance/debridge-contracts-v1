@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -10,7 +10,7 @@ import "../../interfaces/IStrategy.sol";
 import "hardhat/console.sol";
 
 contract MockYearnController is IStrategy {
-    
+
   using SafeERC20 for IERC20;
 
   address yRegistry;
@@ -33,11 +33,11 @@ contract MockYearnController is IStrategy {
     return underlyingToYToken[_token];
   }
 
-  function updateReserves(address _account, address _token) 
-    external 
-    view 
-    override 
-    returns (uint256) 
+  function updateReserves(address _account, address _token)
+    external
+    view
+    override
+    returns (uint256)
   {
     return MockYToken(_token).balanceOf(_account);
   }

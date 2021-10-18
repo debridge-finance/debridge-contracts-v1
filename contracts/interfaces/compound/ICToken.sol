@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -13,7 +13,7 @@ interface ICToken is IERC20  {
 
     // Accrue interest then return the up-to-date exchange rate
     function exchangeRateCurrent() external returns (uint);
-    
+
     // Calculates the exchange rate from the underlying to the CToken
     // This function does not accrue interest before calculating the exchange rate
     function exchangeRateStored() external view returns (uint);

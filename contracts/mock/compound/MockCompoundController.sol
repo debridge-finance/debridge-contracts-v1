@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -31,11 +31,11 @@ contract MockCompoundController is IStrategy {
     return underlyingToCToken[_token];
   }
 
-  function updateReserves(address _account, address _token) 
-    external 
-    view 
-    override 
-    returns (uint256) 
+  function updateReserves(address _account, address _token)
+    external
+    view
+    override
+    returns (uint256)
   {
     return IERC20(_token).balanceOf(_account);
   }
@@ -62,7 +62,7 @@ contract MockCompoundController is IStrategy {
     if (_amount == type(uint256).max || _amount > userBalance) {
         amountToWithdraw = userBalance;
     }
-        
+
     IERC20(cToken).transferFrom(msg.sender, address(this), amountToWithdraw);
     MockCToken(cToken).burn(msg.sender, msg.sender, amountToWithdraw, 0);
 

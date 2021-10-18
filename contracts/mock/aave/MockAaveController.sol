@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -11,9 +11,9 @@ import "./MockAToken.sol";
 import "../../interfaces/IStrategy.sol";
 
 contract MockAaveController is IStrategy {
-    
+
     using SafeERC20 for IERC20;
-    
+
     address public lendingPoolProvider;
     address public protocolDataProvider;
 
@@ -28,18 +28,18 @@ contract MockAaveController is IStrategy {
     function lendingPool() public view returns (address) {
         return LendingPoolAddressesProvider(lendingPoolProvider).getLendingPool();
     }
-    
+
     function strategyToken(address _token) public view override returns (address) {
         (address newATokenAddress,,) =
         AaveProtocolDataProvider(protocolDataProvider).getReserveTokensAddresses(_token);
         return newATokenAddress;
     }
 
-    function updateReserves(address _account, address _token) 
-        external 
-        view 
-        override 
-        returns (uint256) 
+    function updateReserves(address _account, address _token)
+        external
+        view
+        override
+        returns (uint256)
     {
         return IERC20(_token).balanceOf(_account);
     }
@@ -75,7 +75,7 @@ contract MockAaveController is IStrategy {
         if (_amount == type(uint256).max || _amount > userBalance) {
             amountToWithdraw = userBalance;
         }
-        
+
         IERC20(aToken).transferFrom(msg.sender, address(this), amountToWithdraw);
 
         uint256 amountWithdrawn = LendingPool(lendPool).withdraw(
