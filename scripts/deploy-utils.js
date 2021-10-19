@@ -2,6 +2,13 @@ const fs = require("fs");
 const hre = require("hardhat");
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
 
+// TODO: don't hardcode flag values, get from Flags library directly
+const FLAGS = {
+  UNWRAP_ETH: 0,
+  REVERT_IF_EXTERNAL_FAIL: 1,
+  PROXY_WITH_SENDER: 2,
+}
+
 const PROXIES_STORE = 'scripts/proxies.json'
 
 /**
@@ -172,6 +179,7 @@ async function getLastDeployedProxy(contractName, deployer, args) {
 }
 
 module.exports = {
+  FLAGS,
   deployProxy,
   getDeployedProxies,
   getLastDeployedProxy

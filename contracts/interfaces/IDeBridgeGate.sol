@@ -77,13 +77,13 @@ interface IDeBridgeGate {
     /// @param _chainIdTo Chain id of the target chain.
     function send(
         address _tokenAddress,
-        bytes memory _receiver,
         uint256 _amount,
         uint256 _chainIdTo,
+        bytes memory _receiver,
         bytes memory _permit,
         bool _useAssetFee,
         uint32 _referralCode,
-        bytes memory _autoParams
+        bytes calldata _autoParams
     ) external payable;
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
@@ -93,12 +93,12 @@ interface IDeBridgeGate {
     /// @param _nonce Submission id.
     function claim(
         bytes32 _debridgeId,
+        uint256 _amount,
         uint256 _chainIdFrom,
         address _receiver,
-        uint256 _amount,
         uint256 _nonce,
-        bytes memory _signatures,
-        bytes memory _autoParams
+        bytes calldata _signatures,
+        bytes calldata _autoParams
     ) external;
 
     function flash(
@@ -140,9 +140,9 @@ interface IDeBridgeGate {
         uint256 indexed chainIdTo,
         uint32 referralCode,
         FeeParams feeParams,
-        SubmissionAutoParamsTo autoParams,
+        bytes autoParams,
         address nativeSender
-        // bool isNativeToken //added to feeParams 
+        // bool isNativeToken //added to feeParams
     ); // emited once the native tokens are locked to be sent to the other chain
 
     event Claimed(
@@ -152,7 +152,7 @@ interface IDeBridgeGate {
         address indexed receiver,
         uint256 nonce,
         uint256 indexed chainIdFrom,
-        SubmissionAutoParamsFrom autoParams,
+        bytes autoParams,
         bool isNativeToken
     ); // emited once the tokens are withdrawn on native chain
 
@@ -166,7 +166,7 @@ interface IDeBridgeGate {
     ); // emited when new asset is supported
     event ChainSupportUpdated(uint256 chainId, bool isSupported); // Emits when the asset is allowed/disallowed to be transferred to the chain.
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
-    event CallProxyUpdated(uint256 version, address callProxy); // emited when the new call proxy set
+    event CallProxyUpdated(uint256 variation, address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(
         bytes32 submissionId,
         bool indexed success,
@@ -185,4 +185,10 @@ interface IDeBridgeGate {
     );
 
     event WithdrawnFee(bytes32 debridgeId, uint256 fee);
+
+    event FixedNativeFeeUpdated(
+        uint256 globalFixedNativeFee,
+        uint256 globalTransferFeeBps);
+
+    event FixedNativeFeeAutoUpdated(uint256 globalFixedNativeFee);
 }

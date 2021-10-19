@@ -10,6 +10,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const uniswapFactory = deployInitParams.external.UniswapFactory || (await deployments.get("UniswapV2Factory")).address;
 
   await deployProxy("FeeProxy", deployer, [uniswapFactory, weth], true);
+
+  //TODO: FeeProxy setTreasury for each chains
+  //TODO: FeeProxy setDeEthToken
+  //TODO: FeeProxy setFeeProxyAddress for each chains
+  //TODO: FeeProxy setFeeProxyAddress for each chains
+  //TODO: FeeProxy add workers
 };
 
 module.exports.tags = ["06_FeeProxy"]

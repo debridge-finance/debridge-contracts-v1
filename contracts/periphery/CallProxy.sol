@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -15,6 +15,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== STATE VARIABLES ========== */
 
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
+    uint256 public variation;
+
 
     /* ========== ERRORS ========== */
 
@@ -32,7 +34,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize() public initializer {
+    function initialize(uint256 _variation) public initializer {
+        variation = _variation;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -117,6 +120,6 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 102; // 1.0.2
     }
 }
