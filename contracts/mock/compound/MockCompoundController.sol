@@ -54,7 +54,6 @@ contract MockCompoundController is IStrategy {
 
   function withdraw(address _token, uint256 _amount) public override {
     address cToken = strategyToken(_token);
-    uint256 maxAmount = IERC20(cToken).balanceOf(msg.sender);
 
     uint256 userBalance = IERC20(cToken).balanceOf(msg.sender);
     uint256 amountToWithdraw = _amount;

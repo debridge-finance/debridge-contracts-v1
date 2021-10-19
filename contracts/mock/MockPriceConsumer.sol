@@ -59,8 +59,8 @@ contract MockPriceConsumer is IPriceConsumer, Ownable, Initializable {
     }
 
     function getPairAddress(address _token0, address _token1) public view override returns (address) {
-        IUniswapV2Factory factory = IUniswapV2Factory(factory);
-        return factory.getPair(_token0, _token1);
+        IUniswapV2Factory _factory = IUniswapV2Factory(factory);
+        return _factory.getPair(_token0, _token1);
     }
 
     function addPriceFeed(address _token, uint256 _price) external onlyOwner {

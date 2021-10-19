@@ -6,7 +6,7 @@ import {LendingPool} from "./LendingPool.sol";
 contract AaveProtocolDataProvider {
     LendingPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
-    constructor(LendingPoolAddressesProvider addressesProvider) public {
+    constructor(LendingPoolAddressesProvider addressesProvider) {
         ADDRESSES_PROVIDER = addressesProvider;
     }
 

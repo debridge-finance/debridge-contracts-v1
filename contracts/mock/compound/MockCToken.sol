@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
 import "./Comptroller.sol";
@@ -64,7 +65,7 @@ contract MockCToken is ERC20 {
         address user,
         uint256 amount,
         uint256 index
-    ) external returns (bool) {
+    ) external {
         accountTokens[user] += amount;
         _mint(user, amount);
 

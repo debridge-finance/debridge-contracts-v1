@@ -46,7 +46,7 @@ contract MockYearnVault is IVault {
         return ERC20(token).decimals();
     }
 
-    function pricePerShare() public view override returns (uint256) {
+    function pricePerShare() public pure override returns (uint256) {
         // TODO: increase current time like aave mocks
         return 15*1e17;
     }
