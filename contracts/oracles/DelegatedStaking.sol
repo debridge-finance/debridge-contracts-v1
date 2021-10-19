@@ -310,6 +310,8 @@ contract DelegatedStaking is
         swapProxy = _swapProxy;
         slashingTreasury = _slashingTreasury;
         minProfitSharingBPS = 5000;
+
+        __ReentrancyGuard_init();
     }
 
     /**

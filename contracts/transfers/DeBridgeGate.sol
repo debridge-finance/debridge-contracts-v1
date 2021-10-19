@@ -160,6 +160,8 @@ contract DeBridgeGate is
         weth = _weth;
         deBridgeTokenDeployer = _deBridgeTokenDeployer;
         feeProxy = _feeProxy;
+
+        __ReentrancyGuard_init();
     }
 
     /* ========== send, claim ========== */
