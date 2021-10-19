@@ -1,11 +1,11 @@
-pragma solidity =0.8.7;
+pragma solidity 0.8.7;
 
 import "../periphery/CallProxy.sol";
 
 contract MockCallProxy is CallProxy {
 
     constructor() {
-        initialize();
+        initialize(0);
     }
 
     function mock_set_gate_role(address gate) public {

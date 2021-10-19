@@ -33,7 +33,7 @@ contract("CallProxy", ()=>{
 
     it('should call version',async()=>{
         let result = await this.callProxy.version();
-        expect(result.toNumber()).to.be.equal(101);
+        expect(result.toNumber()).to.be.equal(102);
     })
 
     it('shoul use call function, fail, external call failed, flags 0', async()=>{
@@ -42,13 +42,13 @@ contract("CallProxy", ()=>{
         functionSigHash = web3.eth.abi.encodeFunctionSignature('mint()');
         await this.callProxy.mock_set_gate_role(alice)
         await expectRevert(this.callProxy.call(
-            bob, 
-            mockWrappedAsset.address, 
-            0, 
-            functionSigHash, 
+            bob,
+            mockWrappedAsset.address,
+            0,
+            functionSigHash,
             '0x00',
             {
-                from:alice, 
+                from:alice,
                 value:ethers.utils.parseEther("1.0")
             }),"ExternalCallFailed()");
     })
@@ -59,13 +59,13 @@ contract("CallProxy", ()=>{
         functionSigHash = web3.eth.abi.encodeFunctionSignature('mint()');
         await this.callProxy.mock_set_gate_role(alice)
         await this.callProxy.call(
-            bob, 
-            mockWrappedAsset.address, 
-            functionSigHash, 
-            2**0, 
+            bob,
+            mockWrappedAsset.address,
+            functionSigHash,
+            2**0,
             '0x00',
             {
-                from:alice, 
+                from:alice,
                 value:ethers.utils.parseEther("1.0")
             });
     })
@@ -76,13 +76,13 @@ contract("CallProxy", ()=>{
         functionSigHash = web3.eth.abi.encodeFunctionSignature('mint(address,uint256)');
         await this.callProxy.mock_set_gate_role(alice)
         await this.callProxy.call(
-            bob, 
-            mockWrappedAsset.address, 
-            functionSigHash, 
-            2**0, 
+            bob,
+            mockWrappedAsset.address,
+            functionSigHash,
+            2**0,
             '0x00',
             {
-                from:alice, 
+                from:alice,
                 value:ethers.utils.parseEther("1.0")
             });
     })
@@ -93,13 +93,13 @@ contract("CallProxy", ()=>{
         functionSigHash = web3.eth.abi.encodeFunctionSignature('mint()');
         await this.callProxy.mock_set_gate_role(alice)
         await this.callProxy.call(
-            bob, 
-            mockWrappedAsset.address, 
-            functionSigHash, 
-            4, 
+            bob,
+            mockWrappedAsset.address,
+            functionSigHash,
+            4,
             '0x00',
             {
-                from:alice, 
+                from:alice,
                 value:ethers.utils.parseEther("1.0")
             });
     })
@@ -110,13 +110,13 @@ contract("CallProxy", ()=>{
         functionSigHash = web3.eth.abi.encodeFunctionSignature('mint()');
         await this.callProxy.mock_set_gate_role(alice)
         await expectRevert(this.callProxy.call(
-            this.callProxy.address, 
-            mockWrappedAsset.address, 
-            functionSigHash, 
-            2**0, 
+            this.callProxy.address,
+            mockWrappedAsset.address,
+            functionSigHash,
+            2**0,
             '0x00',
             {
-                from:alice, 
+                from:alice,
                 value:ethers.utils.parseEther("1.0")
             }),"CallFailed()");
     })

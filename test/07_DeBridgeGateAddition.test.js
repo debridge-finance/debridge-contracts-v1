@@ -20,7 +20,7 @@ const MockTokenABI = artifacts.require("../build/MockToken.json");
 const MockDefiController = artifacts.require("MockDefiControllerOne");
 const MockFeeProxy = artifacts.require("../build/FeeProxy.json");
 const WrappedAssetABI = artifacts.require("../build/DeBridgeToken.json");
-const DefiControllerABI = artifacts.require("../build/DefiController.json"); 
+const DefiControllerABI = artifacts.require("../build/DefiController.json");
 const MockWrappedAsset = artifacts.require("MockDeBridgeToken");
 const MockDeBridgeTokenDeployer = artifacts.require("../build/IDeBridgeTokenDeployer.json");
 //const MockWETHABI = artifacts.require("../build/WETH9.json");
@@ -45,7 +45,7 @@ const { solidityPack } = require("ethers/lib/utils");
 function toBN(number){
     return BigNumber.from(number.toString())
   }
-  
+
 const MAX = web3.utils.toTwosComplement(-1);
 const bobPrivKey =
     "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
@@ -86,7 +86,7 @@ describe('DeBridgeGate', () =>{
         this.amountThreshols = toWei("1000");
         this.minConfirmations = 2;
         this.confirmationThreshold = 5;
-        this.excessConfirmations = 7; 
+        this.excessConfirmations = 7;
 
         this.confirmationAggregator = await ConfirmationAggregator.new(
             this.minConfirmations,
@@ -137,7 +137,7 @@ describe('DeBridgeGate', () =>{
         this.feeProxy = await MockFeeProxy.new(
             this.uniswapFactory.address,
             this.weth.address,
-            this.linkToken.address, 
+            this.linkToken.address,
             {
                 from: alice,
             }
@@ -172,7 +172,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.setCallProxy(1,'0x5B518A7ede2De53668496cb991542BF6a94051C1', {from:alice})
         let result = await this.debridge.callProxyAddresses(1);
         expect(result).to.equal('0x5B518A7ede2De53668496cb991542BF6a94051C1')
-       
+
     })
 
     it('should call an functin that have onlyAdmin modifier, not as admin, should fail', async() => {
@@ -191,7 +191,7 @@ describe('DeBridgeGate', () =>{
     it('should pause deBridgeGate when not pause, then unpause, as admin, should succed', async()=>{
         await this.debridge.mock_set_gov_monitoring(alice);
         await this.debridge.pause({from:alice})
-      
+
         const chainId = 56;
         const chainIdTo = 57;
         const useAssetFee = false;
@@ -214,11 +214,11 @@ describe('DeBridgeGate', () =>{
 
         await expectRevert(this.debridge.send(
             tokenAddress,
-            bob, 
-            10000, 
+            bob,
+            10000,
             chainIdTo,
-            MOCK_PERMIT, 
-            useAssetFee, 
+            MOCK_PERMIT,
+            useAssetFee,
             referralCode,
             autoParamas,
             {from:alice, value:toWei('1')}
@@ -228,11 +228,11 @@ describe('DeBridgeGate', () =>{
 
         await expect(this.debridge.send(
             tokenAddress,
-            bob, 
-            10000, 
+            bob,
+            10000,
             chainIdTo,
-            MOCK_PERMIT, 
-            useAssetFee, 
+            MOCK_PERMIT,
+            useAssetFee,
             referralCode,
             [],
             {from:alice, value:toWei('1')}
@@ -259,7 +259,7 @@ describe('DeBridgeGate', () =>{
         let debridgeAfter = await this.debridge.getDebridge(debridgeId);
 
         expect(debridgeBefore.lockedInStrategies.toNumber()).to.be.above(debridgeAfter.lockedInStrategies.toNumber())
-        
+
     })
 
     it('should call return reserve as DefiController, should fail, debridge not found', async()=>{
@@ -269,7 +269,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_deFiController(alice)
         await this.debridge.mock_set_deBridgeInfo(debridgeId, tokenAddress, chainId, 1,1,1,1,1,1,true, {from:alice})
         await expectRevert(this.debridge.returnReserves(tokenAddress, 100, {from:alice}),"DebridgeNotFound()");
-        
+
     })
 
     it('should update asset fixed fees, as admin, should succeed', async()=>{
@@ -283,7 +283,7 @@ describe('DeBridgeGate', () =>{
             let chainFee = await this.debridge.get_chain_fee_map(debridgeId, supportedChainIds[i])
             expect(chainFee).to.be.equal(assetFees[i])
         }
-        
+
     })
 
     it('should update chain support, as admin, should succeed', async()=>{
@@ -291,8 +291,8 @@ describe('DeBridgeGate', () =>{
         const chainSupport=[1,true,1]
         const chainSupportInfos=[chainSupport,chainSupport,chainSupport]
         await expect(this.debridge.updateChainSupport(
-            supportedChainIds, 
-            chainSupportInfos, 
+            supportedChainIds,
+            chainSupportInfos,
             {
                 from:alice
             }
@@ -321,8 +321,8 @@ describe('DeBridgeGate', () =>{
         await this.dbrToken.mint(flashReceiver.address,'100000000000000000000');
         await this.dbrToken.mint(this.debridge.address,'100000000000000000000');
         await flashReceiver.doFlashLoan(
-            this.debridge.address, 
-            '25000000000000000000', 
+            this.debridge.address,
+            '25000000000000000000',
             '0x00'
         );
     })
@@ -375,7 +375,7 @@ describe('DeBridgeGate', () =>{
         above(debridgeBefore.lockedInStrategies.toNumber())
     })
 
- 
+
     it('should call send , as admin, use asset fee true should fail amount lower then transferFee amount not cover fes', async()=>{
         const chainId = 1;
         const chainIdTo = 57;
@@ -399,15 +399,15 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_disctounInfoFixBps(alice,10);
         await expectRevert(this.debridge.send(
                 tokenAddress,
-                bob, 
-                3, 
-                chainIdTo, 
+                bob,
+                3,
+                chainIdTo,
                 MOCK_PERMIT,
                 useAssetFee,
                 referralCode,
                 autoParamas
                 ),"TransferAmountNotCoverFees()");
-        
+
     });
 
     it('should call send , as admin, use asset fee true should fail not supported fixed fee', async()=>{
@@ -433,9 +433,9 @@ describe('DeBridgeGate', () =>{
         await expectRevert(
             this.debridge.send(
                 tokenAddress,
-                bob, 
-                1, 
-                chainIdTo, 
+                bob,
+                1,
+                chainIdTo,
                 MOCK_PERMIT,
                 useAssetFee,
                 referralCode,
@@ -468,11 +468,11 @@ describe('DeBridgeGate', () =>{
 
         await expect(this.debridge.send(
             tokenAddress,
-            bob, 
-            10000, 
+            bob,
+            10000,
             chainIdTo,
-            MOCK_PERMIT, 
-            useAssetFee, 
+            MOCK_PERMIT,
+            useAssetFee,
             referralCode,
             [],
             {from:alice, value:toWei('1')}
@@ -485,7 +485,7 @@ describe('DeBridgeGate', () =>{
 
     it('should update excess confirmations, as admin, fail wrong arguments', async()=>{
         await expectRevert(this.debridge.updateExcessConfirmations(
-            0, 
+            0,
             {
                 from:alice
             }
@@ -509,10 +509,10 @@ describe('DeBridgeGate', () =>{
         const chainId = 56;
         const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
         await expectRevert(this.debridge.updateAsset(
-            debridgeId, 
+            debridgeId,
             1,
             65000,
-            1, 
+            1,
             {
                 from:alice
             }
@@ -532,7 +532,7 @@ describe('DeBridgeGate', () =>{
             to.
             emit(this.debridge,'WithdrawnFee').
             withArgs(debridgeId,10);
-        
+
         let feeProxyBalanceAfter = await this.mockToken.balanceOf(alice);
         expect(feeProxyBalanceAfter.toNumber()).to.be.above(feeProxyBalanceBefore.toNumber());
 
@@ -563,7 +563,7 @@ describe('DeBridgeGate', () =>{
     })
 
 
-   
+
     it('should set aggregator', async()=>{
         const mockSignatureVerifier = await deployMockContract(aliceAccount, SignatureVerifierABI.abi);
         await this.debridge.setAggregator(mockSignatureVerifier.address);
@@ -571,7 +571,7 @@ describe('DeBridgeGate', () =>{
         expect(aggregator).to.be.equal(mockSignatureVerifier.address);
     })
 
-  
+
     it('should call claim function, data length bigger then zero, native token false, erc20 tokens', async()=>{
         const mockSignatureVerifier = await deployMockContract(aliceAccount, SignatureVerifierABI.abi);
         await mockSignatureVerifier.mock.submit.returns();
@@ -602,7 +602,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.setCallProxy(0, callProxy.address);
         await this.debridge.mock_set_signatureVerifier(mockSignatureVerifier.address);
         const autoParamsAsBytes = '0x00';
-        const submisionId = await this.debridge.getSubmissionIdFrom( 
+        const submisionId = await this.debridge.getSubmissionIdFrom(
             debridgeId,
             chainId,
             amount,
@@ -611,14 +611,14 @@ describe('DeBridgeGate', () =>{
             autoParamsAsStruct,
             hasAutoParams);
 
-        await expect(this.debridge.claim( 
-            debridgeId, 
-            chainId, 
+        await expect(this.debridge.claim(
+            debridgeId,
+            chainId,
             bob,
             amount,
             1,
-            MOCK_PERMIT, 
-            [], 
+            MOCK_PERMIT,
+            [],
             )
         ).to.emit(this.debridge,'Claimed');
     })
@@ -653,7 +653,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.setCallProxy(0, callProxy.address);
         await this.debridge.mock_set_signatureVerifier(mockSignatureVerifier.address);
         const autoParamsAsBytes = '0x00';
-        const submisionId = await this.debridge.getSubmissionIdFrom( 
+        const submisionId = await this.debridge.getSubmissionIdFrom(
             debridgeId,
             chainId,
             amount,
@@ -663,14 +663,14 @@ describe('DeBridgeGate', () =>{
             hasAutoParams);
         const autoParams = web3.eth.abi.encodeParameters(['uint256', 'uint256', 'bytes', 'bytes'],
             [executionFee, flags,fallbackAddress, data]);
-        await expect(this.debridge.claim( 
-            debridgeId, 
-            chainId, 
+        await expect(this.debridge.claim(
+            debridgeId,
+            chainId,
             bob,
             amount,
             1,
-            MOCK_PERMIT, 
-            autoParams, 
+            MOCK_PERMIT,
+            autoParams,
             )
         ).to.emit(this.debridge,'Claimed');
     })
@@ -702,7 +702,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_fixedFeeChainIdTo(debridgeId, chainIdTo, 1);
         await this.debridge.setCallProxy(0, callProxy.address);
         const autoParamsAsBytes = '0x00';
-        const submisionId = await this.debridge.getSubmissionIdFrom( 
+        const submisionId = await this.debridge.getSubmissionIdFrom(
             debridgeId,
             chainId,
             amount,
@@ -712,11 +712,11 @@ describe('DeBridgeGate', () =>{
             hasAutoParams);
 
         expect(await this.debridge.call_internal_claim(
-            submisionId, 
-            debridgeId, 
-            alice, 
-            amount, 
-            autoParamsAsStruct, 
+            submisionId,
+            debridgeId,
+            alice,
+            amount,
+            autoParamsAsStruct,
             {from:alice})
         ).to.emit(this.debridge,'AutoRequestExecuted');
     })
@@ -735,7 +735,7 @@ describe('DeBridgeGate', () =>{
             data: data,
             nativeSender: nativeSender
         };
-        
+
         const tokenAddress = '0x0000000000000000000000000000000000000000';
         const chainId = 56;
         const chainIdTo= 57;
@@ -744,7 +744,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_deBridgeInfo(debridgeId, tokenAddress, chainId, 1,1,1,1,'255',1,true, {from:alice})
         await this.debridge.mock_set_chainSupportInfo(chainIdTo,true,0,1500)
         await this.debridge.mock_set_fixedFeeChainIdTo(debridgeId, chainIdTo, 1);
-        const submisionId = await this.debridge.getSubmissionIdFrom( 
+        const submisionId = await this.debridge.getSubmissionIdFrom(
             debridgeId,
             chainId,
             amount,
@@ -770,7 +770,7 @@ describe('DeBridgeGate', () =>{
             data: data,
             nativeSender: nativeSender
         };
-        
+
         const tokenAddress = '0x0000000000000000000000000000000000000000';
         const chainId = 56;
         const chainIdTo= 57;
@@ -779,7 +779,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_deBridgeInfo(debridgeId, tokenAddress, chainId, 1,1,1,1,'255',1,false, {from:alice})
         await this.debridge.mock_set_chainSupportInfo(chainIdTo,true,0,1500)
         await this.debridge.mock_set_fixedFeeChainIdTo(debridgeId, chainIdTo, 1);
-        const submisionId = await this.debridge.getSubmissionIdFrom( 
+        const submisionId = await this.debridge.getSubmissionIdFrom(
             debridgeId,
             chainId,
             amount,
@@ -795,7 +795,7 @@ describe('DeBridgeGate', () =>{
     it('should call internal claim function, execution fee bigger then 0', async()=>{
         await this.debridge.receiveEther(
             {
-                from:alice, 
+                from:alice,
                 value:ethers.utils.parseEther("1.0")
             }
         )
@@ -824,7 +824,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_deBridgeInfo(debridgeId, tokenAddress, chainId, 1,1,5,1,'255',1,true, {from:alice})
         await this.debridge.mock_set_chainSupportInfo(chainIdTo,true,0,1500)
         await this.debridge.mock_set_fixedFeeChainIdTo(debridgeId, chainIdTo, 1);
-        const submisionId = await this.debridge.getSubmissionIdFrom( 
+        const submisionId = await this.debridge.getSubmissionIdFrom(
             debridgeId,
             chainId,
             amount,
@@ -839,8 +839,8 @@ describe('DeBridgeGate', () =>{
         await expect(this.debridge.call_internal_claim(
             submisionId,
             debridgeId,
-            bob, 
-            amount, 
+            bob,
+            amount,
             autoParamsAsStruct
         ),"AutoRequestExecuted()");
     })
@@ -848,7 +848,7 @@ describe('DeBridgeGate', () =>{
     it('should call internal claim function, execution fee bigger then 0, data length 0', async()=>{
         await this.debridge.receiveEther(
             {
-                from:alice, 
+                from:alice,
                 value:ethers.utils.parseEther("1.0")
             }
         )
@@ -877,7 +877,7 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_deBridgeInfo(debridgeId, tokenAddress, chainId, 1,1,5,1,'255',1,true, {from:alice})
         await this.debridge.mock_set_chainSupportInfo(chainIdTo,true,0,1500)
         await this.debridge.mock_set_fixedFeeChainIdTo(debridgeId, chainIdTo, 1);
-        const submisionId = await this.debridge.getSubmissionIdFrom( 
+        const submisionId = await this.debridge.getSubmissionIdFrom(
             debridgeId,
             chainId,
             amount,
@@ -892,8 +892,8 @@ describe('DeBridgeGate', () =>{
         await this.debridge.call_internal_claim(
             submisionId,
             debridgeId,
-            bob, 
-            amount, 
+            bob,
+            amount,
             autoParamsAsStruct
         );
 
@@ -998,14 +998,14 @@ describe('DeBridgeGate', () =>{
         await this.debridge.mock_set_amountThreshold(debridgeId, 1);
         await this.debridge.mock_set_debridge_maxAmount(debridgeId, 1);
         expect(this.debridge.call_internal_add_asset(
-            debridgeId, 
-            tokenAddress, 
-            ZERO_ADDRESS, 
+            debridgeId,
+            tokenAddress,
+            ZERO_ADDRESS,
             chainId),
         ).to.emit(this.debridge,"PairAdded");
     })
 
-    
+
     it('should call internal check confirmations, fail not confirmed', async()=>{
         const mockConfirmationAggregator = await deployMockContract(aliceAccount, ConfirmationAggregatorABI.abi);
         await mockConfirmationAggregator.mock.getSubmissionConfirmations.returns(0,false);
@@ -1234,7 +1234,7 @@ describe('DeBridgeGate', () =>{
 
     it('should get version', async()=>{
         let result = await this.debridge.version();
-        expect(result.toString()).to.be.equal('101');
+        expect(result.toString()).to.be.equal('103');
     })
 
     it('should revert call with fee proxy bad role',async()=>{

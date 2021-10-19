@@ -31,7 +31,7 @@ contract("ConfirmationAggregator", function() {
 
     this.minConfirmations = 2;
     this.confirmationThreshold = 5;
-    this.excessConfirmations = 3; 
+    this.excessConfirmations = 3;
 
     // constructor(
     //   uint256 _minConfirmations,
@@ -157,7 +157,7 @@ contract("ConfirmationAggregator", function() {
       chainId,
       name,
       symbol,
-      decimal, 
+      decimal,
       {
         from:bob
       });
@@ -178,10 +178,10 @@ contract("ConfirmationAggregator", function() {
   })
 
   it('should call internal submit function if path', async function(){
-    const sender = alice; 
+    const sender = alice;
     const confirmations = 100;
-    const hasVerified = false; 
-    const isConfirmed = false; 
+    const hasVerified = false;
+    const isConfirmed = false;
     const requiredConfirmations = 3;
     await this.aggregator.mock_set_confirmationThreashold(100);
     await this.aggregator.mock_set_requiredOraclesCount(3);
@@ -264,7 +264,7 @@ contract("ConfirmationAggregator", function() {
 
   it('should set confirmation threshold, fail wrong arguments', async function(){
     await expectRevert(this.aggregator.setThreshold(0, {from:alice}),"WrongArgument()");
-    
+
   })
 
   it('should set excess confirmations', async function(){
@@ -408,7 +408,7 @@ contract("ConfirmationAggregator", function() {
   it('should add oracle, should work requried true ', async function(){
     await this.aggregator.mock_set_minConfirmations(255);
     const receipt = await this.aggregator.addOracles([alice],[true]);
-    expectEvent(receipt, 'AddOracle', 
+    expectEvent(receipt, 'AddOracle',
     {
       oracle: alice,
       required: true,
@@ -425,7 +425,7 @@ contract("ConfirmationAggregator", function() {
     await this.aggregator.mock_set_oracle_required(bob,false);
     await this.aggregator.mock_set_oracle_isValid(bob,true);
     const receipt = await this.aggregator.updateOracle(bob,false,false);
-    expectEvent(receipt, 'UpdateOracle', 
+    expectEvent(receipt, 'UpdateOracle',
     {
       oracle: bob,
       required: false,
@@ -444,7 +444,7 @@ contract("ConfirmationAggregator", function() {
     await this.aggregator.mock_set_oracle_isValid(alice,true);
     const receipt = await this.aggregator.updateOracle(alice,false,false);
 
-    expectEvent(receipt, 'UpdateOracle', 
+    expectEvent(receipt, 'UpdateOracle',
     {
       oracle: alice,
       required: false,
