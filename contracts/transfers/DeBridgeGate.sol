@@ -3,6 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -82,6 +83,7 @@ contract DeBridgeGate is
 
     error NotSupportedFixedFee();
     error TransferAmountNotCoverFees();
+    error InvalidTokenToSend();
 
     error SubmissionUsed();
     error SubmissionNotConfirmed();
@@ -645,6 +647,8 @@ contract DeBridgeGate is
         bytes32 debridgeId,
         FeeParams memory feeParams
     ) {
+        _validateToken(_tokenAddress);
+
         // Run _permit first. Avoid Stack too deep
         if (_permit.length > 0) {
             // call permit before transfering token
@@ -763,6 +767,21 @@ contract DeBridgeGate is
             IDeBridgeToken(debridge.tokenAddress).burn(amountAfterFee);
         }
         return (amountAfterFee, debridgeId, feeParams);
+    }
+
+    function _validateToken(address _token) internal {
+        if (_token == address(0)) {
+            // no validation for native tokens
+            return;
+        }
+
+        // check existance of decimals method
+        (bool success, ) = _token.call(abi.encodeWithSignature("decimals()"));
+        if (!success) revert InvalidTokenToSend();
+
+        // check existance of symbol method
+        (success, ) = _token.call(abi.encodeWithSignature("symbol()"));
+        if (!success) revert InvalidTokenToSend();
     }
 
     function _validateAutoParams(
