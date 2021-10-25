@@ -406,6 +406,7 @@ contract DeBridgeGate is
     ) external onlyAdmin {
         if (_minReservesBps > BPS_DENOMINATOR) revert WrongArgument();
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        // don't check existance of debridge - it allows to setup asset before first transfer
         debridge.maxAmount = _maxAmount;
         debridge.minReservesBps = _minReservesBps;
         getAmountThreshold[_debridgeId] = _amountThreshold;
@@ -606,7 +607,7 @@ contract DeBridgeGate is
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
         debridge.chainId = _nativeChainId;
-        //Don't override if the admin already set maxAmount
+        // Don't override if the admin already set maxAmount in updateAsset method before
         if (debridge.maxAmount == 0) {
             debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
