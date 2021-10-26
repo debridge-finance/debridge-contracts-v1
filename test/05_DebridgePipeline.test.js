@@ -735,7 +735,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         // console.log(await deBridgeTokenInstance.name());
         // console.log(await deBridgeTokenInstance.decimals());
         assert.equal( await deBridgeTokenInstance.symbol(), "deWETH");
-        assert.equal( await deBridgeTokenInstance.name(), "Wrapped ETH (deBridge)");
+        assert.equal( await deBridgeTokenInstance.name(), "deBridge Wrapped ETH");
         assert.equal( (await deBridgeTokenInstance.decimals()).toString(), "18");
     });
 
