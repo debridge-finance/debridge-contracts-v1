@@ -805,6 +805,10 @@ contract DeBridgeGate is
         }
 
         address _token = debridge.tokenAddress;
+        bool unwrapETH = isNativeToken
+            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+            && _token == address(weth);
+
         if (_autoParams.executionFee > 0) {
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isNativeToken);
         }
@@ -814,10 +818,7 @@ contract DeBridgeGate is
                 : callProxyAddresses[0];
 
             bool status;
-            if (isNativeToken
-                && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
-                && _token == address(weth)
-            ) {
+            if (unwrapETH) {
                 weth.withdraw(_amount);
 
                 status = ICallProxy(callProxyAddress).call{value: _amount}(
@@ -841,10 +842,7 @@ contract DeBridgeGate is
                 );
             }
             emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
-        } else if (isNativeToken
-            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
-            && _token == address(weth)
-        ) {
+        } else if (unwrapETH) {
             // transferring WETH with unwrap flag
             weth.withdraw(_amount);
             _safeTransferETH(_receiver, _amount);
