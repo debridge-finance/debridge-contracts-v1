@@ -75,7 +75,7 @@ module.exports = {
     },
     development: {
       url: "http://127.0.0.1:8545",
-      accounts: {mnemonic:process.env.MNEMONIC}
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
     },
     test: {
       url: "http://127.0.0.1:8545",

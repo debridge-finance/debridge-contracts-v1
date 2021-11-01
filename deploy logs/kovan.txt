@@ -160,3 +160,36 @@ sleepInterval 15000
         call revokeRole for deployer
 sleepInterval 15000
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+upgrade to 110 version
+
+
+  deployTransaction: {
+    hash: '0x0285c035fbdd3bfa4d5ae090ca975bec6444a78bc7bbc083cfe2aa5215a0e5b2',
+    type: 0,
+    accessList: null,
+    blockHash: '0xc9fed41a8d7c1ccb932828373e519e5321c64348d096cea4dad33c3eb4933453',
+    blockNumber: 28094970,
+    transactionIndex: 1,
+    confirmations: 1,
+    from: '0x3B38786685c4Fd6bC3E685086fC7f086BC254864',
+    gasPrice: BigNumber { _hex: '0xb2d05e00', _isBigNumber: true },
+    gasLimit: BigNumber { _hex: '0x5a64f8', _isBigNumber: true },
+    to: '0x968Fe2BFcc21ce899a06696bb9d2fAF002FF73c3',
+    value: BigNumber { _hex: '0x00', _isBigNumber: true },
+    nonce: 38,
+    data: '0x99a88ec400000000000000000000000068d936cb4723bdd38c488fd50514803f96789d2d000000000000000000000000c22a5d1b0155113c2abbbf59ac71ef04e6d89a07',
+    r: '0xb6f9d63167e30ce78afe1f4b72f95a58320e66d7cebfba0c38933363c005a14a',
+    s: '0x51565a759e9880eb1030048f4bae7a1125bf1f864c8ebcfc40c2c5048fc7ae05',
+    v: 119,
+    creates: null,
+    raw: '0xf8a92684b2d05e00835a64f894968fe2bfcc21ce899a06696bb9d2faf002ff73c380b84499a88ec400000000000000000000000068d936cb4723bdd38c488fd50514803f96789d2d000000000000000000000000c22a5d1b0155113c2abbbf59ac71ef04e6d89a0777a0b6f9d63167e30ce78afe1f4b72f95a58320e66d7cebfba0c38933363c005a14aa051565a759e9880eb1030048f4bae7a1125bf1f864c8ebcfc40c2c5048fc7ae05',
+    chainId: 42,
+    wait: [Function (anonymous)]
+  },
+  _deployedPromise: Promise { [Circular *1] }
+}
+newVersion: 110
+PS D:\Projects\Debridge\debridge-contracts-v1>

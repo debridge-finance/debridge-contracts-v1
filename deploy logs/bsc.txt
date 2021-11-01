@@ -159,4 +159,23 @@ Transfering admin role for DeBridgeGate | 0x68D936Cb4723BdD38C488FD50514803f9678
 sleepInterval 15000
         call revokeRole for deployer
 sleepInterval 15000
-PS D:\Projects\Debridge\debridge-contracts-v1> 
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 11_upgrade_deBridgeGate_110  --network bsctest
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate to 1.1.0 version
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+********************************************************************************
+
+*** Upgrade proxy for DeBridgeGate ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+Waiting 1 block confirmations for tx 0x602be072beba6418bf08b1e5a62ded1d2a72ccee14bff2a97a83089e43617013 ...
+        Implementation address: 0xd5a4a3F2896DB44FBf4598f8d6Af9FBc28A687b4
+        New proxy deployed:  0x68d936cb4723bdd38c488fd50514803f96789d2d
+end upgradeProxy
+newVersion: 110
+PS D:\Projects\Debridge\debridge-contracts-v1>

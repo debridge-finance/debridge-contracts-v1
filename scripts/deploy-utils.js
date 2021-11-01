@@ -98,6 +98,32 @@ async function deleteProxyDeployment(Factory, proxy_address) {
   }
 }
 
+async function upgradeProxy(contractName, contractAddress, deployer) {
+  console.log(`\n*** Upgrade proxy for ${contractName} ***`);
+  console.log('\tSigner: ', deployer);
+
+  const Factory = await hre.ethers.getContractFactory(contractName, deployer);
+
+  // real deploy
+  const proxy = await hre.upgrades.upgradeProxy(contractAddress, Factory);
+  const receipt = await proxy.deployed();
+
+  // manual await for deploy transaction to prevent errors during deployment
+  await waitTx(receipt.deployTransaction);
+
+  await saveProxyDeployment(Factory, proxy, {});
+
+  const implementation = await getImplementationAddress(hre.ethers.provider, proxy.address)
+  console.log('\tImplementation address:', implementation);
+  console.log('\tNew proxy deployed: ', proxy.address);
+
+  return {
+    contract: proxy,
+    receipt: receipt
+  }
+}
+
+
 async function deployProxy(contractName, deployer, args, reuseProxy) {
   console.log(`\n*** Deploying proxy for ${contractName} ***`);
   console.log('\tSigner: ', deployer);
@@ -192,6 +218,7 @@ async function waitTx(tx) {
 module.exports = {
   FLAGS,
   deployProxy,
+  upgradeProxy,
   getDeployedProxies,
   getLastDeployedProxy,
   waitTx,

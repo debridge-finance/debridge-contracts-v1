@@ -399,6 +399,22 @@ contract DeBridgeGate is
         emit CallProxyUpdated(variation, _address);
     }
 
+    function setWeth(IWETH _weth) external onlyAdmin {
+        bytes32 newWethDebridgeId = getDebridgeId(getChainId(), address(_weth));
+        DebridgeInfo storage debridge = getDebridge[newWethDebridgeId];
+
+        if (!debridge.exist) {
+            //Add if not exist
+            _addAsset(
+                newWethDebridgeId,
+                address(_weth),
+                abi.encodePacked(address(_weth)),
+                getChainId()
+            );
+        }
+        weth = _weth;
+    }
+
     /// @dev Add support for the asset.
     /// @param _debridgeId Asset identifier.
     /// @param _maxAmount Maximum amount of current chain token to be wrapped.

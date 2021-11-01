@@ -4,7 +4,7 @@ PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy  --network are
 Nothing to compile
 deploying "MockWeth" (tx: 0x1be263fe6f2650c571c9f7b94af1be375128e63d4e3b103c1a0ca3b1b406e1e6)...: deployed at 0x21D03141aCfc7A53252c513F25C361485082Cc82 with 6395243 gas
 sleepInterval 15000
-deploying "DeBridgeToken" (tx: 0x4782b225fcb6d6a1ec6b92a1b03e3a3b119fbffa3e7fd0fe5ef580b360664572)...: deployed at 0x2C898393595386d889aF7F348314D8d63F4353Df with 13834974 gas        
+deploying "DeBridgeToken" (tx: 0x4782b225fcb6d6a1ec6b92a1b03e3a3b119fbffa3e7fd0fe5ef580b360664572)...: deployed at 0x2C898393595386d889aF7F348314D8d63F4353Df with 13834974 gas
 sleepInterval 15000
 
 *** Deploying proxy for DeBridgeTokenDeployer ***
@@ -256,4 +256,22 @@ Transfering admin role for DeBridgeGate | 0x68D936Cb4723BdD38C488FD50514803f9678
 sleepInterval 15000
         call revokeRole for deployer
 sleepInterval 15000
-PS D:\Projects\Debridge\debridge-contracts-v1> 
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 11_upgrade_deBridgeGate_110  --network arethtest
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate to 1.1.0 version
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+********************************************************************************
+
+*** Upgrade proxy for DeBridgeGate ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+Waiting 1 block confirmations for tx 0x5ded7afa972708af12d300b5e237146d901cc5e559789edb31be7d7622632c89 ...
+        Implementation address: 0xc22a5d1b0155113C2ABbbf59aC71ef04E6d89a07
+        New proxy deployed:  0x68d936cb4723bdd38c488fd50514803f96789d2d
+end upgradeProxy
+newVersion: 110
+PS D:\Projects\Debridge\debridge-contracts-v1>
