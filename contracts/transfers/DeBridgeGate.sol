@@ -1041,6 +1041,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 103; // 1.0.3
+        return 110; // 1.1.0
     }
 }
