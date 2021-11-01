@@ -351,7 +351,7 @@ contract("DeBridgeGate full with auto", function () {
         .div(BPS)
         .add(toBN(supportedChainInfo.fixedNativeFee));
 
-      const autoParams = await packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
+      const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
 
       await this.debridge.send(
         tokenAddress,
@@ -395,7 +395,7 @@ contract("DeBridgeGate full with auto", function () {
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
 
-      const autoParams = await packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
+      const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
 
       await this.debridge.send(
         tokenAddress,
@@ -432,7 +432,7 @@ contract("DeBridgeGate full with auto", function () {
       const receiver = bob;
       const amount = toBN(toWei("1"));
       const chainIdTo = 42;
-      const autoParams = await packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
+      const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
       await expectRevert(
         this.debridge.send(
           tokenAddress,
@@ -458,7 +458,7 @@ contract("DeBridgeGate full with auto", function () {
       const chainId = await this.debridge.getChainId();
       const amount = toBN(toWei("1"));
       const chainIdTo = chainId;
-      const autoParams = await packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
+      const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
       await expectRevert(
         this.debridge.send(
           tokenAddress,
@@ -559,7 +559,7 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeId = await this.debridge.getDebridgeId(bscChainId, tokenAddress);
       const balance = toBN("0");
 
-      const autoParams = await packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
+      const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
 
       await this.debridge.claim(
         debridgeId,
@@ -585,7 +585,7 @@ contract("DeBridgeGate full with auto", function () {
     it("should reject minting with unconfirmed submission", async function () {
       const nonce = 4;
       const debridgeId = await this.debridge.getDebridgeId(bscChainId, tokenAddress);
-      const autoParams = await packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
+      const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
       await expectRevert(
         this.debridge.claim(
           debridgeId,
@@ -605,7 +605,7 @@ contract("DeBridgeGate full with auto", function () {
 
     it("should reject minting twice", async function () {
       const debridgeId = await this.debridge.getDebridgeId(bscChainId, tokenAddress);
-      const autoParams = await packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
+      const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
       await expectRevert(
         this.debridge.claim(
           debridgeId,
@@ -645,7 +645,7 @@ contract("DeBridgeGate full with auto", function () {
         bobPrivKey
       );
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
-      const autoParams = await packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
+      const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
       await this.debridge.connect(bobAccount).send(
         deBridgeToken.address,
         amount,
@@ -679,7 +679,7 @@ contract("DeBridgeGate full with auto", function () {
     // it("should reject burning from current chain", async function () {
     //   const receiver = bob;
     //   const amount = toBN(toWei("1"));
-    //   const autoParams = await packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
+    //   const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
     //   await expectRevert(
     //     this.debridge.burn(
     //       this.wethDebridgeId,
@@ -793,7 +793,7 @@ contract("DeBridgeGate full with auto", function () {
       //   bytes memory _autoParams
       // )
 
-      const autoParams = await packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
+      const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
 
       await this.debridge.claim(
         this.wethDebridgeId,
@@ -836,7 +836,7 @@ contract("DeBridgeGate full with auto", function () {
     it("should claim ERC20 when the submission is approved", async function () {
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(erc20DebridgeId);
       const balance = toBN(await this.mockToken.balanceOf(receiver));
-      const autoParams = await packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
+      const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
       await this.debridge.claim(
         erc20DebridgeId,
         amount,
@@ -877,7 +877,7 @@ contract("DeBridgeGate full with auto", function () {
 
     it("should reject claiming with unconfirmed submission", async function () {
       const nonce = 1;
-      const autoParams = await packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
+      const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
       await expectRevert(
         this.debridge.claim(
           this.wethDebridgeId,
@@ -918,7 +918,7 @@ contract("DeBridgeGate full with auto", function () {
     // });
 
     it("should reject claiming twice", async function () {
-      const autoParams = await packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
+      const autoParams = packSubmissionAutoParamsFrom(claimFee, zeroFlag, reserveAddress, data, nativeSender);
       await expectRevert(
         this.debridge.claim(
           this.wethDebridgeId,

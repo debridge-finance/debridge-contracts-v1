@@ -2016,7 +2016,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         [executionFee, flags, fallbackAddress, data]
       );
 
-      const ethersPack = await packSubmissionAutoParamsTo(
+      const ethersPack = packSubmissionAutoParamsTo(
         executionFee,
         flags,
         fallbackAddress,
@@ -2035,7 +2035,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           [],
           false,
           referralCode,
-          await packSubmissionAutoParamsTo(
+          packSubmissionAutoParamsTo(
             executionFee,
             flags,
             fallbackAddress,
@@ -2186,7 +2186,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             [],
             false,
             referralCode,
-            await packSubmissionAutoParamsTo(
+            packSubmissionAutoParamsTo(
               executionFee,
               flags,
               fallbackAddress,
@@ -2217,7 +2217,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             ethAccount.address,
             burnEvent.args.nonce,
             await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
-            await packSubmissionAutoParamsFrom(
+            packSubmissionAutoParamsFrom(
               executionFee,
               flags,
               fallbackAddress,
@@ -2257,7 +2257,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             [],
             false,
             referralCode,
-            await packSubmissionAutoParamsTo(
+            packSubmissionAutoParamsTo(
               executionFee,
               flags,
               fallbackAddress,
@@ -2295,7 +2295,7 @@ contract("DeBridgeGate real pipeline mode", function () {
               receiverContract.address,
               burnEvent.args.nonce,
               await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
-              await packSubmissionAutoParamsFrom(
+              packSubmissionAutoParamsFrom(
                 executionFee,
                 flags,
                 fallbackAddress,
@@ -2368,7 +2368,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             [],
             false,
             referralCode,
-            await packSubmissionAutoParamsTo(
+            packSubmissionAutoParamsTo(
               executionFee,
               flags,
               fallbackAddress,
@@ -2403,7 +2403,7 @@ contract("DeBridgeGate real pipeline mode", function () {
               receiverContract.address,
               burnEvent.args.nonce,
               await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
-              await packSubmissionAutoParamsFrom(
+              packSubmissionAutoParamsFrom(
                 executionFee,
                 flags,
                 fallbackAddress,
@@ -2458,7 +2458,7 @@ contract("DeBridgeGate real pipeline mode", function () {
             [],
             false,
             referralCode,
-            await packSubmissionAutoParamsTo(
+            packSubmissionAutoParamsTo(
               executionFee,
               flags,
               fallbackAddress,
@@ -2488,7 +2488,7 @@ contract("DeBridgeGate real pipeline mode", function () {
               receiverContract.address,
               burnEvent.args.nonce,
               await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
-              await packSubmissionAutoParamsFrom(
+              packSubmissionAutoParamsFrom(
                 executionFee,
                 flags,
                 fallbackAddress,

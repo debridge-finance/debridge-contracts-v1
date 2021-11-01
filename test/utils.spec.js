@@ -54,7 +54,7 @@ module.exports.permitWithDeadline = async (token, owner, spender, value, deadlin
 }
 
 
-module.exports.packSubmissionAutoParamsTo = async (executionFee, flags, fallbackAddress, data) => {
+module.exports.packSubmissionAutoParamsTo = (executionFee, flags, fallbackAddress, data) => {
   const autoParams = {executionFee, flags, fallbackAddress, data};
   const packed = ethers.utils.defaultAbiCoder.encode([{
     type: "tuple",
@@ -69,7 +69,7 @@ module.exports.packSubmissionAutoParamsTo = async (executionFee, flags, fallback
   return packed;
 }
 
-module.exports.packSubmissionAutoParamsFrom = async (executionFee, flags, fallbackAddress, data, nativeSender) => {
+module.exports.packSubmissionAutoParamsFrom = (executionFee, flags, fallbackAddress, data, nativeSender) => {
   const autoParams = {executionFee, flags, fallbackAddress, data, nativeSender};
   const packed = ethers.utils.defaultAbiCoder.encode([{
     type: "tuple",
