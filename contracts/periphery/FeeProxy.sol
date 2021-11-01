@@ -152,7 +152,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         uint256 chainId = getChainId();
         //DebridgeId of weth in ethereum network
         //TODO: can be set as contstant
-        (, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(deEthToken);
+        // (, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(deEthToken);
         if (feeProxyAddresses[chainId].length == 0) revert EmptyFeeProxyAddress(chainId);
 
         // TODO: treasuryAddresses can keep only for ETH network

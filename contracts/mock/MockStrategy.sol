@@ -10,19 +10,30 @@ contract MockStrategy is IStrategy {
         balance = 0;
     }
 
-    function deposit(address _token, uint256 _amount) external override {
+    // suppress "unused variable" warnings by commenting out variable names
+
+    function deposit(
+        address /* _token */,
+        uint256 _amount
+    ) external override {
         balance += _amount;
     }
 
-    function withdraw(address _token, uint256 _amount) external override {
+    function withdraw(
+        address /* _token */,
+        uint256 _amount
+    ) external override {
         balance -= _amount;
     }
 
-    function withdrawAll(address token) external override {
+    function withdrawAll(address /* token */) external override {
         balance = 0;
     }
 
-    function updateReserves(address account, address token)
+    function updateReserves(
+        address /* account */,
+        address /* token */
+    )
         external
         view
         override
@@ -31,7 +42,7 @@ contract MockStrategy is IStrategy {
         return balance;
     }
 
-    function strategyToken(address token) external view override returns(address){
+    function strategyToken(address /* token */) external pure override returns(address){
         return address(0);
     }
 }

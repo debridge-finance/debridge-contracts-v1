@@ -162,6 +162,8 @@ contract DeBridgeGate is
         weth = _weth;
         deBridgeTokenDeployer = _deBridgeTokenDeployer;
         feeProxy = _feeProxy;
+
+        __ReentrancyGuard_init();
     }
 
     /* ========== send, claim ========== */
@@ -409,6 +411,7 @@ contract DeBridgeGate is
     ) external onlyAdmin {
         if (_minReservesBps > BPS_DENOMINATOR) revert WrongArgument();
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        // don't check existance of debridge - it allows to setup asset before first transfer
         debridge.maxAmount = _maxAmount;
         debridge.minReservesBps = _minReservesBps;
         getAmountThreshold[_debridgeId] = _amountThreshold;
@@ -609,7 +612,7 @@ contract DeBridgeGate is
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
         debridge.chainId = _nativeChainId;
-        //Don't override if the admin already set maxAmount
+        // Don't override if the admin already set maxAmount in updateAsset method before
         if (debridge.maxAmount == 0) {
             debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
@@ -832,6 +835,10 @@ contract DeBridgeGate is
         }
 
         address _token = debridge.tokenAddress;
+        bool unwrapETH = isNativeToken
+            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+            && _token == address(weth);
+
         if (_autoParams.executionFee > 0) {
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isNativeToken);
         }
@@ -841,10 +848,7 @@ contract DeBridgeGate is
                 : callProxyAddresses[0];
 
             bool status;
-            if (isNativeToken
-                && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
-                && _token == address(weth)
-            ) {
+            if (unwrapETH) {
                 weth.withdraw(_amount);
 
                 status = ICallProxy(callProxyAddress).call{value: _amount}(
@@ -868,10 +872,7 @@ contract DeBridgeGate is
                 );
             }
             emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
-        } else if (isNativeToken
-            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
-            && _token == address(weth)
-        ) {
+        } else if (unwrapETH) {
             // transferring WETH with unwrap flag
             weth.withdraw(_amount);
             _safeTransferETH(_receiver, _amount);

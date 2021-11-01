@@ -25,11 +25,6 @@ interface IDeBridgeGate {
         mapping(uint256 => uint256) getChainFee; // whether the chain for the asset is supported
     }
 
-    struct AggregatorInfo {
-        address aggregator; // aggregator address
-        bool isValid; // if is still valid
-    }
-
     struct ChainSupportInfo {
         uint256 fixedNativeFee; // transfer fixed fee
         bool isSupported; // whether the chain for the asset is supported
