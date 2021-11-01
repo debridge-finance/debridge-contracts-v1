@@ -55,7 +55,7 @@ async function permitWithDeadline(token, owner, spender, value, deadline, privKe
 }
 
 
- async function packSubmissionAutoParamsTo(executionFee, flags, fallbackAddress, data) {
+function packSubmissionAutoParamsTo(executionFee, flags, fallbackAddress, data) {
   const autoParams = {executionFee, flags, fallbackAddress, data};
   const packed = ethers.utils.defaultAbiCoder.encode([{
     type: "tuple",
@@ -70,7 +70,7 @@ async function permitWithDeadline(token, owner, spender, value, deadline, privKe
   return packed;
 }
 
-async function packSubmissionAutoParamsFrom(executionFee, flags, fallbackAddress, data, nativeSender) {
+function packSubmissionAutoParamsFrom(executionFee, flags, fallbackAddress, data, nativeSender) {
   const autoParams = {executionFee, flags, fallbackAddress, data, nativeSender};
   const packed = ethers.utils.defaultAbiCoder.encode([{
     type: "tuple",

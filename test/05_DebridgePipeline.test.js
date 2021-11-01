@@ -2223,10 +2223,26 @@ contract("DeBridgeGate real pipeline mode", function () {
       const sender = aliceAccount;
       const receiver = bobAccount;
       const executionFee = toBN(toWei("25"));
-      const flags = 0;
-      const data = [];
+      const flags = 20;
+      //      const data = [];
+      const data = "0xd547741f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000003b38786685c4fd6bc3e685086fc7f086bc254864";
+
       const fallbackAddress = fei;
 
+      const mypack =  web3.eth.abi.encodeParameter(
+        'tuple(uint256,uint8, bytes, bytes)',
+        [executionFee, flags, fallbackAddress, data]
+      );
+
+      const ethersPack = packSubmissionAutoParamsTo(
+        executionFee,
+        flags,
+        fallbackAddress,
+        data)
+
+
+      // console.log(mypack);
+      // console.log(ethersPack);
       const sentTx = await this.debridgeETH
         .connect(sender)
         .send(
@@ -2268,6 +2284,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         true,
       );
 
+      assert.equal(mypack, ethersPack);
       assert.equal(sentEvent.args.submissionId, submissionIdFrom);
     });
   });
