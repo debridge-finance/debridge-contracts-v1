@@ -179,3 +179,48 @@ Waiting 1 block confirmations for tx 0x602be072beba6418bf08b1e5a62ded1d2a72ccee1
 end upgradeProxy
 newVersion: 110
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>
+PS D:\Projects\Debridge\debridge-contracts-v1>
+PS D:\Projects\Debridge\debridge-contracts-v1>
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network bsctest
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+updateChainSupport
+[ 256, 42, 421611, 80001 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0x239a59557a31602def933b861b3fe3057144bbf9a85640192054040affd05654 ...
+deployInitParams.supportedChains:  [ 256, 42, 421611, 80001 ]
+deployInitParams.fixedNativeFee:  [
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000'
+]
+Waiting 1 block confirmations for tx 0x96ba395c9cc3d393c1f5864794e21af5a55768bbc930ed5424af966f4b6cd5f0 ...
+updateGlobalFeeTx: 0x96ba395c9cc3d393c1f5864794e21af5a55768bbc930ed5424af966f4b6cd5f0
+PS D:\Projects\Debridge\debridge-contracts-v1> ^C
+PS D:\Projects\Debridge\debridge-contracts-v1> ^C
+PS D:\Projects\Debridge\debridge-contracts-v1> ^C
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network bsctest
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Waiting 1 block confirmations for tx 0x6e35ea4d60e1dec81e44906b24874ad5b9d22490bc0bcc80135a60c1c3dc38b6 ...
+newWeth: 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd
+chainId: 97
+wethDebridgeId: 0x2a1f66486926dec2a4c2e5335e42740db49faa7beccd0a98fbb0c0bf973eb5ab
+Waiting 1 block confirmations for tx 0x941ef61d9007366aa94be769f449c13a115ab27a7cb0f39b2365cb4c99dda7ab ...
+updateAssetFixedFeesTx: 0x941ef61d9007366aa94be769f449c13a115ab27a7cb0f39b2365cb4c99dda7ab
+PS D:\Projects\Debridge\debridge-contracts-v1>

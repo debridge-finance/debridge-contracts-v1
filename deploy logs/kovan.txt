@@ -193,3 +193,83 @@ upgrade to 110 version
 }
 newVersion: 110
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network kovan
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Waiting 1 block confirmations for tx 0x5eb4ca9873f72966c2d9c97acf21e93905275db005a1e18080cff4e4a55f0c2b ...
+newWeth: 0xd0A1E359811322d97991E03f863a0C30C2cF029C
+chainId: 42
+wethDebridgeId: 0x9805a0d9ee98ce5dae28a1799074e6121c863794c241beefd9dc1b0b083018e9
+Waiting 1 block confirmations for tx 0x9d3c8ff47a60e575236884794171ea9db39fa75fe4a170d3442d18f7791d1502 ...
+updateAssetFixedFeesTx: 0x9d3c8ff47a60e575236884794171ea9db39fa75fe4a170d3442d18f7791d1502
+updateChainSupport
+[ 97, 256, 421611, 80001 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0x0734a51a048d35f6444fe9c190bcf205cb8d2ee216153e709465ca395efef3b7 ...
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\12_set_new_weth.js:
+Error: transaction failed (transactionHash="0x0734a51a048d35f6444fe9c190bcf205cb8d2ee216153e709465ca395efef3b7", transaction={"hash":"0x0734a51a048d35f6444fe9c190bcf205cb8d2ee216153e709465ca395efef3b7","type":0,"accessList":null,"blockHash":null,"blockNumber":null,"transactionIndex":null,"confirmations":0,"from":"0xB485C8ba37A258B57d3ef24E51178A6b307C96EB","gasPrice":{"type":"BigNumber","hex":"0xb2d05e00"},"gasLimit":{"type":"BigNumber","hex":"0x5a6638"},"to":"0x68D936Cb4723BdD38C488FD50514803f96789d2D","value":{"type":"BigNumber","hex":"0x00"},"nonce":14,"data":"0x1ea61b3e000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000006100000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000066eeb00000000000000000000000000000000000000000000000000000000000138810000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000","r":"0x76fe6289db36de2e23fe0529137181407a3e070e43b2cd0aac7d1186d68d5a50","s":"0x71d09e380f369100949febd834c3326fe2db4b71bc3c7283c72579553d936fa3","v":119,"creates":null,"raw":"0xf9028a0e84b2d05e00835a66389468d936cb4723bdd38c488fd50514803f96789d2d80b902241ea61b3e000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000e00000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000006100000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000066eeb0000000000000000000000000000000000000000000000000000000000013881000000000000000000000000000000000000000000000000000000000000000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000077a076fe6289db36de2e23fe0529137181407a3e070e43b2cd0aac7d1186d68d5a50a071d09e380f369100949febd834c3326fe2db4b71bc3c7283c72579553d936fa3","chainId":42}, receipt={"to":"0x68D936Cb4723BdD38C488FD50514803f96789d2D","from":"0xB485C8ba37A258B57d3ef24E51178A6b307C96EB","contractAddress":null,"transactionIndex":2,"gasUsed":{"type":"BigNumber","hex":"0x8c76"},"logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","blockHash":"0x9f909c5c6558b94703e9f47028b57fe3b2d807c42d04505b3932472890b1e1c3","transactionHash":"0x0734a51a048d35f6444fe9c190bcf205cb8d2ee216153e709465ca395efef3b7","logs":[],"blockNumber":28095825,"confirmations":2,"cumulativeGasUsed":{"type":"BigNumber","hex":"0x0652cf"},"effectiveGasPrice":{"type":"BigNumber","hex":"0xb2d05e00"},"status":0,"type":0,"byzantium":true}, code=CALL_EXCEPTION, version=providers/5.4.5)
+    at Logger.makeError (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\logger\src.ts\index.ts:225:28)
+    at Logger.throwError (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\logger\src.ts\index.ts:237:20)
+    at EthersProviderWrapper.<anonymous> (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\src.ts\base-provider.ts:1198:24)
+    at step (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\lib\base-provider.js:48:23)
+    at Object.next (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\lib\base-provider.js:29:53)
+    at fulfilled (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\lib\base-provider.js:20:58)
+    at DeploymentsManager.executeDeployScripts (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\DeploymentsManager.ts:1076:19)
+    at DeploymentsManager.runDeploy (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\DeploymentsManager.ts:906:5)
+    at Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:    at Environment.run (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at SimpleTaskDefinition.action (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\index.ts:544:32)
+    at Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at Environment.run (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at SimpleTaskDefinition.action (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\index.ts:628:5)
+    at Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:    at Environment.run (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+
+
+
+
+
+
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network kovan
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+updateChainSupport
+[ 97, 256, 421611, 80001 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0x2405d81c42a32123bc36db01df5fcfc585a36a741907473b9e2e0ef51ed03146 ...
+deployInitParams.supportedChains:  [ 97, 256, 421611, 80001 ]
+deployInitParams.fixedNativeFee:  [
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000'
+]
+Waiting 1 block confirmations for tx 0x40aca15bfa76c43be6415378b55b36720dd7e2df413e5563a20de5496db3dbee ...
+updateGlobalFeeTx: 0x40aca15bfa76c43be6415378b55b36720dd7e2df413e5563a20de5496db3dbee
+PS D:\Projects\Debridge\debridge-contracts-v1>

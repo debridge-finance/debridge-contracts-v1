@@ -179,3 +179,37 @@ Waiting 1 block confirmations for tx 0x5f7f5607e357af5459b82c425c7f13d5e1fa1d5bc
 end upgradeProxy
 newVersion: 110
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network hecotest
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Waiting 1 block confirmations for tx 0xbf3a47abd3b563cb61a7e2baca188b9f49d8d18da3315b6099c11f3146522a34 ...
+newWeth: 0x7aF326B6351C8A9b8fb8CD205CBe11d4Ac5FA836
+chainId: 256
+wethDebridgeId: 0x121083887f40823edff5c06bb839a81c0df121a823f0cae04477b5152d4d47b1
+Waiting 1 block confirmations for tx 0x70169f8fe5860b20baae325a97cf8f9fd52f59da65498269720e5c711c6b456e ...
+updateAssetFixedFeesTx: 0x70169f8fe5860b20baae325a97cf8f9fd52f59da65498269720e5c711c6b456e
+updateChainSupport
+[ 97, 42, 421611, 80001 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0xc54e3888623b094e6d67c17ab656ebdde430d629394fcd6c6ffdec88c716219b ...
+deployInitParams.supportedChains:  [ 97, 42, 421611, 80001 ]
+deployInitParams.fixedNativeFee:  [
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000'
+]
+Waiting 1 block confirmations for tx 0x3459cf4b7cc22b92d7f602fc4aa840a80b89bb203a71693ed4043bf071aca5af ...
+updateGlobalFeeTx: 0x3459cf4b7cc22b92d7f602fc4aa840a80b89bb203a71693ed4043bf071aca5af
+PS D:\Projects\Debridge\debridge-contracts-v1>
