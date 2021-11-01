@@ -8,6 +8,7 @@ const {
   MAX_TRANSFER_DECIMALS,
 } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
+const MockInvalidToken = artifacts.require("MockInvalidToken");
 const MockToken = artifacts.require("MockToken");
 const DeBridgeToken = artifacts.require("DeBridgeToken");
 const IUniswapV2Pair = artifacts.require("IUniswapV2Pair");
@@ -1175,6 +1176,32 @@ contract("DeBridgeGate real pipeline mode", function () {
               from: alice,
             }),
           "WrongTargedChain()"
+        );
+      });
+
+      it("should reject sending tokens without symbol or decimals", async function () {
+        const invalidToken = await MockInvalidToken.new("Invalid Token", "INVALID", 10, {
+          from: alice,
+        });
+        const tokenAddress = invalidToken.address;
+        const receiver = bob;
+        const amount = toBN(toWei("1"));
+        const chainIdTo = bscChainId;
+        await expectRevert(
+          this.debridgeETH.send(
+            tokenAddress,
+            amount,
+            chainIdTo,
+            receiver,
+            [],
+            false,
+            referralCode,
+            [],
+            {
+              value: amount,
+              from: alice,
+            }),
+          "InvalidTokenToSend()"
         );
       });
 
