@@ -3,6 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -82,6 +83,7 @@ contract DeBridgeGate is
 
     error NotSupportedFixedFee();
     error TransferAmountNotCoverFees();
+    error InvalidTokenToSend();
 
     error SubmissionUsed();
     error SubmissionNotConfirmed();
@@ -160,6 +162,8 @@ contract DeBridgeGate is
         weth = _weth;
         deBridgeTokenDeployer = _deBridgeTokenDeployer;
         feeProxy = _feeProxy;
+
+        __ReentrancyGuard_init();
     }
 
     /* ========== send, claim ========== */
@@ -194,6 +198,9 @@ contract DeBridgeGate is
 
         SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, amountAfterFee);
         amountAfterFee -= autoParams.executionFee;
+
+        // round down amount in order not to bridge dust
+        amountAfterFee = _normalizeTokenAmount(_tokenAddress, amountAfterFee);
 
         bytes32 submissionId = getSubmissionIdTo(
             debridgeId,
@@ -266,7 +273,7 @@ contract DeBridgeGate is
             _receiver,
             _nonce,
             _chainIdFrom,
-            autoParams,
+            _autoParams,
             isNativeToken
         );
     }
@@ -404,6 +411,7 @@ contract DeBridgeGate is
     ) external onlyAdmin {
         if (_minReservesBps > BPS_DENOMINATOR) revert WrongArgument();
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
+        // don't check existance of debridge - it allows to setup asset before first transfer
         debridge.maxAmount = _maxAmount;
         debridge.minReservesBps = _minReservesBps;
         getAmountThreshold[_debridgeId] = _amountThreshold;
@@ -604,7 +612,7 @@ contract DeBridgeGate is
         debridge.exist = true;
         debridge.tokenAddress = _tokenAddress;
         debridge.chainId = _nativeChainId;
-        //Don't override if the admin already set maxAmount
+        // Don't override if the admin already set maxAmount in updateAsset method before
         if (debridge.maxAmount == 0) {
             debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         }
@@ -645,6 +653,8 @@ contract DeBridgeGate is
         bytes32 debridgeId,
         FeeParams memory feeParams
     ) {
+        _validateToken(_tokenAddress);
+
         // Run _permit first. Avoid Stack too deep
         if (_permit.length > 0) {
             // call permit before transfering token
@@ -696,8 +706,12 @@ contract DeBridgeGate is
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
-            if (_amount != msg.value) revert AmountMismatch();
-            weth.deposit{value: msg.value}();
+            if (msg.value < _amount) revert AmountMismatch();
+            else if (msg.value > _amount) {
+                // refund extra eth
+                payable(msg.sender).transfer(msg.value - _amount);
+            }
+            weth.deposit{value: _amount}();
             _useAssetFee = true;
         } else {
             IERC20 token = IERC20(_tokenAddress);
@@ -717,19 +731,23 @@ contract DeBridgeGate is
             if (_useAssetFee) {
                 assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
                 if (assetsFixedFee == 0) revert NotSupportedFixedFee();
-                // Apply discount for a fixed fee
+                // Apply discount for a asset fixed fee
                 assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
             } else {
                 // collect native fees
-                if (chainFees.fixedNativeFee == 0) {
-                    // use globalFixedNativeFee if value for chain is not setted
-                    chainFees.fixedNativeFee = globalFixedNativeFee;
+
+                // use globalFixedNativeFee if value for chain is not setted
+                uint256 nativeFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
+                // Apply discount for a fixed fee
+                nativeFee -= nativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+
+                if (msg.value < nativeFee) revert TransferAmountNotCoverFees();
+                else if (msg.value > nativeFee) {
+                    // refund extra fee eth
+                    payable(msg.sender).transfer(msg.value - nativeFee);
                 }
-                if (msg.value < chainFees.fixedNativeFee -
-                    chainFees.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR
-                ) revert TransferAmountNotCoverFees();
                 bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
-                getDebridgeFeeInfo[nativeDebridgeId].collectedFees += msg.value;
+                getDebridgeFeeInfo[nativeDebridgeId].collectedFees += nativeFee;
             }
 
             // Calculate transfer fee
@@ -763,6 +781,21 @@ contract DeBridgeGate is
             IDeBridgeToken(debridge.tokenAddress).burn(amountAfterFee);
         }
         return (amountAfterFee, debridgeId, feeParams);
+    }
+
+    function _validateToken(address _token) internal {
+        if (_token == address(0)) {
+            // no validation for native tokens
+            return;
+        }
+
+        // check existance of decimals method
+        (bool success, ) = _token.call(abi.encodeWithSignature("decimals()"));
+        if (!success) revert InvalidTokenToSend();
+
+        // check existance of symbol method
+        (success, ) = _token.call(abi.encodeWithSignature("symbol()"));
+        if (!success) revert InvalidTokenToSend();
     }
 
     function _validateAutoParams(
@@ -802,6 +835,10 @@ contract DeBridgeGate is
         }
 
         address _token = debridge.tokenAddress;
+        bool unwrapETH = isNativeToken
+            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+            && _token == address(weth);
+
         if (_autoParams.executionFee > 0) {
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isNativeToken);
         }
@@ -811,10 +848,7 @@ contract DeBridgeGate is
                 : callProxyAddresses[0];
 
             bool status;
-            if (isNativeToken
-                && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
-                && _token == address(weth)
-            ) {
+            if (unwrapETH) {
                 weth.withdraw(_amount);
 
                 status = ICallProxy(callProxyAddress).call{value: _amount}(
@@ -838,10 +872,7 @@ contract DeBridgeGate is
                 );
             }
             emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
-        } else if (isNativeToken
-            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
-            && _token == address(weth)
-        ) {
+        } else if (unwrapETH) {
             // transferring WETH with unwrap flag
             weth.withdraw(_amount);
             _safeTransferETH(_receiver, _amount);
@@ -871,6 +902,26 @@ contract DeBridgeGate is
     function _safeTransferETH(address to, uint256 value) internal {
         (bool success, ) = to.call{value: value}(new bytes(0));
         if (!success) revert EthTransferFailed();
+    }
+
+    /*
+    * @dev round down token amount
+    * @param _token address of token, zero for native tokens
+    * @param __amount amount for rounding
+    */
+    function _normalizeTokenAmount(
+        address _token,
+        uint256 _amount
+    ) internal view returns (uint256) {
+        uint256 decimals = _token == address(0)
+            ? 18
+            : IERC20Metadata(_token).decimals();
+        uint256 maxDecimals = 8;
+        if (decimals > maxDecimals) {
+            uint256 multiplier = 10 ** (decimals - maxDecimals);
+            _amount = _amount / multiplier * multiplier;
+        }
+        return _amount;
     }
 
     /* VIEW */
@@ -990,6 +1041,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 103; // 1.0.3
+        return 110; // 1.1.0
     }
 }

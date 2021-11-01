@@ -7,6 +7,9 @@ interface IStrategy {
     function withdraw(address token, uint256 amount) external;
 
     function withdrawAll(address token) external;
-
-    function updateReserves(address account, address token) external view returns (uint256);
+    function strategyToken(address token) external view returns(address);
+    function updateReserves(address account, address token) 
+        external 
+        view 
+        returns(uint256);
 }

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
@@ -26,24 +26,24 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
     }
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _name Asset's name.
-    /// @param _symbol Asset's symbol.
-    /// @param _minters The accounts allowed to int new tokens.
+    /// @param name_ Asset's name.
+    /// @param symbol_ Asset's symbol.
+    /// @param minters The accounts allowed to int new tokens.
     function initialize(
-        string memory _name,
-        string memory _symbol,
-        uint8 _tokenDecimals,
-        address _admin,
-        address[] memory _minters
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_,
+        address admin,
+        address[] memory minters
     ) public initializer {
-        _decimals = _tokenDecimals;
-        _symbol = string(abi.encodePacked("de", _symbol));
-        _name =  string(abi.encodePacked(_name, " (deBridge)"));
-        __ERC20_init(_name, _symbol);
+        _decimals = decimals_;
+        symbol_ = string(abi.encodePacked("de", symbol_));
+        name_ =  string(abi.encodePacked("deBridge ", name_));
+        __ERC20_init(name_, symbol_);
 
-        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
-        for (uint256 i = 0; i < _minters.length; i++) {
-            _setupRole(MINTER_ROLE, _minters[i]);
+        _setupRole(DEFAULT_ADMIN_ROLE, admin);
+        for (uint256 i = 0; i < minters.length; i++) {
+            _setupRole(MINTER_ROLE, minters[i]);
         }
         uint256 chainId;
         assembly {
@@ -54,7 +54,7 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
                 keccak256(
                     "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
                 ),
-                keccak256(bytes(_name)),
+                keccak256(bytes(name_)),
                 keccak256(bytes("1")),
                 chainId,
                 address(this)

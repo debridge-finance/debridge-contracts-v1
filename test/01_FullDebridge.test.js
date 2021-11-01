@@ -1527,6 +1527,10 @@ contract("DeBridgeGate full mode", function () {
                   );
                   let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
                   fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
+
+                  let nativeFee = toBN(supportedChainInfo.fixedNativeFee);
+                  nativeFee = toBN(nativeFee).sub(toBN(nativeFee).mul(discount).div(BPS));
+
                   await this.debridge.send(
                     tokenAddress,
                     amount,
@@ -1537,7 +1541,7 @@ contract("DeBridgeGate full mode", function () {
                     referralCode,
                     [],
                     {
-                      value: supportedChainInfo.fixedNativeFee,
+                      value: nativeFee,
                       from: alice.address,
                     }
                   );
@@ -1551,7 +1555,7 @@ contract("DeBridgeGate full mode", function () {
                     newDebridgeFeeInfo.collectedFees
                   );
                   expect(
-                    nativeDebridgeFeeInfo.collectedFees.add(toBN(supportedChainInfo.fixedNativeFee))
+                    nativeDebridgeFeeInfo.collectedFees.add(toBN(nativeFee))
                   ).to.equal(newNativeDebridgeFeeInfo.collectedFees);
                 });
                 it("should send ERC20 tokens from the current chain (_useAssetFee=true)", async function () {
