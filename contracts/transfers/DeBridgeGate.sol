@@ -703,8 +703,12 @@ contract DeBridgeGate is
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
-            if (_amount != msg.value) revert AmountMismatch();
-            weth.deposit{value: msg.value}();
+            if (msg.value < _amount) revert AmountMismatch();
+            else if (msg.value > _amount) {
+                // refund extra eth
+                payable(msg.sender).transfer(msg.value - _amount);
+            }
+            weth.deposit{value: _amount}();
             _useAssetFee = true;
         } else {
             IERC20 token = IERC20(_tokenAddress);
@@ -724,19 +728,23 @@ contract DeBridgeGate is
             if (_useAssetFee) {
                 assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
                 if (assetsFixedFee == 0) revert NotSupportedFixedFee();
-                // Apply discount for a fixed fee
+                // Apply discount for a asset fixed fee
                 assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
             } else {
                 // collect native fees
-                if (chainFees.fixedNativeFee == 0) {
-                    // use globalFixedNativeFee if value for chain is not setted
-                    chainFees.fixedNativeFee = globalFixedNativeFee;
+
+                // use globalFixedNativeFee if value for chain is not setted
+                uint256 nativeFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
+                // Apply discount for a fixed fee
+                nativeFee -= nativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+
+                if (msg.value < nativeFee) revert TransferAmountNotCoverFees();
+                else if (msg.value > nativeFee) {
+                    // refund extra fee eth
+                    payable(msg.sender).transfer(msg.value - nativeFee);
                 }
-                if (msg.value < chainFees.fixedNativeFee -
-                    chainFees.fixedNativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR
-                ) revert TransferAmountNotCoverFees();
                 bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
-                getDebridgeFeeInfo[nativeDebridgeId].collectedFees += msg.value;
+                getDebridgeFeeInfo[nativeDebridgeId].collectedFees += nativeFee;
             }
 
             // Calculate transfer fee

@@ -895,6 +895,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         //     .toString(),
         //     newDebridgeInfo.balance.toString()
         // );
+
+        // TODO: check sender's balance
       });
 
       it("should send native tokens with rounding", async function () {
@@ -997,6 +999,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
         let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
         fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
+
+        let fixedNativeFee = toBN(supportedChainInfo.fixedNativeFee);
+        fixedNativeFee = toBN(fixedNativeFee).sub(toBN(fixedNativeFee).mul(discount).div(BPS));
+
         let sendTx = await this.debridgeETH.send(
           tokenAddress,
           amount,
@@ -1007,7 +1013,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           referralCode,
           [],
           {
-            value: supportedChainInfo.fixedNativeFee,
+            value: fixedNativeFee,
             from: sender,
           }
         );
@@ -1030,7 +1036,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
         assert.equal(
           nativeDebridgeFeeInfo.collectedFees
-            .add(toBN(supportedChainInfo.fixedNativeFee))
+            .add(toBN(fixedNativeFee))
             .toString(),
           newNativeDebridgeFeeInfo.collectedFees.toString()
         );
@@ -1052,6 +1058,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         //     .toString(),
         //     newDebridgeInfo.balance.toString()
         // );
+
+        // TODO: check sender's balance
       });
 
       it("should send ERC20 tokens with permit", async function () {
@@ -1077,6 +1085,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         let fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
         fees = toBN(fees).sub(toBN(fees).mul(discount).div(BPS));
 
+        let fixedNativeFee = toBN(supportedChainInfo.fixedNativeFee);
+        fixedNativeFee = toBN(fixedNativeFee).sub(toBN(fixedNativeFee).mul(discount).div(BPS));
+
         const permit = await permitWithDeadline(
           this.linkToken,
           alice,
@@ -1096,7 +1107,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           referralCode,
           [],
           {
-            value: supportedChainInfo.fixedNativeFee,
+            value: fixedNativeFee,
             from: alice,
           }
         );
@@ -1119,7 +1130,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         );
         assert.equal(
           nativeDebridgeFeeInfo.collectedFees
-            .add(toBN(supportedChainInfo.fixedNativeFee))
+            .add(toBN(fixedNativeFee))
             .toString(),
           newNativeDebridgeFeeInfo.collectedFees.toString()
         );
@@ -1131,6 +1142,83 @@ contract("DeBridgeGate real pipeline mode", function () {
         //     .toString(),
         //     newDebridgeInfo.balance.toString()
         // );
+
+        // TODO: check sender's balance
+      });
+
+      it("should refund extra native tokens when sending native tokens", async function () {
+        const tokenAddress = ZERO_ADDRESS;
+        const chainIdTo = bscChainId;
+        const receiver = bob;
+        const sender = alice;
+        const amount = toBN(toWei("0.1"));
+        const sendedAmount = toBN(toWei("0.5"));
+
+        const balance = toBN(await web3.eth.getBalance(sender));
+
+        const tx = await this.debridgeETH.send(
+          tokenAddress,
+          amount,
+          chainIdTo,
+          receiver,
+          [],
+          false,
+          referralCode,
+          [],
+          {
+            value: sendedAmount,
+            from: sender,
+          });
+        const receipt = await tx.wait();
+
+        const refund = sendedAmount.sub(amount);
+        const txCost = toBN(receipt.cumulativeGasUsed).mul(toBN(receipt.effectiveGasPrice));
+        const newBalance = toBN(await web3.eth.getBalance(sender));
+
+        assert.equal(balance.sub(sendedAmount).add(refund).sub(txCost).toString(), newBalance.toString());
+      });
+
+      it("should refund extra fee native tokens when sending ERC20", async function () {
+        const token = this.linkToken;
+        const chainIdTo = bscChainId;
+        const receiver = bob;
+        const sender = alice;
+        const amount = toBN(toWei("1"));
+
+        await token.mint(sender, amount, {
+          from: alice,
+        });
+        await token.approve(this.debridgeETH.address, amount, {
+          from: alice,
+        });
+
+        const balance = toBN(await web3.eth.getBalance(sender));
+
+        const supportedChainInfo = await this.debridgeETH.getChainSupport(chainIdTo);
+        let fixedNativeFee = toBN(supportedChainInfo.fixedNativeFee);
+        fixedNativeFee = fixedNativeFee.sub(toBN(fixedNativeFee).mul(discount).div(BPS));
+        const extraNativeFee = toBN(toWei("0.1"));
+        const sendedNativeFee = fixedNativeFee.add(extraNativeFee);
+
+        const tx = await this.debridgeETH.send(
+          token.address,
+          amount,
+          chainIdTo,
+          receiver,
+          [],
+          false,
+          referralCode,
+          [],
+          {
+            value: sendedNativeFee,
+            from: sender,
+          });
+        const receipt = await tx.wait();
+
+        const txCost = toBN(receipt.cumulativeGasUsed).mul(toBN(receipt.effectiveGasPrice));
+        const newBalance = toBN(await web3.eth.getBalance(sender));
+
+        assert.equal(balance.sub(sendedNativeFee).add(extraNativeFee).sub(txCost).toString(), newBalance.toString());
       });
 
       it("should reject sending too mismatched amount of native tokens", async function () {
