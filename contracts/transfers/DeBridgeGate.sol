@@ -3,6 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -194,6 +195,9 @@ contract DeBridgeGate is
 
         SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, amountAfterFee);
         amountAfterFee -= autoParams.executionFee;
+
+        // round down amount in order not to bridge dust
+        amountAfterFee = _normalizeTokenAmount(_tokenAddress, amountAfterFee);
 
         bytes32 submissionId = getSubmissionIdTo(
             debridgeId,
@@ -871,6 +875,26 @@ contract DeBridgeGate is
     function _safeTransferETH(address to, uint256 value) internal {
         (bool success, ) = to.call{value: value}(new bytes(0));
         if (!success) revert EthTransferFailed();
+    }
+
+    /*
+    * @dev round down token amount
+    * @param _token address of token, zero for native tokens
+    * @param __amount amount for rounding
+    */
+    function _normalizeTokenAmount(
+        address _token,
+        uint256 _amount
+    ) internal view returns (uint256) {
+        uint256 decimals = _token == address(0)
+            ? 18
+            : IERC20Metadata(_token).decimals();
+        uint256 maxDecimals = 8;
+        if (decimals > maxDecimals) {
+            uint256 multiplier = 10 ** (decimals - maxDecimals);
+            _amount = _amount / multiplier * multiplier;
+        }
+        return _amount;
     }
 
     /* VIEW */
