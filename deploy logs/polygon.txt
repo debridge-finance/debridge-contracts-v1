@@ -211,3 +211,85 @@ deployInitParams.fixedNativeFee:  [
 Waiting 1 block confirmations for tx 0x024233330d4335caf36673506bf2c9a255abc5fccb1377d3694440ea70971ac2 ...
 updateGlobalFeeTx: 0x024233330d4335caf36673506bf2c9a255abc5fccb1377d3694440ea70971ac2
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+
+S D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 13_update_global_fee  --network mumbai
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Waiting 1 block confirmations for tx 0x51ee85ee854c2103215aaea48d9954c352d657940f3b9f0ce9d4fd25a9d1e90f ...
+updateGlobalFeeTx: 0x51ee85ee854c2103215aaea48d9954c352d657940f3b9f0ce9d4fd25a9d1e90f
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 13_update_global_fee  --network mumbai
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Waiting 1 block confirmations for tx 0x6618276b99588676bba9021d490ec62065ae34ddf43f3dbb014697de77862f7b ...
+updateGlobalFeeTx: 0x6618276b99588676bba9021d490ec62065ae34ddf43f3dbb014697de77862f7b
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network mumbai
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+updateChainSupport
+[ 256, 42, 97, 421611 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\12_set_new_weth.js:
+Error: nonce has already been used (error={"name":"ProviderError","code":-32000,"_isProviderError":true}, method="sendTransaction", transaction=undefined, code=NONCE_EXPIRED, version=providers/5.4.5)
+    at Logger.makeError (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\logger\src.ts\index.ts:225:28)
+    at Logger.throwError (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\logger\src.ts\index.ts:237:20)
+    at checkError (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\src.ts\json-rpc-provider.ts:60:16)
+    at D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\src.ts\json-rpc-provider.ts:215:24
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at DeploymentsManager.executeDeployScripts (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\DeploymentsManager.ts:1076:19)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at DeploymentsManager.runDeploy (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\DeploymentsManager.ts:906:5)
+    at Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at Environment.run (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at SimpleTaskDefinition.action (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\index.ts:544:32)
+    at Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at Environment.run (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at SimpleTaskDefinition.action (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\index.ts:628:5)
+    at Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network mumbai
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network mumbai
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+updateChainSupport
+[ 256, 42, 97, 421611 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0xe8e684259c393bda5614e48511ee69b7d639f62dd737dc7667934970708fd79f ...
+deployInitParams.supportedChains:  [ 256, 42, 97, 421611 ]
+deployInitParams.fixedNativeFee:  [
+  '100000000000000000',
+  '100000000000000000',
+  '100000000000000000',
+  '100000000000000000'
+]
+Waiting 1 block confirmations for tx 0xad630caca369e7f15ee1d4af274649880979f09754f27b8fde9a5ae6691bca74 ...
+updateGlobalFeeTx: 0xad630caca369e7f15ee1d4af274649880979f09754f27b8fde9a5ae6691bca74
+PS D:\Projects\Debridge\debridge-contracts-v1>
