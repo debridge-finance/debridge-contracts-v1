@@ -424,7 +424,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test management strategies", async () => {
+  context("Test management strategies", async () => {
     it("should add if called by admin", async function () {
       await this.delegatedStaking.addStrategy(this.mockAaveController.address, this.linkToken.address, this.linkToken.address);
       await this.delegatedStaking.addStrategy(this.mockYearnController.address, this.linkToken.address, this.linkToken.address);
@@ -1277,7 +1277,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test liquidate different amounts", async () => {
+  context("Test liquidate different amounts", async () => {
     before(async function () {
       const amount = toWei("10");
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
@@ -1311,7 +1311,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test liquidate by different users", async () => {
+  context("Test liquidate by different users", async () => {
     before(async function () {
       const amount = toWei("10");
       await this.linkToken.approve(this.delegatedStaking.address, MaxUint256);
@@ -1337,7 +1337,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test withdraw different liquidated amounts", async () => {
+  context("Test withdraw different liquidated amounts", async () => {
     before(async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
@@ -1378,7 +1378,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test withdraw liquidated funds by different users", async () => {
+  context("Test withdraw liquidated funds by different users", async () => {
     before(async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
@@ -1454,7 +1454,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test deposit to strategy", async () => {
+  context("Test deposit to strategy", async () => {
     it("should fail if strategy not enabled", async function () {
       const amount = toWei("10");
       const collateral = this.linkToken.address;
@@ -1541,7 +1541,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test withdraw from strategy", async () => {
+  context("Test withdraw from strategy", async () => {
     before(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
@@ -1698,7 +1698,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test emergency withdraw from strategy", async function () {
+  context("Test emergency withdraw from strategy", async function () {
     beforeEach(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
@@ -1772,7 +1772,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test recover from emergency", async () => {
+  context("Test recover from emergency", async () => {
     beforeEach(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
@@ -1849,7 +1849,7 @@ contract("DelegatedStaking", function () {
       await this.delegatedStaking.resetStrategy(strategy, collateral);
     });
   });
-  context.skip("Test simulate hack", async function () {
+  context("Test simulate hack", async function () {
     beforeEach(async function () {
       const collateral = this.linkToken.address;
       const amount = toWei("200");
@@ -1886,7 +1886,7 @@ contract("DelegatedStaking", function () {
     });
   });
 
-  context.skip("Test upgrades", function () {
+  context("Test upgrades", function () {
     it("should succeed upgrading to v2", async function () {
       //TODO: check other params
       const MockDelegatedStakingFactory = await ethers.getContractFactory("MockDelegatedStaking");
