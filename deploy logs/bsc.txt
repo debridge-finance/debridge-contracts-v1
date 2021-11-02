@@ -224,3 +224,43 @@ wethDebridgeId: 0x2a1f66486926dec2a4c2e5335e42740db49faa7beccd0a98fbb0c0bf973eb5
 Waiting 1 block confirmations for tx 0x941ef61d9007366aa94be769f449c13a115ab27a7cb0f39b2365cb4c99dda7ab ...
 updateAssetFixedFeesTx: 0x941ef61d9007366aa94be769f449c13a115ab27a7cb0f39b2365cb4c99dda7ab
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+==========================================================
+UPDATE VALIDATORS
+==========================================================
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 14_add_validators  --network bsctest
+Nothing to compile
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  11: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+existValidators: 0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x4da594b739611574663aea3edddc428e00c48fe1,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+validatorsForAdd: 6: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+newMinConfirmation: 6
+Waiting 1 block confirmations for tx 0xb32b3895af3f4345f65254c3c427e3ee1bb61353b34990ea3fe0141579607eab ...
+setMinConfirmationsTx : 0xb32b3895af3f4345f65254c3c427e3ee1bb61353b34990ea3fe0141579607eab
+Waiting 1 block confirmations for tx 0x6f2f1fc418729fbfc9771b235c8c5c75cfd11aaaec4ba81b576d8a25daa1b373 ...
+addOraclesTx : 0x6f2f1fc418729fbfc9771b235c8c5c75cfd11aaaec4ba81b576d8a25daa1b373
+after update minConfirmations: 6
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+PS D:\Projects\Debridge\debridge-contracts-v1>
