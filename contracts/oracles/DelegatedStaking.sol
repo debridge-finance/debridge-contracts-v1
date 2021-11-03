@@ -102,6 +102,7 @@ contract DelegatedStaking is
         address admin;
         mapping(address => ValidatorCollateral) collateralPools; // collateral pools of validator
         uint256 rewardWeightCoefficient;
+        uint256 delegatorCount;
         uint256 profitSharingBPS; // profit sharing basis points.
         bool delegatorActionPaused; // paused stake/unstake for this validator
         bool isEnabled;
@@ -669,12 +670,12 @@ contract DelegatedStaking is
             validatorCollateral.strategyShares[_strategy] = 0;
             strategy.totalReserves -= amount;
 
-            for (uint256 k=0; k<validator.delegatorCount; k++) {
-                DelegatorsInfo storage delegation = validatorCollateral.delegation[validator.delegatorAddresses[k]];
-                if (delegation.strategyShares[_strategy] == 0) continue;
-                delegation.locked -= delegation.strategyShares[_strategy];
-                delegation.strategyShares[_strategy] = 0;
-            }
+            // for (uint256 k=0; k<validator.delegatorCount; k++) {
+            //     DelegatorsInfo storage delegation = validatorCollateral.delegators[validator.delegatorAddresses[k]];
+            //     if (delegation.strategyShares[_strategy] == 0) continue;
+            //     delegation.locked -= delegation.strategyShares[_strategy];
+            //     delegation.strategyShares[_strategy] = 0;
+            // }
             emit RecoveredFromEmergency(_validators[i], amount, _strategy, strategy.stakeToken);
         }
     }
@@ -1057,12 +1058,12 @@ contract DelegatedStaking is
      * @param _collateral Collateral address.
      * @param _bpsAmount Basis points to slash.
      */
-    function _slashDelegatorStrategyDeposits(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) internal returns(uint256) {
+    function _slashDelegatorStrategyDeposits(address _validator, address _delegator, address _collateral, uint256 _bpsAmount) internal {
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
+
         DelegatorsInfo storage delegator = validatorCollateral.delegators[_delegator];
         Collateral storage collateral = collaterals[_collateral];
         uint256 slashingFraction = _bpsAmount/BPS_DENOMINATOR;
-        uint256 totalSlashed;
         for (uint i=0; i<strategyControllerAddresses.length; i++) {
             address _strategyController = strategyControllerAddresses[i];
             Strategy storage strategy = strategies[_strategyController][_collateral];
@@ -1093,9 +1094,7 @@ contract DelegatedStaking is
             validatorCollateral.locked -= slashedStrategyShares;
             validatorCollateral.stakedAmount -= stakeTokenCollateral;
             collateral.slashedAmount += receivedAmount;
-            totalSlashed += receivedAmount;
         }
-        return totalSlashed;
     }
 
     /**
