@@ -12,6 +12,7 @@ require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-solhint");
 require("prettier-plugin-solidity");
 require("solidity-coverage");
+require("@nomiclabs/hardhat-etherscan");
 
 module.exports = {
   gasReporter: {
@@ -103,6 +104,7 @@ module.exports = {
       url: "https://rinkeby.arbitrum.io/rpc",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       // gasPrice: 1e9,
+      // gas: 1e6,
       chainId: 421611
     },
     mumbai: {
@@ -127,4 +129,10 @@ module.exports = {
       chainId: 1
     }
   },
+
+  etherscan: {
+    // Your API key for Etherscan
+    // Obtain one at https://etherscan.io/
+    apiKey: ""
+  }
 }
