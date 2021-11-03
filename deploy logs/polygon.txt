@@ -382,3 +382,27 @@ found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
 found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
 found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 15_update_weth_fix  --network mumbai
+Nothing to compile
+********************************************************************************
+        Start upgrade 15_update_weth_fix
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+weth: 0x21D03141aCfc7A53252c513F25C361485082Cc82
+wethDebridgeId: 0x61a5db02d43bd4d9446951e702824e6efd51a33e1cc1a6f1b246fb740642dc12
+updateAssetFixedFees: 0x61a5db02d43bd4d9446951e702824e6efd51a33e1cc1a6f1b246fb740642dc12 {
+  wethDebridgeId: '0x61a5db02d43bd4d9446951e702824e6efd51a33e1cc1a6f1b246fb740642dc12',
+  supportedChains: [ 256, 42, 97, 421611 ],
+  fixedNativeFee: [
+    '100000000000000000',
+    '100000000000000000',
+    '100000000000000000',
+    '100000000000000000'
+  ]
+}
+Waiting 1 block confirmations for tx 0x1bf72ccb51bdfeec9f7a043a42ac71976f310f5511eff4dbae2ecfd61058d964 ...
+updateAssetFixedFeesTx: 0x1bf72ccb51bdfeec9f7a043a42ac71976f310f5511eff4dbae2ecfd61058d964
+PS D:\Projects\Debridge\debridge-contracts-v1>
