@@ -7,7 +7,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  console.log("Start 08_DeBridgeGate");
+  console.log("Start 09_DeBridgeGate");
 
   let signatureVerifier;
   if (deployInitParams.deploy.SignatureVerifier) {
@@ -26,13 +26,17 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const callProxy = await getLastDeployedProxy("CallProxy", deployer, [0]);
   const callProxyWithSender = await getLastDeployedProxy("CallProxy", deployer, [FLAGS.PROXY_WITH_SENDER]);
   if (callProxy.address == callProxyWithSender.address) {
-    console.error("ERROR. CallProxy and CallProxy with sender are the same");
-    return;
+    throw Error("ERROR. CallProxy and CallProxy with sender are the same");
   }
 
   let defiController;
   if (deployInitParams.deploy.DefiController) {
     defiController = await getLastDeployedProxy("DefiController", deployer);
+  }
+
+  let wethGate;
+  if (deployInitParams.deploy.wethGate) {
+    wethGate = (await deployments.get("WethGate")).address;
   }
 
   // function initialize(
@@ -119,6 +123,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log("Set callProxy with sender for deBridgeGate");
   await deBridgeGateInstance.setCallProxy(FLAGS.PROXY_WITH_SENDER, callProxyWithSender.address);
 
+  if (wethGate) {
+    console.log(`Setting wethGate ${wethGate} for debridge`);
+    const setWethGateTx = await deBridgeGateInstance.setWethGate(wethGate);
+    await setWethGateTx.wait();
+  }
+
   // --------------------------------
   //    calling updateGlobalFee
   // --------------------------------
@@ -163,7 +173,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   }
 };
 
-module.exports.tags = ["08_DeBridgeGate"]
+module.exports.tags = ["09_DeBridgeGate"]
 module.exports.dependencies = [
   '01-2_DeBridgeTokenDeployer',
   '02_SignatureAggregator',
@@ -172,4 +182,5 @@ module.exports.dependencies = [
   '05_CallProxy',
   '06_FeeProxy',
   '07_DefiController',
+  '08_wethGate',
 ];

@@ -14,7 +14,8 @@
       "SignatureVerifier": true,
       "SignatureAggregator": true,
       "ConfirmationAggregator": true,
-      "DefiController": true
+      "DefiController": true,
+      "wethGate": false
     },
     "external": {
       "WETH": "",
@@ -52,10 +53,11 @@
       "SignatureVerifier": true,
       "SignatureAggregator": false,
       "ConfirmationAggregator": false,
-      "DefiController": false
+      "DefiController": false,
+      "wethGate": false
     },
     "external": {
-      "WETH": "",
+      "WETH": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
     },
     "supportedChains": [97, 256, 421611],
@@ -95,10 +97,11 @@
       "SignatureVerifier": true,
       "SignatureAggregator": false,
       "ConfirmationAggregator": false,
-      "DefiController": false
+      "DefiController": false,
+      "wethGate": false
     },
     "external": {
-      "WETH": "",
+      "WETH": "0x7af326b6351c8a9b8fb8cd205cbe11d4ac5fa836",
       "UniswapFactory": ""
     },
     "supportedChains": [97, 42, 421611],
@@ -138,10 +141,11 @@
       "SignatureVerifier": true,
       "SignatureAggregator": false,
       "ConfirmationAggregator": false,
-      "DefiController": false
+      "DefiController": false,
+      "wethGate": true
     },
     "external": {
-      "WETH": "",
+      "WETH": "0xae13d989dac2f0debff460ac112a837c89baa7cd",
       "UniswapFactory": ""
     },
     "supportedChains": [256, 42, 421611],
@@ -181,7 +185,8 @@
       "SignatureVerifier": true,
       "SignatureAggregator": true,
       "ConfirmationAggregator": false,
-      "DefiController": false
+      "DefiController": false,
+      "wethGate": false
     },
     "external": {
       "WETH": "",
@@ -224,10 +229,11 @@
       "SignatureVerifier": true,
       "SignatureAggregator": true,
       "ConfirmationAggregator": true,
-      "DefiController": true
+      "DefiController": true,
+      "wethGate": true
     },
     "external": {
-      "WETH": "",
+      "WETH": "0xd0a1e359811322d97991e03f863a0c30c2cf029c",
       "UniswapFactory": ""
     },
     "supportedChains": [42, 97],
