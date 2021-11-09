@@ -451,6 +451,8 @@ contract DeBridgeGate is
         feeContractUpdater = _value;
     }
 
+    /// @dev Set wethGate contract, that uses for weth withdraws affected by EIP1884
+    /// @param _wethGate address of new wethGate contract.
     function setWethGate(IWethGate _wethGate) external onlyAdmin {
         wethGate = _wethGate;
     }
@@ -914,6 +916,7 @@ contract DeBridgeGate is
 
     function _withdrawWeth(address _receiver, uint _amount) internal {
         if (address(wethGate) == address(0)) {
+            // dealing with weth withdraw affected by EIP1884
             weth.withdraw(_amount);
             _safeTransferETH(_receiver, _amount);
         }
