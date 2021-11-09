@@ -6,8 +6,6 @@ import "../interfaces/IWethGate.sol";
 
 contract WethGate is IWethGate
 {
-    mapping (address => uint) public balanceOf;
-
     IWETH public weth; // wrapped native token contract
 
     /* ========== ERRORS ========== */
@@ -16,7 +14,7 @@ contract WethGate is IWethGate
 
     /* ========== EVENTS ========== */
 
-    event  Withdrawal(address indexed receiver, uint wad);
+    event Withdrawal(address indexed receiver, uint wad);
 
     /* ========== CONSTRUCTOR  ========== */
 
@@ -24,7 +22,7 @@ contract WethGate is IWethGate
         weth = _weth;
     }
 
-    function withdraw(address _receiver, uint _wad) external override{
+    function withdraw(address _receiver, uint _wad) external override {
         weth.withdraw(_wad);
         _safeTransferETH(_receiver, _wad);
         emit Withdrawal(_receiver, _wad);
