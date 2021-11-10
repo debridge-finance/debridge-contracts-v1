@@ -99,6 +99,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
     const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
+    const MockExternalFactory = await ethers.getContractFactory("MockExternalContract", alice);
 
     this.amountThreshols = toWei("1000");
 
@@ -136,6 +137,8 @@ contract("DeBridgeGate real pipeline mode", function () {
     this.uniswapFactoryETH = await UniswapV2Factory.deploy(carol);
     this.uniswapFactoryBSC = await UniswapV2Factory.deploy(carol);
     this.uniswapFactoryHECO = await UniswapV2Factory.deploy(carol);
+
+    this.mockExternalContract = await MockExternalFactory.deploy();
 
     //-------Deploy FeeProxy contracts
     this.feeProxyETH = await upgrades.deployProxy(
@@ -908,7 +911,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amountDecimals = MAX_TRANSFER_DECIMALS + 4;
         let amount = 1 - 10 ** -amountDecimals;
         amount = ethers.utils.parseEther(amount.toFixed(amountDecimals));
-        console.log(amount.toString());
+        // console.log(amount.toString());
 
         const balance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
         const userBalanceBefore = toBN(await web3.eth.getBalance(sender));
@@ -1510,6 +1513,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       assert.ok(isSubmissionUsed);
 
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeBSC.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
+
       const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
       assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
       assert.equal(this.wethETH.address.toLowerCase(), nativeTokenInfo.nativeAddress.toString());
@@ -1554,6 +1560,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       const isSubmissionUsed = await this.debridgeBSC.isSubmissionUsed(submissionId);
       assert.equal(balance.add(this.linkSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeBSC.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
 
       const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
       assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
@@ -1888,6 +1897,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         newDebridgeFeeInfo.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeETH.address, this.nativeSubmissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should claim ERC20 when the submission is approved", async function () {
@@ -1918,6 +1930,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         newDebridgeFeeInfo.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeETH.address, this.linkSubmissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should reject claiming with unconfirmed submission", async function () {
@@ -2131,6 +2146,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         newBalance.toString()
       );
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeHECO.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should mint (deCake) when the submission is approved ", async function () {
@@ -2174,6 +2192,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       const isSubmissionUsed = await this.debridgeHECO.isSubmissionUsed(submissionId);
       assert.equal(balance.add(this.cakeSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeHECO.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should burn (deCake in HECO network)", async function () {

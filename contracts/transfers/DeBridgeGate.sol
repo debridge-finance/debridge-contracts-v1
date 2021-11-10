@@ -49,7 +49,7 @@ contract DeBridgeGate is
     mapping(uint256 => address) public callProxyAddresses; // proxy to execute user's calls
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
-    mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
+    mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
