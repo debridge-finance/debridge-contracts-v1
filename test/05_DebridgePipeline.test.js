@@ -2571,7 +2571,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       it("should use different proxy with PROXY_WITH_SENDER flag", async function() {
         const receiverAmount = toBN(toWei("10"));
         const autoData = receiverContract.interface.encodeFunctionData(
-          "setUint256AndPullToken", [this.wethETH.address, receiverAmount, 1]);
+          "setUint256AndPullToken",
+          [this.wethETH.address, receiverAmount, 12345]
+        );
 
         const flags = 2 ** PROXY_WITH_SENDER;
 
@@ -2630,6 +2632,12 @@ contract("DeBridgeGate real pipeline mode", function () {
         )
           .to.emit(this.debridgeETH, "AutoRequestExecuted")
           .withArgs(burnEvent.args.submissionId, true, callProxyWithSender.address);
+
+        // check internal tx hit correct function
+        expect(await receiverContract.lastHit()).to.be.equal("setUint256AndPullToken");
+        // check internal tx was ok and arguments passed in and saved successfully
+        expect(await receiverContract.result()).to.be.equal("12345");
+        expect(await receiverContract.tokensReceived()).to.be.equal(receiverAmount.toString());
 
         // weth balance of receiver should change
         const receiverBalanceWETHAfter = toBN(await this.wethETH.balanceOf(receiverContract.address));

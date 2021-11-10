@@ -46,9 +46,9 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _flags,
         bytes memory _nativeSender
     ) external payable override onlyGateRole returns (bool _result) {
-        // Add last argument is sender from original network
+        // Add chainId and sender address from an original network to data if PROXY_WITH_SENDER flag is present
         if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
-            _data = abi.encodePacked(_data, _nativeSender);
+            _data = abi.encodePacked(_data, getChainId(), _nativeSender);
         }
 
         _result = externalCall(_receiver, msg.value, _data.length, _data);
@@ -74,9 +74,9 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         IERC20(_token).safeApprove(_receiver, 0);
         IERC20(_token).safeApprove(_receiver, amount);
 
-        // Add last argument is sender from original network
+        // Add chainId and sender address from an original network to data if PROXY_WITH_SENDER flag is present
         if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
-            _data = abi.encodePacked(_data, _nativeSender);
+            _data = abi.encodePacked(_data, getChainId(), _nativeSender);
         }
 
         _result = externalCall(_receiver, 0, _data.length, _data);
@@ -118,8 +118,14 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         return result;
     }
 
+    function getChainId() public view virtual returns (uint256 cid) {
+        assembly {
+            cid := chainid()
+        }
+    }
+
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 102; // 1.0.2
+        return 103; // 1.0.3
     }
 }
