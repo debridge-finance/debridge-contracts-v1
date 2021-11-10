@@ -126,6 +126,9 @@ contract("DeBridgeGate real pipeline mode", function () {
     this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
       from: alice,
     });
+    this.emptyNameToken = await MockToken.new("", "NONAME", 18, {
+      from: alice,
+    });
 
     //-------Deploy weth contracts
     this.wethETH = await WETH9Factory.deploy();
@@ -675,6 +678,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         await this.confirmationAggregatorHECO
           .connect(oracle.account)
           .confirmNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "WBNB", 18);
+        await this.confirmationAggregatorBSC
+          .connect(oracle.account)
+          .confirmNewAsset(this.emptyNameToken.address, hecoChainId, "", "NONAME", 18);
       }
       // Deploy tokens
       let tx = await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, []);
@@ -739,6 +745,19 @@ contract("DeBridgeGate real pipeline mode", function () {
         assert.equal( await deBridgeTokenInstance.symbol(), "deWETH");
         assert.equal( await deBridgeTokenInstance.name(), "deBridge Wrapped ETH");
         assert.equal( (await deBridgeTokenInstance.decimals()).toString(), "18");
+
+        // deploy and check empty name token
+        tx =  await this.debridgeBSC.deployNewAsset(this.emptyNameToken.address, hecoChainId, "", "NONAME", 18, []);
+        receipt = await tx.wait();
+        pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        const deEmptyNameTokenAddressInBSC = pairAddedEvent.args.tokenAddress;
+        const deEmptyNameToken = await DeBridgeToken.at(deEmptyNameTokenAddressInBSC);
+        assert.equal( await deEmptyNameToken.symbol(), "deNONAME");
+        // detoken name should use symbol because original name is empty
+        assert.equal( await deEmptyNameToken.name(), "deBridge NONAME");
+        assert.equal( (await deEmptyNameToken.decimals()).toString(), "18");
     });
 
     it("should reject deploy new asset twice", async function () {

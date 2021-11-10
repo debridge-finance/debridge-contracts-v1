@@ -37,8 +37,10 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
         address[] memory minters
     ) public initializer {
         _decimals = decimals_;
+        name_ = string(abi.encodePacked("deBridge ",
+            bytes(name_).length == 0 ? symbol_ : name_));
         symbol_ = string(abi.encodePacked("de", symbol_));
-        name_ =  string(abi.encodePacked("deBridge ", name_));
+        // name_ =  string(abi.encodePacked("deBridge ", name_));
         __ERC20_init(name_, symbol_);
 
         _setupRole(DEFAULT_ADMIN_ROLE, admin);
