@@ -124,6 +124,11 @@ interface IDeBridgeGate {
         view
         returns (uint256 chainId, bytes memory nativeAddress);
 
+    function getDebridgeChainAssetFixedFee(
+        bytes32 _debridgeId,
+        uint256 _chainId
+    ) external view returns (uint256);
+
     /* ========== EVENTS ========== */
 
     event Sent(
