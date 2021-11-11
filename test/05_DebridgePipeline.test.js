@@ -504,17 +504,32 @@ contract("DeBridgeGate real pipeline mode", function () {
         [fixedNativeFeeBNB, fixedNativeFeeHT]
       );
 
+      let fixedFee = await this.debridgeETH.getDebridgeChainAssetFixedFee(wethDebridgeId, bscChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeBNB.toString());
+      fixedFee = await this.debridgeETH.getDebridgeChainAssetFixedFee(wethDebridgeId, hecoChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
+
       await this.debridgeBSC.updateAssetFixedFees(
         bscWethDebridgeId,
         [ethChainId, hecoChainId],
         [fixedNativeFeeETH, fixedNativeFeeHT]
       );
 
+      fixedFee = await this.debridgeBSC.getDebridgeChainAssetFixedFee(bscWethDebridgeId, ethChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeETH.toString());
+      fixedFee = await this.debridgeBSC.getDebridgeChainAssetFixedFee(bscWethDebridgeId, hecoChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
+
       await this.debridgeHECO.updateAssetFixedFees(
-        wethDebridgeId,
+        hecoWethDebridgeId,
         [ethChainId, bscChainId],
         [fixedNativeFeeHT, fixedNativeFeeBNB]
       );
+
+      fixedFee = await this.debridgeHECO.getDebridgeChainAssetFixedFee(hecoWethDebridgeId, ethChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
+      fixedFee = await this.debridgeHECO.getDebridgeChainAssetFixedFee(hecoWethDebridgeId, bscChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeBNB.toString());
 
       //TODO: check that we added oracles
     });

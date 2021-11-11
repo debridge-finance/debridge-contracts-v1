@@ -966,6 +966,17 @@ contract DeBridgeGate is
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
+    /// @dev Returns asset fixed fee value for specified debridge and chainId.
+    /// @param _debridgeId Asset identifier.
+    /// @param _chainId Chain id.
+    function getDebridgeChainAssetFixedFee(
+        bytes32 _debridgeId,
+        uint256 _chainId
+    ) external view override returns (uint256) {
+        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        return getDebridgeFeeInfo[_debridgeId].getChainFee[_chainId];
+    }
+
     /// @dev Calculate submission id for auto claimable transfer.
     /// @param _debridgeId Asset identifier.
     /// @param _chainIdFrom Chain identifier of the chain where tokens are sent from.
