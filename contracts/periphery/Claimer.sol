@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "../interfaces/IDeBridgeGate.sol";
+import "../transfers/DeBridgeGate.sol";
 
 contract Claimer is
     Initializable,
@@ -11,7 +11,7 @@ contract Claimer is
 {
     /* ========== STATE VARIABLES ========== */
 
-    IDeBridgeGate public deBridgeGate; // wrapped native token contract
+    DeBridgeGate public deBridgeGate; // wrapped native token contract
 
     /* ========== ERRORS ========== */
 
@@ -39,7 +39,7 @@ contract Claimer is
     /* ========== CONSTRUCTOR  ========== */
 
     function initialize(
-        IDeBridgeGate _deBridgeGate
+        DeBridgeGate _deBridgeGate
     ) public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
@@ -63,6 +63,22 @@ contract Claimer is
             { }
             catch {}
         }
+    }
+
+
+    function isSubmissionsUsed(
+        bytes32[] memory _submissionIds
+    ) external view  returns (bool[] memory) {
+        uint256 count = _submissionIds.length;
+        bool[] memory isUsed = new bool[](count);
+        for (uint256 i = 0; i < count; i++) {
+           isUsed[i] = deBridgeGate.isSubmissionUsed(_submissionIds[i]);
+        }
+        return isUsed;
+    }
+
+    function setDeBridgeGate(DeBridgeGate _deBridgeGate) external onlyAdmin {
+        deBridgeGate = _deBridgeGate;
     }
 
     // ============ Version Control ============

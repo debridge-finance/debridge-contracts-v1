@@ -358,6 +358,11 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         {
           from: alice,
         });
+
+      const isSubmissionsUsed =  await this.claimer.isSubmissionsUsed(this.submissionForClaim);
+      for (var i = 0; i < this.submissionForClaim.length; i++) {
+        assert.equal(isSubmissionsUsed[i], true);
+      }
     });
   });
 });
