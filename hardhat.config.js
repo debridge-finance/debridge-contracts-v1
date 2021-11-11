@@ -90,7 +90,7 @@ module.exports = {
       chainId: 42
     },
     bsctest: {
-      url: "https://data-seed-prebsc-2-s3.binance.org:8545/",
+      url: "https://data-seed-prebsc-1-s2.binance.org:8545/",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       chainId: 97
     },

@@ -406,3 +406,21 @@ updateAssetFixedFees: 0x61a5db02d43bd4d9446951e702824e6efd51a33e1cc1a6f1b246fb74
 Waiting 1 block confirmations for tx 0x1bf72ccb51bdfeec9f7a043a42ac71976f310f5511eff4dbae2ecfd61058d964 ...
 updateAssetFixedFeesTx: 0x1bf72ccb51bdfeec9f7a043a42ac71976f310f5511eff4dbae2ecfd61058d964
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 11_batchClaimer --network mumbai
+Nothing to compile
+********************************************************************************
+        Start deploy batch claimer
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+********************************************************************************
+
+*** Deploying proxy for Claimer ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ '0x68d936cb4723bdd38c488fd50514803f96789d2d' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x399ddb621484f62dbb652fd259a7cdc892ca553746f1eb15529b00415c9d20b8 ...
+        Implementation address: 0x6228F247cE4d3f8c543b6F106a27ac9AaEC5E30a
+        New proxy deployed:  0x4674225DE00C82005eAF77a29f3B5584b4CB8D5A

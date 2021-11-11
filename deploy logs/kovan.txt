@@ -313,3 +313,22 @@ found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
 found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
 found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 11_batchClaimer --network kovan
+Nothing to compile
+********************************************************************************
+        Start deploy batch claimer
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+********************************************************************************
+
+*** Deploying proxy for Claimer ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ '0x68d936cb4723bdd38c488fd50514803f96789d2d' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x0ec833f19daa2a35a77d536091f9b980293f2f1886bbdf5e3cee64841cee0530 ...
+        Implementation address: 0x4674225DE00C82005eAF77a29f3B5584b4CB8D5A
+        New proxy deployed:  0xb1EB9869c8f3b50A98d960A5512D2BF0fAA56C32
