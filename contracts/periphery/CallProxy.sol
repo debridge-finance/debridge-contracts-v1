@@ -15,8 +15,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== STATE VARIABLES ========== */
 
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
-    uint256 public variation;
-
+    uint256 public submissionChainIdFrom;
+    bytes public submissionNativeSender;
 
     /* ========== ERRORS ========== */
 
@@ -34,8 +34,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize(uint256 _variation) public initializer {
-        variation = _variation;
+    function initialize() public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -44,14 +43,16 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         address _receiver,
         bytes memory _data,
         uint256 _flags,
-        bytes memory _nativeSender
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
     ) external payable override onlyGateRole returns (bool _result) {
-        // Add chainId and sender address from an original network to data if PROXY_WITH_SENDER flag is present
-        if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
-            _data = abi.encodePacked(_data, getChainId(), _nativeSender);
-        }
-
-        _result = externalCall(_receiver, msg.value, _data.length, _data);
+        _result = externalCall(
+            _receiver,
+            msg.value,
+            _data,
+            _nativeSender,
+            _chainIdFrom
+        );
 
         if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
@@ -68,18 +69,21 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         address _receiver,
         bytes memory _data,
         uint256 _flags,
-        bytes memory _nativeSender
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
     ) external override onlyGateRole returns (bool _result) {
         uint256 amount = IERC20(_token).balanceOf(address(this));
         IERC20(_token).safeApprove(_receiver, 0);
         IERC20(_token).safeApprove(_receiver, amount);
 
-        // Add chainId and sender address from an original network to data if PROXY_WITH_SENDER flag is present
-        if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
-            _data = abi.encodePacked(_data, getChainId(), _nativeSender);
-        }
+        _result = externalCall(
+            _receiver,
+            0,
+            _data,
+            _nativeSender,
+            _chainIdFrom
+        );
 
-        _result = externalCall(_receiver, 0, _data.length, _data);
         amount = IERC20(_token).balanceOf(address(this));
 
         if (!_result &&_flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
@@ -96,10 +100,16 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     function externalCall(
         address destination,
         uint256 value,
-        uint256 dataLength,
-        bytes memory data
-    ) internal returns (bool) {
-        bool result;
+        bytes memory data,
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
+    ) internal returns (bool result) {
+        // Temporary write to a storage nativeSender and chainIdFrom variables.
+        // External contract can read them during a call if needed
+        submissionChainIdFrom = _chainIdFrom;
+        submissionNativeSender = _nativeSender;
+
+        uint256 dataLength = data.length;
         assembly {
             let x := mload(0x40) // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
             let d := add(data, 32) // First 32 bytes are the padded length of data, so exclude that
@@ -115,13 +125,10 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
                 0 // Output is ignored, therefore the output size is zero
             )
         }
-        return result;
-    }
 
-    function getChainId() public view virtual returns (uint256 cid) {
-        assembly {
-            cid := chainid()
-        }
+        // clear storage variables to get gas refund
+        submissionChainIdFrom = 0;
+        submissionNativeSender = "";
     }
 
     // ============ Version Control ============

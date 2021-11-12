@@ -23,12 +23,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const feeProxy = await getLastDeployedProxy("FeeProxy", deployer);
   const deBridgeTokenDeployer = await getLastDeployedProxy("DeBridgeTokenDeployer", deployer);
 
-  const callProxy = await getLastDeployedProxy("CallProxy", deployer, [0]);
-  const callProxyWithSender = await getLastDeployedProxy("CallProxy", deployer, [FLAGS.PROXY_WITH_SENDER]);
-  if (callProxy.address == callProxyWithSender.address) {
-    console.error("ERROR. CallProxy and CallProxy with sender are the same");
-    return;
-  }
+  const callProxy = await getLastDeployedProxy("CallProxy", deployer, []);
 
   let defiController;
   if (deployInitParams.deploy.DefiController) {
@@ -116,9 +111,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const updateAssetFixedFeesReceipt = await updateAssetFixedFeesTx.wait();
   // console.log(updateAssetFixedFeesReceipt);
 
-  console.log("Set callProxy with sender for deBridgeGate");
-  await deBridgeGateInstance.setCallProxy(FLAGS.PROXY_WITH_SENDER, callProxyWithSender.address);
-
   // --------------------------------
   //    calling updateGlobalFee
   // --------------------------------
@@ -144,9 +136,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const DEBRIDGE_GATE_ROLE = await callProxy.DEBRIDGE_GATE_ROLE();
   console.log("callProxy grantRole DEBRIDGE_GATE_ROLE for deBridgeGate");
   await callProxy.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
-
-  console.log("callProxyWithSender grantRole DEBRIDGE_GATE_ROLE for deBridgeGate");
-  await callProxyWithSender.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
 
   console.log("feeProxy setDebridgeGate");
   await feeProxy.setDebridgeGate( deBridgeGateInstance.address);

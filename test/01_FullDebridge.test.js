@@ -45,7 +45,7 @@ contract("DeBridgeGate full mode", function () {
   });
 
   beforeEach(async function () {
-    this.callProxy = await upgrades.deployProxy(this.CallProxyFactory, [0]);
+    this.callProxy = await upgrades.deployProxy(this.CallProxyFactory, []);
 
     //-------Deploy weth contracts
     this.weth = await this.WETH9Factory.deploy();
@@ -210,20 +210,20 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should set CallProxy if called by the admin and emits CallProxyUpdated", async function () {
-      const callProxyBefore = await this.debridge.callProxyAddresses(0);
+      const callProxyBefore = await this.debridge.callProxy();
 
-      const setCallProxyTx = await this.debridge.setCallProxy(0, devid.address, {
+      const setCallProxyTx = await this.debridge.setCallProxy(devid.address, {
         from: alice.address,
       });
 
-      const callProxyAfter = await this.debridge.callProxyAddresses(0);
+      const callProxyAfter = await this.debridge.callProxy();
 
       expect(callProxyBefore).not.equal(callProxyAfter);
       expect(devid.address).to.equal(callProxyAfter);
 
       await expect(setCallProxyTx)
         .to.emit(this.debridge, "CallProxyUpdated")
-        .withArgs(0, devid.address);
+        .withArgs(devid.address);
     });
 
     it("should update flash fee if called by the admin", async function () {
@@ -303,7 +303,7 @@ contract("DeBridgeGate full mode", function () {
 
     it("should reject setting CallProxy if called by the non-admin", async function () {
       await expectRevert(
-        this.debridge.connect(bob).setCallProxy(0, ZERO_ADDRESS),
+        this.debridge.connect(bob).setCallProxy(ZERO_ADDRESS),
         "AdminBadRole()"
       );
     });

@@ -7,7 +7,8 @@ interface ICallProxy {
         address _receiver,
         bytes memory _data,
         uint256 _flags,
-        bytes memory _nativeSender
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
     ) external payable returns (bool);
 
     function callERC20(
@@ -16,6 +17,7 @@ interface ICallProxy {
         address _receiver,
         bytes memory _data,
         uint256 _flags,
-        bytes memory _nativeSender
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
     ) external returns (bool);
 }
