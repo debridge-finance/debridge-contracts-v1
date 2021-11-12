@@ -65,7 +65,7 @@ interface IDeBridgeGate {
 
     /* ========== PUBLIC VARS GETTERS ========== */
 
-    function isSubmissionUsed(bytes32 debridgeId) external returns (bool);
+    function isSubmissionUsed(bytes32 submissionId) external returns (bool);
 
     /* ========== FUNCTIONS ========== */
 
