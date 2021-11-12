@@ -256,6 +256,10 @@ contract DeBridgeGate is
             _autoParams.length > 0
         );
 
+        // check if submission already claimed
+        if (isSubmissionUsed[submissionId]) revert SubmissionUsed();
+        isSubmissionUsed[submissionId] = true;
+
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
         bool isNativeToken =_claim(
@@ -820,9 +824,6 @@ contract DeBridgeGate is
         uint256 _amount,
         SubmissionAutoParamsFrom memory _autoParams
     ) internal returns (bool isNativeToken) {
-        if (isSubmissionUsed[_submissionId]) revert SubmissionUsed();
-        isSubmissionUsed[_submissionId] = true;
-
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
         // if (debridge.chainId != getChainId()) revert WrongChain();
