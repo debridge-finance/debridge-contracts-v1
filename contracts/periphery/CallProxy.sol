@@ -46,18 +46,20 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _flags,
         bytes memory _nativeSender
     ) external payable override onlyGateRole returns (bool _result) {
+        uint256 amount = address(this).balance;
+
         // Add last argument is sender from original network
         if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
             _data = abi.encodePacked(_data, _nativeSender);
         }
 
-        _result = externalCall(_receiver, msg.value, _data.length, _data);
+        _result = externalCall(_receiver, amount, _data.length, _data);
 
         if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
         if (!_result) {
-            (bool success, ) = _reserveAddress.call{value: msg.value}(new bytes(0));
+            (bool success, ) = _reserveAddress.call{value: amount}(new bytes(0));
             if (!success) revert CallFailed();
         }
     }
@@ -116,6 +118,10 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             )
         }
         return result;
+    }
+
+    // we need to accept ETH from deBridgeGate
+    receive() external payable {
     }
 
     // ============ Version Control ============

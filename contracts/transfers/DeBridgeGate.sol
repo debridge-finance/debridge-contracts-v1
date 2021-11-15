@@ -858,10 +858,9 @@ contract DeBridgeGate is
 
             bool status;
             if (unwrapETH) {
-                //TODO: can be transfered direct to call proxy. Need to change logic callProxy
-                _withdrawWeth(address(this), _amount);
-
-                status = ICallProxy(callProxyAddress).call{value: _amount}(
+                // withdraw weth to callProxy directly
+                _withdrawWeth(callProxyAddress, _amount);
+                status = ICallProxy(callProxyAddress).call(
                     _autoParams.fallbackAddress,
                     _receiver,
                     _autoParams.data,
