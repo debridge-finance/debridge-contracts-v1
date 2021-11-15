@@ -47,7 +47,6 @@ contract DeBridgeGate is
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
 
-    mapping(uint256 => address) public callProxyAddresses; // proxy to execute user's calls
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
     mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
@@ -60,6 +59,7 @@ contract DeBridgeGate is
 
     address public defiController; // proxy to use the locked assets in Defi protocols
     address public feeProxy; // proxy to convert the collected fees into Link's
+    address public callProxy; // proxy to execute user's calls
     IWETH public weth; // wrapped native token contract
 
     address public feeContractUpdater; // contract address that can override globalFixedNativeFee
@@ -157,7 +157,7 @@ contract DeBridgeGate is
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
 
-        callProxyAddresses[0] = _callProxy;
+        callProxy = _callProxy;
         defiController = _defiController;
         excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -270,6 +270,7 @@ contract DeBridgeGate is
             _debridgeId,
             _receiver,
             _amount,
+            _chainIdFrom,
             autoParams
         );
 
@@ -400,10 +401,10 @@ contract DeBridgeGate is
     }
 
     /// @dev Set proxy address.
-    /// @param _address Address of the proxy that executes external calls.
-    function setCallProxy(uint256 variation, address _address) external onlyAdmin {
-        callProxyAddresses[variation] = _address;
-        emit CallProxyUpdated(variation, _address);
+    /// @param _callProxy Address of the proxy that executes external calls.
+    function setCallProxy(address _callProxy) external onlyAdmin {
+        callProxy = _callProxy;
+        emit CallProxyUpdated(_callProxy);
     }
 
     /// @dev Add support for the asset.
@@ -831,6 +832,7 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
+        uint256 _chainIdFrom,
         SubmissionAutoParamsFrom memory _autoParams
     ) internal returns (bool isNativeToken) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
@@ -853,35 +855,35 @@ contract DeBridgeGate is
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isNativeToken);
         }
         if (_autoParams.data.length > 0) {
-            address callProxyAddress = _autoParams.flags.getFlag(Flags.PROXY_WITH_SENDER)
-                ? callProxyAddresses[Flags.PROXY_WITH_SENDER]
-                : callProxyAddresses[0];
-
+            // use local variable to reduce gas usage
+            address _callProxy = callProxy;
             bool status;
             if (unwrapETH) {
                 // withdraw weth to callProxy directly
-                _withdrawWeth(callProxyAddress, _amount);
-                status = ICallProxy(callProxyAddress).call(
+                _withdrawWeth(_callProxy, _amount);
+                status = ICallProxy(_callProxy).call(
                     _autoParams.fallbackAddress,
                     _receiver,
                     _autoParams.data,
                     _autoParams.flags,
-                    _autoParams.nativeSender
+                    _autoParams.nativeSender,
+                    _chainIdFrom
                 );
             }
             else {
-                _mintOrTransfer(_token, callProxyAddress, _amount, isNativeToken);
+                _mintOrTransfer(_token, _callProxy, _amount, isNativeToken);
 
-                status = ICallProxy(callProxyAddress).callERC20(
+                status = ICallProxy(_callProxy).callERC20(
                     _token,
                     _autoParams.fallbackAddress,
                     _receiver,
                     _autoParams.data,
                     _autoParams.flags,
-                    _autoParams.nativeSender
+                    _autoParams.nativeSender,
+                    _chainIdFrom
                 );
             }
-            emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
+            emit AutoRequestExecuted(_submissionId, status, _callProxy);
         } else if (unwrapETH) {
             // transferring WETH with unwrap flag
             _withdrawWeth(_receiver, _amount);
@@ -1074,6 +1076,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 111; // 1.1.1
+        return 120; // 1.2.0
     }
 }

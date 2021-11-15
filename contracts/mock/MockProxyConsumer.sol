@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 contract MockProxyConsumer {
     using SafeERC20 for IERC20;
 
+    uint256 public constant CHAIN_ID_FROM = 42;
+
     address public callProxy;
     address public token;
     bool public lastOperationStatus;
@@ -29,7 +31,8 @@ contract MockProxyConsumer {
                 _receiver,
                 _data,
                 0,
-                ""
+                "",
+                CHAIN_ID_FROM
             );
         } else {
             IERC20(_token).transfer(callProxy, msg.value);
@@ -39,7 +42,8 @@ contract MockProxyConsumer {
                 _receiver,
                 _data,
                 0,
-                ""
+                "",
+                CHAIN_ID_FROM
             );
         }
         lastOperationStatus = status;

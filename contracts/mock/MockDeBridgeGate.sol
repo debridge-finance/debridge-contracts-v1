@@ -41,7 +41,7 @@ contract MockDeBridgeGate is DeBridgeGate {
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
 
-        callProxyAddresses[0] = _callProxy;
+        callProxy = _callProxy;
         defiController = _defiController;
         excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
