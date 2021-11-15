@@ -15,8 +15,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== STATE VARIABLES ========== */
 
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
-    uint256 public submissionChainIdFrom;
-    bytes public submissionNativeSender;
+    uint256 public override submissionChainIdFrom;
+    bytes public override submissionNativeSender;
 
     /* ========== ERRORS ========== */
 

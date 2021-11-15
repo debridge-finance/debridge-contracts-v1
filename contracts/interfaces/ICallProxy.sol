@@ -2,6 +2,10 @@
 pragma solidity 0.8.7;
 
 interface ICallProxy {
+
+    function submissionChainIdFrom() external returns (uint256);
+    function submissionNativeSender() external returns (bytes memory);
+
     function call(
         address _fallbackAddress,
         address _receiver,

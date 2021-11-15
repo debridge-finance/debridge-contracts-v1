@@ -2762,7 +2762,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     context("Test PROXY_WITH_SENDER flag", () => {
-      let callProxyWithSender;
       let receiverContract;
 
       before(async function() {
@@ -2770,24 +2769,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiverContract = await receiverContractFactory.deploy();
       })
 
-      it("should set callProxy with sender", async function() {
-        const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
-        callProxyWithSender = await upgrades.deployProxy(CallProxyFactory, [PROXY_WITH_SENDER]);
-
-        await expect(
-          this.debridgeETH.setCallProxy(PROXY_WITH_SENDER, callProxyWithSender.address)
-        )
-          .to.emit(this.debridgeETH, "CallProxyUpdated")
-          .withArgs(PROXY_WITH_SENDER, callProxyWithSender.address);
-
-        const DEBRIDGE_GATE_ROLE = await callProxyWithSender.DEBRIDGE_GATE_ROLE();
-        await callProxyWithSender.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
-      })
-
-      it("should use different proxy with PROXY_WITH_SENDER flag", async function() {
+      it("should set native sender/chainIdFrom with PROXY_WITH_SENDER flag", async function() {
         const receiverAmount = toBN(toWei("10"));
         const autoData = receiverContract.interface.encodeFunctionData(
-          "setUint256AndPullToken", [this.wethETH.address, receiverAmount, 1]);
+          "pullTokenAndSetNativeSender", [this.wethETH.address, receiverAmount, 1]);
 
         const flags = 2 ** PROXY_WITH_SENDER;
 
@@ -2845,7 +2830,7 @@ contract("DeBridgeGate real pipeline mode", function () {
                 bscAccount.address))
         )
           .to.emit(this.debridgeETH, "AutoRequestExecuted")
-          .withArgs(burnEvent.args.submissionId, true, callProxyWithSender.address);
+          .withArgs(burnEvent.args.submissionId, true, this.callProxy.address);
 
         // weth balance of receiver should change
         const receiverBalanceWETHAfter = toBN(await this.wethETH.balanceOf(receiverContract.address));
@@ -2862,6 +2847,13 @@ contract("DeBridgeGate real pipeline mode", function () {
         // worker should receive executionFee in weth
         const workerBalanceWETHAfter = toBN(await this.wethETH.balanceOf(workerAccount.address));
         assert.equal(workerBalanceWETHAfter.toString(), workerBalanceWETHBefore.add(executionFee).toString());
+        // check native sender
+        assert.equal(bscAccount.address.toString().toLowerCase(), await receiverContract.submissionNativeSender());
+        assert.equal("0x", await this.callProxy.submissionNativeSender());
+        // check chainIdfrom
+        assert.equal((await this.debridgeBSC.chainId()).toString(), (await receiverContract.submissionChainIdFrom()).toString());
+        assert.equal("0", (await this.callProxy.submissionChainIdFrom()).toString());
+
       });
     });
 
