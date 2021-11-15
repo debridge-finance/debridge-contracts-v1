@@ -51,7 +51,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             msg.value,
             _data,
             _nativeSender,
-            _chainIdFrom
+            _chainIdFrom,
+            _flags.getFlag(Flags.PROXY_WITH_SENDER)
         );
 
         if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
@@ -81,7 +82,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             0,
             _data,
             _nativeSender,
-            _chainIdFrom
+            _chainIdFrom,
+            _flags.getFlag(Flags.PROXY_WITH_SENDER)
         );
 
         amount = IERC20(_token).balanceOf(address(this));
@@ -102,13 +104,15 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 value,
         bytes memory data,
         bytes memory _nativeSender,
-        uint256 _chainIdFrom
+        uint256 _chainIdFrom,
+        bool storeSender
     ) internal returns (bool result) {
         // Temporary write to a storage nativeSender and chainIdFrom variables.
         // External contract can read them during a call if needed
-        submissionChainIdFrom = _chainIdFrom;
-        submissionNativeSender = _nativeSender;
-
+        if (storeSender) {
+            submissionChainIdFrom = _chainIdFrom;
+            submissionNativeSender = _nativeSender;
+        }
         uint256 dataLength = data.length;
         assembly {
             let x := mload(0x40) // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
@@ -127,12 +131,14 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         }
 
         // clear storage variables to get gas refund
-        submissionChainIdFrom = 0;
-        submissionNativeSender = "";
+        if (storeSender) {
+            submissionChainIdFrom = 0;
+            submissionNativeSender = "";
+        }
     }
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 103; // 1.0.3
+        return 120; // 1.0.3
     }
 }
