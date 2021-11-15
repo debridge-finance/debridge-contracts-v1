@@ -47,6 +47,7 @@ contract DeBridgeGate is
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
 
+    mapping(uint256 => address) public callProxyAddressesObsolete; // Obsolete. need to keep correct slots state
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
     mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
@@ -59,7 +60,6 @@ contract DeBridgeGate is
 
     address public defiController; // proxy to use the locked assets in Defi protocols
     address public feeProxy; // proxy to convert the collected fees into Link's
-    address public callProxy; // proxy to execute user's calls
     IWETH public weth; // wrapped native token contract
 
     address public feeContractUpdater; // contract address that can override globalFixedNativeFee
@@ -67,6 +67,7 @@ contract DeBridgeGate is
     uint256 public globalFixedNativeFee;
     uint16 public globalTransferFeeBps;
 
+    address public callProxy; // proxy to execute user's calls
     IWethGate public wethGate;
 
     /* ========== ERRORS ========== */
