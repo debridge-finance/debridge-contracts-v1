@@ -20,6 +20,7 @@ import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
 import "../libraries/Flags.sol";
+import "../interfaces/IWethGate.sol";
 
 contract DeBridgeGate is
     Initializable,
@@ -65,6 +66,8 @@ contract DeBridgeGate is
 
     uint256 public globalFixedNativeFee;
     uint16 public globalTransferFeeBps;
+
+    IWethGate public wethGate;
 
     /* ========== ERRORS ========== */
 
@@ -448,6 +451,12 @@ contract DeBridgeGate is
         feeContractUpdater = _value;
     }
 
+    /// @dev Set wethGate contract, that uses for weth withdraws affected by EIP1884
+    /// @param _wethGate address of new wethGate contract.
+    function setWethGate(IWethGate _wethGate) external onlyAdmin {
+        wethGate = _wethGate;
+    }
+
     /// @dev Stop all transfers.
     function pause() external onlyGovMonitoring {
         _pause();
@@ -563,7 +572,7 @@ contract DeBridgeGate is
 
     // we need to accept ETH sends to unwrap WETH
     receive() external payable {
-        assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
+        // assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
     }
 
     /* ========== INTERNAL ========== */
@@ -849,9 +858,9 @@ contract DeBridgeGate is
 
             bool status;
             if (unwrapETH) {
-                weth.withdraw(_amount);
-
-                status = ICallProxy(callProxyAddress).call{value: _amount}(
+                // withdraw weth to callProxy directly
+                _withdrawWeth(callProxyAddress, _amount);
+                status = ICallProxy(callProxyAddress).call(
                     _autoParams.fallbackAddress,
                     _receiver,
                     _autoParams.data,
@@ -874,8 +883,7 @@ contract DeBridgeGate is
             emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
         } else if (unwrapETH) {
             // transferring WETH with unwrap flag
-            weth.withdraw(_amount);
-            _safeTransferETH(_receiver, _amount);
+            _withdrawWeth(_receiver, _amount);
         } else {
             _mintOrTransfer(_token, _receiver, _amount, isNativeToken);
         }
@@ -902,6 +910,19 @@ contract DeBridgeGate is
     function _safeTransferETH(address to, uint256 value) internal {
         (bool success, ) = to.call{value: value}(new bytes(0));
         if (!success) revert EthTransferFailed();
+    }
+
+
+    function _withdrawWeth(address _receiver, uint _amount) internal {
+        if (address(wethGate) == address(0)) {
+            // dealing with weth withdraw affected by EIP1884
+            weth.withdraw(_amount);
+            _safeTransferETH(_receiver, _amount);
+        }
+        else {
+            IERC20(address(weth)).safeTransfer(address(wethGate), _amount);
+            wethGate.withdraw(_receiver, _amount);
+        }
     }
 
     /*
@@ -1052,6 +1073,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 110; // 1.1.0
+        return 111; // 1.1.1
     }
 }
