@@ -15,8 +15,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== STATE VARIABLES ========== */
 
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
-    uint256 public variation;
-
+    uint256 public override submissionChainIdFrom;
+    bytes public override submissionNativeSender;
 
     /* ========== ERRORS ========== */
 
@@ -34,8 +34,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize(uint256 _variation) public initializer {
-        variation = _variation;
+    function initialize() public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -44,20 +43,25 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         address _receiver,
         bytes memory _data,
         uint256 _flags,
-        bytes memory _nativeSender
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
     ) external payable override onlyGateRole returns (bool _result) {
-        // Add last argument is sender from original network
-        if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
-            _data = abi.encodePacked(_data, _nativeSender);
-        }
+        uint256 amount = address(this).balance;
 
-        _result = externalCall(_receiver, msg.value, _data.length, _data);
+        _result = externalCall(
+            _receiver,
+            amount,
+            _data,
+            _nativeSender,
+            _chainIdFrom,
+            _flags.getFlag(Flags.PROXY_WITH_SENDER)
+        );
 
         if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
         if (!_result) {
-            (bool success, ) = _reserveAddress.call{value: msg.value}(new bytes(0));
+            (bool success, ) = _reserveAddress.call{value: amount}(new bytes(0));
             if (!success) revert CallFailed();
         }
     }
@@ -68,18 +72,22 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         address _receiver,
         bytes memory _data,
         uint256 _flags,
-        bytes memory _nativeSender
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
     ) external override onlyGateRole returns (bool _result) {
         uint256 amount = IERC20(_token).balanceOf(address(this));
         IERC20(_token).safeApprove(_receiver, 0);
         IERC20(_token).safeApprove(_receiver, amount);
 
-        // Add last argument is sender from original network
-        if (_flags.getFlag(Flags.PROXY_WITH_SENDER)) {
-            _data = abi.encodePacked(_data, _nativeSender);
-        }
+        _result = externalCall(
+            _receiver,
+            0,
+            _data,
+            _nativeSender,
+            _chainIdFrom,
+            _flags.getFlag(Flags.PROXY_WITH_SENDER)
+        );
 
-        _result = externalCall(_receiver, 0, _data.length, _data);
         amount = IERC20(_token).balanceOf(address(this));
 
         if (!_result &&_flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
@@ -96,10 +104,18 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     function externalCall(
         address destination,
         uint256 value,
-        uint256 dataLength,
-        bytes memory data
-    ) internal returns (bool) {
-        bool result;
+        bytes memory data,
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom,
+        bool storeSender
+    ) internal returns (bool result) {
+        // Temporary write to a storage nativeSender and chainIdFrom variables.
+        // External contract can read them during a call if needed
+        if (storeSender) {
+            submissionChainIdFrom = _chainIdFrom;
+            submissionNativeSender = _nativeSender;
+        }
+        uint256 dataLength = data.length;
         assembly {
             let x := mload(0x40) // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
             let d := add(data, 32) // First 32 bytes are the padded length of data, so exclude that
@@ -115,11 +131,20 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
                 0 // Output is ignored, therefore the output size is zero
             )
         }
-        return result;
+
+        // clear storage variables to get gas refund
+        if (storeSender) {
+            submissionChainIdFrom = 0;
+            submissionNativeSender = "";
+        }
+    }
+
+    // we need to accept ETH from deBridgeGate
+    receive() external payable {
     }
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 102; // 1.0.2
+        return 120; // 1.0.3
     }
 }

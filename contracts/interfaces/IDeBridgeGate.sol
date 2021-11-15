@@ -63,6 +63,10 @@ interface IDeBridgeGate {
         bool isNativeToken;
     }
 
+    /* ========== PUBLIC VARS GETTERS ========== */
+
+    function isSubmissionUsed(bytes32 submissionId) external returns (bool);
+
     /* ========== FUNCTIONS ========== */
 
     /// @dev Locks asset on the chain and enables minting on the other chain.
@@ -166,7 +170,7 @@ interface IDeBridgeGate {
     ); // emited when new asset is supported
     event ChainSupportUpdated(uint256 chainId, bool isSupported); // Emits when the asset is allowed/disallowed to be transferred to the chain.
     event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
-    event CallProxyUpdated(uint256 variation, address callProxy); // emited when the new call proxy set
+    event CallProxyUpdated(address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(
         bytes32 submissionId,
         bool indexed success,

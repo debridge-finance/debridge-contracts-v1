@@ -75,14 +75,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
 
   // --------------------------------
-  //    CallProxies
+  //    CallProxy
   // --------------------------------
 
-  const callProxy = await getLastDeployedProxy("CallProxy", deployer, [0]);
+  const callProxy = await getLastDeployedProxy("CallProxy", deployer, []);
   await transferAdminRole(callProxy, "CallProxy");
-
-  const callProxyWithSender = await getLastDeployedProxy("CallProxy", deployer, [FLAGS.PROXY_WITH_SENDER]);
-  await transferAdminRole(callProxyWithSender, "CallProxyWithSender");
 
 
   // --------------------------------
@@ -112,4 +109,4 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 };
 
 module.exports.tags = ["10_transfer_admin_role"];
-module.exports.dependencies = ['08_DeBridgeGate'];
+module.exports.dependencies = ['09_DeBridgeGate'];

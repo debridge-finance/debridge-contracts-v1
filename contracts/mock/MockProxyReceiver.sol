@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "../interfaces/ICallProxy.sol";
 
 // MockProxyReceiver receives payable and non-payable calls from CallProxy.sol.
 // Used for positive proxy tests
@@ -13,6 +14,8 @@ contract MockProxyReceiver {
     uint256 public weiReceived = 0;
     uint256 public tokensReceived;
     string public lastHit = "";
+    uint256 public submissionChainIdFrom;
+    bytes public submissionNativeSender;
 
     function setUint256Payable(uint256 _result) external payable {
         lastHit = "setUint256Payable";
@@ -51,6 +54,22 @@ contract MockProxyReceiver {
         uint256 balanceAfter = IERC20(_token).balanceOf(address(this));
         tokensReceived = balanceAfter - balanceBefore;
     }
+
+    function pullTokenAndSetNativeSender(
+        address _token,
+        uint256 _amount,
+        uint256 _result
+    ) external {
+        lastHit = "pullTokenAndSetNativeSender";
+        result = _result;
+        uint256 balanceBefore = IERC20(_token).balanceOf(address(this));
+        IERC20(_token).safeTransferFrom(address(msg.sender), address(this), _amount);
+        uint256 balanceAfter = IERC20(_token).balanceOf(address(this));
+        tokensReceived = balanceAfter - balanceBefore;
+        submissionChainIdFrom = ICallProxy(msg.sender).submissionChainIdFrom();
+        submissionNativeSender = ICallProxy(msg.sender).submissionNativeSender();
+    }
+
 
     // This function is called for all messages sent to
     // this contract, except plain Ether transfers
