@@ -63,6 +63,10 @@ interface IDeBridgeGate {
         bool isNativeToken;
     }
 
+    /* ========== PUBLIC VARS GETTERS ========== */
+
+    function isSubmissionUsed(bytes32 submissionId) external returns (bool);
+
     /* ========== FUNCTIONS ========== */
 
     /// @dev Locks asset on the chain and enables minting on the other chain.

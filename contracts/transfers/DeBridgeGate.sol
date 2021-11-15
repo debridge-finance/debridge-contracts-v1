@@ -50,7 +50,7 @@ contract DeBridgeGate is
     mapping(uint256 => address) public callProxyAddresses; // proxy to execute user's calls
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
-    mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
+    mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
@@ -258,6 +258,10 @@ contract DeBridgeGate is
             autoParams,
             _autoParams.length > 0
         );
+
+        // check if submission already claimed
+        if (isSubmissionUsed[submissionId]) revert SubmissionUsed();
+        isSubmissionUsed[submissionId] = true;
 
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
@@ -829,9 +833,6 @@ contract DeBridgeGate is
         uint256 _amount,
         SubmissionAutoParamsFrom memory _autoParams
     ) internal returns (bool isNativeToken) {
-        if (isSubmissionUsed[_submissionId]) revert SubmissionUsed();
-        isSubmissionUsed[_submissionId] = true;
-
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
         // if (debridge.chainId != getChainId()) revert WrongChain();
