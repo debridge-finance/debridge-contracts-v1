@@ -882,7 +882,7 @@ contract DeBridgeGate is
                     _chainIdFrom
                 );
             }
-            emit AutoRequestExecuted(_submissionId, status, callProxy);
+            emit AutoRequestExecuted(_submissionId, status, _callProxy);
         } else if (unwrapETH) {
             // transferring WETH with unwrap flag
             _withdrawWeth(_receiver, _amount);
