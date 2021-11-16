@@ -8,6 +8,7 @@ const {
   MAX_TRANSFER_DECIMALS,
 } = require("./utils.spec");
 const MockLinkToken = artifacts.require("MockLinkToken");
+const WethGate = artifacts.require("WethGate");
 const MockInvalidToken = artifacts.require("MockInvalidToken");
 const MockToken = artifacts.require("MockToken");
 const DeBridgeToken = artifacts.require("DeBridgeToken");
@@ -81,6 +82,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
+
     const UniswapV2 = await deployments.getArtifact("UniswapV2Factory");
     const UniswapV2Factory = await ethers.getContractFactory(
       UniswapV2.abi,
@@ -99,6 +101,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
     const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
+    const MockExternalFactory = await ethers.getContractFactory("MockExternalContract", alice);
 
     this.amountThreshols = toWei("1000");
 
@@ -132,10 +135,24 @@ contract("DeBridgeGate real pipeline mode", function () {
     this.wethBSC = await WETH9Factory.deploy();
     this.wethHECO = await WETH9Factory.deploy();
 
+    //-------Deploy WethGate contracts
+    this.wethGateETH = await WethGate.new(this.wethETH.address, {
+      from: alice,
+    });
+    this.wethGateBSC = await WethGate.new(this.wethBSC.address, {
+      from: alice,
+    });
+    this.wethGateHECO = await WethGate.new(this.wethHECO.address, {
+      from: alice,
+    });
+
+
     //-------Deploy uniswap contracts
     this.uniswapFactoryETH = await UniswapV2Factory.deploy(carol);
     this.uniswapFactoryBSC = await UniswapV2Factory.deploy(carol);
     this.uniswapFactoryHECO = await UniswapV2Factory.deploy(carol);
+
+    this.mockExternalContract = await MockExternalFactory.deploy();
 
     //-------Deploy FeeProxy contracts
     this.feeProxyETH = await upgrades.deployProxy(
@@ -175,7 +192,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     // console.log(`feeProxyHECO: ${this.feeProxyHECO.address.toString()}`);
 
     //-------Deploy callProxy contracts
-    this.callProxy = await upgrades.deployProxy(CallProxyFactory, [0]);
+    this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
 
     //-------Deploy defiController contracts
     this.defiControllerETH = await upgrades.deployProxy(DefiControllerFactory, []);
@@ -504,17 +521,32 @@ contract("DeBridgeGate real pipeline mode", function () {
         [fixedNativeFeeBNB, fixedNativeFeeHT]
       );
 
+      let fixedFee = await this.debridgeETH.getDebridgeChainAssetFixedFee(wethDebridgeId, bscChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeBNB.toString());
+      fixedFee = await this.debridgeETH.getDebridgeChainAssetFixedFee(wethDebridgeId, hecoChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
+
       await this.debridgeBSC.updateAssetFixedFees(
         bscWethDebridgeId,
         [ethChainId, hecoChainId],
         [fixedNativeFeeETH, fixedNativeFeeHT]
       );
 
+      fixedFee = await this.debridgeBSC.getDebridgeChainAssetFixedFee(bscWethDebridgeId, ethChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeETH.toString());
+      fixedFee = await this.debridgeBSC.getDebridgeChainAssetFixedFee(bscWethDebridgeId, hecoChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
+
       await this.debridgeHECO.updateAssetFixedFees(
-        wethDebridgeId,
+        hecoWethDebridgeId,
         [ethChainId, bscChainId],
         [fixedNativeFeeHT, fixedNativeFeeBNB]
       );
+
+      fixedFee = await this.debridgeHECO.getDebridgeChainAssetFixedFee(hecoWethDebridgeId, ethChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeHT.toString());
+      fixedFee = await this.debridgeHECO.getDebridgeChainAssetFixedFee(hecoWethDebridgeId, bscChainId)
+      assert.equal(fixedFee.toString(), fixedNativeFeeBNB.toString());
 
       //TODO: check that we added oracles
     });
@@ -556,6 +588,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(ZERO_ADDRESS, await this.debridgeBSC.defiController());
     });
 
+    it("should set Weth Gate if called by the admin", async function () {
+      const gateAddress = this.wethGateETH.address;
+      await this.debridgeETH.setWethGate(gateAddress);
+      assert.equal(gateAddress, await this.debridgeETH.wethGate());
+      //restore back
+      await this.debridgeETH.setWethGate(ZERO_ADDRESS);
+      assert.equal(ZERO_ADDRESS, await this.debridgeETH.wethGate());
+    });
+
     // setWeth removed from contract
     // it("should set weth if called by the admin", async function() {
     //   let testAddress = "0x765bDC94443b2D87543ee6BdDEE2208343C8C07A";
@@ -586,6 +627,14 @@ contract("DeBridgeGate real pipeline mode", function () {
         "AdminBadRole()"
       );
     });
+
+    it("should reject setting Weth gate if called by the non-admin", async function () {
+      await expectRevert(
+        this.debridgeETH.connect(bobAccount).setWethGate(ZERO_ADDRESS),
+        "AdminBadRole()"
+      );
+    });
+
 
     // setWeth removed from contract
     // it("should reject setting weth if called by the non-admin", async function() {
@@ -908,7 +957,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const amountDecimals = MAX_TRANSFER_DECIMALS + 4;
         let amount = 1 - 10 ** -amountDecimals;
         amount = ethers.utils.parseEther(amount.toFixed(amountDecimals));
-        console.log(amount.toString());
+        // console.log(amount.toString());
 
         const balance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
         const userBalanceBefore = toBN(await web3.eth.getBalance(sender));
@@ -1510,6 +1559,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       );
       assert.ok(isSubmissionUsed);
 
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeBSC.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
+
       const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
       assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
       assert.equal(this.wethETH.address.toLowerCase(), nativeTokenInfo.nativeAddress.toString());
@@ -1554,6 +1606,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       const isSubmissionUsed = await this.debridgeBSC.isSubmissionUsed(submissionId);
       assert.equal(balance.add(this.linkSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeBSC.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
 
       const nativeTokenInfo = await this.debridgeBSC.getNativeInfo(debridgeInfo.tokenAddress);
       assert.equal(ethChainId.toString(), nativeTokenInfo.nativeChainId.toString());
@@ -1888,6 +1943,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         newDebridgeFeeInfo.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeETH.address, this.nativeSubmissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should claim ERC20 when the submission is approved", async function () {
@@ -1918,6 +1976,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         newDebridgeFeeInfo.collectedFees.toString()
       );
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeETH.address, this.linkSubmissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should reject claiming with unconfirmed submission", async function () {
@@ -2131,6 +2192,9 @@ contract("DeBridgeGate real pipeline mode", function () {
         newBalance.toString()
       );
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeHECO.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should mint (deCake) when the submission is approved ", async function () {
@@ -2174,6 +2238,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       const isSubmissionUsed = await this.debridgeHECO.isSubmissionUsed(submissionId);
       assert.equal(balance.add(this.cakeSubmission.args.amount).toString(), newBalance.toString());
       assert.ok(isSubmissionUsed);
+
+      const externalIsSubmissionUsed = await this.mockExternalContract.readIsSubmissionUsed(this.debridgeHECO.address, submissionId);
+      assert.ok(externalIsSubmissionUsed);
     });
 
     it("should burn (deCake in HECO network)", async function () {
@@ -2500,7 +2567,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnReceipt = await burnTx.wait();
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
-        const callProxyAddress = await this.debridgeETH.callProxyAddresses(0);
+        const callProxyAddress = await this.debridgeETH.callProxy();
 
         // worker call claim on ETH to get native tokens back
         await expect(
@@ -2545,8 +2612,177 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
     });
 
+
+    context("Test UNWRAP_ETH flag with Weth Gate", () => {
+
+      it("should set Weth Gate  if called by the admin", async function () {
+        const gateAddress = this.wethGateETH.address;
+        await this.debridgeETH.setWethGate(gateAddress);
+        assert.equal(gateAddress, await this.debridgeETH.wethGate());
+      });
+
+      it("should burn/claim with UNWRAP_ETH flag without auto call data", async function() {
+        const autoData = [];
+        const flags = 2 ** UNWRAP_ETH;
+
+        // call autoburn on BSC
+        const burnTx = await this.debridgeBSC
+          .connect(bscAccount)
+          .send(
+            deETHToken.address,
+            sentEvent.args.amount,
+            ethChainId,
+            ethAccount.address,
+            [],
+            false,
+            referralCode,
+            packSubmissionAutoParamsTo(
+              executionFee,
+              flags,
+              fallbackAddress,
+              autoData),
+            {
+              // pay fee in native token
+              value: toWei('1000'),
+            }
+          );
+
+        const balanceDeETHAfterBurn = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterBurn.toString(), balanceDeETHBeforeMint.toString());
+        const balanceAfterBurn = toBN(await web3.eth.getBalance(ethAccount.address));
+        const workerBalanceWETHBefore = toBN(await this.wethETH.balanceOf(workerAccount.address));
+
+        // get Burnt event
+        const burnReceipt = await burnTx.wait();
+        const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
+        // console.log(burnEvent)
+
+        // worker call claim on ETH to get native tokens back
+        const claimTx = await this.debridgeETH
+          .connect(workerAccount)
+          .claim(
+            burnEvent.args.debridgeId,
+            burnEvent.args.amount,
+            bscChainId,
+            ethAccount.address,
+            burnEvent.args.nonce,
+            await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
+            packSubmissionAutoParamsFrom(
+              executionFee,
+              flags,
+              fallbackAddress,
+              autoData,
+              bscAccount.address));
+
+        // weth balance shouldn't change
+        const balanceWETH = toBN(await this.wethETH.balanceOf(ethAccount.address));
+        assert.equal(balanceWETH.toString(), balanceInitialWETH.toString());
+
+        // eth balance should increased
+        const balanceAfterClaim = toBN(await web3.eth.getBalance(ethAccount.address));
+        assert.equal(balanceAfterBurn.add(burnEvent.args.amount).toString(), balanceAfterClaim.toString());
+
+        // worker should receive executionFee in weth
+        const workerBalanceWETHAfter = toBN(await this.wethETH.balanceOf(workerAccount.address));
+        assert.equal(workerBalanceWETHAfter.toString(), workerBalanceWETHBefore.add(executionFee).toString());
+      });
+
+      it("should burn/claim with UNWRAP_ETH flag with auto call data", async function() {
+        const receiverContractFactory = await ethers.getContractFactory("MockProxyReceiver");
+        const receiverContract = await receiverContractFactory.deploy();
+
+        const autoData = receiverContract.interface.encodeFunctionData("setUint256Payable", [
+          12345,
+        ]);
+        const flags = 2 ** UNWRAP_ETH;
+
+        // call autoburn on BSC
+        const burnTx = await this.debridgeBSC
+          .connect(bscAccount)
+          .send(
+            deETHToken.address,
+            sentEvent.args.amount,
+            ethChainId,
+            receiverContract.address,
+            [],
+            false,
+            referralCode,
+            packSubmissionAutoParamsTo(
+              executionFee,
+              flags,
+              fallbackAddress,
+              autoData),
+            {
+              // pay fee in native token
+              value: toWei('1000'),
+            }
+          );
+
+        const balanceDeETHAfterBurn = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterBurn.toString(), balanceDeETHBeforeMint.toString());
+
+        const receiverBalanceBefore = toBN(await web3.eth.getBalance(receiverContract.address));
+        const receiverBalanceWETHBefore = toBN(await this.wethETH.balanceOf(receiverContract.address));
+        const fallbackBalanceBefore = toBN(await web3.eth.getBalance(fallbackAddress));
+        const fallbackBalanceWETHBefore = toBN(await this.wethETH.balanceOf(fallbackAddress));
+        const workerBalanceBefore = toBN(await web3.eth.getBalance(workerAccount.address));
+        const workerBalanceWETHBefore = toBN(await this.wethETH.balanceOf(workerAccount.address));
+
+        // get Burnt event
+        const burnReceipt = await burnTx.wait();
+        const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
+        // console.log(burnEvent)
+        const callProxyAddress = await this.debridgeETH.callProxy();
+
+        // worker call claim on ETH to get native tokens back
+        await expect(
+          this.debridgeETH
+            .connect(workerAccount)
+            .claim(
+              burnEvent.args.debridgeId,
+              burnEvent.args.amount,
+              bscChainId,
+              receiverContract.address,
+              burnEvent.args.nonce,
+              await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
+              packSubmissionAutoParamsFrom(
+                executionFee,
+                flags,
+                fallbackAddress,
+                autoData,
+                bscAccount.address))
+        )
+          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          .withArgs(burnEvent.args.submissionId, true, callProxyAddress);
+
+        // weth balance of receiver shouldn't change
+        const receiverBalanceWETHAfter = toBN(await this.wethETH.balanceOf(receiverContract.address));
+        assert.equal(receiverBalanceWETHBefore.toString(), receiverBalanceWETHAfter.toString());
+
+        // eth balance of receiver should change
+        const receiverBalanceAfter = toBN(await web3.eth.getBalance(receiverContract.address));
+        assert.equal(receiverBalanceBefore.add(burnEvent.args.amount).toString(), receiverBalanceAfter.toString());
+
+        // fallback weth balance shouldn't change
+        const fallbackBalanceWETHAfter = toBN(await this.wethETH.balanceOf(fallbackAddress));
+        assert.equal(fallbackBalanceWETHAfter.toString(), fallbackBalanceWETHBefore.toString());
+
+        // fallback eth balance shouldn't change
+        const fallbackBalanceAfter = toBN(await web3.eth.getBalance(fallbackAddress));
+        assert.equal(fallbackBalanceAfter.toString(), fallbackBalanceBefore.toString());
+
+        // worker should receive executionFee in WETH
+        const workerBalanceWETHAfter = toBN(await this.wethETH.balanceOf(workerAccount.address));
+        assert.equal(workerBalanceWETHBefore.add(executionFee).toString(), workerBalanceWETHAfter.toString(), );
+      });
+
+      it("should set zero address to Weth Gate if called by the admin", async function () {
+        await this.debridgeETH.setWethGate(ZERO_ADDRESS);
+        assert.equal(ZERO_ADDRESS, await this.debridgeETH.wethGate());
+      });
+    });
+
     context("Test PROXY_WITH_SENDER flag", () => {
-      let callProxyWithSender;
       let receiverContract;
 
       before(async function() {
@@ -2554,24 +2790,10 @@ contract("DeBridgeGate real pipeline mode", function () {
         receiverContract = await receiverContractFactory.deploy();
       })
 
-      it("should set callProxy with sender", async function() {
-        const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
-        callProxyWithSender = await upgrades.deployProxy(CallProxyFactory, [PROXY_WITH_SENDER]);
-
-        await expect(
-          this.debridgeETH.setCallProxy(PROXY_WITH_SENDER, callProxyWithSender.address)
-        )
-          .to.emit(this.debridgeETH, "CallProxyUpdated")
-          .withArgs(PROXY_WITH_SENDER, callProxyWithSender.address);
-
-        const DEBRIDGE_GATE_ROLE = await callProxyWithSender.DEBRIDGE_GATE_ROLE();
-        await callProxyWithSender.grantRole(DEBRIDGE_GATE_ROLE, this.debridgeETH.address);
-      })
-
-      it("should use different proxy with PROXY_WITH_SENDER flag", async function() {
+      it("should set native sender/chainIdFrom with PROXY_WITH_SENDER flag", async function() {
         const receiverAmount = toBN(toWei("10"));
         const autoData = receiverContract.interface.encodeFunctionData(
-          "setUint256AndPullToken", [this.wethETH.address, receiverAmount, 1]);
+          "pullTokenAndSetNativeSender", [this.wethETH.address, receiverAmount, 1]);
 
         const flags = 2 ** PROXY_WITH_SENDER;
 
@@ -2629,7 +2851,7 @@ contract("DeBridgeGate real pipeline mode", function () {
                 bscAccount.address))
         )
           .to.emit(this.debridgeETH, "AutoRequestExecuted")
-          .withArgs(burnEvent.args.submissionId, true, callProxyWithSender.address);
+          .withArgs(burnEvent.args.submissionId, true, this.callProxy.address);
 
         // weth balance of receiver should change
         const receiverBalanceWETHAfter = toBN(await this.wethETH.balanceOf(receiverContract.address));
@@ -2646,6 +2868,13 @@ contract("DeBridgeGate real pipeline mode", function () {
         // worker should receive executionFee in weth
         const workerBalanceWETHAfter = toBN(await this.wethETH.balanceOf(workerAccount.address));
         assert.equal(workerBalanceWETHAfter.toString(), workerBalanceWETHBefore.add(executionFee).toString());
+        // check native sender
+        assert.equal(bscAccount.address.toString().toLowerCase(), await receiverContract.submissionNativeSender());
+        assert.equal("0x", await this.callProxy.submissionNativeSender());
+        // check chainIdfrom
+        assert.equal((await this.debridgeBSC.chainId()).toString(), (await receiverContract.submissionChainIdFrom()).toString());
+        assert.equal("0", (await this.callProxy.submissionChainIdFrom()).toString());
+
       });
     });
 

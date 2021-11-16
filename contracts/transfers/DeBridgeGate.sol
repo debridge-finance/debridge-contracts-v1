@@ -20,6 +20,7 @@ import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
 import "../libraries/Flags.sol";
+import "../interfaces/IWethGate.sol";
 
 contract DeBridgeGate is
     Initializable,
@@ -46,10 +47,9 @@ contract DeBridgeGate is
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
 
-    mapping(uint256 => address) public callProxyAddresses; // proxy to execute user's calls
     mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
-    mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
+    mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
@@ -59,12 +59,15 @@ contract DeBridgeGate is
 
     address public defiController; // proxy to use the locked assets in Defi protocols
     address public feeProxy; // proxy to convert the collected fees into Link's
+    address public callProxy; // proxy to execute user's calls
     IWETH public weth; // wrapped native token contract
 
     address public feeContractUpdater; // contract address that can override globalFixedNativeFee
 
     uint256 public globalFixedNativeFee;
     uint16 public globalTransferFeeBps;
+
+    IWethGate public wethGate;
 
     /* ========== ERRORS ========== */
 
@@ -154,7 +157,7 @@ contract DeBridgeGate is
         signatureVerifier = _signatureVerifier;
         confirmationAggregator = _confirmationAggregator;
 
-        callProxyAddresses[0] = _callProxy;
+        callProxy = _callProxy;
         defiController = _defiController;
         excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -256,6 +259,10 @@ contract DeBridgeGate is
             _autoParams.length > 0
         );
 
+        // check if submission already claimed
+        if (isSubmissionUsed[submissionId]) revert SubmissionUsed();
+        isSubmissionUsed[submissionId] = true;
+
         _checkConfirmations(submissionId, _debridgeId, _amount, _signatures);
 
         bool isNativeToken =_claim(
@@ -263,6 +270,7 @@ contract DeBridgeGate is
             _debridgeId,
             _receiver,
             _amount,
+            _chainIdFrom,
             autoParams
         );
 
@@ -393,10 +401,10 @@ contract DeBridgeGate is
     }
 
     /// @dev Set proxy address.
-    /// @param _address Address of the proxy that executes external calls.
-    function setCallProxy(uint256 variation, address _address) external onlyAdmin {
-        callProxyAddresses[variation] = _address;
-        emit CallProxyUpdated(variation, _address);
+    /// @param _callProxy Address of the proxy that executes external calls.
+    function setCallProxy(address _callProxy) external onlyAdmin {
+        callProxy = _callProxy;
+        emit CallProxyUpdated(_callProxy);
     }
 
     /// @dev Add support for the asset.
@@ -446,6 +454,12 @@ contract DeBridgeGate is
     /// @param _value new contract address.
     function setFeeContractUpdater(address _value) external onlyAdmin {
         feeContractUpdater = _value;
+    }
+
+    /// @dev Set wethGate contract, that uses for weth withdraws affected by EIP1884
+    /// @param _wethGate address of new wethGate contract.
+    function setWethGate(IWethGate _wethGate) external onlyAdmin {
+        wethGate = _wethGate;
     }
 
     /// @dev Stop all transfers.
@@ -563,7 +577,7 @@ contract DeBridgeGate is
 
     // we need to accept ETH sends to unwrap WETH
     receive() external payable {
-        assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
+        // assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
     }
 
     /* ========== INTERNAL ========== */
@@ -818,11 +832,9 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         address _receiver,
         uint256 _amount,
+        uint256 _chainIdFrom,
         SubmissionAutoParamsFrom memory _autoParams
     ) internal returns (bool isNativeToken) {
-        if (isSubmissionUsed[_submissionId]) revert SubmissionUsed();
-        isSubmissionUsed[_submissionId] = true;
-
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
         // if (debridge.chainId != getChainId()) revert WrongChain();
@@ -843,39 +855,38 @@ contract DeBridgeGate is
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isNativeToken);
         }
         if (_autoParams.data.length > 0) {
-            address callProxyAddress = _autoParams.flags.getFlag(Flags.PROXY_WITH_SENDER)
-                ? callProxyAddresses[Flags.PROXY_WITH_SENDER]
-                : callProxyAddresses[0];
-
+            // use local variable to reduce gas usage
+            address _callProxy = callProxy;
             bool status;
             if (unwrapETH) {
-                weth.withdraw(_amount);
-
-                status = ICallProxy(callProxyAddress).call{value: _amount}(
+                // withdraw weth to callProxy directly
+                _withdrawWeth(_callProxy, _amount);
+                status = ICallProxy(_callProxy).call(
                     _autoParams.fallbackAddress,
                     _receiver,
                     _autoParams.data,
                     _autoParams.flags,
-                    _autoParams.nativeSender
+                    _autoParams.nativeSender,
+                    _chainIdFrom
                 );
             }
             else {
-                _mintOrTransfer(_token, callProxyAddress, _amount, isNativeToken);
+                _mintOrTransfer(_token, _callProxy, _amount, isNativeToken);
 
-                status = ICallProxy(callProxyAddress).callERC20(
+                status = ICallProxy(_callProxy).callERC20(
                     _token,
                     _autoParams.fallbackAddress,
                     _receiver,
                     _autoParams.data,
                     _autoParams.flags,
-                    _autoParams.nativeSender
+                    _autoParams.nativeSender,
+                    _chainIdFrom
                 );
             }
-            emit AutoRequestExecuted(_submissionId, status, callProxyAddress);
+            emit AutoRequestExecuted(_submissionId, status, _callProxy);
         } else if (unwrapETH) {
             // transferring WETH with unwrap flag
-            weth.withdraw(_amount);
-            _safeTransferETH(_receiver, _amount);
+            _withdrawWeth(_receiver, _amount);
         } else {
             _mintOrTransfer(_token, _receiver, _amount, isNativeToken);
         }
@@ -902,6 +913,19 @@ contract DeBridgeGate is
     function _safeTransferETH(address to, uint256 value) internal {
         (bool success, ) = to.call{value: value}(new bytes(0));
         if (!success) revert EthTransferFailed();
+    }
+
+
+    function _withdrawWeth(address _receiver, uint _amount) internal {
+        if (address(wethGate) == address(0)) {
+            // dealing with weth withdraw affected by EIP1884
+            weth.withdraw(_amount);
+            _safeTransferETH(_receiver, _amount);
+        }
+        else {
+            IERC20(address(weth)).safeTransfer(address(wethGate), _amount);
+            wethGate.withdraw(_receiver, _amount);
+        }
     }
 
     /*
@@ -948,6 +972,17 @@ contract DeBridgeGate is
     /// @param _tokenAddress Address of the asset on the other chain.
     function getbDebridgeId(uint256 _chainId, bytes memory _tokenAddress) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
+    }
+
+    /// @dev Returns asset fixed fee value for specified debridge and chainId.
+    /// @param _debridgeId Asset identifier.
+    /// @param _chainId Chain id.
+    function getDebridgeChainAssetFixedFee(
+        bytes32 _debridgeId,
+        uint256 _chainId
+    ) external view override returns (uint256) {
+        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        return getDebridgeFeeInfo[_debridgeId].getChainFee[_chainId];
     }
 
     /// @dev Calculate submission id for auto claimable transfer.
@@ -1041,6 +1076,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 110; // 1.1.0
+        return 120; // 1.2.0
     }
 }

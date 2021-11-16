@@ -3,6 +3,7 @@ const { ethers } = require("hardhat");
 
 const flags = 0;
 const nativeSender = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+const chainIdFrom = 42;
 describe("CallProxy", function () {
   before(async function () {
     [deployer, reserve, receiver, tokenHolder] = await ethers.getSigners();
@@ -10,7 +11,7 @@ describe("CallProxy", function () {
 
   beforeEach(async function () {
     this.proxyFactory = await ethers.getContractFactory("CallProxy", deployer);
-    this.proxy = await upgrades.deployProxy(this.proxyFactory, [0]);
+    this.proxy = await upgrades.deployProxy(this.proxyFactory, []);
 
     const DEBRIDGE_GATE_ROLE = await this.proxy.DEBRIDGE_GATE_ROLE();
     await this.proxy.grantRole(DEBRIDGE_GATE_ROLE, deployer.address);
@@ -26,6 +27,7 @@ describe("CallProxy", function () {
           0,
           flags,
           nativeSender,
+          chainIdFrom,
           {
             value: 1234876,
           }
@@ -51,6 +53,7 @@ describe("CallProxy", function () {
           0,
           flags,
           nativeSender,
+          chainIdFrom,
           {
             value: 1234876,
           }
@@ -76,6 +79,7 @@ describe("CallProxy", function () {
             [],
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: 123487678,
             }
@@ -100,6 +104,7 @@ describe("CallProxy", function () {
             0,
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: 123487678,
             }
@@ -127,6 +132,7 @@ describe("CallProxy", function () {
             callData,
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: 12348767,
             }
@@ -157,6 +163,7 @@ describe("CallProxy", function () {
             callData,
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: 12348767,
             }
@@ -256,6 +263,7 @@ describe("CallProxy", function () {
             callData,
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: 1234534567,
             }
@@ -279,6 +287,7 @@ describe("CallProxy", function () {
             callData,
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: 1234534567,
             }
@@ -309,6 +318,7 @@ describe("CallProxy", function () {
             callData,
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: amountOut[0],
             }
@@ -331,6 +341,7 @@ describe("CallProxy", function () {
             callData,
             flags,
             nativeSender,
+            chainIdFrom,
             {
               value: 1234534567,
             }
@@ -369,7 +380,8 @@ describe("CallProxy", function () {
             receiver.address,
             [],
             flags,
-            nativeSender
+            nativeSender,
+            chainIdFrom,
           )
         ).to.be.reverted;
         await expect(
@@ -379,7 +391,8 @@ describe("CallProxy", function () {
             receiver.address,
             "0xdeadbeef",
             flags,
-            nativeSender
+            nativeSender,
+            chainIdFrom,
           )
         ).to.be.reverted;
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("8765432");
@@ -402,7 +415,8 @@ describe("CallProxy", function () {
           nonPullingReceiver.address,
           callData,
           flags,
-          nativeSender
+          nativeSender,
+          chainIdFrom,
         );
         // check we hit the non-pulling function
         expect(await nonPullingReceiver.lastHit()).to.be.equal("setUint256Payable");
@@ -420,7 +434,8 @@ describe("CallProxy", function () {
           receiver.address,
           [],
           flags,
-          nativeSender
+          nativeSender,
+          chainIdFrom,
         );
         transferResult = await this.proxy.callERC20(
           this.token.address,
@@ -428,7 +443,8 @@ describe("CallProxy", function () {
           receiver.address,
           "0xdeadbeef",
           flags,
-          nativeSender
+          nativeSender,
+          chainIdFrom,
         );
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
         expect(await this.token.balanceOf(this.proxy.address)).to.be.equal("0");
@@ -452,7 +468,8 @@ describe("CallProxy", function () {
           alwaysRevertingReceiver.address,
           callData,
           flags,
-          nativeSender
+          nativeSender,
+          chainIdFrom,
         );
 
         expect(await this.token.balanceOf(reserve.address)).to.be.equal("8765432");
@@ -482,7 +499,8 @@ describe("CallProxy", function () {
             receiverContract.address,
             callData,
             flags,
-            nativeSender
+            nativeSender,
+            chainIdFrom,
           );
           // check internal tx hit correct function
           expect(await receiverContract.lastHit()).to.be.equal("setArrayAndPullToken");
@@ -586,7 +604,8 @@ describe("CallProxy", function () {
             this.router.address,
             callData,
             flags,
-            nativeSender
+            nativeSender,
+            chainIdFrom,
           );
           expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal(amountOut[1]);
           expect(await this.weth.balanceOf(this.proxy.address)).to.be.equal(0);
@@ -616,7 +635,8 @@ describe("CallProxy", function () {
             this.router.address,
             callData,
             flags,
-            nativeSender
+            nativeSender,
+            chainIdFrom,
           );
           const tokenHolderBalanceAfter = await ethers.provider.getBalance(tokenHolder.address);
           expect(tokenHolderBalanceAfter.sub(tokenHolderBalanceBefore)).to.be.equal(amountOut[1]);
@@ -647,7 +667,8 @@ describe("CallProxy", function () {
             this.router.address,
             callData,
             flags,
-            nativeSender
+            nativeSender,
+            chainIdFrom,
           );
           const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
           expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
@@ -1043,7 +1064,8 @@ describe("CallProxy", function () {
           nonPullingReceiver.address,
           callData,
           flags,
-          nativeSender
+          nativeSender,
+          chainIdFrom,
         );
         const transferResultTwo = await this.ProxyConsumer.transferToken(
           this.token.address,
