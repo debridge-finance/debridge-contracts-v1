@@ -562,7 +562,6 @@ contract DelegatedStaking is
         strategyController.deposit(strategy.stakeToken, _amount);
         uint256 afterBalance = strategyController.updateReserves(address(this), strategy.strategyToken);
         uint256 receivedAmount = afterBalance - strategy.totalReserves;
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
         uint256 shares = strategy.totalShares > 0
             ? DelegatedStakingHelper._calculateShares(receivedAmount, strategy.totalShares, strategy.totalReserves)
             : receivedAmount;
@@ -1578,7 +1577,7 @@ contract DelegatedStaking is
         returns (uint256)
     {
         uint256 collateralPrice = priceConsumer.getPriceOfTokenInWETH(_collateral);
-        Collateral memory collateral = collaterals[_collateral];
+        Collateral storage collateral = collaterals[_collateral];
         return
             (getValidatorInfo[_validator].collateralPools[_collateral].stakedAmount *
                 10**(18 - collateral.decimals) *
