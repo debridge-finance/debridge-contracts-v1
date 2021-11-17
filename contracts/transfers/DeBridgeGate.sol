@@ -136,18 +136,13 @@ contract DeBridgeGate is
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _signatureVerifier Aggregator address to verify signatures
-    /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
     function initialize(
         uint8 _excessConfirmations,
-        address _signatureVerifier,
-        address _confirmationAggregator,
-        address _callProxy,
-        IWETH _weth,
-        address _feeProxy,
-        address _deBridgeTokenDeployer,
-        address _defiController
+        IWETH _weth
     ) public initializer {
+        excessConfirmations = _excessConfirmations;
+        weth = _weth;
+
         _addAsset(
             getDebridgeId(getChainId(), address(_weth)),
             address(_weth),
@@ -155,18 +150,7 @@ contract DeBridgeGate is
             getChainId()
         );
 
-        signatureVerifier = _signatureVerifier;
-        confirmationAggregator = _confirmationAggregator;
-
-        callProxy = _callProxy;
-        defiController = _defiController;
-        excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-
-        weth = _weth;
-        deBridgeTokenDeployer = _deBridgeTokenDeployer;
-        feeProxy = _feeProxy;
-
         __ReentrancyGuard_init();
     }
 
