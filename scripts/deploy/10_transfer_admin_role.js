@@ -1,6 +1,6 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { ethers } = require("hardhat");
-const { FLAGS, getLastDeployedProxy } = require("../deploy-utils");
+const { FLAGS, getLastDeployedProxy, waitTx } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
@@ -30,14 +30,16 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     const multisigHasAdminRole = await contract.hasRole(DEFAULT_ADMIN_ROLE, multisig);
     if (!multisigHasAdminRole) {
       console.log(`\tcall grantRole for multisig`);
-      await contract.grantRole(DEFAULT_ADMIN_ROLE, multisig);
+      const tx = await contract.grantRole(DEFAULT_ADMIN_ROLE, multisig);
+      await waitTx(tx);
     } else {
       console.log(`\tmultisig already has an admin role, skip calling grantRole`);
     }
     const deployerHasAdminRole = await contract.hasRole(DEFAULT_ADMIN_ROLE, deployer);
     if (deployerHasAdminRole) {
       console.log(`\tcall revokeRole for deployer`);
-      await contract.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
+      const tx = await contract.revokeRole(DEFAULT_ADMIN_ROLE, deployer);
+      await waitTx(tx);
     } else {
       console.log(`\tdeployer already doesn't have an admin role, skip calling revokeRole`);
     }
@@ -104,6 +106,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
   const deBridgeGate = await getLastDeployedProxy("DeBridgeGate", deployer);
   await transferAdminRole(deBridgeGate, "DeBridgeGate");
+
+
+  // --------------------------------
+  //    Transfer ProxyAdmin Ownership
+  // --------------------------------
+  await hre.upgrades.admin.transferProxyAdminOwnership(multisig);
 };
 
 module.exports.tags = ["10_transfer_admin_role"];
