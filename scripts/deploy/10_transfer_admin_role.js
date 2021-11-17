@@ -106,6 +106,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
   const deBridgeGate = await getLastDeployedProxy("DeBridgeGate", deployer);
   await transferAdminRole(deBridgeGate, "DeBridgeGate");
+
+
+  // --------------------------------
+  //    Transfer ProxyAdmin Ownership
+  // --------------------------------
+  await hre.upgrades.admin.transferProxyAdminOwnership(multisig);
 };
 
 module.exports.tags = ["10_transfer_admin_role"];
