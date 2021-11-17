@@ -1,5 +1,5 @@
 const { ethers, upgrades } = require("hardhat");
-const { getLastDeployedProxy, waitTx } = require("../deploy-utils");
+const { waitTx } = require("../deploy-utils");
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
