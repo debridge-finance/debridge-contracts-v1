@@ -98,6 +98,32 @@ async function deleteProxyDeployment(Factory, proxy_address) {
   }
 }
 
+async function upgradeProxy(contractName, contractAddress, deployer) {
+  console.log(`\n*** Upgrade proxy for ${contractName} ***`);
+  console.log('\tSigner: ', deployer);
+
+  const Factory = await hre.ethers.getContractFactory(contractName, deployer);
+
+  // real deploy
+  const proxy = await hre.upgrades.upgradeProxy(contractAddress, Factory);
+  const receipt = await proxy.deployed();
+
+  // manual await for deploy transaction to prevent errors during deployment
+  await waitTx(receipt.deployTransaction);
+
+  await saveProxyDeployment(Factory, proxy, {});
+
+  const implementation = await getImplementationAddress(hre.ethers.provider, proxy.address)
+  console.log('\tImplementation address:', implementation);
+  console.log('\tNew proxy deployed: ', proxy.address);
+
+  return {
+    contract: proxy,
+    receipt: receipt
+  }
+}
+
+
 async function deployProxy(contractName, deployer, args, reuseProxy) {
   console.log(`\n*** Deploying proxy for ${contractName} ***`);
   console.log('\tSigner: ', deployer);
@@ -132,6 +158,10 @@ async function deployProxy(contractName, deployer, args, reuseProxy) {
   // real deploy
   const proxy = await hre.upgrades.deployProxy(Factory, args);
   const receipt = await proxy.deployed();
+
+  // manual await for deploy transaction to prevent errors during deployment
+  await waitTx(receipt.deployTransaction);
+
   await saveProxyDeployment(Factory, proxy, args);
 
   const implementation = await getImplementationAddress(hre.ethers.provider, proxy.address)
@@ -178,9 +208,18 @@ async function getLastDeployedProxy(contractName, deployer, args) {
   throw `No deployed proxy found for "${contractName}"`;
 }
 
+async function waitTx(tx) {
+  const blockConfirmations = 1;
+  console.log(`Waiting ${blockConfirmations} block confirmations for tx ${tx.hash} ...`);
+  const receipt = await tx.wait(blockConfirmations);
+  // console.log(receipt);
+}
+
 module.exports = {
   FLAGS,
   deployProxy,
+  upgradeProxy,
   getDeployedProxies,
-  getLastDeployedProxy
+  getLastDeployedProxy,
+  waitTx,
 };

@@ -6,7 +6,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const weth = deployInitParams.external.WETH || (await deployments.get("WETH9")).address;
+  const weth = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
   const uniswapFactory = deployInitParams.external.UniswapFactory || (await deployments.get("UniswapV2Factory")).address;
 
   await deployProxy("FeeProxy", deployer, [uniswapFactory, weth], true);

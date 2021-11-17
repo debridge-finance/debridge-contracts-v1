@@ -13,6 +13,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     from: deployer,
     // deterministicDeployment: true,
     log: true,
+    waitConfirmations: 1,
   });
 };
 
