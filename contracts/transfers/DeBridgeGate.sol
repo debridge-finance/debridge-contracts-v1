@@ -15,7 +15,6 @@ import "../interfaces/IDeBridgeTokenDeployer.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
-import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
@@ -42,7 +41,7 @@ contract DeBridgeGate is
 
     address public deBridgeTokenDeployer;
     address public signatureVerifier; // current signatureVerifier address to verify signatures
-    address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
+    // address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
@@ -306,14 +305,9 @@ contract DeBridgeGate is
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
         bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
-        if(_signatures.length > 0){
-            // verify signatures
-            ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
-        }
-        else {
-            bytes32 confirmedDeployId = IConfirmationAggregator(confirmationAggregator).getConfirmedDeployId(debridgeId);
-            if (deployId != confirmedDeployId) revert AssetNotConfirmed();
-        }
+
+        // verify signatures
+        ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
 
         address deBridgeTokenAddress = IDeBridgeTokenDeployer(deBridgeTokenDeployer)
             .deployAsset(debridgeId, _name, _symbol, _decimals);
@@ -409,11 +403,6 @@ contract DeBridgeGate is
         getAmountThreshold[_debridgeId] = _amountThreshold;
     }
 
-    /// @dev Set aggregator address.
-    /// @param _aggregator Submission aggregator address.
-    function setAggregator(address _aggregator) external onlyAdmin {
-        confirmationAggregator = _aggregator;
-    }
 
     /// @dev Set signature verifier address.
     /// @param _verifier Signature verifier address.
@@ -573,22 +562,12 @@ contract DeBridgeGate is
         bytes calldata _signatures
     ) internal {
         if (isBlockedSubmission[_submissionId]) revert SubmissionBlocked();
-        if (_signatures.length > 0) {
-            // inside check is confirmed
-            ISignatureVerifier(signatureVerifier).submit(
-                _submissionId,
-                _signatures,
-                _amount >= getAmountThreshold[_debridgeId] ? excessConfirmations : 0
-            );
-        } else {
-            (uint8 confirmations, bool confirmed) = IConfirmationAggregator(confirmationAggregator)
-                .getSubmissionConfirmations(_submissionId);
-
-            if (!confirmed) revert SubmissionNotConfirmed();
-            if (_amount >= getAmountThreshold[_debridgeId]) {
-                if (confirmations < excessConfirmations) revert SubmissionAmountNotConfirmed();
-            }
-        }
+        // inside check is confirmed
+        ISignatureVerifier(signatureVerifier).submit(
+            _submissionId,
+            _signatures,
+            _amount >= getAmountThreshold[_debridgeId] ? excessConfirmations : 0
+        );
     }
 
     /// @dev Add support for the asset.

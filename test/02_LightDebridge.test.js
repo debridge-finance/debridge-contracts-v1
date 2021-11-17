@@ -148,7 +148,6 @@ contract("DeBridgeGate light mode", function () {
       [
         this.excessConfirmations,
         this.signatureVerifier.address.toString(),
-        this.confirmationAggregator.address.toString(),
         this.callProxy.address.toString(),
         this.weth.address,
         ZERO_ADDRESS,
@@ -605,7 +604,7 @@ contract("DeBridgeGate light mode", function () {
             //will call IConfirmationAggregator
             from: alice,
           }),
-        "SubmissionNotConfirmed()"
+        "NotConfirmedByRequiredOracles()"
       );
     });
 
