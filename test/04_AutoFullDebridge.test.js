@@ -152,15 +152,12 @@ contract("DeBridgeGate full with auto", function () {
 
     this.debridge = await upgrades.deployProxy(Debridge, [
       this.excessConfirmations,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      this.callProxy.address.toString(),
       this.weth.address,
-      ZERO_ADDRESS,
-      deBridgeTokenDeployer.address,
-      ZERO_ADDRESS,
     ]);
     await this.debridge.deployed();
+
+    await this.debridge.setCallProxy(this.callProxy.address);
+    await this.debridge.setDeBridgeTokenDeployer(deBridgeTokenDeployer.address);
 
     await this.debridge.updateChainSupport(
       supportedChainIds,
