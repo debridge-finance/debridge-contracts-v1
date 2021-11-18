@@ -10,11 +10,10 @@ contract MockDeBridgeGate is DeBridgeGate {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _signatureVerifier Aggregator address to verify signatures
-    /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
     function initializeMock(
         uint8 _excessConfirmations,
         address _signatureVerifier,
-        address _confirmationAggregator,
+        // address _confirmationAggregator,
         address _callProxy,
         IWETH _weth,
         address _feeProxy,
@@ -39,7 +38,7 @@ contract MockDeBridgeGate is DeBridgeGate {
         );
 
         signatureVerifier = _signatureVerifier;
-        confirmationAggregator = _confirmationAggregator;
+        // confirmationAggregator = _confirmationAggregator;
 
         callProxy = _callProxy;
         defiController = _defiController;

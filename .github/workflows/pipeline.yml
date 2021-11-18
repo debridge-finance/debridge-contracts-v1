@@ -1,6 +1,6 @@
 name: Pipeline
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
@@ -69,29 +69,23 @@ jobs:
     - name: Test Aggregator
       run: yarn test test/00_Aggregator.test.js
 
-    - name: Test DeBridge Full
-      run: yarn test test/01_FullDebridge.test.js
-
     - name: Test DeBridge Light
       run: yarn test test/02_LightDebridge.test.js
 
-    - name: Test DeBridge Full Auto
-      run: yarn test test/04_AutoFullDebridge.test.js
-
     - name: Test DeBridge real transfer pipeline
       run: yarn test test/05_DebridgePipeline.test.js
-      
+
     - name: Test PriceConsumer
       run: yarn test test/06_PriceConsumer.test.js
-    
+
     - name: Test SignatureAggregator
       run: yarn test test/07_SignatureAggregator.test.js
 
-    - name: Test DefiController
-      run: yarn test test/DefiController.test.js
+    # - name: Test DefiController
+    #   run: yarn test test/DefiController.test.js
 
-    - name: Test AaveController (AaveInteractor)
-      run: yarn test test/AaveController.test.js
+    # - name: Test AaveController (AaveInteractor)
+    #   run: yarn test test/AaveController.test.js
 
     - name: Tests coverage
       run: yarn coverage

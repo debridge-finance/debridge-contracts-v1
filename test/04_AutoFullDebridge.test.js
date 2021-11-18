@@ -27,6 +27,8 @@ const ethChainId = 1;
 const bscChainId = 56;
 const hecoChainId = 256;
 
+//TODO: Test can be removed
+
 contract("DeBridgeGate full with auto", function () {
   let reserveAddress;
   const claimFee = toBN(toWei("0"));
@@ -190,7 +192,7 @@ contract("DeBridgeGate full with auto", function () {
     await this.callProxy.grantRole(DEBRIDGE_GATE_ROLE, this.debridge.address);
   });
 
-  context("Test setting configurations by different users", () => {
+  context.skip("Test setting configurations by different users", () => {
     it("should set aggregator if called by the admin", async function () {
       const aggregator = this.confirmationAggregator.address;
       await this.debridge.setAggregator(aggregator, {
@@ -256,7 +258,7 @@ contract("DeBridgeGate full with auto", function () {
     // });
   });
 
-  context("Test managing assets", () => {
+  context.skip("Test managing assets", () => {
     before(async function () {
       currentChainId = await this.debridge.getChainId();
       const newSupply = toWei("100");
@@ -334,7 +336,7 @@ contract("DeBridgeGate full with auto", function () {
     });
   });
 
-  context("Test send method", () => {
+  context.skip("Test send method", () => {
     it("should send native tokens from the current chain", async function () {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
@@ -476,7 +478,7 @@ contract("DeBridgeGate full with auto", function () {
     });
   });
 
-  context("Test mint method", () => {
+  context.skip("Test mint method", () => {
     const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
     let receiver;
     let nativeSender;
@@ -621,7 +623,7 @@ contract("DeBridgeGate full with auto", function () {
     });
   });
 
-  context("Test burn method", () => {
+  context.skip("Test burn method", () => {
     it("should burning when the amount is suficient", async function () {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainIdTo = 56;
@@ -696,7 +698,7 @@ contract("DeBridgeGate full with auto", function () {
     // });
   });
 
-  context("Test claim method", () => {
+  context.skip("Test claim method", () => {
     const tokenAddress = ZERO_ADDRESS;
     let receiver;
     let nativeSender;
