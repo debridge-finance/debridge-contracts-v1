@@ -26,10 +26,12 @@ interface IDeBridgeGate {
     }
 
     struct ChainSupportInfo {
-        uint256 fixedNativeFee; // transfer fixed fee
+        // transfer fixed fee
+        uint256 fixedNativeFee;
         // deprecated, use maxAmount > 0 for supported, 0 for unsupported
         bool isSupported;
-        uint16 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
+        // transfer fee rate nominated in basis points (1/10000) of transferred amount
+        uint16 transferFeeBps;
         // max amount to transfer, 0 means that chain is not supported
         // some chains use different uint size for tokens, e.g. uint64 in Solana, maxAmount will
         // protect from overflow
