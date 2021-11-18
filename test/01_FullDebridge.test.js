@@ -133,7 +133,6 @@ contract("DeBridgeGate full mode", function () {
 
   it.skip("Check init params", async function () {
     expect(this.weth.address).to.equal(await this.debridge.weth());
-    // expect(devid.address).to.equal(await this.debridge.treasury());
     expect(excessConfirmations.toString()).to.equal(
       (await this.debridge.excessConfirmations()).toString()
     );
@@ -149,7 +148,6 @@ contract("DeBridgeGate full mode", function () {
 
   context.skip("Role-based security checks for setters", () => {
     it("should set aggregator if called by the admin", async function () {
-      // const aggregator = this.confirmationAggregator.address;
       const aggregator = other.address;
       await this.debridge.setAggregator(aggregator, {
         from: alice.address,
@@ -168,7 +166,6 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should set defi controller if called by the admin", async function () {
-      // const defiController = this.defiController.address;
       const defiController = other.address;
       await this.debridge.setDefiController(defiController, {
         from: alice.address,
@@ -253,17 +250,7 @@ contract("DeBridgeGate full mode", function () {
       expect(await this.debridge.flashFeeBps()).to.equal(newFlashFee);
     });
 
-    // it("should update address treasury if called by the admin", async function () {
-    //   const treasuryAddressBefore = await this.debridge.treasury();
-
-    //   await this.debridge.updateTreasury(ZERO_ADDRESS);
-    //   const treasuryAddressAfter = await this.debridge.treasury();
-
-    //   assert.notEqual(treasuryAddressAfter, treasuryAddressBefore);
-    //   assert.equal(ZERO_ADDRESS, treasuryAddressAfter);
-    // });
-
-    it("should reject setting aggregator if called by the non-admin", async function () {
+   it("should reject setting aggregator if called by the non-admin", async function () {
       await expectRevert(this.debridge.connect(bob).setAggregator(ZERO_ADDRESS), "AdminBadRole()");
     });
 
@@ -277,10 +264,6 @@ contract("DeBridgeGate full mode", function () {
         "AdminBadRole()"
       );
     });
-
-    // it("should reject setting weth if called by the non-admin", async function () {
-    //   await expectRevert(this.debridge.connect(bob).setWeth(ZERO_ADDRESS), "AdminBadRole()");
-    // });
 
     it("should reject setting flash fee if called by the non-admin", async function () {
       await expectRevert(this.debridge.connect(bob).updateFlashFee(300), "AdminBadRole()");
@@ -338,10 +321,6 @@ contract("DeBridgeGate full mode", function () {
     it("should reject setting amount flashFeeBps if called by the non-admin", async function () {
       await expectRevert(this.debridge.connect(bob).updateFlashFee(20), "AdminBadRole");
     });
-
-    // it("should reject setting address treasury if called by the non-admin", async function () {
-    //   await expectRevert(this.debridge.connect(bob).updateTreasury(ZERO_ADDRESS), "AdminBadRole()");
-    // });
   });
 
   context.skip("with LINK and DBR assets", async function () {
@@ -491,9 +470,6 @@ contract("DeBridgeGate full mode", function () {
           });
 
           it("debridge and aggregator are linked together", async function () {
-            // expect(this.debridge.address).to.equal(
-            //   await this.confirmationAggregator.debridgeAddress()
-            // );
             expect(await this.debridge.confirmationAggregator()).to.equal(
               this.confirmationAggregator.address
             );
@@ -929,10 +905,6 @@ contract("DeBridgeGate full mode", function () {
                           const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(
                             this.nativeDebridgeId
                           );
-                          // let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
-                          // fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
-                          //   toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
-                          // );
                           await this.debridge.updateAssetFixedFees(
                             debridgeId,
                             [chainIdTo],
@@ -968,33 +940,6 @@ contract("DeBridgeGate full mode", function () {
                             newNativeDebridgeFeeInfo.collectedFees
                           );
                         });
-
-                        // it("should reject burning from current chain", async function () {
-                        //   const tokenAddress = this.weth.address;
-                        //   const chainId = await this.debridge.getChainId();
-                        //   const receiver = bob.address;
-                        //   const amount = toBN(toWei("1"));
-                        //   const debridgeId = await this.debridge.getDebridgeId(
-                        //     chainId,
-                        //     tokenAddress
-                        //   );
-                        //   await expectRevert(
-                        //     this.debridge.burn(
-                        //       debridgeId,
-                        //       receiver,
-                        //       amount,
-                        //       42,
-                        //       [],
-                        //       false,
-                        //       referralCode,
-                        //       [],
-                        //       {
-                        //         from: alice.address,
-                        //       }
-                        //     ),
-                        //     "WrongChain()"
-                        //   );
-                        // });c
                       });
                     }
                   });
