@@ -15,7 +15,7 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
 
     IDeBridgeGate public debridgeGate;
 
-    address public treasuryAddress;
+    address public treasury;
 
     /* ========== ERRORS ========== */
 
@@ -50,36 +50,34 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
         debridgeGate = _debridgeGate;
     }
 
-    function setTreasury(address _treasuryAddress) external onlyAdmin {
-        treasuryAddress = _treasuryAddress;
+    function setTreasury(address _treasury) external onlyAdmin {
+        treasury = _treasury;
     }
 
     /// @dev Transfer tokens to native chain and then create swap to deETH
     /// and transfer reward to Ethereum network.
     function withdrawFee(address _tokenAddress) external whenNotPaused {
-        (uint256 nativeChain, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(
+        if (treasury == address(0)) revert EmptyTreasuryAddress();
+
+        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(
             _tokenAddress
         );
-        bytes32 debridgeId = getbDebridgeId(nativeChain, nativeAddress);
-
-        if (treasuryAddress == address(0)) revert EmptyTreasuryAddress();
-
+        bytes32 debridgeId = getbDebridgeId(nativeChainId, nativeAddress);
         debridgeGate.withdrawFee(debridgeId);
-        IERC20(_tokenAddress).safeTransfer(
-            treasuryAddress,
-            IERC20(_tokenAddress).balanceOf(address(this))
-        );
+
+        uint256 amount = IERC20(_tokenAddress).balanceOf(address(this));
+        IERC20(_tokenAddress).safeTransfer(treasury, amount);
     }
 
     /// @dev Swap native tokens to deETH and then transfer reward to Ethereum network.
     function withdrawNativeFee() external  whenNotPaused {
-        uint256 chainId = getChainId();
-        if (treasuryAddress == address(0)) revert EmptyTreasuryAddress();
+        if (treasury == address(0)) revert EmptyTreasuryAddress();
 
-        debridgeGate.withdrawFee(getDebridgeId(chainId, address(0)));
+        bytes32 debridgeId = getDebridgeId(getChainId(), address(0));
+        debridgeGate.withdrawFee(debridgeId);
+
         uint256 amount = address(this).balance;
-
-         _safeTransferETH(treasuryAddress, amount);
+         _safeTransferETH(treasury, amount);
     }
 
     // accept ETH
@@ -102,13 +100,13 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
         return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 
-    /* ========== PRIVATE FUNCTIONS  ========== */
-
     function getChainId() public view virtual returns (uint256 cid) {
         assembly {
             cid := chainid()
         }
     }
+
+    /* ========== PRIVATE FUNCTIONS  ========== */
 
     /*
     * @dev transfer ETH to an address, revert if it fails.

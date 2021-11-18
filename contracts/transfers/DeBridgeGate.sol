@@ -460,11 +460,12 @@ contract DeBridgeGate is
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external override nonReentrant onlyFeeProxy {
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        // Amount for transfer to treasure
+        // Amount for transfer to treasury
         uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
-        debridgeFee.withdrawnFees += amount;
 
         if (amount == 0) revert NotEnoughReserves();
+
+        debridgeFee.withdrawnFees += amount;
 
         if (_debridgeId == getDebridgeId(getChainId(), address(0))) {
             _safeTransferETH(feeProxy, amount);
@@ -965,7 +966,7 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         uint256 _chainId
     ) external view override returns (uint256) {
-        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
         return getDebridgeFeeInfo[_debridgeId].getChainFee[_chainId];
     }
 
