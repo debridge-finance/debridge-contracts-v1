@@ -345,7 +345,7 @@ contract("DeBridgeGate full with auto", function () {
       const chainIdTo = 42;
       const balance = toBN(await this.weth.balanceOf(this.debridge.address));
       const debridgeWethFeeInfo = await this.debridge.getDebridgeFeeInfo(this.wethDebridgeId);
-      const supportedChainInfo = await this.debridge.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
       const feesWithFix = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
         .div(BPS)
@@ -391,7 +391,7 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       const balance = toBN(await this.mockToken.balanceOf(this.debridge.address));
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
-      const supportedChainInfo = await this.debridge.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
 
@@ -635,7 +635,7 @@ contract("DeBridgeGate full with auto", function () {
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
       const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
       const balance = toBN(await deBridgeToken.balanceOf(bob));
-      const supportedChainInfo = await this.debridge.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
       const permitParameter = await permitWithDeadline(
         deBridgeToken,
         bob,

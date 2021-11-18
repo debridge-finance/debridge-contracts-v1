@@ -364,7 +364,7 @@ contract("DeBridgeGate light mode", function () {
       const debridgeWethId = await this.debridge.getDebridgeId(chainId, this.weth.address);
       const balance = toBN(await this.weth.balanceOf(this.debridge.address));
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeWethId);
-      const supportedChainInfo = await this.debridge.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
       const feesWithFix = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
         .div(BPS)
@@ -406,7 +406,7 @@ contract("DeBridgeGate light mode", function () {
       const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       const balance = toBN(await this.mockToken.balanceOf(this.debridge.address));
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
-      const supportedChainInfo = await this.debridge.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
       const nativeDebridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(this.nativeDebridgeId);
       const fees = toBN(supportedChainInfo.transferFeeBps).mul(amount).div(BPS);
       await this.debridge.send(
@@ -658,7 +658,7 @@ contract("DeBridgeGate light mode", function () {
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
       const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
       const balance = toBN(await deBridgeToken.balanceOf(bob));
-      const supportedChainInfo = await this.debridge.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
       const permitParameter = await permitWithDeadline(
         deBridgeToken,
         bob,
@@ -735,7 +735,7 @@ contract("DeBridgeGate light mode", function () {
     //     const deBridgeToken = await DeBridgeToken.at(debridge.tokenAddress);
     //     //const balance = toBN(await deBridgeToken.balanceOf(bob));
     //     const deadline = 0;
-    //     const supportedChainInfo = await this.debridge.getClaimingChainConfig(chainIdTo);
+    //     const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
     //     //const signature = "0x";
     //     const signature = await permit(
     //           deBridgeToken,

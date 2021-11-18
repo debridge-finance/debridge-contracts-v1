@@ -835,7 +835,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         const balance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
         const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
         const debridge = await this.debridgeETH.getDebridge(debridgeId);
-        const supportedChainInfo = await this.debridgeETH.getClaimingChainConfig(chainIdTo);
+        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
         let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
           .mul(amount)
           .div(BPS)
@@ -899,7 +899,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
         const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
-        const supportedChainInfo = await this.debridgeETH.getClaimingChainConfig(chainIdTo);
+        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
         const nativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
           this.nativeDebridgeIdETH
         );
@@ -974,7 +974,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
         const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
-        const supportedChainInfo = await this.debridgeETH.getClaimingChainConfig(chainIdTo);
+        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
         const nativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
           this.nativeDebridgeIdETH
         );
@@ -1090,7 +1090,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         const balance = toBN(await web3.eth.getBalance(sender));
 
-        const supportedChainInfo = await this.debridgeETH.getClaimingChainConfig(chainIdTo);
+        const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
         let fixedNativeFee = toBN(supportedChainInfo.fixedNativeFee);
         fixedNativeFee = fixedNativeFee.sub(toBN(fixedNativeFee).mul(discount).div(BPS));
         const extraNativeFee = toBN(toWei("0.1"));
@@ -1494,7 +1494,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
           const deBridgeToken = await DeBridgeToken.at(debridgeInfo.tokenAddress);
           const balance = toBN(await deBridgeToken.balanceOf(bob));
-          const supportedChainInfo = await this.debridgeBSC.getClaimingChainConfig(chainIdTo);
+          const supportedChainInfo = await this.debridgeBSC.getChainToConfig(chainIdTo);
           const permitParameter = await permitWithDeadline(
             deBridgeToken,
             bob,
@@ -1594,7 +1594,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         // console.log(`currentToken: ${currentToken}`);
         assert.equal(currentToken, deBridgeToken.address);
 
-        const supportedChainInfo = await this.debridgeBSC.getClaimingChainConfig(ethChainId);
+        const supportedChainInfo = await this.debridgeBSC.getChainToConfig(ethChainId);
         let fixedNativeFeeWithDiscount = supportedChainInfo.fixedNativeFee;
         fixedNativeFeeWithDiscount = toBN(fixedNativeFeeWithDiscount).sub(
           toBN(fixedNativeFeeWithDiscount).mul(discount).div(BPS)
@@ -1850,7 +1850,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       // const debridge = await this.debridgeBSC.getDebridge(debridgeId);
       //collect fee in weth bsc
       const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.debridgeWethBSCId);
-      const supportedChainInfo = await this.debridgeBSC.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridgeBSC.getChainToConfig(chainIdTo);
       let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
         .mul(amount)
         .div(BPS)
@@ -1906,7 +1906,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const balance = toBN(await this.cakeToken.balanceOf(this.debridgeBSC.address));
       const debridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
       const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-      const supportedChainInfo = await this.debridgeBSC.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridgeBSC.getChainToConfig(chainIdTo);
       const nativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
         this.nativeDebridgeIdBSC
       );
@@ -2058,7 +2058,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(currentToken, deBridgeToken.address);
       const balance = toBN(await deBridgeToken.balanceOf(bob));
       // const deadline = toBN(Math.floor(Date.now() / 1000)+1000);
-      const supportedChainInfo = await this.debridgeHECO.getClaimingChainConfig(chainIdTo);
+      const supportedChainInfo = await this.debridgeHECO.getChainToConfig(chainIdTo);
       const permitParameter = await permitWithDeadline(
         deBridgeToken,
         bob,
@@ -2725,7 +2725,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     //   const balanceTreasury = toBN(await web3.eth.getBalance(treasury));
     //   //TODO: set chainIdTo;
     //   let chainIdTo = chainId;
-    //   const supportedChainInfo = await this.debridgeETH.getClaimingChainConfig(chainIdTo);
+    //   const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
     //   const fixedFee = supportedChainInfo.fixedNativeFee;
     //   console.log(`chainIdTo: ${chainIdTo}`);
 
@@ -2758,7 +2758,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.linkDebridgeId);
       const balance = toBN(await this.deLinkToken.balanceOf(this.debridgeBSC.address));
 
-      const supportedChainInfo = await this.debridgeBSC.getClaimingChainConfig(ethChainId);
+      const supportedChainInfo = await this.debridgeBSC.getChainToConfig(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
 
       let sendTx = await this.feeProxyBSC
@@ -2848,7 +2848,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const debridgeInfo = await this.debridgeHECO.getDebridge(this.cakeDebridgeId);
       const debridgeFeeInfo = await this.debridgeHECO.getDebridgeFeeInfo(this.cakeDebridgeId);
 
-      const supportedChainInfo = await this.debridgeHECO.getClaimingChainConfig(ethChainId);
+      const supportedChainInfo = await this.debridgeHECO.getChainToConfig(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
       // console.log(`fixedFee: ${fixedFee.toString()}`);
       // console.log(`debridgeInfo.collectedFees: ${debridgeInfo.collectedFees.toString()}`);
@@ -2961,7 +2961,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.linkDebridgeId);
       const balance = toBN(await this.linkToken.balanceOf(this.debridgeETH.address));
 
-      const supportedChainInfo = await this.debridgeETH.getClaimingChainConfig(ethChainId);
+      const supportedChainInfo = await this.debridgeETH.getChainToConfig(ethChainId);
       const fixedFee = supportedChainInfo.fixedNativeFee;
 
       const balanceETHTreasury = toBN(await this.wethETH.balanceOf(treasury));

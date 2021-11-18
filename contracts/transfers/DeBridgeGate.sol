@@ -51,7 +51,9 @@ contract DeBridgeGate is
     mapping(bytes32 => bool) public isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
-    mapping(uint256 => ChainSupportInfo) public getClaimingChainConfig; // whether the chain for the asset is supported
+    mapping(uint256 => ChainSupportInfo) public getChainToConfig; // whether the chain for the asset is supported
+    // used for calculate fees before claiming submissions from chains in this mapping if it's allowed by value of isSupported field
+    mapping(uint256 => ChainSupportInfo) public getChainFromConfig;
     mapping(address => DiscountInfo) public feeDiscount; //fee discount for address
 
     mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
@@ -65,8 +67,6 @@ contract DeBridgeGate is
     uint256 public globalFixedNativeFee;
     uint16 public globalTransferFeeBps;
 
-    // used for calculate fees before claiming submissions from chains in this mapping if it's allowed by value of isSupported field
-    mapping(uint256 => ChainSupportInfo) public getSendingChainConfig;
 
     /* ========== ERRORS ========== */
 
@@ -340,16 +340,22 @@ contract DeBridgeGate is
     /// @dev Update asset's fees.
     /// @param _chainIds Chain identifiers.
     /// @param _chainSupportInfo Chain support info.
+    /// @param _isChainFrom is true for editing getChainFromConfig.
     function updateChainSupport(
         uint256[] memory _chainIds,
-        ChainSupportInfo[] memory _chainSupportInfo
+        ChainSupportInfo[] memory _chainSupportInfo,
+        bool _isChainFrom
     ) external onlyAdmin {
-        // TODO: allow to update getSendingChainConfig
         if (_chainIds.length != _chainSupportInfo.length) revert WrongArgument();
         for (uint256 i = 0; i < _chainIds.length; i++) {
-            getClaimingChainConfig[_chainIds[i]] = _chainSupportInfo[i];
+            if(_isChainFrom){
+                getChainFromConfig[_chainIds[i]] = _chainSupportInfo[i];
+            }
+            else {
+                getChainToConfig[_chainIds[i]] = _chainSupportInfo[i];
+            }
         }
-        emit ChainsSupportUpdated(_chainIds);
+        emit ChainsSupportUpdated(_chainIds, _chainSupportInfo, _isChainFrom);
     }
 
     function updateGlobalFee(
@@ -385,10 +391,15 @@ contract DeBridgeGate is
     /// @dev Set support for the chains where the token can be transfered.
     /// @param _chainId Chain id where tokens are sent.
     /// @param _isSupported Whether the token is transferable to the other chain.
-    function setChainSupport(uint256 _chainId, bool _isSupported) external onlyAdmin {
-        // TODO: allow to update getSendingChainConfig
-        getClaimingChainConfig[_chainId].isSupported = _isSupported;
-        emit ChainSupportUpdated(_chainId, _isSupported);
+    /// @param _isChainFrom is true for editing getChainFromConfig.
+    function setChainSupport(uint256 _chainId, bool _isSupported, bool _isChainFrom) external onlyAdmin {
+        if (_isChainFrom) {
+            getChainFromConfig[_chainId].isSupported = _isSupported;
+        }
+        else {
+            getChainToConfig[_chainId].isSupported = _isSupported;
+        }
+        emit ChainSupportUpdated(_chainId, _isSupported, _isChainFrom);
     }
 
     /// @dev Set proxy address.
@@ -662,7 +673,7 @@ contract DeBridgeGate is
             } else revert DebridgeNotFound();
         }
 
-        ChainSupportInfo memory chainFees = getClaimingChainConfig[_chainIdTo];
+        ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
         if (!chainFees.isSupported) revert WrongTargedChain();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
@@ -753,7 +764,7 @@ contract DeBridgeGate is
         // for some chains we should get a fee before claiming submission
         // user will receive a reduced amount
         if (!isNativeToken) {
-            ChainSupportInfo memory chainFees = getSendingChainConfig[chainIdFrom];
+            ChainSupportInfo memory chainFees = getChainFromConfig[chainIdFrom];
             if (chainFees.isSupported) {
                 FeeInfo memory feeInfo = _calculateSubmissionFees(
                 _debridgeId,
