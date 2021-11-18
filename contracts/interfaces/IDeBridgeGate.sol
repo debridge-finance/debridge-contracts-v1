@@ -27,8 +27,13 @@ interface IDeBridgeGate {
 
     struct ChainSupportInfo {
         uint256 fixedNativeFee; // transfer fixed fee
-        bool isSupported; // whether the chain for the asset is supported
+        // deprecated, use maxAmount > 0 for supported, 0 for unsupported
+        bool isSupported;
         uint16 transferFeeBps; // transfer fee rate nominated in basis points (1/10000) of transferred amount
+        // max amount to transfer, 0 means that chain is not supported
+        // some chains use different uint size for tokens, e.g. uint64 in Solana, maxAmount will
+        // protect from overflow
+        uint256 maxAmount;
     }
 
     struct DiscountInfo {
@@ -169,7 +174,7 @@ interface IDeBridgeGate {
         uint16 minReservesBps
     ); // emited when new asset is supported
 
-    event ChainSupportUpdated(uint256 chainId, bool isSupported, bool isChainFrom); // Emits when the asset is allowed/disallowed to be transferred to the chain.
+    event ChainMaxAmountUpdated(uint256 chainId, uint256 maxAmount, bool isChainFrom); // Emits when the asset maxAmount allowed for transfer is changed
     event ChainsSupportUpdated(
         uint256 chainIds,
         ChainSupportInfo chainSupportInfo,

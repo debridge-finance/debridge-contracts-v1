@@ -228,7 +228,7 @@ contract DeBridgeGate is
         bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override whenNotPaused {
-        if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
+        if (getChainFromConfig[_chainIdFrom].maxAmount == 0) revert WrongChainFrom();
 
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
@@ -382,18 +382,20 @@ contract DeBridgeGate is
         excessConfirmations = _excessConfirmations;
     }
 
-    /// @dev Set support for the chains where the token can be transfered.
+
+
+    /// @dev Set maxAmount available to transfer
     /// @param _chainId Chain id where tokens are sent.
-    /// @param _isSupported Whether the token is transferable to the other chain.
+    /// @param _maxAmount Set to 0 if the token is not transferable to the other chain.
     /// @param _isChainFrom is true for editing getChainFromConfig.
-    function setChainSupport(uint256 _chainId, bool _isSupported, bool _isChainFrom) external onlyAdmin {
+    function setChainSupportMaxAmount(uint256 _chainId, uint256 _maxAmount, bool _isChainFrom) external onlyAdmin {
         if (_isChainFrom) {
-            getChainFromConfig[_chainId].isSupported = _isSupported;
+            getChainFromConfig[_chainId].maxAmount = _maxAmount;
         }
         else {
-            getChainToConfig[_chainId].isSupported = _isSupported;
+            getChainToConfig[_chainId].maxAmount = _maxAmount;
         }
-        emit ChainSupportUpdated(_chainId, _isSupported, _isChainFrom);
+        emit ChainMaxAmountUpdated(_chainId, _maxAmount, _isChainFrom);
     }
 
     /// @dev Set proxy address.
@@ -697,8 +699,8 @@ contract DeBridgeGate is
             } else revert DebridgeNotFound();
         }
 
-        ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
-        if (!chainFees.isSupported) revert WrongChainTo();
+        ChainSupportInfo memory chainSupportInfo = getChainToConfig[_chainIdTo];
+        if (chainSupportInfo.maxAmount == 0) revert WrongChainTo();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
@@ -733,7 +735,7 @@ contract DeBridgeGate is
                 // collect native fees
 
                 // use globalFixedNativeFee if value for chain is not setted
-                uint256 nativeFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
+                uint256 nativeFee = chainSupportInfo.fixedNativeFee == 0 ? globalFixedNativeFee : chainSupportInfo.fixedNativeFee;
                 // Apply discount for a fixed fee
                 nativeFee -= nativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
 
@@ -747,11 +749,11 @@ contract DeBridgeGate is
             }
 
             // Calculate transfer fee
-            if (chainFees.transferFeeBps == 0) {
+            if (chainSupportInfo.transferFeeBps == 0) {
                 // use globalTransferFeeBps if value for chain is not setted
-                chainFees.transferFeeBps = globalTransferFeeBps;
+                chainSupportInfo.transferFeeBps = globalTransferFeeBps;
             }
-            uint256 transferFee = (_amount * chainFees.transferFeeBps) / BPS_DENOMINATOR;
+            uint256 transferFee = (_amount * chainSupportInfo.transferFeeBps) / BPS_DENOMINATOR;
             // apply discount for a transfer fee
             transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
 
