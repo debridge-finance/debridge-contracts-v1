@@ -322,11 +322,13 @@ contract("DeBridgeGate real pipeline mode", function () {
           transferFeeBps,
           fixedNativeFee: fixedNativeFeeBNB,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee: fixedNativeFeeHT,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       false
@@ -356,11 +358,13 @@ contract("DeBridgeGate real pipeline mode", function () {
           transferFeeBps,
           fixedNativeFee: fixedNativeFeeETH,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee: fixedNativeFeeHT,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       false
@@ -390,11 +394,13 @@ contract("DeBridgeGate real pipeline mode", function () {
           transferFeeBps,
           fixedNativeFee: fixedNativeFeeETH,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee: fixedNativeFeeBNB,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       false

@@ -168,11 +168,13 @@ contract("DeBridgeGate full with auto", function () {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       false

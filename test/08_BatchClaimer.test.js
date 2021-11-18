@@ -162,11 +162,13 @@ contract("DeBridgeGate light mode with batch claimer", function () {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       false

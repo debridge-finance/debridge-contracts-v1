@@ -170,11 +170,13 @@ contract("DeBridgeGate light mode", function () {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       false
