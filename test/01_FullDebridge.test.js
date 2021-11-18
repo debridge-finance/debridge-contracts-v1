@@ -88,11 +88,13 @@ contract("DeBridgeGate full mode", function () {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       false
@@ -105,11 +107,13 @@ contract("DeBridgeGate full mode", function () {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
           isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       true
@@ -179,50 +183,54 @@ contract("DeBridgeGate full mode", function () {
         isSupported: false,
         fixedNativeFee: 99,
         transferFeeBps: 100,
+        maxAmount: 0,
       };
 
       const updChainTx = await this.debridge.updateChainSupport([42], [newChainInfo], false, {
         from: alice.address,
       });
 
-      const { isSupported, fixedNativeFee, transferFeeBps } = await this.debridge.getChainToConfig([
+      const { isSupported, fixedNativeFee, transferFeeBps, maxAmount } = await this.debridge.getChainToConfig([
         42,
       ]);
       expect(newChainInfo.isSupported).to.equal(isSupported);
+      expect(newChainInfo.maxAmount).to.equal(maxAmount);
       expect(newChainInfo.fixedNativeFee).to.equal(fixedNativeFee);
       expect(newChainInfo.transferFeeBps).to.equal(transferFeeBps);
 
       await expect(updChainTx).to.emit(this.debridge, "ChainsSupportUpdated").withArgs([42]);
     });
 
-    it("should set Chain Supporting if called by the admin and emits ChainSupportUpdated event", async function () {
-      let support = false;
+    it("should set Chain Supporting if called by the admin and emits ChainMaxAmountUpdated event", async function () {
       const chainId = 42;
-      const { isSupported: isSupportedBefore } = await this.debridge.getChainToConfig([42]);
 
-      // switch to false
-      const setChainFalseTx = await this.debridge.setChainSupport(chainId, support, {
+      const { maxAmount: maxAmountBefore } = await this.debridge.getChainToConfig([42]);
+      expect(maxAmountBefore).to.equal(ethers.constants.MaxUint256);
+
+      // make unsupported
+      const setChainUnsupportedTx = await this.debridge.setChainSupportMaxAmount(chainId, 0, {
         from: alice.address,
       });
+      const { maxAmount: maxAmountMiddle } = await this.debridge.getChainToConfig([42]);
+      expect(maxAmountMiddle).to.equal(toBN('0'));
 
-      const { isSupported: isSupportedMiddle } = await this.debridge.getChainToConfig([42]);
-      expect(isSupportedBefore).not.equal(isSupportedMiddle);
-      expect(support).to.equal(isSupportedMiddle);
-      await expect(setChainFalseTx)
-        .to.emit(this.debridge, "ChainSupportUpdated")
-        .withArgs(chainId, support);
+      await expect(setChainUnsupportedTx)
+        .to.emit(this.debridge, "ChainMaxAmountUpdated")
+        .withArgs(chainId, toBN('0'));
 
-      // switch backway (to true)
-      support = true;
-      const setChainTrueTx = await this.debridge.setChainSupport(chainId, support, {
-        from: alice.address,
-      });
-      const { isSupported: isSupportedAfter } = await this.debridge.getChainToConfig([42]);
-      expect(isSupportedAfter).not.equal(isSupportedMiddle);
-      expect(support).to.equal(isSupportedAfter);
+      // make supported
+      const setChainTrueTx = await this.debridge.setChainSupportMaxAmount(
+        chainId,
+        ethers.constants.MaxUint256,
+        { from: alice.address, }
+      );
+      const { maxAmount: maxAmountAfter } = await this.debridge.getChainToConfig([42]);
+
+      expect(maxAmountAfter).to.equal(ethers.constants.MaxUint256);
+
       await expect(setChainTrueTx)
-        .to.emit(this.debridge, "ChainSupportUpdated")
-        .withArgs(chainId, support);
+        .to.emit(this.debridge, "ChainMaxAmountUpdated")
+        .withArgs(chainId, ethers.constants.MaxUint256);
     });
 
     it("should set CallProxy if called by the admin and emits CallProxyUpdated", async function () {
@@ -274,6 +282,7 @@ contract("DeBridgeGate full mode", function () {
         isSupported: false,
         fixedNativeFee: 99,
         transferFeeBps: 100,
+        maxAmount: 0,
       };
 
       await expectRevert(
@@ -294,11 +303,10 @@ contract("DeBridgeGate full mode", function () {
     });
 
     it("should reject setting Chain Id Support if called by the non-admin", async function () {
-      const support = true;
       const chainId = 42;
 
       await expectRevert(
-        this.debridge.connect(bob).setChainSupport(chainId, support),
+        this.debridge.connect(bob).setChainSupportMaxAmount(chainId, ethers.constants.MaxUint256),
         "AdminBadRole()"
       );
     });
