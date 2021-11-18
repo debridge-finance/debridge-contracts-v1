@@ -168,7 +168,25 @@ contract("DeBridgeGate light mode with batch claimer", function () {
           fixedNativeFee,
           isSupported,
         },
-      ]
+      ],
+      false
+    );
+
+    await this.debridge.updateChainSupport(
+      supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+      ],
+      true
     );
 
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();

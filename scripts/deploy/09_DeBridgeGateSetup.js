@@ -134,7 +134,8 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log(deployInitParams.chainSupportInfo);
   tx = await deBridgeGateInstance.updateChainSupport(
     deployInitParams.supportedChains,
-    deployInitParams.chainSupportInfo
+    deployInitParams.chainSupportInfo,
+    false
     //  [bscChainId, hecoChainId],
     //  [
     //      {
@@ -148,6 +149,13 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     //          isSupported,
     //      },
     //  ]
+  );
+  await waitTx(tx);
+
+  tx = await deBridgeGateInstance.updateChainSupport(
+    deployInitParams.supportedChains,
+    deployInitParams.chainSupportInfo,
+    true //_isChainFrom is true for editing getChainFromConfig.
   );
   await waitTx(tx);
 
