@@ -29,7 +29,7 @@ interface IDeBridgeGate {
         // transfer fixed fee
         uint256 fixedNativeFee;
         // deprecated, use maxAmount > 0 for supported, 0 for unsupported
-        bool isSupported;
+        bool isSupportedObsolete;
         // transfer fee rate nominated in basis points (1/10000) of transferred amount
         uint16 transferFeeBps;
         // max amount to transfer, 0 means that chain is not supported
