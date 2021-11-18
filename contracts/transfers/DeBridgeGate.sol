@@ -15,7 +15,6 @@ import "../interfaces/IDeBridgeTokenDeployer.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
-import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
@@ -42,7 +41,7 @@ contract DeBridgeGate is
 
     address public deBridgeTokenDeployer;
     address public signatureVerifier; // current signatureVerifier address to verify signatures
-    address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
+    // address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
@@ -135,18 +134,13 @@ contract DeBridgeGate is
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _signatureVerifier Aggregator address to verify signatures
-    /// @param _confirmationAggregator Aggregator address to verify by oracles confirmations
     function initialize(
         uint8 _excessConfirmations,
-        address _signatureVerifier,
-        address _confirmationAggregator,
-        address _callProxy,
-        IWETH _weth,
-        address _feeProxy,
-        address _deBridgeTokenDeployer,
-        address _defiController
+        IWETH _weth
     ) public initializer {
+        excessConfirmations = _excessConfirmations;
+        weth = _weth;
+
         _addAsset(
             getDebridgeId(getChainId(), address(_weth)),
             address(_weth),
@@ -154,18 +148,7 @@ contract DeBridgeGate is
             getChainId()
         );
 
-        signatureVerifier = _signatureVerifier;
-        confirmationAggregator = _confirmationAggregator;
-
-        callProxy = _callProxy;
-        defiController = _defiController;
-        excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-
-        weth = _weth;
-        deBridgeTokenDeployer = _deBridgeTokenDeployer;
-        feeProxy = _feeProxy;
-
         __ReentrancyGuard_init();
     }
 
@@ -322,14 +305,9 @@ contract DeBridgeGate is
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
         bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
-        if(_signatures.length > 0){
-            // verify signatures
-            ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
-        }
-        else {
-            bytes32 confirmedDeployId = IConfirmationAggregator(confirmationAggregator).getConfirmedDeployId(debridgeId);
-            if (deployId != confirmedDeployId) revert AssetNotConfirmed();
-        }
+
+        // verify signatures
+        ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
 
         address deBridgeTokenAddress = IDeBridgeTokenDeployer(deBridgeTokenDeployer)
             .deployAsset(debridgeId, _name, _symbol, _decimals);
@@ -425,11 +403,6 @@ contract DeBridgeGate is
         getAmountThreshold[_debridgeId] = _amountThreshold;
     }
 
-    /// @dev Set aggregator address.
-    /// @param _aggregator Submission aggregator address.
-    function setAggregator(address _aggregator) external onlyAdmin {
-        confirmationAggregator = _aggregator;
-    }
 
     /// @dev Set signature verifier address.
     /// @param _verifier Signature verifier address.
@@ -476,11 +449,12 @@ contract DeBridgeGate is
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external override nonReentrant onlyFeeProxy {
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        // Amount for transfer to treasure
+        // Amount for transfer to treasury
         uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
-        debridgeFee.withdrawnFees += amount;
 
         if (amount == 0) revert NotEnoughReserves();
+
+        debridgeFee.withdrawnFees += amount;
 
         if (_debridgeId == getDebridgeId(getChainId(), address(0))) {
             _safeTransferETH(feeProxy, amount);
@@ -589,22 +563,12 @@ contract DeBridgeGate is
         bytes calldata _signatures
     ) internal {
         if (isBlockedSubmission[_submissionId]) revert SubmissionBlocked();
-        if (_signatures.length > 0) {
-            // inside check is confirmed
-            ISignatureVerifier(signatureVerifier).submit(
-                _submissionId,
-                _signatures,
-                _amount >= getAmountThreshold[_debridgeId] ? excessConfirmations : 0
-            );
-        } else {
-            (uint8 confirmations, bool confirmed) = IConfirmationAggregator(confirmationAggregator)
-                .getSubmissionConfirmations(_submissionId);
-
-            if (!confirmed) revert SubmissionNotConfirmed();
-            if (_amount >= getAmountThreshold[_debridgeId]) {
-                if (confirmations < excessConfirmations) revert SubmissionAmountNotConfirmed();
-            }
-        }
+        // inside check is confirmed
+        ISignatureVerifier(signatureVerifier).submit(
+            _submissionId,
+            _signatures,
+            _amount >= getAmountThreshold[_debridgeId] ? excessConfirmations : 0
+        );
     }
 
     /// @dev Add support for the asset.
@@ -981,7 +945,7 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         uint256 _chainId
     ) external view override returns (uint256) {
-        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
         return getDebridgeFeeInfo[_debridgeId].getChainFee[_chainId];
     }
 
