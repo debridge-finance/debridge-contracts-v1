@@ -19,7 +19,6 @@ const transferFeeBps = 50;
 const minReservesBps = 3000;
 const BPS = toBN(10000);
 const fixedNativeFee = toWei("0.00001");
-const isSupported = true;
 const supportedChainIds = [42, 56];
 const excessConfirmations = 7; //Confirmations count in case of excess activity.
 const referralCode = 555;
@@ -87,13 +86,11 @@ contract("DeBridgeGate full mode", function () {
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
       ],
@@ -106,13 +103,11 @@ contract("DeBridgeGate full mode", function () {
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
       ],
@@ -180,7 +175,6 @@ contract("DeBridgeGate full mode", function () {
 
     it("should update Chain Support if called by the admin and emits ChainsSupportUpdated event", async function () {
       const newChainInfo = {
-        isSupported: false,
         fixedNativeFee: 99,
         transferFeeBps: 100,
         maxAmount: 0,
@@ -190,10 +184,9 @@ contract("DeBridgeGate full mode", function () {
         from: alice.address,
       });
 
-      const { isSupported, fixedNativeFee, transferFeeBps, maxAmount } = await this.debridge.getChainToConfig([
+      const { fixedNativeFee, transferFeeBps, maxAmount } = await this.debridge.getChainToConfig([
         42,
       ]);
-      expect(newChainInfo.isSupported).to.equal(isSupported);
       expect(newChainInfo.maxAmount).to.equal(maxAmount);
       expect(newChainInfo.fixedNativeFee).to.equal(fixedNativeFee);
       expect(newChainInfo.transferFeeBps).to.equal(transferFeeBps);
@@ -279,7 +272,6 @@ contract("DeBridgeGate full mode", function () {
 
     it("should reject updating Chain Support if called by the non-admin", async function () {
       const newChainInfo = {
-        isSupported: false,
         fixedNativeFee: 99,
         transferFeeBps: 100,
         maxAmount: 0,

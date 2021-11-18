@@ -118,7 +118,6 @@ contract("DeBridgeGate light mode", function () {
     this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
     const maxAmount = toWei("100000000000");
     const fixedNativeFee = toWei("0.00001");
-    const isSupported = true;
     const supportedChainIds = [42, 56];
     this.weth = await WETH9Factory.deploy();
 
@@ -169,13 +168,11 @@ contract("DeBridgeGate light mode", function () {
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
       ],
@@ -188,12 +185,12 @@ contract("DeBridgeGate light mode", function () {
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       true
@@ -249,7 +246,6 @@ contract("DeBridgeGate light mode", function () {
   });
 
   context("Test managing assets", () => {
-    const isSupported = true;
     it("should add external asset if called by the admin", async function () {
       const tokenAddresses = ["0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "0xdac17f958d2ee523a2206206994597c13d831ec7", "0x6b175474e89094c44da98b954eedeac495271d0f"];
 

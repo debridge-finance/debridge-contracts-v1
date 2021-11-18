@@ -127,7 +127,6 @@ contract("DeBridgeGate full with auto", function () {
     this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     const maxAmount = toWei("1000000");
     const fixedNativeFee = toWei("0.00001");
-    const isSupported = true;
     const supportedChainIds = [42, 56];
     this.weth = await WETH9Factory.deploy();
 
@@ -167,13 +166,11 @@ contract("DeBridgeGate full with auto", function () {
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
           maxAmount: ethers.constants.MaxUint256,
         },
       ],
@@ -186,12 +183,12 @@ contract("DeBridgeGate full with auto", function () {
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
         {
           transferFeeBps,
           fixedNativeFee,
-          isSupported,
+          maxAmount: ethers.constants.MaxUint256,
         },
       ],
       true
@@ -306,7 +303,6 @@ contract("DeBridgeGate full with auto", function () {
       //);
     });
 
-    const isSupported = true;
     it("should add external asset if called by the admin", async function () {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const chainId = 56;

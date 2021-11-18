@@ -136,19 +136,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     deployInitParams.supportedChains,
     deployInitParams.chainSupportInfo,
     false
-    //  [bscChainId, hecoChainId],
-    //  [
-    //      {
-    //          transferFeeBps,
-    //          fixedNativeFee: fixedNativeFeeBNB,
-    //          isSupported,
-    //      },
-    //      {
-    //          transferFeeBps,
-    //          fixedNativeFee: fixedNativeFeeHT,
-    //          isSupported,
-    //      },
-    //  ]
   );
   await waitTx(tx);
 
