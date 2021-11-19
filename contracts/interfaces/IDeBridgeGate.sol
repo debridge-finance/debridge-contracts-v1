@@ -168,8 +168,13 @@ interface IDeBridgeGate {
         uint256 maxAmount,
         uint16 minReservesBps
     ); // emited when new asset is supported
-    event ChainSupportUpdated(uint256 chainId, bool isSupported); // Emits when the asset is allowed/disallowed to be transferred to the chain.
-    event ChainsSupportUpdated(uint256[] chainIds); // emited when the supported assets are updated
+
+    event ChainSupportUpdated(uint256 chainId, bool isSupported, bool isChainFrom); // Emits when the asset is allowed/disallowed to be transferred to the chain.
+    event ChainsSupportUpdated(
+        uint256 chainIds,
+        ChainSupportInfo chainSupportInfo,
+        bool isChainFrom); // emited when the supported assets are updated
+
     event CallProxyUpdated(address callProxy); // emited when the new call proxy set
     event AutoRequestExecuted(
         bytes32 submissionId,
