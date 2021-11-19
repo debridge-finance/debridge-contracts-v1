@@ -523,7 +523,6 @@ contract DelegatedStaking is
         Strategy storage strategy = strategies[_strategy][_stakeToken];
         if (!strategy.isEnabled) revert StrategyDisabled();
         IStrategy strategyController = IStrategy(_strategy);
-        Collateral storage stakeCollateral = collaterals[strategy.stakeToken];
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
         
@@ -539,18 +538,12 @@ contract DelegatedStaking is
 
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 sharesBefore = strategyController.totalShares(_stakeToken);
         strategyController.deposit(strategy.stakeToken, _amount);
-        uint256 afterBalance = strategyController.updateReserves(address(this), strategy.strategyToken);
-        uint256 receivedAmount = afterBalance - strategy.totalReserves;
-        uint256 shares = strategy.totalShares > 0
-            ? DelegatedStakingHelper._calculateShares(receivedAmount, strategy.totalShares, strategy.totalReserves)
-            : receivedAmount;
-        strategy.totalShares += shares;
-        strategy.totalReserves = strategyController.updateReserves(address(this), strategy.strategyToken);
+        uint256 shares = strategyController.totalShares(_stakeToken) - sharesBefore;
         delegation.strategyShares[_strategy] += shares;
         validatorCollateral.strategyShares[_strategy] += shares;
-        stakeCollateral.totalLocked -= _amount;
+        collaterals[strategy.stakeToken].totalLocked -= _amount;
         emit DepositedToStrategy(_validator, msg.sender, _amount, _strategy, strategy.stakeToken);
     }
 
