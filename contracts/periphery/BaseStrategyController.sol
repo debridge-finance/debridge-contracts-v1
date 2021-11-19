@@ -6,6 +6,12 @@ import "../interfaces/IStrategy.sol";
 
 abstract contract BaseStrategyController is IStrategy {
 
+    event StrategyReset(address _strategy, address collateral);
+    
+
+    error StrategyDisabled();
+    error AlreadyExists();
+
     struct Strategy {
         address stakeToken;
         address strategyToken;
@@ -20,8 +26,16 @@ abstract contract BaseStrategyController is IStrategy {
 
     mapping(address => Strategy) public strategies;
 
+    function _strategyToken(address _stakeToken) internal view virtual returns (address) {
+        return strategies[_stakeToken].strategyToken;
+    }
+
     function totalShares(address _token) external view override returns (uint256) {
         return strategies[_token].totalShares;
+    }
+
+    function rewards(address _token) external view override returns (uint256) {
+        return strategies[_token].rewards;
     }
 
     function totalReserves(address _token) external view override returns (uint256) {
@@ -52,5 +66,34 @@ abstract contract BaseStrategyController is IStrategy {
             return 0;
         }
         return (_shares * strategy.totalReserves) / strategy.totalShares;
+    }
+
+    function updateStrategyEnabled(address _stakeToken, bool _isEnabled) external override {
+        strategies[_stakeToken].isEnabled = _isEnabled;
+    }
+
+    function updateStrategyRecoverable(address _stakeToken, bool _isRecoverable) external override {
+        strategies[_stakeToken].isRecoverable = _isRecoverable;
+    }
+
+    function resetStrategy(address _stakeToken) external override {
+        Strategy storage strategy = strategies[_stakeToken];
+        if (!strategy.isEnabled) revert StrategyDisabled();
+        strategy.totalReserves = 0;
+        strategy.totalShares = 0;
+        strategy.isEnabled = true;
+        strategy.isRecoverable = false;
+        emit StrategyReset(address(this), strategy.stakeToken);
+    }
+
+
+    function addStrategy(address _stakeToken, address _rewardToken) external override {
+        Strategy storage strategy = strategies[_stakeToken];
+        if (strategy.exists) revert AlreadyExists();
+        strategy.stakeToken = _stakeToken;
+        strategy.strategyToken = _strategyToken(_stakeToken);
+        strategy.rewardToken = _rewardToken;
+        strategy.isEnabled = true;
+        strategy.exists = true;
     }
 }

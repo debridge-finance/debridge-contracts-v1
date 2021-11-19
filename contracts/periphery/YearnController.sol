@@ -31,6 +31,10 @@ contract YearnController is BaseStrategyController {
     return underlyingToYToken[_token];
   }
 
+  function _strategyToken(address _token) internal view override returns (address) {
+    return underlyingToYToken[_token];
+  }
+
   function updateReserves(address _account, address _token)
     external
     view
