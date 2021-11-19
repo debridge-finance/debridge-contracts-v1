@@ -156,12 +156,15 @@ contract DeBridgeGate is
 
     /* ========== send, claim ========== */
 
-    /// @dev Locks asset on the chain and enables minting on the other chain.
+    /// @dev Locks asset on the chain and enables withdraw on the other chain.
     /// @param _tokenAddress Asset identifier.
-    /// @param _receiver Receiver address.
     /// @param _amount Amount to be transfered (note: the fee can be applyed).
     /// @param _chainIdTo Chain id of the target chain.
+    /// @param _receiver Receiver address.
     /// @param _permit deadline + signature for approving the spender by signature.
+    /// @param _useAssetFee use assets fee for pay protocol fix (work only for specials token)
+    /// @param _referralCode Referral code
+    /// @param _autoParams Auto params for external call in target network
     function send(
         address _tokenAddress,
         uint256 _amount,
@@ -216,9 +219,12 @@ contract DeBridgeGate is
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
-    /// @param _receiver Receiver address.
     /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
+    /// @param _chainIdFrom Chain where submission was sent
+    /// @param _receiver Receiver address.
     /// @param _nonce Submission id.
+    /// @param _signatures Validators signatures to confirm
+    /// @param _autoParams Auto params for external call
     function claim(
         bytes32 _debridgeId,
         uint256 _amount,
@@ -244,8 +250,6 @@ contract DeBridgeGate is
             autoParams,
             _autoParams.length > 0
         );
-
-
 
         // check if submission already claimed
         if (isSubmissionUsed[submissionId]) revert SubmissionUsed();
@@ -729,6 +733,7 @@ contract DeBridgeGate is
                 if (assetsFixedFee == 0) revert NotSupportedFixedFee();
                 // Apply discount for a asset fixed fee
                 assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+                feeParams.fixFee = assetsFixedFee;
             } else {
                 // collect native fees
 
@@ -744,6 +749,7 @@ contract DeBridgeGate is
                 }
                 bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
                 getDebridgeFeeInfo[nativeDebridgeId].collectedFees += nativeFee;
+                feeParams.fixFee = nativeFee;
             }
 
             // Calculate transfer fee
@@ -761,7 +767,7 @@ contract DeBridgeGate is
             amountAfterFee = _amount - totalFee;
 
             // initialize feeParams
-            feeParams.fixFee = _useAssetFee ? assetsFixedFee : msg.value;
+            // feeParams.fixFee = _useAssetFee ? assetsFixedFee : msg.value;
             feeParams.transferFee = transferFee;
             feeParams.useAssetFee = _useAssetFee;
             feeParams.receivedAmount = _amount;
