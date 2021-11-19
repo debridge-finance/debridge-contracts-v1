@@ -31,4 +31,26 @@ abstract contract BaseStrategyController is IStrategy {
     function isEnabled(address _token) external view override returns (bool) {
         return strategies[_token].isEnabled;
     }
+
+    function strategyInfo(address _token) external view override returns (bool, bool) {
+        Strategy memory strategy = strategies[_token]; 
+        return (strategy.isEnabled, strategy.isRecoverable);
+    }
+
+    function calculateShares(address _token, uint256 _amount) external view override returns (uint256) {
+        Strategy memory strategy = strategies[_token]; 
+        if (strategy.totalReserves > 0) {
+            return (_amount * strategy.totalShares) / strategy.totalReserves;
+        } else {
+            return _amount;
+        }
+    }
+
+    function calculateFromShares(address _token, uint256 _shares) external view override returns (uint256) {
+        Strategy memory strategy = strategies[_token]; 
+        if (strategy.totalShares == 0) {
+            return 0;
+        }
+        return (_shares * strategy.totalReserves) / strategy.totalShares;
+    }
 }
