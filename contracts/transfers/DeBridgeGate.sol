@@ -78,7 +78,7 @@ contract DeBridgeGate is
     error GovMonitoringBadRole();
     error DebridgeNotFound();
 
-    error WrongTargedChain();
+    error WrongChainTo();
     error WrongChainFrom();
     error WrongArgument();
     error WrongAutoArgument();
@@ -228,6 +228,7 @@ contract DeBridgeGate is
         bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override whenNotPaused {
+        if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
 
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
@@ -244,7 +245,7 @@ contract DeBridgeGate is
             _autoParams.length > 0
         );
 
-        if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
+
 
         // check if submission already claimed
         if (isSubmissionUsed[submissionId]) revert SubmissionUsed();
@@ -347,8 +348,8 @@ contract DeBridgeGate is
             else {
                 getChainToConfig[_chainIds[i]] = _chainSupportInfo[i];
             }
+            emit ChainsSupportUpdated(_chainIds[i], _chainSupportInfo[i], _isChainFrom);
         }
-        emit ChainsSupportUpdated(_chainIds, _chainSupportInfo, _isChainFrom);
     }
 
     function updateGlobalFee(
@@ -697,7 +698,7 @@ contract DeBridgeGate is
         }
 
         ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
-        if (!chainFees.isSupported) revert WrongTargedChain();
+        if (!chainFees.isSupported) revert WrongChainTo();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {

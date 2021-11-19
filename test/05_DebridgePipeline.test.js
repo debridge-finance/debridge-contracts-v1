@@ -1423,7 +1423,7 @@ contract("DeBridgeGate real pipeline mode", function () {
               value: amount,
               from: alice,
             }),
-          "WrongTargedChain()"
+          "WrongChainTo()"
         );
       });
 

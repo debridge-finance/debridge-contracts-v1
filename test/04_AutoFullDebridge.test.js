@@ -491,7 +491,7 @@ contract("DeBridgeGate full with auto", function () {
             from: alice,
           }
         ),
-        "WrongTargedChain()"
+        "WrongChainTo()"
       );
     });
   });

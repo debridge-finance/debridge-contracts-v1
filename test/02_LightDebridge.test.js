@@ -501,7 +501,7 @@ contract("DeBridgeGate light mode", function () {
             value: amount,
             from: alice,
           }),
-        "WrongTargedChain()"
+        "WrongChainTo()"
       );
     });
   });

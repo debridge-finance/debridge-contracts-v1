@@ -1724,7 +1724,7 @@ contract("DeBridgeGate full mode", function () {
                         from: alice.address,
                       }
                     ),
-                    "WrongTargedChain()"
+                    "WrongChainTo()"
                   );
                 });
 

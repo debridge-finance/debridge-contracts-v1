@@ -171,8 +171,8 @@ interface IDeBridgeGate {
 
     event ChainSupportUpdated(uint256 chainId, bool isSupported, bool isChainFrom); // Emits when the asset is allowed/disallowed to be transferred to the chain.
     event ChainsSupportUpdated(
-        uint256[] chainIds,
-        ChainSupportInfo[] chainSupportInfo,
+        uint256 chainIds,
+        ChainSupportInfo chainSupportInfo,
         bool isChainFrom); // emited when the supported assets are updated
 
     event CallProxyUpdated(address callProxy); // emited when the new call proxy set
