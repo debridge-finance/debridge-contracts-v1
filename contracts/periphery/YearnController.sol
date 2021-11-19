@@ -7,25 +7,11 @@ import "../interfaces/yearn/IYToken.sol";
 import "../interfaces/yearn/IYRegistry.sol";
 import "../interfaces/yearn/IYearnVault.sol";
 import "../interfaces/IStrategy.sol";
+import "./BaseStrategyController.sol";
 
-contract YearnController is IStrategy {
+contract YearnController is BaseStrategyController {
 
   using SafeERC20 for IERC20;
-
-  struct Strategy {
-        address stakeToken;
-        address strategyToken;
-        address rewardToken;
-        uint256 totalShares;
-        uint256 totalReserves;
-        uint256 rewards;
-        bool isEnabled;
-        bool exists;
-        bool isRecoverable;
-  }
-
-  mapping(address => Strategy) public strategies;
-
   address yRegistry;
   mapping(address => address) public underlyingToYToken;
 
@@ -68,13 +54,5 @@ contract YearnController is IStrategy {
 
   function withdraw(address _token, uint256 _amount) public override {
     IYToken(_token).withdraw(_amount);
-  }
-
-  function totalShares(address _token) external override view returns(uint256) {
-    return strategies[_token].totalShares;
-  }
-
-  function totalReserves(address _token) external override view returns(uint256) {
-    return strategies[_token].totalReserves;
   }
 }

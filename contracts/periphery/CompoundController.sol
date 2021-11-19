@@ -6,24 +6,11 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/compound/IComptroller.sol";
 import "../interfaces/compound/ICToken.sol";
 import "../interfaces/IStrategy.sol";
+import "./BaseStrategyController.sol";
 
-contract CompoundController is IStrategy {
+contract CompoundController is BaseStrategyController {
 
   using SafeERC20 for IERC20;
-
-  struct Strategy {
-        address stakeToken;
-        address strategyToken;
-        address rewardToken;
-        uint256 totalShares;
-        uint256 totalReserves;
-        uint256 rewards;
-        bool isEnabled;
-        bool exists;
-        bool isRecoverable;
-  }
-
-  mapping(address => Strategy) public strategies;
 
   IComptroller public comptroller;
   mapping(address => address) public underlyingToCToken;
@@ -80,13 +67,5 @@ contract CompoundController is IStrategy {
       address[] memory cTokens = new address[](1);
       cTokens[0] = address(_token);
       comptroller.claimComp(address(this), cTokens);
-  }
-
-  function totalShares(address _token) external override view returns (uint256) {
-        return strategies[_token].totalShares;
-    }
-
-  function totalReserves(address _token) external override view returns (uint256) {
-        return strategies[_token].totalReserves;
   }
 }

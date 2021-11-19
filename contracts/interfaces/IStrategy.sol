@@ -15,4 +15,5 @@ interface IStrategy {
 
     function totalReserves(address token) external view returns(uint256);
     function totalShares(address token) external view returns(uint256);
+    function isEnabled(address token) external view returns(bool);
 }

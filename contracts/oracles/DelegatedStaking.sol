@@ -520,9 +520,8 @@ contract DelegatedStaking is
         nonReentrant
         whenNotPaused
     {
-        Strategy storage strategy = strategies[_strategy][_stakeToken];
-        if (!strategy.isEnabled) revert StrategyDisabled();
         IStrategy strategyController = IStrategy(_strategy);
+        if (!strategyController.isEnabled(_stakeToken)) revert StrategyDisabled();
         ValidatorInfo storage validator = getValidatorInfo[_validator];
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
         
@@ -536,15 +535,16 @@ contract DelegatedStaking is
         delegation.locked += _shares;
         validatorCollateral.locked += _shares;
 
-        IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
-        IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
+        IERC20(_stakeToken).safeApprove(address(strategyController), 0);
+        IERC20(_stakeToken).safeApprove(address(strategyController), _amount);
         uint256 sharesBefore = strategyController.totalShares(_stakeToken);
-        strategyController.deposit(strategy.stakeToken, _amount);
+        strategyController.deposit(_stakeToken, _amount);
+        // strategyController should issue shares on his side
         uint256 shares = strategyController.totalShares(_stakeToken) - sharesBefore;
         delegation.strategyShares[_strategy] += shares;
         validatorCollateral.strategyShares[_strategy] += shares;
-        collaterals[strategy.stakeToken].totalLocked -= _amount;
-        emit DepositedToStrategy(_validator, msg.sender, _amount, _strategy, strategy.stakeToken);
+        collaterals[_stakeToken].totalLocked -= _amount;
+        emit DepositedToStrategy(_validator, msg.sender, _amount, _strategy, _stakeToken);
     }
 
     /**
