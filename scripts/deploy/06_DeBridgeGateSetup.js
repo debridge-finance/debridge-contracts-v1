@@ -6,7 +6,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  console.log("Start 09_DeBridgeGateSetup");
+  console.log("Start 06_DeBridgeGateSetup");
 
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
 
@@ -22,17 +22,18 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //    setup SignatureVerifier
   // --------------------------------
 
-  if (deployInitParams.deploy.SignatureVerifier) {
-    let signatureVerifier = await getLastDeployedProxy("SignatureVerifier", deployer);
 
-    console.log(`deBridge setSignatureVerifier ${signatureVerifier.address}`);
-    tx = await deBridgeGateInstance.setSignatureVerifier(signatureVerifier.address);
-    await waitTx(tx);
+  let signatureVerifier = await getLastDeployedProxy("SignatureVerifier", deployer);
 
-    console.log(`signatureVerifier setDebridgeAddress ${deBridgeGateInstance.address}`);
-    tx = await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
-    await waitTx(tx);
-  }
+  console.log(`deBridge setSignatureVerifier ${signatureVerifier.address}`);
+  tx = await deBridgeGateInstance.setSignatureVerifier(signatureVerifier.address);
+  await waitTx(tx);
+
+  // was added in constructor
+  // console.log(`signatureVerifier setDebridgeAddress ${deBridgeGateInstance.address}`);
+  // tx = await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
+  // await waitTx(tx);
+
 
 
   // // --------------------------------
@@ -84,12 +85,12 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //    setup DefiController
   // --------------------------------
 
-  if (deployInitParams.deploy.DefiController) {
-    let defiController = await getLastDeployedProxy("DefiController", deployer);
-    console.log(`deBridge setDefiController ${defiController.address}`);
-    tx = await deBridgeGateInstance.setDefiController(defiController.address);
-    await waitTx(tx);
-  }
+  // if (deployInitParams.deploy.DefiController) {
+  //   let defiController = await getLastDeployedProxy("DefiController", deployer);
+  //   console.log(`deBridge setDefiController ${defiController.address}`);
+  //   tx = await deBridgeGateInstance.setDefiController(defiController.address);
+  //   await waitTx(tx);
+  // }
 
 
   // --------------------------------
@@ -114,9 +115,10 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setDeBridgeTokenDeployer(deBridgeTokenDeployer.address);
   await waitTx(tx);
 
-  console.log(`deBridgeTokenDeployer setDebridgeAddress ${deBridgeGateInstance.address}`);
-  tx = await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
-  await waitTx(tx);
+  // already added in constructor
+  // console.log(`deBridgeTokenDeployer setDebridgeAddress ${deBridgeGateInstance.address}`);
+  // tx = await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
+  // await waitTx(tx);
 
 
   const chainId = await deBridgeGateInstance.getChainId();
@@ -201,11 +203,8 @@ module.exports.tags = ["09_DeBridgeGateSetup"]
 module.exports.dependencies = [
   '01-0_DeBridgeGate',
   '01-2_DeBridgeTokenDeployer',
-  '02_SignatureAggregator',
-  '03_SignatureVerifier',
-  // '04_ConfirmationAggregator',
-  '05_CallProxy',
-  '06_FeeProxy',
-  '07_DefiController',
-  '08_wethGate',
+  '02_SignatureVerifier',
+  '03_CallProxy',
+  '04_FeeProxy',
+  '05_wethGate',
 ];

@@ -32,7 +32,8 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize() public initializer {
+    function initialize(IDeBridgeGate _debridgeGate) public initializer {
+        debridgeGate = _debridgeGate;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 

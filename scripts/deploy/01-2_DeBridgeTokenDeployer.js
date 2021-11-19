@@ -1,18 +1,24 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
-const { ethers } = require("hardhat");
-const { deployProxy } = require("../deploy-utils");
+const { deployProxy, getLastDeployedProxy } = require("../deploy-utils");
 
-module.exports = async function({getNamedAccounts, deployments, network}) {
+module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const deToken = (await deployments.get("DeBridgeToken")).address
+  const deToken = (await deployments.get("DeBridgeToken")).address;
+
+  const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
+  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", [
+    deployInitParams.excessConfirmations,
+    wethAddress,
+  ]);
+
   await deployProxy("DeBridgeTokenDeployer", deployer,
     [
       deToken,
       deployInitParams.deBridgeTokenAdmin,
-      ethers.constants.AddressZero,
+      deBridgeGateInstance.address,
     ],
     true);
 };

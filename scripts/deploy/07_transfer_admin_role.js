@@ -58,20 +58,20 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //    SignatureVerifier
   // --------------------------------
 
-  if (deployInitParams.deploy.SignatureVerifier) {
-    const signatureVerifier = await getLastDeployedProxy("SignatureVerifier", deployer);
-    await transferAdminRole(signatureVerifier, "SignatureVerifier");
-  }
+
+  const signatureVerifier = await getLastDeployedProxy("SignatureVerifier", deployer);
+  await transferAdminRole(signatureVerifier, "SignatureVerifier");
+
 
 
   // --------------------------------
   //    ConfirmationAggregator
   // --------------------------------
 
-  if (deployInitParams.deploy.ConfirmationAggregator) {
-    const confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
-    await transferAdminRole(confirmationAggregator, "ConfirmationAggregator");
-  }
+  // if (deployInitParams.deploy.ConfirmationAggregator) {
+  //   const confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
+  //   await transferAdminRole(confirmationAggregator, "ConfirmationAggregator");
+  // }
 
 
   // --------------------------------
@@ -86,18 +86,18 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //    FeeProxy
   // --------------------------------
 
-  const feeProxy = await getLastDeployedProxy("FeeProxy", deployer);
-  await transferAdminRole(feeProxy, "FeeProxy");
+  const feeProxy = await getLastDeployedProxy("SimpleFeeProxy", deployer);
+  await transferAdminRole(feeProxy, "SimpleFeeProxy");
 
 
   // --------------------------------
   //    DefiController
   // --------------------------------
 
-  if (deployInitParams.deploy.DefiController) {
-    const defiController = await getLastDeployedProxy("DefiController", deployer);
-    await transferAdminRole(defiController, "DefiController");
-  }
+  // if (deployInitParams.deploy.DefiController) {
+  //   const defiController = await getLastDeployedProxy("DefiController", deployer);
+  //   await transferAdminRole(defiController, "DefiController");
+  // }
 
 
   // --------------------------------
@@ -114,5 +114,5 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await hre.upgrades.admin.transferProxyAdminOwnership(multisig);
 };
 
-module.exports.tags = ["10_transfer_admin_role"];
-// module.exports.dependencies = ['09_DeBridgeGateSetup'];
+module.exports.tags = ["07_transfer_admin_role"];
+module.exports.dependencies = ['06_DeBridgeGateSetup'];
