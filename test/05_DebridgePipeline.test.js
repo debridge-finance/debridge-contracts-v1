@@ -126,6 +126,9 @@ contract("DeBridgeGate real pipeline mode", function () {
     this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
       from: alice,
     });
+    this.emptyNameToken = await MockToken.new("", "NONAME", 18, {
+      from: alice,
+    });
 
     //-------Deploy weth contracts
     this.wethETH = await WETH9Factory.deploy();
@@ -879,12 +882,40 @@ contract("DeBridgeGate real pipeline mode", function () {
           tokenDecimals
         );
         deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-        tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, bscChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+        tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
         receipt = await tx.wait();
         pairAddedEvent = receipt.events.find((x) => {
             return x.event == "PairAdded";
         });
         deBNBAddressInHECO = pairAddedEvent.args.tokenAddress;
+
+
+        //this.emptyNameToken.address, hecoChainId, "", "NONAME", 18
+        tokenNativeAddress = this.emptyNameToken.address;
+        tokenNativeChainId = hecoChainId;
+        tokenName = "";
+        tokenSymbol = "NONAME";
+        tokenDecimals = 18;
+        debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+        deployId = await this.signatureVerifierBSC.getDeployId(
+          debridgeId,
+          tokenName,
+          tokenSymbol,
+          tokenDecimals
+        );
+        deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+        tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+        receipt = await tx.wait();
+        pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        const deEmptyNameTokenAddressInBSC = pairAddedEvent.args.tokenAddress;
+        const deEmptyNameToken = await DeBridgeToken.at(deEmptyNameTokenAddressInBSC);
+        assert.equal( await deEmptyNameToken.symbol(), "deNONAME");
+        // detoken name should use symbol because original name is empty
+        assert.equal( await deEmptyNameToken.name(), "deBridge NONAME");
+        assert.equal( (await deEmptyNameToken.decimals()).toString(), "18");
+
         // console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
 
         //Check that new deployed token with correct values

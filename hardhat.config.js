@@ -120,4 +120,7 @@ module.exports = {
       chainId: 1
     }
   },
+  mocha: {
+    timeout: 100000
+  },
 }
