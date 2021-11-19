@@ -116,18 +116,6 @@ contract DelegatedStaking is
         bool exists;
     }
 
-    struct Strategy {
-        address stakeToken;
-        address strategyToken;
-        address rewardToken;
-        uint256 totalShares;
-        uint256 totalReserves;
-        uint256 rewards;
-        bool isEnabled;
-        bool exists;
-        bool isRecoverable;
-    }
-
     mapping(address => RewardInfo) public getRewardsInfo;
     mapping(address => ValidatorInfo) public getValidatorInfo; // validator address => validator details
     mapping(address => WithdrawalRequests) public getWithdrawalRequests; // validators address => withdrawal requests
@@ -140,7 +128,6 @@ contract DelegatedStaking is
     mapping(address => Collateral) public collaterals;
     address[] public validatorAddresses;
     address[] public collateralAddresses;
-    mapping(address => mapping(address => Strategy)) public strategies;
     address[] public strategyControllerAddresses;
     mapping(address => bool) public strategyControllerExists;
     IPriceConsumer public priceConsumer;
@@ -1396,39 +1383,6 @@ contract DelegatedStaking is
     /* ========== INTERNAL ========== */
 
     /* ========== VIEW ========== */
-
-    /**
-      * @dev checks strategy reserves
-      * @param _strategyController Strategy controller address
-      * @param _validator Validator address
-      * @param _collateral Collateral address
-      */
-    // NOTE: this doesnt work for multiple validators staked to same strategy as the gain/loss needs to be shared between them
-    function _checkReserves(address _strategyController, address _validator, address _collateral) internal {
-        Strategy storage strategy = strategies[_strategyController][_collateral];
-        ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_collateral];
-        uint256 cachedReserves = strategy.totalReserves;
-        strategy.totalReserves = IStrategy(_strategyController).updateReserves(address(this), strategy.strategyToken);
-        if (strategy.totalReserves > cachedReserves) {
-           uint256 additionalShares = DelegatedStakingHelper._calculateShares(
-               strategy.totalReserves - cachedReserves,
-               strategy.totalShares,
-               strategy.totalReserves
-           );
-           validatorCollateral.strategyShares[_strategyController] += additionalShares;
-           strategy.totalShares += additionalShares;
-           validatorCollateral.locked += additionalShares;
-        } else {
-            uint256 reducedShares = DelegatedStakingHelper._calculateShares(
-                cachedReserves - strategy.totalReserves,
-                strategy.totalShares,
-                strategy.totalReserves
-            );
-            validatorCollateral.strategyShares[_strategyController] -= reducedShares;
-            strategy.totalShares -= reducedShares;
-            validatorCollateral.locked -= reducedShares;
-        }
-    }
 
     // /**
     //  * @dev Get price per share
