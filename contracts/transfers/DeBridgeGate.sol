@@ -51,7 +51,8 @@ contract DeBridgeGate is
     mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
-    mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
+    mapping(uint256 => ChainSupportInfo) public getChainToConfig; // whether the chain for the asset is supported to send
+    mapping(uint256 => ChainSupportInfo) public getChainFromConfig;// whether the chain for the asset is supported to claim
     mapping(address => DiscountInfo) public feeDiscount; //fee discount for address
 
     mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
@@ -77,7 +78,8 @@ contract DeBridgeGate is
     error GovMonitoringBadRole();
     error DebridgeNotFound();
 
-    error WrongTargedChain();
+    error WrongChainTo();
+    error WrongChainFrom();
     error WrongArgument();
     error WrongAutoArgument();
 
@@ -226,6 +228,7 @@ contract DeBridgeGate is
         bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override whenNotPaused {
+        if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
 
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
@@ -241,6 +244,8 @@ contract DeBridgeGate is
             autoParams,
             _autoParams.length > 0
         );
+
+
 
         // check if submission already claimed
         if (isSubmissionUsed[submissionId]) revert SubmissionUsed();
@@ -327,17 +332,24 @@ contract DeBridgeGate is
     /* ========== ADMIN ========== */
 
     /// @dev Update asset's fees.
-    /// @param _supportedChainIds Chain identifiers.
+    /// @param _chainIds Chain identifiers.
     /// @param _chainSupportInfo Chain support info.
+    /// @param _isChainFrom is true for editing getChainFromConfig.
     function updateChainSupport(
-        uint256[] memory _supportedChainIds,
-        ChainSupportInfo[] memory _chainSupportInfo
+        uint256[] memory _chainIds,
+        ChainSupportInfo[] memory _chainSupportInfo,
+        bool _isChainFrom
     ) external onlyAdmin {
-        if (_supportedChainIds.length != _chainSupportInfo.length) revert WrongArgument();
-        for (uint256 i = 0; i < _supportedChainIds.length; i++) {
-            getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
+        if (_chainIds.length != _chainSupportInfo.length) revert WrongArgument();
+        for (uint256 i = 0; i < _chainIds.length; i++) {
+            if(_isChainFrom){
+                getChainFromConfig[_chainIds[i]] = _chainSupportInfo[i];
+            }
+            else {
+                getChainToConfig[_chainIds[i]] = _chainSupportInfo[i];
+            }
+            emit ChainsSupportUpdated(_chainIds[i], _chainSupportInfo[i], _isChainFrom);
         }
-        emit ChainsSupportUpdated(_supportedChainIds);
     }
 
     function updateGlobalFee(
@@ -373,9 +385,15 @@ contract DeBridgeGate is
     /// @dev Set support for the chains where the token can be transfered.
     /// @param _chainId Chain id where tokens are sent.
     /// @param _isSupported Whether the token is transferable to the other chain.
-    function setChainSupport(uint256 _chainId, bool _isSupported) external onlyAdmin {
-        getChainSupport[_chainId].isSupported = _isSupported;
-        emit ChainSupportUpdated(_chainId, _isSupported);
+    /// @param _isChainFrom is true for editing getChainFromConfig.
+    function setChainSupport(uint256 _chainId, bool _isSupported, bool _isChainFrom) external onlyAdmin {
+        if (_isChainFrom) {
+            getChainFromConfig[_chainId].isSupported = _isSupported;
+        }
+        else {
+            getChainToConfig[_chainId].isSupported = _isSupported;
+        }
+        emit ChainSupportUpdated(_chainId, _isSupported, _isChainFrom);
     }
 
     /// @dev Set proxy address.
@@ -679,8 +697,8 @@ contract DeBridgeGate is
             } else revert DebridgeNotFound();
         }
 
-        ChainSupportInfo memory chainFees = getChainSupport[_chainIdTo];
-        if (!chainFees.isSupported) revert WrongTargedChain();
+        ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
+        if (!chainFees.isSupported) revert WrongChainTo();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
