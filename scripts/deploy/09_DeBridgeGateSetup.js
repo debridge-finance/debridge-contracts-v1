@@ -35,16 +35,16 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   }
 
 
-  // --------------------------------
-  //    setup ConfirmationAggregator
-  // --------------------------------
+  // // --------------------------------
+  // //    setup ConfirmationAggregator
+  // // --------------------------------
 
-  if (deployInitParams.deploy.ConfirmationAggregator) {
-    let confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
-    console.log(`deBridge setAggregator ${confirmationAggregator.address}`);
-    tx = await deBridgeGateInstance.setAggregator(confirmationAggregator.address);
-    await waitTx(tx);
-  }
+  // if (deployInitParams.deploy.ConfirmationAggregator) {
+  //   let confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
+  //   console.log(`deBridge setAggregator ${confirmationAggregator.address}`);
+  //   tx = await deBridgeGateInstance.setAggregator(confirmationAggregator.address);
+  //   await waitTx(tx);
+  // }
 
 
   // --------------------------------
@@ -67,7 +67,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //    setup FeeProxy
   // --------------------------------
 
-  const feeProxy = await getLastDeployedProxy("FeeProxy", deployer);
+  const feeProxy = await getLastDeployedProxy("SimpleFeeProxy", deployer);
   console.log(`deBridge setFeeProxy ${feeProxy.address}`);
   tx = await deBridgeGateInstance.setFeeProxy(feeProxy.address);
   await waitTx(tx);
@@ -76,6 +76,9 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await feeProxy.setDebridgeGate(deBridgeGateInstance.address);
   await waitTx(tx);
 
+  console.log(`feeProxy setTreasury ${deployInitParams.treasuryAddress}`);
+  tx = await feeProxy.setTreasury(deployInitParams.treasuryAddress);
+  await waitTx(tx);
 
   // --------------------------------
   //    setup DefiController
@@ -131,7 +134,8 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log(deployInitParams.chainSupportInfo);
   tx = await deBridgeGateInstance.updateChainSupport(
     deployInitParams.supportedChains,
-    deployInitParams.chainSupportInfo
+    deployInitParams.chainSupportInfo,
+    false
     //  [bscChainId, hecoChainId],
     //  [
     //      {
@@ -145,6 +149,13 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     //          isSupported,
     //      },
     //  ]
+  );
+  await waitTx(tx);
+
+  tx = await deBridgeGateInstance.updateChainSupport(
+    deployInitParams.supportedChains,
+    deployInitParams.chainSupportInfo,
+    true //_isChainFrom is true for editing getChainFromConfig.
   );
   await waitTx(tx);
 
@@ -192,7 +203,7 @@ module.exports.dependencies = [
   '01-2_DeBridgeTokenDeployer',
   '02_SignatureAggregator',
   '03_SignatureVerifier',
-  '04_ConfirmationAggregator',
+  // '04_ConfirmationAggregator',
   '05_CallProxy',
   '06_FeeProxy',
   '07_DefiController',

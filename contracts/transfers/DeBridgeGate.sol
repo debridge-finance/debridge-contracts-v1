@@ -15,7 +15,6 @@ import "../interfaces/IDeBridgeTokenDeployer.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
-import "../interfaces/IConfirmationAggregator.sol";
 import "../interfaces/ICallProxy.sol";
 import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
@@ -42,7 +41,7 @@ contract DeBridgeGate is
 
     address public deBridgeTokenDeployer;
     address public signatureVerifier; // current signatureVerifier address to verify signatures
-    address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
+    // address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
@@ -53,7 +52,8 @@ contract DeBridgeGate is
     mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
-    mapping(uint256 => ChainSupportInfo) public getChainSupport; // whether the chain for the asset is supported
+    mapping(uint256 => ChainSupportInfo) public getChainToConfig; // whether the chain for the asset is supported to send
+    mapping(uint256 => ChainSupportInfo) public getChainFromConfig;// whether the chain for the asset is supported to claim
     mapping(address => DiscountInfo) public feeDiscount; //fee discount for address
 
     mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
@@ -79,7 +79,8 @@ contract DeBridgeGate is
     error GovMonitoringBadRole();
     error DebridgeNotFound();
 
-    error WrongTargedChain();
+    error WrongChainTo();
+    error WrongChainFrom();
     error WrongArgument();
     error WrongAutoArgument();
 
@@ -228,6 +229,7 @@ contract DeBridgeGate is
         bytes calldata _signatures,
         bytes calldata _autoParams
     ) external override whenNotPaused {
+        if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
 
         SubmissionAutoParamsFrom memory autoParams;
         if (_autoParams.length > 0) {
@@ -243,6 +245,8 @@ contract DeBridgeGate is
             autoParams,
             _autoParams.length > 0
         );
+
+
 
         // check if submission already claimed
         if (isSubmissionUsed[submissionId]) revert SubmissionUsed();
@@ -307,14 +311,9 @@ contract DeBridgeGate is
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
         bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
-        if(_signatures.length > 0){
-            // verify signatures
-            ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
-        }
-        else {
-            bytes32 confirmedDeployId = IConfirmationAggregator(confirmationAggregator).getConfirmedDeployId(debridgeId);
-            if (deployId != confirmedDeployId) revert AssetNotConfirmed();
-        }
+
+        // verify signatures
+        ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
 
         address deBridgeTokenAddress = IDeBridgeTokenDeployer(deBridgeTokenDeployer)
             .deployAsset(debridgeId, _name, _symbol, _decimals);
@@ -334,17 +333,24 @@ contract DeBridgeGate is
     /* ========== ADMIN ========== */
 
     /// @dev Update asset's fees.
-    /// @param _supportedChainIds Chain identifiers.
+    /// @param _chainIds Chain identifiers.
     /// @param _chainSupportInfo Chain support info.
+    /// @param _isChainFrom is true for editing getChainFromConfig.
     function updateChainSupport(
-        uint256[] memory _supportedChainIds,
-        ChainSupportInfo[] memory _chainSupportInfo
+        uint256[] memory _chainIds,
+        ChainSupportInfo[] memory _chainSupportInfo,
+        bool _isChainFrom
     ) external onlyAdmin {
-        if (_supportedChainIds.length != _chainSupportInfo.length) revert WrongArgument();
-        for (uint256 i = 0; i < _supportedChainIds.length; i++) {
-            getChainSupport[_supportedChainIds[i]] = _chainSupportInfo[i];
+        if (_chainIds.length != _chainSupportInfo.length) revert WrongArgument();
+        for (uint256 i = 0; i < _chainIds.length; i++) {
+            if(_isChainFrom){
+                getChainFromConfig[_chainIds[i]] = _chainSupportInfo[i];
+            }
+            else {
+                getChainToConfig[_chainIds[i]] = _chainSupportInfo[i];
+            }
+            emit ChainsSupportUpdated(_chainIds[i], _chainSupportInfo[i], _isChainFrom);
         }
-        emit ChainsSupportUpdated(_supportedChainIds);
     }
 
     function updateGlobalFee(
@@ -380,9 +386,15 @@ contract DeBridgeGate is
     /// @dev Set support for the chains where the token can be transfered.
     /// @param _chainId Chain id where tokens are sent.
     /// @param _isSupported Whether the token is transferable to the other chain.
-    function setChainSupport(uint256 _chainId, bool _isSupported) external onlyAdmin {
-        getChainSupport[_chainId].isSupported = _isSupported;
-        emit ChainSupportUpdated(_chainId, _isSupported);
+    /// @param _isChainFrom is true for editing getChainFromConfig.
+    function setChainSupport(uint256 _chainId, bool _isSupported, bool _isChainFrom) external onlyAdmin {
+        if (_isChainFrom) {
+            getChainFromConfig[_chainId].isSupported = _isSupported;
+        }
+        else {
+            getChainToConfig[_chainId].isSupported = _isSupported;
+        }
+        emit ChainSupportUpdated(_chainId, _isSupported, _isChainFrom);
     }
 
     /// @dev Set proxy address.
@@ -426,11 +438,6 @@ contract DeBridgeGate is
         getAmountThreshold[_debridgeId] = _amountThreshold;
     }
 
-    /// @dev Set aggregator address.
-    /// @param _aggregator Submission aggregator address.
-    function setAggregator(address _aggregator) external onlyAdmin {
-        confirmationAggregator = _aggregator;
-    }
 
     /// @dev Set signature verifier address.
     /// @param _verifier Signature verifier address.
@@ -477,11 +484,12 @@ contract DeBridgeGate is
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external override nonReentrant onlyFeeProxy {
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        // Amount for transfer to treasure
+        // Amount for transfer to treasury
         uint256 amount = debridgeFee.collectedFees - debridgeFee.withdrawnFees;
-        debridgeFee.withdrawnFees += amount;
 
         if (amount == 0) revert NotEnoughReserves();
+
+        debridgeFee.withdrawnFees += amount;
 
         if (_debridgeId == getDebridgeId(getChainId(), address(0))) {
             _safeTransferETH(feeProxy, amount);
@@ -590,22 +598,12 @@ contract DeBridgeGate is
         bytes calldata _signatures
     ) internal {
         if (isBlockedSubmission[_submissionId]) revert SubmissionBlocked();
-        if (_signatures.length > 0) {
-            // inside check is confirmed
-            ISignatureVerifier(signatureVerifier).submit(
-                _submissionId,
-                _signatures,
-                _amount >= getAmountThreshold[_debridgeId] ? excessConfirmations : 0
-            );
-        } else {
-            (uint8 confirmations, bool confirmed) = IConfirmationAggregator(confirmationAggregator)
-                .getSubmissionConfirmations(_submissionId);
-
-            if (!confirmed) revert SubmissionNotConfirmed();
-            if (_amount >= getAmountThreshold[_debridgeId]) {
-                if (confirmations < excessConfirmations) revert SubmissionAmountNotConfirmed();
-            }
-        }
+        // inside check is confirmed
+        ISignatureVerifier(signatureVerifier).submit(
+            _submissionId,
+            _signatures,
+            _amount >= getAmountThreshold[_debridgeId] ? excessConfirmations : 0
+        );
     }
 
     /// @dev Add support for the asset.
@@ -716,8 +714,8 @@ contract DeBridgeGate is
             } else revert DebridgeNotFound();
         }
 
-        ChainSupportInfo memory chainFees = getChainSupport[_chainIdTo];
-        if (!chainFees.isSupported) revert WrongTargedChain();
+        ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
+        if (!chainFees.isSupported) revert WrongChainTo();
         if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
@@ -982,7 +980,7 @@ contract DeBridgeGate is
         bytes32 _debridgeId,
         uint256 _chainId
     ) external view override returns (uint256) {
-        if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
+        // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
         return getDebridgeFeeInfo[_debridgeId].getChainFee[_chainId];
     }
 

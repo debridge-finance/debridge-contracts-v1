@@ -41,7 +41,6 @@ contract("DeBridgeGate light mode with batch claimer", function () {
 
     const Debridge = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const ClaimerFactory = await ethers.getContractFactory("Claimer", alice);
-    const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator", alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
     const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
@@ -66,18 +65,6 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     console.log("confirmationThreshold: " + this.confirmationThreshold);
     console.log("excessConfirmations: " + this.excessConfirmations);
 
-    //   function initialize(
-    //     uint256 _minConfirmations,
-    //     uint256 _confirmationThreshold,
-    //     uint256 _excessConfirmations,
-    // )
-    this.confirmationAggregator = await upgrades.deployProxy(ConfirmationAggregator, [
-      this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
-    ]);
-
-    await this.confirmationAggregator.deployed();
     //   function initialize(
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
@@ -125,7 +112,6 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     //   function initialize(
     //     uint256 _excessConfirmations,
     //     address _signatureVerifier,
-    //     address _confirmationAggregator,
     //     address _callProxy,
     //     IWETH _weth,
     //     IFeeProxy _feeProxy,
@@ -148,7 +134,6 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       [
         this.excessConfirmations,
         this.signatureVerifier.address.toString(),
-        this.confirmationAggregator.address.toString(),
         this.callProxy.address.toString(),
         this.weth.address,
         ZERO_ADDRESS,
@@ -183,7 +168,25 @@ contract("DeBridgeGate light mode with batch claimer", function () {
           fixedNativeFee,
           isSupported,
         },
-      ]
+      ],
+      false
+    );
+
+    await this.debridge.updateChainSupport(
+      supportedChainIds,
+      [
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+        {
+          transferFeeBps,
+          fixedNativeFee,
+          isSupported,
+        },
+      ],
+      true
     );
 
     const GOVMONITORING_ROLE = await this.debridge.GOVMONITORING_ROLE();

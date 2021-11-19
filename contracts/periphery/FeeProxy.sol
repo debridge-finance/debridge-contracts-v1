@@ -99,26 +99,26 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     /// @dev Transfer tokens to native chain and then create swap to deETH
     /// and transfer reward to Ethereum network.
     function withdrawFee(address _tokenAddress) external payable override onlyWorker whenNotPaused {
-        (uint256 nativeChain, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(
-            _tokenAddress
-        );
-        bytes32 debridgeId = getbDebridgeId(nativeChain, nativeAddress);
-
         uint256 chainId = getChainId();
-        if (feeProxyAddresses[nativeChain].length == 0) revert EmptyFeeProxyAddress(nativeChain);
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
+        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(
+            _tokenAddress
+        );
+        if (feeProxyAddresses[nativeChainId].length == 0) revert EmptyFeeProxyAddress(nativeChainId);
+
+        bytes32 debridgeId = getbDebridgeId(nativeChainId, nativeAddress);
         address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
 
         debridgeGate.withdrawFee(debridgeId);
         uint256 amount = IERC20(_tokenAddress).balanceOf(address(this));
         // original token chain is the same as contract chain
-        if (chainId == nativeChain) {
+        if (chainId == nativeChainId) {
             //Reward is token (DBR, LINK, WETH, deDBT, deLINK, deETH)
             //If token is deETH
             if (_tokenAddress == deEthToken) {
                 //Create transfer to Ehereum netrowk ETH
-                _burnTransfer(_tokenAddress, amount, nativeChain, msg.value);
+                _burnTransfer(_tokenAddress, amount, nativeChainId, msg.value);
             }
             //For others tokens
             else {
@@ -143,7 +143,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         }
         //create transfer if different chains
         else {
-            _burnTransfer(_tokenAddress, amount, nativeChain, msg.value);
+            _burnTransfer(_tokenAddress, amount, nativeChainId, msg.value);
         }
     }
 
@@ -213,15 +213,15 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     function _burnTransfer(
         address _erc20Token,
         uint256 _amount,
-        uint256 _nativeChain,
+        uint256 _nativeChainId,
         uint256 _nativeFixFee
     ) private {
         IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
         debridgeGate.send{value: _nativeFixFee}(
             _erc20Token,
             _amount,
-            _nativeChain, //_chainIdTo,
-            feeProxyAddresses[_nativeChain], //_receiver,
+            _nativeChainId, //_chainIdTo,
+            feeProxyAddresses[_nativeChainId], //_receiver,
             "", //_deadline + _signature,
             false, //_useAssetFee,
             0, //_referralCode
