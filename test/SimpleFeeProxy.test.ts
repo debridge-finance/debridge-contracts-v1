@@ -9,6 +9,7 @@ import ERC20Json from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import { arrayify, Bytes } from '@ethersproject/bytes';
 import { before } from 'mocha';
 import expectStubFunctionIsCalledWith from './utils/expectStubFunctionIsCalledWith';
+import { BigNumber } from '@ethersproject/bignumber';
 
 type DeBridgeGateMock = MockContract & {mock: { [K in keyof DeBridgeGate['functions']]: Stub }};
 type ERC20Mock = MockContract & {mock: { [K in keyof ERC20['functions']]: Stub }};
@@ -126,23 +127,35 @@ describe('withdraw', () => {
             )        
         })
     
-        it('transfers correct amount to treasury', async () => {
+        describe('transfer to treasury', () => {
             const BALANCE_OF_SIMPLE_FEE_PROXY = 1234567890;
-            
-            await donor.sendTransaction({
-                to: simpleFeeProxy.address, value: BALANCE_OF_SIMPLE_FEE_PROXY
+            let treasuryBalance: BigNumber;
+            beforeEach(async () => {
+                await donor.sendTransaction({
+                    to: simpleFeeProxy.address, value: BALANCE_OF_SIMPLE_FEE_PROXY
+                })
+    
+                expect(await ethers.provider.getBalance(simpleFeeProxy.address))
+                    .to.equal(BALANCE_OF_SIMPLE_FEE_PROXY);
+                treasuryBalance = await ethers.provider.getBalance(treasury.address);
             })
 
-            expect(await ethers.provider.getBalance(simpleFeeProxy.address))
-                .to.equal(BALANCE_OF_SIMPLE_FEE_PROXY);
-            const treasuryBalance = await ethers.provider.getBalance(treasury.address);
+            it('transfers correct amount to treasury', async () => {
+                await simpleFeeProxy.withdrawNativeFee();
+    
+                expect(await ethers.provider.getBalance(simpleFeeProxy.address))
+                    .to.equal(0);
+                expect(await ethers.provider.getBalance(treasury.address))
+                    .to.equal(treasuryBalance.add(BALANCE_OF_SIMPLE_FEE_PROXY));
+            })
 
-            await simpleFeeProxy.withdrawNativeFee();
+            it('reverts on treasury revert', async () => {
+                const emptyContractMock = await deployMockContract(deployer, []);
+                await simpleFeeProxy.setTreasury(emptyContractMock.address);
 
-            expect(await ethers.provider.getBalance(simpleFeeProxy.address))
-                .to.equal(0);
-            expect(await ethers.provider.getBalance(treasury.address))
-                .to.equal(treasuryBalance.add(BALANCE_OF_SIMPLE_FEE_PROXY));
+                await expect(simpleFeeProxy.withdrawNativeFee())
+                    .to.be.revertedWith('EthTransferFailed()');
+            })
         })
     })
 })
