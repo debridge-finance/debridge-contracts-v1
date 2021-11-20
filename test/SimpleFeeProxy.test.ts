@@ -51,8 +51,8 @@ describe('withdrawFee', () => {
 
     beforeEach(async () => {
         erc20Mock = await deployMockContract(deployer, ERC20Json.abi) as ERC20Mock;
-        await erc20Mock.mock.balanceOf.returns(0);
-        await erc20Mock.mock.transfer.returns(true);
+        await erc20Mock.mock.balanceOf.returns(0 as any);
+        await erc20Mock.mock.transfer.returns(true as any);
 
         deBridgeGateMock = await deployMockContract(deployer, DeBridgeGateJson.abi) as DeBridgeGateMock;
         await deBridgeGateMock.mock.getNativeTokenInfo
