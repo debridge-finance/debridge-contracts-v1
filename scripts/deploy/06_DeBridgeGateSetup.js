@@ -57,7 +57,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setCallProxy(callProxy.address);
   await waitTx(tx);
 
-  console.log("callProxy get DEBRIDGE_GATE_ROLE");
+  console.log(`callProxy ${callProxy.address} get DEBRIDGE_GATE_ROLE`);
   const DEBRIDGE_GATE_ROLE = await callProxy.DEBRIDGE_GATE_ROLE();
   console.log(`callProxy grantRole DEBRIDGE_GATE_ROLE "${DEBRIDGE_GATE_ROLE}" for deBridgeGate "${deBridgeGateInstance.address}"`);
   tx = await callProxy.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
@@ -202,7 +202,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await waitTx(tx);
 };
 
-module.exports.tags = ["09_DeBridgeGateSetup"]
+module.exports.tags = ["06_DeBridgeGateSetup"]
 module.exports.dependencies = [
   '01-0_DeBridgeGate',
   '01-2_DeBridgeTokenDeployer',

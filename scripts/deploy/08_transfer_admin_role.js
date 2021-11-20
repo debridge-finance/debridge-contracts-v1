@@ -114,5 +114,5 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await hre.upgrades.admin.transferProxyAdminOwnership(multisig);
 };
 
-module.exports.tags = ["07_transfer_admin_role"];
+module.exports.tags = ["08_transfer_admin_role"];
 module.exports.dependencies = ['06_DeBridgeGateSetup'];

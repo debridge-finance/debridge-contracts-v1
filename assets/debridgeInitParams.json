@@ -1,20 +1,30 @@
 {
   "test": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
       "WETH": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       "UniswapFactory": ""
     },
-    "supportedChains": [56, 128, 137, 42161],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      56,
+      128,
+      137,
+      42161
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -42,7 +52,7 @@
   },
   "kovan": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
@@ -51,7 +61,7 @@
       "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
       "0x2b4e172043527a9435f31688fef6f3589356d1aa"
     ],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
@@ -60,8 +70,18 @@
       "WETHSymbol": "WETH",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
     },
-    "supportedChains": [97, 256, 421611, 80001],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      97,
+      256,
+      421611,
+      80001
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -89,7 +109,7 @@
   },
   "hecotest": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
@@ -98,7 +118,7 @@
       "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
       "0x2b4e172043527a9435f31688fef6f3589356d1aa"
     ],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
@@ -107,8 +127,18 @@
       "WETHSymbol": "WHT",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
     },
-    "supportedChains": [97, 42, 421611, 80001],
-    "fixedNativeFee": ["100000000000000000", "100000000000000000", "100000000000000000", "100000000000000000"],
+    "supportedChains": [
+      97,
+      42,
+      421611,
+      80001
+    ],
+    "fixedNativeFee": [
+      "100000000000000000",
+      "100000000000000000",
+      "100000000000000000",
+      "100000000000000000"
+    ],
     "globalFixedNativeFee": "100000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -136,7 +166,7 @@
   },
   "bsctest": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
@@ -145,7 +175,7 @@
       "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
       "0x2b4e172043527a9435f31688fef6f3589356d1aa"
     ],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
@@ -154,8 +184,18 @@
       "WETHSymbol": "WBNB",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
     },
-    "supportedChains": [256, 42, 421611, 80001],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      256,
+      42,
+      421611,
+      80001
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -183,7 +223,7 @@
   },
   "arethtest": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
@@ -192,7 +232,7 @@
       "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
       "0x2b4e172043527a9435f31688fef6f3589356d1aa"
     ],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
@@ -201,8 +241,18 @@
       "WETHSymbol": "WAETH",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
     },
-    "supportedChains": [256, 42, 97, 80001],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      256,
+      42,
+      97,
+      80001
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -230,7 +280,7 @@
   },
   "mumbai": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
@@ -239,7 +289,7 @@
       "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
       "0x2b4e172043527a9435f31688fef6f3589356d1aa"
     ],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
@@ -248,8 +298,18 @@
       "WETHSymbol": "WMATIC",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
     },
-    "supportedChains": [256, 42, 97, 421611],
-    "fixedNativeFee": ["100000000000000000", "100000000000000000", "100000000000000000", "100000000000000000"],
+    "supportedChains": [
+      256,
+      42,
+      97,
+      421611
+    ],
+    "fixedNativeFee": [
+      "100000000000000000",
+      "100000000000000000",
+      "100000000000000000",
+      "100000000000000000"
+    ],
     "globalFixedNativeFee": "100000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -275,23 +335,32 @@
       }
     ]
   },
-
   "ETH": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
       "WETH": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
       "UniswapFactory": ""
     },
-    "supportedChains": [56, 128, 137, 42161],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      56,
+      128,
+      137,
+      42161
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -317,23 +386,32 @@
       }
     ]
   },
-
   "BSC": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
       "WETH": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
       "UniswapFactory": ""
     },
-    "supportedChains": [1, 128, 137, 42161],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      1,
+      128,
+      137,
+      42161
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -359,23 +437,32 @@
       }
     ]
   },
-
   "HECO": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
       "WETH": "0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f",
       "UniswapFactory": ""
     },
-    "supportedChains": [1, 56, 137, 42161],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      1,
+      56,
+      137,
+      42161
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -401,24 +488,32 @@
       }
     ]
   },
-
-
   "MATIC": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
       "WETH": "0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270",
       "UniswapFactory": ""
     },
-    "supportedChains": [1, 56, 128, 42161],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      1,
+      56,
+      128,
+      42161
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -444,23 +539,32 @@
       }
     ]
   },
-
   "ARBITRUM": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "treasuryAddress":"0x24b8d26962641ea81cb7570c1b59d955c9193f23",
+    "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "minConfirmations": 2,
     "confirmationThreshold": 3,
     "excessConfirmations": 3,
     "oracles": [],
-    "deploy":{
+    "deploy": {
       "wethGate": true
     },
     "external": {
       "WETH": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
       "UniswapFactory": ""
     },
-    "supportedChains": [1, 56, 128, 137],
-    "fixedNativeFee": ["10000000000000000", "10000000000000000", "10000000000000000", "10000000000000000"],
+    "supportedChains": [
+      1,
+      56,
+      128,
+      137
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -486,8 +590,57 @@
       }
     ]
   },
-
-  "allValidators": ["0x185f65aee9609804de01a02b25655b02f57e8f19",
+  "overridedTokens": [
+    {
+      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "chainId": 1
+    },
+    {
+      "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+      "chainId": 56
+    },
+    {
+      "address": "0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f",
+      "chainId": 128
+    },
+    {
+      "address": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+      "chainId": 137
+    },
+    {
+      "address": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+      "chainId": 42161
+    }
+  ],
+  "overridedTokensInfo": [
+    {
+      "accept": true,
+      "name": "Ether",
+      "symbol": "ETH"
+    },
+    {
+      "accept": true,
+      "name": "BNB",
+      "symbol": "BNB"
+    },
+    {
+      "accept": true,
+      "name": "HT",
+      "symbol": "HT"
+    },
+    {
+      "accept": true,
+      "name": "Matic",
+      "symbol": "MATIC"
+    },
+    {
+      "accept": true,
+      "name": "Arbitrum Ether",
+      "symbol": "AETH"
+    }
+  ],
+  "allValidators": [
+    "0x185f65aee9609804de01a02b25655b02f57e8f19",
     "0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9",
     "0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f",
     "0x9ae654858b3089535a8aa028ef663f8b218d8796",
@@ -497,5 +650,6 @@
     "0xb92958ae539f32e2d03d08d27dfa93104ac9466b",
     "0x4da594b739611574663aea3edddc428e00c48fe1",
     "0x3491a1d6653ca366df83a71b9b9922b5a164118c",
-    "0x36df730f53f287f4831d25e29240de6bdb840ab5"]
+    "0x36df730f53f287f4831d25e29240de6bdb840ab5"
+  ]
 }
