@@ -17,7 +17,7 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     wethAddress,
   ]);
 
-  await deployProxy("SimpleFeeProxy", deployer, [deBridgeGateInstance.address], true);
+  await deployProxy("SimpleFeeProxy", deployer, [deBridgeGateInstance.address, deployInitParams.treasuryAddress], true);
 
 
   //next TODO needs only for FeeProxy. we will deploy SimpleFeeProxy

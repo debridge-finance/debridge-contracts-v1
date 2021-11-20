@@ -73,13 +73,16 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setFeeProxy(feeProxy.address);
   await waitTx(tx);
 
-  console.log(`feeProxy setDebridgeGate ${deBridgeGateInstance.address}`);
-  tx = await feeProxy.setDebridgeGate(deBridgeGateInstance.address);
-  await waitTx(tx);
+  // added in constructor
+  // console.log(`feeProxy setDebridgeGate ${deBridgeGateInstance.address}`);
+  // console.log(`old debridgeGate ${ await feeProxy.debridgeGate()}`);
+  // tx = await feeProxy.setDebridgeGate(deBridgeGateInstance.address);
+  // await waitTx(tx);
 
-  console.log(`feeProxy setTreasury ${deployInitParams.treasuryAddress}`);
-  tx = await feeProxy.setTreasury(deployInitParams.treasuryAddress);
-  await waitTx(tx);
+  // console.log(`feeProxy setTreasury ${deployInitParams.treasuryAddress}`);
+  // console.log(`old treasury ${ await feeProxy.treasury()}`);
+  // tx = await feeProxy.setTreasury(deployInitParams.treasuryAddress);
+  // await waitTx(tx);
 
   // --------------------------------
   //    setup DefiController
