@@ -1,7 +1,3 @@
-
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 import { config as dotenvConfig } from 'dotenv-flow';
 
 import '@nomiclabs/hardhat-truffle5';
@@ -13,6 +9,8 @@ import 'hardhat-gas-reporter';
 import '@nomiclabs/hardhat-solhint';
 import 'prettier-plugin-solidity';
 import 'solidity-coverage';
+import '@typechain/hardhat'
+import '@nomiclabs/hardhat-ethers'
 
 dotenvConfig();
 
