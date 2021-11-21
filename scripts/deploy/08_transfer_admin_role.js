@@ -7,7 +7,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const multisig = process.env.MULTISIG_ACCOUNT;
+  const multisig = deployInitParams.deBridgeTokenAdmin;
 
   console.log('*'.repeat(80));
   console.log(`\tStart transfering DEFAULT_ADMIN_ROLE role for contracts`);
@@ -16,11 +16,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log('*'.repeat(80));
 
   if (!multisig) {
-    throw Error("env.MULTISIG_ACCOUNT is empty");
+    throw Error("multisigAddress is empty");
   }
 
   if (multisig == deployer) {
-    throw Error("env.MULTISIG_ACCOUNT must be different from the deployer");
+    throw Error("multisigAddress must be different from the deployer");
   }
 
   const DEFAULT_ADMIN_ROLE = ethers.constants.HashZero;
