@@ -101,6 +101,13 @@ module.exports = {
       // gasPrice: 1e9,
       chainId: 421611
     },
+    RINKEBY: {
+      url: "https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      gasPrice: 2e9,
+      //gas: 6.9e6,
+      chainId: 4
+    },
     ETH: {
       // url: "http://127.0.0.1:8545",
       // accounts:{mnemonic:process.env.MNEMONIC},

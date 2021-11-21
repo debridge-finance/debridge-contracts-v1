@@ -335,6 +335,57 @@
       }
     ]
   },
+  "RINKEBY": {
+    "deBridgeTokenAdmin": "0x6bec1faf33183e1bc316984202ecc09d46ac92d5",
+    "treasuryAddress": "0xa0d6062be29710c666ae850395ac1a2aecd14885",
+    "minConfirmations": 2,
+    "confirmationThreshold": 3,
+    "excessConfirmations": 3,
+    "oracles": [],
+    "deploy": {
+      "wethGate": true
+    },
+    "external": {
+      "WETH": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
+      "UniswapFactory": ""
+    },
+    "supportedChains": [
+      56,
+      128,
+      137,
+      42161
+    ],
+    "fixedNativeFee": [
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
+    ],
+    "globalFixedNativeFee": "10000000000000000",
+    "globalTransferFeeBps": "10",
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      }
+    ]
+  },
   "ETH": {
     "deBridgeTokenAdmin": "0x6bec1faf33183e1bc316984202ecc09d46ac92d5",
     "treasuryAddress": "0xa0d6062be29710c666ae850395ac1a2aecd14885",
