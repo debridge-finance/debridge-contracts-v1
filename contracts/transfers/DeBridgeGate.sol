@@ -68,6 +68,7 @@ contract DeBridgeGate is
     uint16 public globalTransferFeeBps;
 
     IWethGate public wethGate;
+    bool public lockedClaim; //locker for claim method
 
     /* ========== ERRORS ========== */
 
@@ -105,6 +106,7 @@ contract DeBridgeGate is
 
     error NotEnoughReserves();
     error EthTransferFailed();
+    error Locked();
 
     /* ========== MODIFIERS ========== */
 
@@ -131,6 +133,14 @@ contract DeBridgeGate is
     modifier onlyGovMonitoring() {
         if (!hasRole(GOVMONITORING_ROLE, msg.sender)) revert GovMonitoringBadRole();
         _;
+    }
+
+    /// @dev lock for claim method
+    modifier lockClaim() {
+        if (lockedClaim) revert Locked();
+        lockedClaim = true;
+        _;
+        lockedClaim = false;
     }
 
     /* ========== CONSTRUCTOR  ========== */
@@ -233,7 +243,7 @@ contract DeBridgeGate is
         uint256 _nonce,
         bytes calldata _signatures,
         bytes calldata _autoParams
-    ) external override whenNotPaused {
+    ) external override lockClaim whenNotPaused {
         if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
 
         SubmissionAutoParamsFrom memory autoParams;
@@ -441,7 +451,6 @@ contract DeBridgeGate is
     /// @dev Set defi controoler.
     /// @param _defiController Defi controller address address.
     function setDefiController(address _defiController) external onlyAdmin {
-        // TODO: claim all the reserves before
         defiController = _defiController;
     }
 
