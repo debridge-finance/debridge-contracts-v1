@@ -7,7 +7,6 @@
     "format:fix": "prettier --write 'contracts/**/*.sol' 'test/*.js'",
     "lint:check": "solhint 'contracts/**/*.sol'",
     "lint:fix": "solhint --fix 'contracts/**/*.sol'",
-    "precompile": "mkdir -p build/contracts/ && cp precompiled/* build/contracts/",
     "compile": "hardhat compile",
     "build": "hardhat build",
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
