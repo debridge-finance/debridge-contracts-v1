@@ -16,18 +16,22 @@ type ERC20Mock = MockContract & {mock: { [K in keyof ERC20['functions']]: Stub }
 
 let simpleFeeProxyFactory: ContractFactory;
 let simpleFeeProxy: SimpleFeeProxy;
+
 let deployer: SignerWithAddress;
 let treasury: SignerWithAddress;
 let user: SignerWithAddress;
 let native: SignerWithAddress;
 let donor: SignerWithAddress;
 let newAdmin: SignerWithAddress;
+
 let CHAIN_ID: number;
 let DEFAULT_ADMIN_ROLE: string;
 
 let deBridgeGateMock: DeBridgeGateMock;
 let erc20Mock: ERC20Mock;
 let NATIVE_ADDRESS: Bytes;
+
+type AsyncFn = () => Promise<void>;
 
 before(async () => {
     [deployer, treasury, user, native, donor, newAdmin] = await ethers.getSigners();
@@ -161,41 +165,41 @@ describe('onlyAdmin', () => {
         await simpleFeeProxy.renounceRole(DEFAULT_ADMIN_ROLE, deployer.address);
     })
 
-    const getProtectedFunctions = (account: SignerWithAddress) => {
+    const expectProtectedFunctionsCalledByAccountTo = async (
+        account: SignerWithAddress,
+        expectation: (fn: AsyncFn) => Chai.AsyncAssertion
+    ) => {
         const simpleFeeProxyConnected = simpleFeeProxy.connect(account);
-        return [
-            async () => simpleFeeProxyConnected.pause(),
-            async () => simpleFeeProxyConnected.unpause(),
-            async () => simpleFeeProxyConnected.setDebridgeGate(deBridgeGateMock.address),
-            async () => simpleFeeProxyConnected.setTreasury(treasury.address),
+        const protectedFunctions = [
+            async () => {await simpleFeeProxyConnected.pause()},
+            async () => {await simpleFeeProxyConnected.unpause()},
+            async () => {await simpleFeeProxyConnected.setDebridgeGate(deBridgeGateMock.address)},
+            async () => {await simpleFeeProxyConnected.setTreasury(treasury.address)},
         ];
-    }
 
+        const promises = protectedFunctions.map(fn => expectation(fn));
 
-    const expectToRevert = async (account: SignerWithAddress): Promise<void> => {
-        const promises = getProtectedFunctions(account).map(
-            fn => expect(fn()).to.be.revertedWith('AdminBadRole()')
-        );
         await Promise.all(promises);
     }
 
-    const expectNotToRevert = async (account: SignerWithAddress): Promise<void> => {
-        const promises = getProtectedFunctions(account).map(
-            fn => expect(fn()).not.to.be.revertedWith('AdminBadRole()')
-        );
-        await Promise.all(promises);
+    const expectToRevert = (fn: AsyncFn): Chai.AsyncAssertion => {
+        return expect(fn()).to.be.revertedWith('AdminBadRole()');
+    }
+
+    const expectNotToRevert = (fn: AsyncFn): Chai.AsyncAssertion => {
+        return expect(fn()).not.to.be.revertedWith('AdminBadRole()');
     }
 
     it(`allows admin to call admin functions`, async () => {
-        await expectNotToRevert(newAdmin);
+        await expectProtectedFunctionsCalledByAccountTo(newAdmin, expectNotToRevert);
     });
 
     it(`denies deployer to call admin functions`, async () => {
-        await expectToRevert(deployer);
+        await expectProtectedFunctionsCalledByAccountTo(deployer, expectToRevert);
     });
 
     it(`denies user to call admin functions`, async () => {
-        await expectToRevert(user);
+        await expectProtectedFunctionsCalledByAccountTo(user, expectToRevert);
     });
 })
 
