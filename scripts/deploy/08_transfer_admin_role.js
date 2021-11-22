@@ -115,4 +115,5 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 };
 
 module.exports.tags = ["08_transfer_admin_role"];
-module.exports.dependencies = ['06_DeBridgeGateSetup'];
+// remove dependencies. prevent process 06_DeBridgeGateSetup twice
+// module.exports.dependencies = ['06_DeBridgeGateSetup'];
