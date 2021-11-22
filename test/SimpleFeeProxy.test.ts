@@ -5,6 +5,7 @@ import { ContractFactory } from '@ethersproject/contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signers';
 import ERC20Json from '@openzeppelin/contracts/build/contracts/ERC20.json';
 import { expect } from 'chai';
+import { test } from 'mocha';
 import { ethers, upgrades } from 'hardhat';
 import { before } from 'mocha';
 import DeBridgeGateJson from '../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json';
@@ -159,7 +160,7 @@ describe('withdrawNativeFee', () => {
     })
 })
 
-describe('onlyAdmin', () => {
+describe('onlyAdmin functions', () => {
     beforeEach(async () => {
         await simpleFeeProxy.grantRole(DEFAULT_ADMIN_ROLE, newAdmin.address);
         await simpleFeeProxy.renounceRole(DEFAULT_ADMIN_ROLE, deployer.address);
@@ -203,3 +204,22 @@ describe('onlyAdmin', () => {
     });
 })
 
+test('pausable functions are not callable after a pause', async () => {
+    const PAUSED_REVERT_MESSAGE = 'Pausable: paused';
+
+    await expect(
+        simpleFeeProxy.withdrawFee(erc20Mock.address)
+    ).not.to.be.revertedWith(PAUSED_REVERT_MESSAGE);
+    await expect(
+        simpleFeeProxy.withdrawNativeFee()
+    ).not.to.be.revertedWith(PAUSED_REVERT_MESSAGE);
+    
+    await simpleFeeProxy.pause();
+
+    await expect(
+        simpleFeeProxy.withdrawFee(erc20Mock.address)
+    ).to.be.revertedWith(PAUSED_REVERT_MESSAGE);
+    await expect(
+        simpleFeeProxy.withdrawNativeFee()
+    ).to.be.revertedWith(PAUSED_REVERT_MESSAGE);
+})
