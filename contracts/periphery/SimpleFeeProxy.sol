@@ -44,7 +44,7 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
         _pause();
     }
 
-    function unpause() external onlyAdmin whenPaused {
+    function unpause() external onlyAdmin {
         _unpause();
     }
 
