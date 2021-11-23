@@ -126,6 +126,9 @@ contract("DeBridgeGate real pipeline mode", function () {
     this.dbrToken = await MockLinkToken.new("DBR", "DBR", 18, {
       from: alice,
     });
+    this.emptyNameToken = await MockToken.new("", "NONAME", 18, {
+      from: alice,
+    });
 
     //-------Deploy weth contracts
     this.wethETH = await WETH9Factory.deploy();
@@ -793,6 +796,19 @@ contract("DeBridgeGate real pipeline mode", function () {
           tokenDecimals
         );
         let deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+
+        //Override name/sybmol
+        await this.deBridgeTokenDeployerBSC.setOverridedTokenInfo(
+          [debridgeId],
+          [
+            {
+              accept: true,
+              name: "ETH",
+              symbol: "ETH",
+            }
+          ]
+        );
+
         let tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
         let receipt = await tx.wait();
         let pairAddedEvent = receipt.events.find((x) => {
@@ -866,12 +882,40 @@ contract("DeBridgeGate real pipeline mode", function () {
           tokenDecimals
         );
         deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-        tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, bscChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+        tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
         receipt = await tx.wait();
         pairAddedEvent = receipt.events.find((x) => {
             return x.event == "PairAdded";
         });
         deBNBAddressInHECO = pairAddedEvent.args.tokenAddress;
+
+
+        //this.emptyNameToken.address, hecoChainId, "", "NONAME", 18
+        tokenNativeAddress = this.emptyNameToken.address;
+        tokenNativeChainId = hecoChainId;
+        tokenName = "";
+        tokenSymbol = "NONAME";
+        tokenDecimals = 18;
+        debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+        deployId = await this.signatureVerifierBSC.getDeployId(
+          debridgeId,
+          tokenName,
+          tokenSymbol,
+          tokenDecimals
+        );
+        deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+        tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+        receipt = await tx.wait();
+        pairAddedEvent = receipt.events.find((x) => {
+            return x.event == "PairAdded";
+        });
+        const deEmptyNameTokenAddressInBSC = pairAddedEvent.args.tokenAddress;
+        const deEmptyNameToken = await DeBridgeToken.at(deEmptyNameTokenAddressInBSC);
+        assert.equal( await deEmptyNameToken.symbol(), "deNONAME");
+        // detoken name should use symbol because original name is empty
+        assert.equal( await deEmptyNameToken.name(), "deBridge NONAME");
+        assert.equal( (await deEmptyNameToken.decimals()).toString(), "18");
+
         // console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
 
         //Check that new deployed token with correct values
@@ -883,9 +927,15 @@ contract("DeBridgeGate real pipeline mode", function () {
         // console.log(await deBridgeTokenInstance.symbol());
         // console.log(await deBridgeTokenInstance.name());
         // console.log(await deBridgeTokenInstance.decimals());
-        assert.equal( await deBridgeTokenInstance.symbol(), "deWETH");
-        assert.equal( await deBridgeTokenInstance.name(), "deBridge Wrapped ETH");
+        assert.equal( await deBridgeTokenInstance.symbol(), "deETH");
+        assert.equal( await deBridgeTokenInstance.name(), "deBridge ETH");
         assert.equal( (await deBridgeTokenInstance.decimals()).toString(), "18");
+
+
+        const deBNBInHecoTokenInstance = await DeBridgeToken.at(deBNBAddressInHECO);
+        assert.equal( await deBNBInHecoTokenInstance.symbol(), "deWBNB");
+        assert.equal( await deBNBInHecoTokenInstance.name(), "deBridge Wrapped BNB");
+        assert.equal( (await deBNBInHecoTokenInstance.decimals()).toString(), "18");
     });
 
     it("should reject deploy new asset twice", async function () {

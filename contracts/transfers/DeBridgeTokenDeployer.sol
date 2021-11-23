@@ -24,7 +24,15 @@ contract DeBridgeTokenDeployer is
     address public debridgeAddress;
     // debridge id => deBridgeToken address
     mapping(bytes32 => address) public getDeployedAssetAddress;
+    mapping(bytes32 => OverridedTokenInfo) public overridedTokens;
 
+    /* ========== STRUCTS ========== */
+
+    struct OverridedTokenInfo {
+        bool accept;
+        string name;
+        string symbol;
+    }
 
     /* ========== ERRORS ========== */
 
@@ -74,6 +82,12 @@ contract DeBridgeTokenDeployer is
         returns (address deBridgeTokenAddress)
     {
         if (getDeployedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
+
+        OverridedTokenInfo memory overridedToken = overridedTokens[_debridgeId];
+        if (overridedToken.accept) {
+            _name = overridedToken.name;
+            _symbol = overridedToken.symbol;
+        }
 
         address[] memory minters = new address[](1);
         minters[0] = debridgeAddress;
@@ -141,8 +155,21 @@ contract DeBridgeTokenDeployer is
         debridgeAddress = _debridgeAddress;
     }
 
+    /// @dev Override specific tokens name/sybmol
+    /// @param _debridgeIds Array debridgeId of token
+    /// @param _tokens Array new name/sybmols of tokens
+    function setOverridedTokenInfo (
+        bytes32[] memory _debridgeIds,
+        OverridedTokenInfo[] memory _tokens
+    ) external onlyAdmin {
+        if (_debridgeIds.length != _tokens.length) revert WrongArgument();
+        for (uint256 i = 0; i < _debridgeIds.length; i++) {
+            overridedTokens[_debridgeIds[i]] = _tokens[i];
+        }
+    }
+
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 110; // 1.1.0
     }
 }
