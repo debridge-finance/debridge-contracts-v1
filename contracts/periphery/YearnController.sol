@@ -28,7 +28,7 @@ contract YearnController is BaseStrategyController {
   }
 
   function strategyToken(address _token) public view override returns (address) {
-    return underlyingToYToken[_token];
+    return _strategyToken(_token);
   }
 
   function _strategyToken(address _token) internal view override returns (address) {
