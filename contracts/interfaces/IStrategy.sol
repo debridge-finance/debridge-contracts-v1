@@ -2,9 +2,9 @@
 pragma solidity 0.8.7;
 
 interface IStrategy {
-    function deposit(address token, uint256 amount) external;
+    function deposit(address token, address validator, uint256 amount) external;
 
-    function withdraw(address token, uint256 amount) external;
+    function withdraw(address token, address validator, uint256 shares) external;
 
     function withdrawAll(address token) external;
     function strategyToken(address token) external view returns(address);
@@ -19,6 +19,8 @@ interface IStrategy {
     function isEnabled(address token) external view returns(bool);
     function strategyInfo(address token) external view returns(bool, bool);
 
+    function delegatorShares(address collateral, address validator, address delegator) external view returns(uint256);
+    function validatorShares(address collateral, address validator) external view returns(uint256);
     function calculateShares(address token, uint256 amount) external view returns(uint256);
     function calculateFromShares(address token, uint256 shares) external view returns(uint256);
 
@@ -26,4 +28,7 @@ interface IStrategy {
     function updateStrategyRecoverable(address token, bool isRecoverable) external;
     function resetStrategy(address stakeToken) external;
     function addStrategy(address stakeToken, address rewardToken) external;
+
+    function slashValidatorDeposits(address validator, address collateral, uint256 slashingFraction) external;
+    function slashDelegatorDeposits(address validator, address delegator, address collateral, uint256 slashingFraction) external;
 }

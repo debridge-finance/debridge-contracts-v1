@@ -617,6 +617,7 @@ contract DelegatedStaking is
         (strategyEnabled, strategyRecoverable) = strategyController.strategyInfo(_stakeToken);
         if (!strategyEnabled || !strategyRecoverable) revert StrategyDisabled();
         for (uint256 i=0; i<_validators.length; i++) {
+            ValidatorInfo storage validator = getValidatorInfo[_validators[i]];
             ValidatorCollateral storage validatorCollateral = validator.collateralPools[_stakeToken];
 
             uint256 fullAmount = DelegatedStakingHelper._calculateFromShares(
@@ -625,7 +626,7 @@ contract DelegatedStaking is
             // TODO 1: can be negative if strategy profits. Need to check it
             // TODO 2: нужно уточнить как это вообще должно работать:) Мы тут вычитаем все что было залокано в стратегии, считая это утерянным или что?
             uint256 lost = fullAmount - strategyAmount;
-            validatorCollateral.locked -= strategyController.validatorShares(_collateral, _validator);
+            validatorCollateral.locked -= strategyController.validatorShares(_stakeToken, _validators[i]);
             validatorCollateral.stakedAmount -= lost;
 
             // for (uint256 k=0; k<validator.delegatorCount; k++) {
@@ -634,7 +635,7 @@ contract DelegatedStaking is
             //     delegation.locked -= delegation.strategyShares[_strategy];
             //     delegation.strategyShares[_strategy] = 0;
             // }
-            emit RecoveredFromEmergency(_validators[i], amount, _strategy, _stakeToken);
+            emit RecoveredFromEmergency(_validators[i], lost, _strategy, _stakeToken);
         }
     }
 
@@ -960,7 +961,7 @@ contract DelegatedStaking is
         for (uint256 j=0; j<strategyControllerAddresses.length; j++) {
             IStrategy strategyController = IStrategy(strategyControllerAddresses[j]);
             uint256 beforeBalance = IERC20(_collateral).balanceOf(address(this));
-            strategyController.slashValidatorCollateralStrategyDeposits(_validator, _collateral, slashingFraction);
+            strategyController.slashValidatorDeposits(_validator, _collateral, slashingFraction);
             uint256 receivedAmount = IERC20(_collateral).balanceOf(address(this)) - beforeBalance;
             validatorCollateral.stakedAmount -= receivedAmount;
             collateral.slashedAmount += receivedAmount;
