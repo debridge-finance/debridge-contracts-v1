@@ -112,7 +112,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         // Deposit tokens to strategy
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
         IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
-        strategyController.deposit(strategy.stakeToken, _amount);
+        //strategyController.deposit(strategy.stakeToken, _amount);
 
         emit DepositToStrategy(_strategy, _amount);
     }
@@ -124,7 +124,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         IStrategy strategyController = IStrategy(_strategy);
 
         // Withdraw tokens from strategy
-        strategyController.withdraw(strategy.strategyToken, _amount);
+        //strategyController.withdraw(strategy.strategyToken, _amount);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
         IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _amount);
 

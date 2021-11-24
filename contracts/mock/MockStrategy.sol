@@ -13,17 +13,17 @@ contract MockStrategy is BaseStrategyController {
 
     // suppress "unused variable" warnings by commenting out variable names
 
-    function deposit(
+    function _deposit(
         address /* _token */,
         uint256 _amount
-    ) external override {
+    ) internal override {
         balance += _amount;
     }
 
-    function withdraw(
+    function _withdraw(
         address /* _token */,
         uint256 _amount
-    ) external override {
+    ) internal override {
         balance -= _amount;
     }
 

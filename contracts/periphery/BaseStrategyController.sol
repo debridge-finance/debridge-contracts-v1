@@ -8,6 +8,7 @@ abstract contract BaseStrategyController is IStrategy {
     event StrategyReset(address _strategy, address collateral);
     error StrategyDisabled();
     error AlreadyExists();
+    error MethodNotImplemented();
 
     struct Validator {
         uint256 shares;
@@ -32,12 +33,11 @@ abstract contract BaseStrategyController is IStrategy {
         return strategies[_collateral].strategyToken;
     }
 
-    function calculateShares(address _collateral, uint256 _amount)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function calculateShares(address _collateral, uint256 _amount) external view override returns (uint256) {
+        return _calculateShares(_collateral, _amount);
+    }
+
+    function _calculateShares(address _collateral, uint256 _amount) internal view returns (uint256) {
         Strategy storage strategy = strategies[_collateral];
         if (strategy.totalReserves > 0) {
             return (_amount * strategy.totalShares) / strategy.totalReserves;
@@ -46,12 +46,11 @@ abstract contract BaseStrategyController is IStrategy {
         }
     }
 
-    function calculateFromShares(address _collateral, uint256 _shares)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function calculateFromShares(address _collateral, uint256 _shares) external view override returns (uint256) {
+        return _calculateFromShares(_collateral, _shares);
+    }
+
+    function _calculateFromShares(address _collateral, uint256 _shares) internal view returns (uint256) {
         Strategy storage strategy = strategies[_collateral];
         if (strategy.totalShares == 0) {
             return 0;
@@ -166,4 +165,33 @@ abstract contract BaseStrategyController is IStrategy {
     }
 
     // TODO: withdraw function
+
+    function _deposit(address _collateral, uint256 _amount) internal virtual {
+        revert MethodNotImplemented(); // assumed to be overriden in imlementation contracts
+    }
+
+    function _withdraw(address _collateral, uint256 _amount) internal virtual {
+        revert MethodNotImplemented(); // assumed to be overriden in imlementation contracts
+    }
+
+    function deposit(address _collateral, address _validator, uint256 _amount) external override {
+        _deposit(_collateral, _amount);
+        uint256 shares = _calculateShares(_collateral, _amount);
+        Strategy storage strategy = strategies[_collateral];
+        strategy.validators[_validator].delegatorShares[msg.sender] += shares;
+        strategy.validators[_validator].shares += shares;
+        strategy.totalShares += shares;
+        strategy.totalReserves += _amount;
+    }
+
+    function withdraw(address _collateral, address _validator, uint256 _shares) external override {
+        uint256 amount = _calculateFromShares(_collateral, _shares);
+        _withdraw(_collateral, amount);
+        
+        Strategy storage strategy = strategies[_collateral];
+        strategy.validators[_validator].delegatorShares[msg.sender] -= _shares;
+        strategy.validators[_validator].shares -= _shares;
+        strategy.totalShares -= _shares;
+        strategy.totalReserves -= amount;
+    }
 }

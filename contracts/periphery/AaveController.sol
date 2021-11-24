@@ -11,11 +11,10 @@ import "../interfaces/IStrategy.sol";
 import "./BaseStrategyController.sol";
 
 contract AaveController is BaseStrategyController {
+    using SafeERC20 for IERC20;
 
-  using SafeERC20 for IERC20;
-
-  address public lendingPoolProvider;
-  address public protocolDataProvider;
+    address public lendingPoolProvider;
+    address public protocolDataProvider;
 
     constructor(address _lendingPoolProvider, address _protocolDataProvider) {
         lendingPoolProvider = _lendingPoolProvider;
@@ -26,26 +25,26 @@ contract AaveController is BaseStrategyController {
         return ILendingPoolAddressesProvider(lendingPoolProvider).getLendingPool();
     }
 
-  function strategyToken(address _token) public view override returns (address) {
-    (address newATokenAddress,,) =
-      IAaveProtocolDataProvider(protocolDataProvider).getReserveTokensAddresses(_token);
-    return newATokenAddress;
-  }
+    function strategyToken(address _token) public view override returns (address) {
+        (address newATokenAddress, , ) = IAaveProtocolDataProvider(protocolDataProvider)
+            .getReserveTokensAddresses(_token);
+        return newATokenAddress;
+    }
 
-  function updateReserves(address _account, address _token)
-    external
-    view
-    override
-    returns (uint256)
-  {
-    return IERC20(_token).balanceOf(_account);
-  }
+    function updateReserves(address _account, address _token)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        return IERC20(_token).balanceOf(_account);
+    }
 
-  function deposit(address _token, uint256 _amount) external override {
-    address lendPool = lendingPool();
-    IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-    IERC20(_token).safeApprove(lendPool, 0);
-    IERC20(_token).safeApprove(lendPool, _amount);
+    function _deposit(address _token, uint256 _amount) internal override {
+        address lendPool = lendingPool();
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        IERC20(_token).safeApprove(lendPool, 0);
+        IERC20(_token).safeApprove(lendPool, _amount);
 
         ILendingPool(lendPool).deposit(
             _token,
@@ -56,46 +55,46 @@ contract AaveController is BaseStrategyController {
     }
 
     function withdrawAll(address _token) external override {
-        withdraw(_token, type(uint256).max);
+        _withdraw(_token, type(uint256).max);
     }
 
-  function withdraw(address _token, uint256 _amount) public override {
-    address lendPool = lendingPool();
-    address aToken = strategyToken(_token);
-    IERC20(_token).safeApprove(lendPool, 0);
-    IERC20(_token).safeApprove(lendPool, _amount);
-    uint256 maxAmount = IERC20(aToken).balanceOf(msg.sender);
+    function _withdraw(address _token, uint256 _amount) internal override {
+        address lendPool = lendingPool();
+        address aToken = strategyToken(_token);
+        IERC20(_token).safeApprove(lendPool, 0);
+        IERC20(_token).safeApprove(lendPool, _amount);
+        uint256 maxAmount = IERC20(aToken).balanceOf(msg.sender);
 
-    uint256 userBalance = IERC20(aToken).balanceOf(msg.sender);
-    uint256 amountToWithdraw = _amount;
+        uint256 userBalance = IERC20(aToken).balanceOf(msg.sender);
+        uint256 amountToWithdraw = _amount;
 
-    if (_amount == type(uint256).max || _amount > userBalance) {
-      amountToWithdraw = userBalance;
+        if (_amount == type(uint256).max || _amount > userBalance) {
+            amountToWithdraw = userBalance;
+        }
+
+        IERC20(aToken).transferFrom(msg.sender, address(this), amountToWithdraw);
+
+        uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
+            _token,
+            amountToWithdraw,
+            msg.sender
+        );
+
+        _collectProtocolToken(aToken, amountToWithdraw / maxAmount);
+
+        require(
+            amountWithdrawn == _amount ||
+                (_amount == type(uint256).max && maxAmount == amountWithdrawn),
+            "Didn't withdraw requested amount"
+        );
     }
 
-    IERC20(aToken).transferFrom(msg.sender, address(this), amountToWithdraw);
-
-    uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
-      _token,
-      amountToWithdraw,
-      msg.sender
-    );
-
-    _collectProtocolToken(aToken, amountToWithdraw/maxAmount);
-
-    require(
-      amountWithdrawn == _amount ||
-      (_amount == type(uint256).max && maxAmount == amountWithdrawn),
-      "Didn't withdraw requested amount"
-    );
-  }
-
-  // Collect stkAAVE
-  function _collectProtocolToken(address _token, uint256 _amount) internal {
-    address[] memory assets = new address[](1);
-    assets[0] = address(_token);
-    IAaveIncentivesController incentivesController = IAToken(_token).getIncentivesController();
-    uint256 rewardsBalance = incentivesController.getRewardsBalance(assets, address(this));
-    incentivesController.claimRewards(assets, _amount*rewardsBalance, address(this));
-  }
+    // Collect stkAAVE
+    function _collectProtocolToken(address _token, uint256 _amount) internal {
+        address[] memory assets = new address[](1);
+        assets[0] = address(_token);
+        IAaveIncentivesController incentivesController = IAToken(_token).getIncentivesController();
+        uint256 rewardsBalance = incentivesController.getRewardsBalance(assets, address(this));
+        incentivesController.claimRewards(assets, _amount * rewardsBalance, address(this));
+    }
 }

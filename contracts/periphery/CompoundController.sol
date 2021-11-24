@@ -42,7 +42,7 @@ contract CompoundController is BaseStrategyController {
     return IERC20(_token).balanceOf(_account);
   }
 
-  function deposit(address _token, uint256 _amount) external override {
+  function _deposit(address _token, uint256 _amount) internal override {
     IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
     address CToken = strategyToken(_token);
     IERC20(_token).safeApprove(CToken, 0);
@@ -53,10 +53,10 @@ contract CompoundController is BaseStrategyController {
 
   function withdrawAll(address _token) external override {
     uint256 owned = ICToken(_token).balanceOfUnderlying(address(this));
-    withdraw(_token, owned);
+    _withdraw(_token, owned);
   }
 
-  function withdraw(address _token, uint256 _amount) public override {
+  function _withdraw(address _token, uint256 _amount) internal override {
     uint256 redeemResult = ICToken(_token).redeemUnderlying(_amount);
     _collectProtocolToken(_token);
     require(redeemResult == 0, "Redeeming failed");

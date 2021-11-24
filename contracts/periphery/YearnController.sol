@@ -44,7 +44,7 @@ contract YearnController is BaseStrategyController {
     return IERC20(_token).balanceOf(_account);
   }
 
-  function deposit(address _token, uint256 _amount) external override {
+  function _deposit(address _token, uint256 _amount) internal override {
     IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
     address YToken = strategyToken(_token);
     IERC20(_token).safeApprove(YToken, 0);
@@ -53,10 +53,10 @@ contract YearnController is BaseStrategyController {
   }
 
   function withdrawAll(address _token) external override {
-    withdraw(_token, type(uint256).max);
+    _withdraw(_token, type(uint256).max);
   }
 
-  function withdraw(address _token, uint256 _amount) public override {
+  function _withdraw(address _token, uint256 _amount) internal override {
     IYToken(_token).withdraw(_amount);
   }
 }

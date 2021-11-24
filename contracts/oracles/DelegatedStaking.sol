@@ -522,7 +522,7 @@ contract DelegatedStaking is
         IERC20(_stakeToken).safeApprove(address(strategyController), 0);
         IERC20(_stakeToken).safeApprove(address(strategyController), _amount);
         uint256 sharesBefore = strategyController.totalShares(_stakeToken);
-        strategyController.deposit(_stakeToken, _amount);
+        strategyController.deposit(_stakeToken, _validator, _amount);
         // strategyController should issue shares on his side
         uint256 shares = strategyController.totalShares(_stakeToken) - sharesBefore;
         collaterals[_stakeToken].totalLocked -= _amount;
