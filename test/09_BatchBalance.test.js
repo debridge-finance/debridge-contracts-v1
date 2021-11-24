@@ -20,7 +20,7 @@ contract("Batch balance ", function () {
     this.linkToken = await MockToken.new("Link Token", "dLINK", 18, {
       from: alice,
     });
-    this.dbrToken = await MockToken.new("DBR", "DBR", 18, {
+    this.dbrToken = await MockToken.new("DBR", "DBR", 6, {
       from: alice,
     });
 
@@ -40,13 +40,16 @@ contract("Batch balance ", function () {
 
   context("Test balance", () => {
     it("Should return correct balances", async function () {
-      const balances = await this.batchBalance.balanceOf(
+      const info = await this.batchBalance.balanceFor(
         [this.mockToken.address,this.linkToken.address, this.dbrToken.address],
         alice);
+      assert.equal(info[0][0].toString(), toWei("1"));
+      assert.equal(info[0][1].toString(), toWei("2"));
+      assert.equal(info[0][2].toString(), toWei("3"));
 
-      assert.equal(balances[0].toString(), toWei("1"));
-      assert.equal(balances[1].toString(), toWei("2"));
-      assert.equal(balances[2].toString(), toWei("3"));
+      assert.equal(info[1][0].toString(), "18");
+      assert.equal(info[1][1].toString(), "18");
+      assert.equal(info[1][2].toString(), "6");
     });
   });
 });
