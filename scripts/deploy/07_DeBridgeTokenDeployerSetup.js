@@ -13,7 +13,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // --------------------------------
 
   const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
-  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", [
+  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
     deployInitParams.excessConfirmations,
     wethAddress,
   ]);
