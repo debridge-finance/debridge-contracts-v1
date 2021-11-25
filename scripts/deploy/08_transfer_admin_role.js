@@ -19,7 +19,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     throw Error("multisigAddress is empty");
   }
 
-  if (multisig == deployer) {
+  if (multisig === deployer) {
     throw Error("multisigAddress must be different from the deployer");
   }
 
