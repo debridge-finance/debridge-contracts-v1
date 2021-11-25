@@ -31,7 +31,7 @@ store structure
 async function _readStore() {
   try {
     const data = await fs.promises.readFile(PROXIES_STORE);
-    if (data == "") {
+    if (data === "") {
       // empty store
       return {}
     } else {

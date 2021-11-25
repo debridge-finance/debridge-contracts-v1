@@ -7,7 +7,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const multisig = process.env.MULTISIG_ACCOUNT;
+  const multisig = deployInitParams.deBridgeTokenAdmin;
 
   console.log('*'.repeat(80));
   console.log(`\tStart transfering DEFAULT_ADMIN_ROLE role for contracts`);
@@ -16,11 +16,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log('*'.repeat(80));
 
   if (!multisig) {
-    throw Error("env.MULTISIG_ACCOUNT is empty");
+    throw Error("multisigAddress is empty");
   }
 
-  if (multisig == deployer) {
-    throw Error("env.MULTISIG_ACCOUNT must be different from the deployer");
+  if (multisig === deployer) {
+    throw Error("multisigAddress must be different from the deployer");
   }
 
   const DEFAULT_ADMIN_ROLE = ethers.constants.HashZero;
@@ -58,20 +58,20 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //    SignatureVerifier
   // --------------------------------
 
-  if (deployInitParams.deploy.SignatureVerifier) {
-    const signatureVerifier = await getLastDeployedProxy("SignatureVerifier", deployer);
-    await transferAdminRole(signatureVerifier, "SignatureVerifier");
-  }
+
+  const signatureVerifier = await getLastDeployedProxy("SignatureVerifier", deployer);
+  await transferAdminRole(signatureVerifier, "SignatureVerifier");
+
 
 
   // --------------------------------
   //    ConfirmationAggregator
   // --------------------------------
 
-  if (deployInitParams.deploy.ConfirmationAggregator) {
-    const confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
-    await transferAdminRole(confirmationAggregator, "ConfirmationAggregator");
-  }
+  // if (deployInitParams.deploy.ConfirmationAggregator) {
+  //   const confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
+  //   await transferAdminRole(confirmationAggregator, "ConfirmationAggregator");
+  // }
 
 
   // --------------------------------
@@ -86,18 +86,18 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //    FeeProxy
   // --------------------------------
 
-  const feeProxy = await getLastDeployedProxy("FeeProxy", deployer);
-  await transferAdminRole(feeProxy, "FeeProxy");
+  const feeProxy = await getLastDeployedProxy("SimpleFeeProxy", deployer);
+  await transferAdminRole(feeProxy, "SimpleFeeProxy");
 
 
   // --------------------------------
   //    DefiController
   // --------------------------------
 
-  if (deployInitParams.deploy.DefiController) {
-    const defiController = await getLastDeployedProxy("DefiController", deployer);
-    await transferAdminRole(defiController, "DefiController");
-  }
+  // if (deployInitParams.deploy.DefiController) {
+  //   const defiController = await getLastDeployedProxy("DefiController", deployer);
+  //   await transferAdminRole(defiController, "DefiController");
+  // }
 
 
   // --------------------------------
@@ -114,5 +114,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await hre.upgrades.admin.transferProxyAdminOwnership(multisig);
 };
 
-module.exports.tags = ["10_transfer_admin_role"];
-// module.exports.dependencies = ['09_DeBridgeGateSetup'];
+module.exports.tags = ["08_transfer_admin_role"];
+// remove dependencies. prevent process 06_DeBridgeGateSetup twice
+// module.exports.dependencies = ['06_DeBridgeGateSetup'];

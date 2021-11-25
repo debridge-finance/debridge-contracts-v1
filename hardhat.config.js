@@ -73,10 +73,6 @@ module.exports = {
       accounts:{mnemonic:process.env.MNEMONIC},
       chainId: 1
     },
-    development: {
-      url: "http://127.0.0.1:8545",
-      accounts: {mnemonic:process.env.MNEMONIC}
-    },
     test: {
       url: "http://127.0.0.1:8545",
       accounts: {mnemonic:process.env.MNEMONIC},
@@ -105,20 +101,50 @@ module.exports = {
       // gasPrice: 1e9,
       chainId: 421611
     },
-    bsc: {
-      url: "https://bsc-dataseed.binance.org/",
+    RINKEBY: {
+      url: "https://rinkeby.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      gasPrice: 10e9,
-      gas: 6e6,
-      chainId: 56
+      gasPrice: 2e9,
+      //gas: 6.9e6,
+      chainId: 4
     },
-    mainnet: {
+    ETH: {
+      // url: "http://127.0.0.1:8545",
+      // accounts:{mnemonic:process.env.MNEMONIC},
       url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      gasPrice: 51e9,
-      gas: 6.9e6,
+      gasPrice: 95e9,
+      // gas: 6.9e6,
       chainId: 1
-    }
+    },
+    BSC: {
+      url: "https://bsc-dataseed.binance.org/",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      gasPrice: 5e9,
+      //gas: 6e6,
+      chainId: 56
+    },
+    HECO: {
+      url: "https://http-mainnet.hecochain.com",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      // gasPrice: 5e9,
+      // gas: 6e6,
+      chainId: 128
+    },
+    MATIC: {
+      url: "https://polygon-rpc.com/",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      // gasPrice: 5e9,
+      // gas: 6e6,
+      chainId: 137
+    },
+    ARBITRUM: {
+      url: "https://arb1.arbitrum.io/rpc",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      // gasPrice: 5e9,
+      // gas: 6e6,
+      chainId: 42161
+    },
   },
   mocha: {
     timeout: 100000

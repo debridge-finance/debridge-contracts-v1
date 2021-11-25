@@ -1,7 +1,7 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { deployProxy } = require("../deploy-utils");
 
-module.exports = async function({getNamedAccounts, deployments, network}) {
+module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
@@ -9,4 +9,4 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await deployProxy("CallProxy", deployer, [], true);
 };
 
-module.exports.tags = ["05_CallProxy"]
+module.exports.tags = ["03_CallProxy"]

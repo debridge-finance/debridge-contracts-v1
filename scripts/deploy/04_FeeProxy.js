@@ -1,7 +1,7 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
-const { deployProxy } = require("../deploy-utils");
+const { deployProxy, getLastDeployedProxy } = require("../deploy-utils");
 
-module.exports = async function({getNamedAccounts, deployments, network}) {
+module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
@@ -11,9 +11,16 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
   // await deployProxy("FeeProxy", deployer, [uniswapFactory, weth], true);
 
-  await deployProxy("SimpleFeeProxy", deployer, [], true);
+  const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
+  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
+    deployInitParams.excessConfirmations,
+    wethAddress,
+  ]);
+
+  await deployProxy("SimpleFeeProxy", deployer, [deBridgeGateInstance.address, deployInitParams.treasuryAddress], true);
 
 
+  //next TODO needs only for FeeProxy. we will deploy SimpleFeeProxy
   //We deployed simple proxy with function only to withdraw fee
   //TODO: FeeProxy setTreasury for each chains
   //TODO: FeeProxy setDeEthToken
@@ -22,4 +29,4 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //TODO: FeeProxy add workers
 };
 
-module.exports.tags = ["06_FeeProxy"]
+module.exports.tags = ["04_FeeProxy"]

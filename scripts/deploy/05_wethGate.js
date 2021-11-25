@@ -1,7 +1,6 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
-const { deployProxy } = require("../deploy-utils");
 
-module.exports = async function({ getNamedAccounts, deployments, network}) {
+module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
@@ -21,4 +20,4 @@ module.exports = async function({ getNamedAccounts, deployments, network}) {
   }
 };
 
-module.exports.tags = ["08_wethGate"]
+module.exports.tags = ["05_wethGate"]
