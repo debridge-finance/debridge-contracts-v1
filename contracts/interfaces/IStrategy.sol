@@ -28,6 +28,6 @@ interface IStrategy {
     function resetStrategy(address stakeToken) external;
     function addStrategy(address stakeToken, address rewardToken) external;
 
-    function slashValidatorDeposits(address validator, address collateral, uint256 slashingFraction) external;
-    function slashDelegatorDeposits(address validator, address delegator, address collateral, uint256 slashingFraction) external;
+    function slashValidatorDeposits(address validator, address collateral, uint256 slashingFraction) external returns(uint256);
+    function slashDelegatorDeposits(address validator, address delegator, address collateral, uint256 slashingFraction) external returns(uint256);
 }

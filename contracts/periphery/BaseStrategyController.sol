@@ -27,6 +27,8 @@ abstract contract BaseStrategyController is IStrategy {
         bool isRecoverable;
     }
 
+    event EmergencyWithdrawnFromStrategy(uint256 amount, address strategy, address collateral);
+
     mapping(address => Strategy) public strategies; // collateral => Strategy
 
     function _strategyToken(address _collateral) internal view virtual returns (address) {
@@ -121,6 +123,7 @@ abstract contract BaseStrategyController is IStrategy {
         strategies[_collateral].isRecoverable = _isRecoverable;
     }
 
+    // TODO: fix tests which using this
     function resetStrategy(address _collateral) external override {
         Strategy storage strategy = strategies[_collateral];
         if (!strategy.isEnabled) revert StrategyDisabled();
@@ -144,11 +147,13 @@ abstract contract BaseStrategyController is IStrategy {
         address _validator,
         address _collateral,
         uint256 _slashingFraction
-    ) external override {
+    ) external override returns(uint256) {
         uint256 _shares = _validatorShares(_collateral, _validator) * _slashingFraction;
         strategies[_collateral].validators[_validator].shares -= _shares;
+        // TODO
         //uint256 collateralAmount = calculateFromShares(_collateral, _shares);
         //withdraw(_collateral, _validator, collateralAmount, msg.sender);
+        return _shares;
     }
 
     function slashDelegatorDeposits(
@@ -156,12 +161,14 @@ abstract contract BaseStrategyController is IStrategy {
         address _delegator,
         address _collateral,
         uint256 _slashingFraction
-    ) external override {
+    ) external override returns(uint256) {
         uint256 _shares = _delegatorShares(_collateral, _validator, _delegator) * _slashingFraction;
         strategies[_collateral].validators[_validator].delegatorShares[_delegator] -= _shares;
         strategies[_collateral].validators[_validator].shares -= _shares;
+        // TODO
         //uint256 collateralAmount = calculateFromShares(_collateral, _shares);
         //withdraw(_collateral, _validator, collateralAmount, msg.sender);
+        return _shares;
     }
 
     // TODO: withdraw function
@@ -194,4 +201,11 @@ abstract contract BaseStrategyController is IStrategy {
         strategy.totalShares -= _shares;
         strategy.totalReserves -= amount;
     }
+
+    // TODO: 
+    // withdrawAll functio to update state
+    // revert if strategy is disabled
+    // strategyController.updateStrategyEnabled(_stakeToken, false);
+    // strategyController.updateStrategyRecoverable(_stakeToken, true);
+    // emit EmergencyWithdrawnFromStrategy
 }
