@@ -1,0 +1,275 @@
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy  --network hecotest
+Nothing to compile
+deploying "MockWeth" (tx: 0x9716711266e5f6c16906b7d24c7ef3c6b5172c39024193d0433bc61b699f505c)...: deployed at 0x21D03141aCfc7A53252c513F25C361485082Cc82 with 578721 gas
+sleepInterval 15000
+deploying "DeBridgeToken" (tx: 0xc54a2e41d03011c034deccafbc3cb258975b7a3b0ec6799f6cb115cc9cd7f8ec)...: deployed at 0x2C898393595386d889aF7F348314D8d63F4353Df with 1612378 gas
+sleepInterval 15000
+
+*** Deploying proxy for DeBridgeTokenDeployer ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [
+  '0x2C898393595386d889aF7F348314D8d63F4353Df',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23',
+  '0x0000000000000000000000000000000000000000'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x49D0EE55d2Edf8B8EccDC4Bb83C2f79873A88D81
+        New proxy deployed:  0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3
+sleepInterval 15000
+
+*** Deploying proxy for SignatureVerifier ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ 2, 3, 3, '0x0000000000000000000000000000000000000000' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x57Bc06611321cF3c5c332efb580FA4DEa8A0E105
+        New proxy deployed:  0xe867E7269C733795445388cadD08cDcFe7FAe91a
+sleepInterval 15000
+add non required oracles:
+[
+  '0x0022798ad168952c1da80157c0314d5c64f87e22',
+  '0x9b4cbd1c7e82cf9c217002eddb320a1286f47738',
+  '0x2b4e172043527a9435f31688fef6f3589356d1aa'
+]
+sleepInterval 15000
+
+*** Deploying proxy for CallProxy ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ 0 ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        New proxy deployed:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+sleepInterval 15000
+
+*** Deploying proxy for CallProxy ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ 2 ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        New proxy deployed:  0x6a36E204576B8B72F9d301aD2ab23423f8f220A2
+sleepInterval 15000
+
+*** Deploying proxy for FeeProxy ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [
+  '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
+  '0x21D03141aCfc7A53252c513F25C361485082Cc82'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0xa57ff684859D460C0B42ac0ed507561D686D21BE
+        New proxy deployed:  0x3A7F21142Dd28be6369723100262282023e395ad
+sleepInterval 15000
+Start 08_DeBridgeGate
+deployProxy DeBridgeGate
+
+*** Deploying proxy for DeBridgeGate ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [
+  3,
+  '0xe867E7269C733795445388cadD08cDcFe7FAe91a',
+  '0x0000000000000000000000000000000000000000',
+  '0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669',
+  '0x21D03141aCfc7A53252c513F25C361485082Cc82',
+  '0x3A7F21142Dd28be6369723100262282023e395ad',
+  '0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3',
+  '0x0000000000000000000000000000000000000000'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+sleepInterval 15000
+        Implementation address: 0xc59Afc2649d96aA6Ee2785047C754967FdB480CC
+        New proxy deployed:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+sleepInterval 15000
+chainId: 256
+wethDebridgeId: 0x652405436ec6c88eaf426637f10e6671ab079d28fd3d2904145da964acc5b065
+updateChainSupport
+[ 97, 42, 421611 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+sleepInterval 15000
+deployInitParams.supportedChains:  [ 97, 42, 421611 ]
+deployInitParams.fixedNativeFee:  [ '100000000000000', '100000000000000', '100000000000000' ]
+deBridgeGate updateAssetFixedFeesTx for WETH
+sleepInterval 15000
+Set callProxy with sender for deBridgeGate
+sleepInterval 15000
+deBridgeGate updateGlobalFee
+sleepInterval 15000
+callProxy grantRole
+callProxy grantRole DEBRIDGE_GATE_ROLE for deBridgeGate
+sleepInterval 15000
+callProxyWithSender grantRole DEBRIDGE_GATE_ROLE for deBridgeGate
+sleepInterval 15000
+feeProxy setDebridgeGate
+sleepInterval 15000
+deBridgeTokenDeployer setDebridgeAddress
+sleepInterval 15000
+signatureVerifier setDebridgeAddress
+sleepInterval 15000
+********************************************************************************
+        Start transfering DEFAULT_ADMIN_ROLE role for contracts
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        to MULTISIG 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Transfering admin role for DeBridgeTokenDeployer | 0x21c473DCbADf1b0Ea3cd3655511C71f74A4429F3
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for SignatureVerifier | 0xe867E7269C733795445388cadD08cDcFe7FAe91a
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for CallProxy | 0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for CallProxyWithSender | 0x6a36E204576B8B72F9d301aD2ab23423f8f220A2
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for FeeProxy | 0x3A7F21142Dd28be6369723100262282023e395ad
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+Transfering admin role for DeBridgeGate | 0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        call grantRole for multisig
+sleepInterval 15000
+        call revokeRole for deployer
+sleepInterval 15000
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 11_upgrade_deBridgeGate_110  --network hecotest
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate to 1.1.0 version
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+********************************************************************************
+
+*** Upgrade proxy for DeBridgeGate ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+Waiting 1 block confirmations for tx 0x5f7f5607e357af5459b82c425c7f13d5e1fa1d5bc406b4386a8106eff2da3a6c ...
+        Implementation address: 0xc22a5d1b0155113C2ABbbf59aC71ef04E6d89a07
+        New proxy deployed:  0x68d936cb4723bdd38c488fd50514803f96789d2d
+end upgradeProxy
+newVersion: 110
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 12_set_new_weth  --network hecotest
+Nothing to compile
+********************************************************************************
+        Start upgrade deBridgeGate weth to new address {}
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+Waiting 1 block confirmations for tx 0xbf3a47abd3b563cb61a7e2baca188b9f49d8d18da3315b6099c11f3146522a34 ...
+newWeth: 0x7aF326B6351C8A9b8fb8CD205CBe11d4Ac5FA836
+chainId: 256
+wethDebridgeId: 0x121083887f40823edff5c06bb839a81c0df121a823f0cae04477b5152d4d47b1
+Waiting 1 block confirmations for tx 0x70169f8fe5860b20baae325a97cf8f9fd52f59da65498269720e5c711c6b456e ...
+updateAssetFixedFeesTx: 0x70169f8fe5860b20baae325a97cf8f9fd52f59da65498269720e5c711c6b456e
+updateChainSupport
+[ 97, 42, 421611, 80001 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0xc54e3888623b094e6d67c17ab656ebdde430d629394fcd6c6ffdec88c716219b ...
+deployInitParams.supportedChains:  [ 97, 42, 421611, 80001 ]
+deployInitParams.fixedNativeFee:  [
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000'
+]
+Waiting 1 block confirmations for tx 0x3459cf4b7cc22b92d7f602fc4aa840a80b89bb203a71693ed4043bf071aca5af ...
+updateGlobalFeeTx: 0x3459cf4b7cc22b92d7f602fc4aa840a80b89bb203a71693ed4043bf071aca5af
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+==========================================================
+UPDATE VALIDATORS
+==========================================================
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 14_add_validators  --network hecotest
+Nothing to compile
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  11: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+existValidators: 0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x4da594b739611574663aea3edddc428e00c48fe1,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+validatorsForAdd: 6: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+newMinConfirmation: 6
+Waiting 1 block confirmations for tx 0x187b491b83afa45016a18ce892c0202c7be90455e0e3a31bf266baa173936e1e ...
+setMinConfirmationsTx : 0x187b491b83afa45016a18ce892c0202c7be90455e0e3a31bf266baa173936e1e
+Waiting 1 block confirmations for tx 0x7e1386992eca15a5a6c4aac0faa9c84645283643113e0ba976c8af21b4cab551 ...
+addOraclesTx : 0x7e1386992eca15a5a6c4aac0faa9c84645283643113e0ba976c8af21b4cab551
+after update minConfirmations: 6
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags 11_batchClaimer --network hecotest
+Nothing to compile
+********************************************************************************
+        Start deploy batch claimer
+        from DEPLOYER 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+********************************************************************************
+
+*** Deploying proxy for Claimer ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [ '0x68d936cb4723bdd38c488fd50514803f96789d2d' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xe8c2be7907811cea2c65bf97d9a756489e6d85bf8be104abcf8aeea17e78c4b7 ...
+        Implementation address: 0x4674225DE00C82005eAF77a29f3B5584b4CB8D5A
+        New proxy deployed:  0xb1EB9869c8f3b50A98d960A5512D2BF0fAA56C32
