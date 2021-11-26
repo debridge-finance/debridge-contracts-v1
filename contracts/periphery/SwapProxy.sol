@@ -53,7 +53,7 @@ contract SwapProxy  is Initializable, AccessControlUpgradeable, PausableUpgradea
         _pause();
     }
 
-    function unpause() external onlyAdmin whenPaused {
+    function unpause() external onlyAdmin {
         _unpause();
     }
 
@@ -109,5 +109,12 @@ contract SwapProxy  is Initializable, AccessControlUpgradeable, PausableUpgradea
         uint256 numerator = amountInWithFee * reserveOut;
         uint256 denominator = reserveIn * 1000 + amountInWithFee;
         amountOut = numerator / denominator;
+    }
+
+
+    // ============ Version Control ============
+
+    function version() external pure returns (uint256) {
+        return 101; // 1.0.1
     }
 }

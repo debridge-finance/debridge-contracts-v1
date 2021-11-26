@@ -472,7 +472,7 @@ contract DeBridgeGate is
     }
 
     /// @dev Allow transfers.
-    function unpause() external onlyAdmin whenPaused {
+    function unpause() external onlyAdmin {
         _unpause();
     }
 
@@ -1073,6 +1073,6 @@ contract DeBridgeGate is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 120; // 1.2.0
+        return 121; // 1.2.1
     }
 }
