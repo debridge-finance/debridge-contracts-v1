@@ -103,3 +103,10 @@ MULTISIG_ACCOUNT="0xe13E4F9441a381F54eD969c768713157D125e216"
 INFURA_ID=xxx # Change to your infura id
 ```
 then run `yarn test`
+
+## Troubleshooting
+###  Cannot find module '../typechain-types' or its corresponding type declarations.
+`hardhat clean`
+>> https://github.com/dethcrypto/TypeChain/tree/master/packages/hardhat#installation
+> 
+>Warning: before running it for the first time you need to do hardhat clean, otherwise TypeChain will think that there is no need to generate any typings. This is because this plugin will attempt to do incremental generation and generate typings only for changed contracts. You should also do hardhat clean if you change any TypeChain related config option.
