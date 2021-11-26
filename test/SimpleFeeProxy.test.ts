@@ -41,11 +41,6 @@ before(async () => {
 });
 
 beforeEach(async () => {
-    simpleFeeProxyFactory = await ethers.getContractFactory("SimpleFeeProxy", deployer);
-    simpleFeeProxy = await upgrades.deployProxy(simpleFeeProxyFactory, []) as SimpleFeeProxy;
-    DEFAULT_ADMIN_ROLE = await simpleFeeProxy.DEFAULT_ADMIN_ROLE();
-    await simpleFeeProxy.setTreasury(treasury.address);
-
     erc20Mock = await deployMockContract(deployer, ERC20Json.abi) as ERC20Mock;
     await erc20Mock.mock.balanceOf.returns(0 as any);
     await erc20Mock.mock.transfer.returns(true as any);
@@ -56,7 +51,12 @@ beforeEach(async () => {
         .returns(CHAIN_ID, NATIVE_ADDRESS);
     await deBridgeGateMock.mock.withdrawFee.returns();
 
-    await simpleFeeProxy.setDebridgeGate(deBridgeGateMock.address);
+    simpleFeeProxyFactory = await ethers.getContractFactory("SimpleFeeProxy", deployer);
+    simpleFeeProxy = await upgrades.deployProxy(simpleFeeProxyFactory, [
+        deBridgeGateMock.address,
+        treasury.address,
+    ]) as SimpleFeeProxy;
+    DEFAULT_ADMIN_ROLE = await simpleFeeProxy.DEFAULT_ADMIN_ROLE();
 });
 
 it('grants DEFAULT_ADMIN_ROLE only to a deployer', async () => {
