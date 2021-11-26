@@ -1,20 +1,20 @@
+import { config as dotenvConfig } from 'dotenv-flow';
 
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
-require("dotenv-flow").config();
-require("@nomiclabs/hardhat-truffle5");
-require('hardhat-deploy');
-require("@nomiclabs/hardhat-waffle");
-require('@openzeppelin/hardhat-upgrades');
-require('hardhat-contract-sizer');
-require("hardhat-gas-reporter");
-require("@nomiclabs/hardhat-solhint");
-require("prettier-plugin-solidity");
-require("solidity-coverage");
-require("@nomiclabs/hardhat-etherscan");
+import '@nomiclabs/hardhat-truffle5';
+import 'hardhat-deploy';
+import '@nomiclabs/hardhat-waffle';
+import '@openzeppelin/hardhat-upgrades';
+import 'hardhat-contract-sizer';
+import 'hardhat-gas-reporter';
+import '@nomiclabs/hardhat-solhint';
+import 'prettier-plugin-solidity';
+import 'solidity-coverage';
+import '@typechain/hardhat'
+import '@nomiclabs/hardhat-ethers'
 
-module.exports = {
+dotenvConfig();
+
+export default {
   gasReporter: {
     currency: "USD",
     gasPrice: 100,
