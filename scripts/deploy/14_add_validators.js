@@ -13,7 +13,6 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   if (!allValidators) return;
 
 
-
   console.log(`new validators  ${allValidators.length}: ${allValidators}`);
   const signatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier", deployer);
   const signatureVerifierInstance = await signatureVerifierFactory.attach("0xe867E7269C733795445388cadD08cDcFe7FAe91a", deployer);
@@ -41,6 +40,8 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     }
   }
   console.log(`existValidators: ${existValidators}`);
+
+  // -----validatorsForAdd------------------
   let validatorsForAdd = [];
   for (var i = 0; i < allValidators.length; i++) {
     if (existValidators.indexOf(allValidators[i]) === -1) {
@@ -50,21 +51,17 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   console.log(`validatorsForAdd: ${validatorsForAdd.length}: ${validatorsForAdd}`);
 
   //TODO: we need to increase min conf. add new validators, then remove obsolete validators
-  // let validatorsForRemove = [];
-  // for (var i = 0; i < existValidators.length; i++) {
-  //   if (allValidators.indexOf(existValidators[i]) === -1) {
-  //     validatorsForRemove.push(existValidators[i]);
-  //   }
-  // }
-  // console.log(`validatorsForRemove: ${validatorsForRemove.length}: ${validatorsForRemove}`);
+  // -----validatorsForRemove------------------
+  let validatorsForRemove = [];
+  for (var i = 0; i < existValidators.length; i++) {
+    if (allValidators.indexOf(existValidators[i]) === -1) {
+      validatorsForRemove.push(existValidators[i]);
+    }
+  }
+  console.log(`validatorsForRemove: ${validatorsForRemove.length}: ${validatorsForRemove}`);
 
-  // for (var i = 0; i < validatorsForRemove.length; i++) {
-  //   let tx = await signatureVerifierInstance.updateOracle(validatorsForRemove[i], false, false);
-  //   await waitTx(tx);
-  //   console.log(`removed validator ${validatorsForRemove[i]} : ${tx.hash}`);
-  // }
-
-  const newMinConfirmation = parseInt((existValidators.length + validatorsForAdd.length) / 2) + 1;
+  // -----update min confirmation------------------
+  const newMinConfirmation = parseInt((existValidators.length + validatorsForAdd.length - validatorsForRemove.length) / 2) + 1;
   console.log(`newMinConfirmation: ${newMinConfirmation}`);
   const minConfirmationFromContract = await signatureVerifierInstance.minConfirmations();
   console.log(`old MinConfirmations : ${minConfirmationFromContract}`);
@@ -74,14 +71,25 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     await waitTx(setMinConfirmationsTx);
     console.log(`setMinConfirmationsTx : ${setMinConfirmationsTx.hash}`);
   }
+  console.log(`after update minConfirmations: ${await signatureVerifierInstance.minConfirmations()}`);
+
+  // -----remove validators from contract------------------
+   for (var i = 0; i < validatorsForRemove.length; i++) {
+    console.log(`removing : ${validatorsForRemove[i]}`);
+    let tx = await signatureVerifierInstance.updateOracle(validatorsForRemove[i], false, false);
+    await waitTx(tx);
+    console.log(`removed validator ${validatorsForRemove[i]} : ${tx.hash}`);
+  }
+
+  // -----add new validators to contract------------------
 
   if (validatorsForAdd.length > 0) {
     let required = validatorsForAdd.map(i => false);
+    console.log(`adding : ${validatorsForAdd}`);
     const addOraclesTx = await signatureVerifierInstance.addOracles(validatorsForAdd, required);
     await waitTx(addOraclesTx);
     console.log(`addOraclesTx : ${addOraclesTx.hash}`);
   }
-  console.log(`after update minConfirmations: ${await signatureVerifierInstance.minConfirmations()}`);
 
   for (var i = 0; i < 20; i++) {
     try {
