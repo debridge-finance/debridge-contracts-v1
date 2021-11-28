@@ -36,6 +36,15 @@ contract Claimer is
         bytes autoParams;
     }
 
+    struct AssetDeployInfo {
+        bytes nativeTokenAddress;
+        uint256 nativeChainId;
+        string name;
+        string symbol;
+        uint8 decimals;
+        bytes signatures;
+    }
+
     /* ========== CONSTRUCTOR  ========== */
 
     function initialize(
@@ -48,7 +57,7 @@ contract Claimer is
 
     function batchClaim(
         ClaimInfo[] calldata _claims
-    ) external  {
+    ) external {
         uint256 claimsCount = _claims.length;
         for (uint256 i = 0; i < claimsCount; i++) {
             ClaimInfo memory claim = _claims[i];
@@ -65,17 +74,56 @@ contract Claimer is
         }
     }
 
+    function batchAssetsDeploy(
+        AssetDeployInfo[] calldata _deploys
+    ) external {
+        uint256 count = _deploys.length;
+        for (uint256 i = 0; i < count; i++) {
+            AssetDeployInfo memory deploy = _deploys[i];
+            try deBridgeGate.deployNewAsset(
+                deploy.nativeTokenAddress,
+                deploy.nativeChainId,
+                deploy.name,
+                deploy.symbol,
+                deploy.decimals,
+                deploy.signatures)
+            { }
+            catch {}
+        }
+    }
+
+    /* VIEW */
 
     function isSubmissionsUsed(
-        bytes32[] memory _submissionIds
-    ) external view  returns (bool[] memory) {
+        bytes32[] calldata _submissionIds
+    ) external view returns (bool[] memory result) {
         uint256 count = _submissionIds.length;
-        bool[] memory isUsed = new bool[](count);
+        result = new bool[](count);
         for (uint256 i = 0; i < count; i++) {
-           isUsed[i] = deBridgeGate.isSubmissionUsed(_submissionIds[i]);
+           result[i] = deBridgeGate.isSubmissionUsed(_submissionIds[i]);
         }
-        return isUsed;
     }
+
+    function isDebridgesExists(
+        bytes32[] calldata _debridgeIds
+    ) external view returns (bool[] memory result) {
+        uint256 count = _debridgeIds.length;
+        result = new bool[](count);
+        for (uint256 i = 0; i < count; i++) {
+            (
+                , //uint256 chainId,
+                , //uint256 maxAmount,
+                , //uint256 balance,
+                , //uint256 lockedInStrategies,
+                , //address tokenAddress,
+                , //uint16 minReservesBps,
+                bool exist
+            ) = deBridgeGate.getDebridge(_debridgeIds[i]);
+            result[i] = exist;
+        }
+    }
+
+    /* ========== ADMIN ========== */
 
     function setDeBridgeGate(DeBridgeGate _deBridgeGate) external onlyAdmin {
         deBridgeGate = _deBridgeGate;
