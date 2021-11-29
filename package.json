@@ -12,7 +12,8 @@
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
     "test": "hardhat test",
     "contract-size": "hardhat size-contracts",
-    "coverage": "hardhat coverage"
+    "coverage": "hardhat coverage",
+    "docs": "solidity-docgen -i ./contracts/ -o ./docs/ --solc-module solc-0.8.7"
   },
   "repository": {
     "type": "git",
@@ -32,12 +33,13 @@
     "@types/dotenv-flow": "^3.2.0",
     "dotenv-flow": "^3.2.0",
     "ganache-cli": "^6.12.2",
+    "solidity-docgen": "^0.5.16",
     "truffle": "^5.4.8"
   },
   "devDependencies": {
     "@ethersproject/constants": "^5.4.0",
-    "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.11",
+    "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-solhint": "^2.0.0",
     "@nomiclabs/hardhat-truffle5": "2.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
@@ -59,6 +61,7 @@
     "hardhat-gas-reporter": "^1.0.4",
     "prettier": "^2.3.2",
     "prettier-plugin-solidity": "^1.0.0-beta.17",
+    "solc-0.8.7": "yarn:solc@0.8.7-fixed",
     "solhint": "^3.3.6",
     "solhint-plugin-prettier": "^0.0.5",
     "solidity-coverage": "^0.7.17",
