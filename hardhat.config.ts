@@ -1,5 +1,6 @@
 import { config as dotenvConfig } from 'dotenv-flow';
 
+import { task } from "hardhat/config"
 import '@nomiclabs/hardhat-truffle5';
 import 'hardhat-deploy';
 import '@nomiclabs/hardhat-waffle';
@@ -164,3 +165,24 @@ export default {
     apiKey: ""
   },
 }
+
+task("upgrade", "Upgrade smart contract")
+  .addPositionalParam("contract", "Name of a smart contract")
+  .addPositionalParam("address", "Contract's proxy address")
+  .addOptionalParam("signer", "Named signer for upgrade transaction", "deployer")
+  .setAction(async (args, hre) => {
+    const { upgradeProxy } = require("./scripts/deploy-utils");
+
+    const accounts = await hre.getNamedAccounts();
+    const signer = accounts[args.signer];
+
+    if (!signer) {
+      throw new Error("Unknown signer!");
+    }
+
+    if (!hre.ethers.utils.isAddress(args.address)) {
+      throw Error(`Invalid contract address ${args.address}`)
+    }
+
+    const { contract, receipt } = await upgradeProxy(args.contract, args.address, signer);
+  })
