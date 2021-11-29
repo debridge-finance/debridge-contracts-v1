@@ -344,6 +344,8 @@ contract DelegatedStaking is
             revert WrongAmount();
         }
 
+        // TODO: handle locked shares to strategy
+
         uint256 withdrawTokenAmount = getAmountByShares(_validator, _collateral, _shares);
 
         if (withdrawTokenAmount == 0) revert ZeroAmount();
@@ -475,6 +477,7 @@ contract DelegatedStaking is
         IERC20(_stakeToken).safeApprove(address(strategyController), 0);
         IERC20(_stakeToken).safeApprove(address(strategyController), _amount);
         uint256 sharesBefore = strategyController.totalShares(_stakeToken);
+        // TODO: add recepient to deposit function
         strategyController.deposit(_stakeToken, _validator, _amount);
         // strategyController should issue shares on his side
         collaterals[_stakeToken].totalLocked -= _amount;
@@ -499,6 +502,7 @@ contract DelegatedStaking is
         uint256 beforeBalance = IERC20(_stakeToken).balanceOf(address(this));
         uint256 stakeTokenAmount = getAmountByShares(_validator, _stakeToken, _shares);
         if (strategyController.delegatorShares(_stakeToken, _validator, msg.sender) < _shares) revert WrongAmount();
+        // TODO: stakeTokenAmount should be passed instead of _shares
         strategyController.withdraw(_stakeToken, _validator, _shares);
 
         uint256 receivedAmount = IERC20(_stakeToken).balanceOf(address(this)) - beforeBalance;
