@@ -1,20 +1,21 @@
+import { config as dotenvConfig } from 'dotenv-flow';
 
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
-require("dotenv-flow").config();
-require("@nomiclabs/hardhat-truffle5");
-require('hardhat-deploy');
-require("@nomiclabs/hardhat-waffle");
-require('@openzeppelin/hardhat-upgrades');
-require('hardhat-contract-sizer');
-require("hardhat-gas-reporter");
-require("@nomiclabs/hardhat-solhint");
-require("prettier-plugin-solidity");
-require("solidity-coverage");
-require("@nomiclabs/hardhat-etherscan");
+import { task } from "hardhat/config"
+import '@nomiclabs/hardhat-truffle5';
+import 'hardhat-deploy';
+import '@nomiclabs/hardhat-waffle';
+import '@openzeppelin/hardhat-upgrades';
+import 'hardhat-contract-sizer';
+import 'hardhat-gas-reporter';
+import '@nomiclabs/hardhat-solhint';
+import 'prettier-plugin-solidity';
+import 'solidity-coverage';
+import '@typechain/hardhat'
+import '@nomiclabs/hardhat-ethers'
 
-module.exports = {
+dotenvConfig();
+
+export default {
   gasReporter: {
     currency: "USD",
     gasPrice: 100,
@@ -164,3 +165,24 @@ module.exports = {
     apiKey: ""
   },
 }
+
+task("upgrade", "Upgrade smart contract")
+  .addPositionalParam("contract", "Name of a smart contract")
+  .addPositionalParam("address", "Contract's proxy address")
+  .addOptionalParam("signer", "Named signer for upgrade transaction", "deployer")
+  .setAction(async (args, hre) => {
+    const { upgradeProxy } = require("./scripts/deploy-utils");
+
+    const accounts = await hre.getNamedAccounts();
+    const signer = accounts[args.signer];
+
+    if (!signer) {
+      throw new Error("Unknown signer!");
+    }
+
+    if (!hre.ethers.utils.isAddress(args.address)) {
+      throw Error(`Invalid contract address ${args.address}`)
+    }
+
+    const { contract, receipt } = await upgradeProxy(args.contract, args.address, signer);
+  })
