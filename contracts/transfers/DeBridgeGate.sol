@@ -41,7 +41,7 @@ contract DeBridgeGate is
 
     address public deBridgeTokenDeployer;
     address public signatureVerifier; // current signatureVerifier address to verify signatures
-    // address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
+    address public confirmationAggregatorObsolete; // Obsolete. need to keep correct slots state
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint256 public flashFeeBps; // fee in basis points (1/10000)
     uint256 public nonce; //outgoing submissions count
@@ -53,7 +53,6 @@ contract DeBridgeGate is
     mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
     mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
     mapping(uint256 => ChainSupportInfo) public getChainToConfig; // whether the chain for the asset is supported to send
-    mapping(uint256 => ChainSupportInfo) public getChainFromConfig;// whether the chain for the asset is supported to claim
     mapping(address => DiscountInfo) public feeDiscount; //fee discount for address
 
     mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
@@ -67,6 +66,7 @@ contract DeBridgeGate is
     uint256 public globalFixedNativeFee;
     uint16 public globalTransferFeeBps;
 
+    mapping(uint256 => ChainSupportInfo) public getChainFromConfig; // whether the chain for the asset is supported to claim
     address public callProxy; // proxy to execute user's calls
     IWethGate public wethGate;
     bool public lockedClaim; //locker for claim method

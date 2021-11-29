@@ -1,0 +1,325 @@
+********************************************************************************
+ npx hardhat deploy --tags 14_add_validators --network kovan
+********************************************************************************
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 14_add_validators --network kovan
+Compiling 120 files with 0.8.7
+Compilation finished successfully
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  12: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Deployer has DEFAULT_ADMIN_ROLE
+Contract version: 101
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+existValidators: 0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x4da594b739611574663aea3edddc428e00c48fe1,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+validatorsForAdd: 3: 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+validatorsForRemove: 2: 0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x36df730f53f287f4831d25e29240de6bdb840ab5
+newMinConfirmation: 7
+old MinConfirmations : 6
+Waiting 1 block confirmations for tx 0x3250f76b34b8a6b55a4f7192b2529214bcbe0be79e7a0ed4daf513177471c0b4 ...
+setMinConfirmationsTx : 0x3250f76b34b8a6b55a4f7192b2529214bcbe0be79e7a0ed4daf513177471c0b4
+after update minConfirmations: 7
+Waiting 1 block confirmations for tx 0x5d7348cb92212645fbbec8d91602d50d4355912890abc9c8104dbea9c8dfc756 ...
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\14_add_validators.js:
+Error: transaction failed (transactionHash="0x5d7348cb92212645fbbec8d91602d50d4355912890abc9c8104dbea9c8dfc756",
+
+
+
+********************************************************************************
+AFTER FIX scripts (remove first, then add validators)
+********************************************************************************
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 14_add_validators --network kovan
+Nothing to compile
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  12: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Deployer has DEFAULT_ADMIN_ROLE
+Contract version: 101
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+existValidators: 0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x4da594b739611574663aea3edddc428e00c48fe1,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+validatorsForAdd: 3: 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+validatorsForRemove: 2: 0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x36df730f53f287f4831d25e29240de6bdb840ab5
+newMinConfirmation: 7
+old MinConfirmations : 7
+after update minConfirmations: 7
+removing : 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+Waiting 1 block confirmations for tx 0xeec894db35b5e771559f4a0c53f43236c3e77faf6473a67c556a8d1f447d348b ...
+removed validator 0xb64a5f7018a701a52f0c41e3a564830c7a430064 : 0xeec894db35b5e771559f4a0c53f43236c3e77faf6473a67c556a8d1f447d348b
+removing : 0x36df730f53f287f4831d25e29240de6bdb840ab5
+Waiting 1 block confirmations for tx 0xd8497abafae056cde5c37c9dfdb1d53e6066633435c5819c259598b612f429b2 ...
+removed validator 0x36df730f53f287f4831d25e29240de6bdb840ab5 : 0xd8497abafae056cde5c37c9dfdb1d53e6066633435c5819c259598b612f429b2
+adding : 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Waiting 1 block confirmations for tx 0x9ff3b897e011f25df8d9758278b7f2bc335457f89f060212932a96a9ee298153 ...
+addOraclesTx : 0x9ff3b897e011f25df8d9758278b7f2bc335457f89f060212932a96a9ee298153
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x030578b16457b9ed4302ddd46f1e6567986460fd
+found validator in contract: 0x6d275d56650316bd672e5b22359c5aceb02d6d76
+found validator in contract: 0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+
+
+********************************************************************************
+npx hardhat deploy --tags 14_add_validators --network bsctest
+********************************************************************************
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 14_add_validators --network bsctest
+Nothing to compile
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  12: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Deployer has DEFAULT_ADMIN_ROLE
+Contract version: 101
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+existValidators: 0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x4da594b739611574663aea3edddc428e00c48fe1,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+validatorsForAdd: 3: 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+validatorsForRemove: 2: 0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x36df730f53f287f4831d25e29240de6bdb840ab5
+newMinConfirmation: 7
+old MinConfirmations : 6
+Waiting 1 block confirmations for tx 0x79a22a68cd74fe9afbee5787ec8865df7c2cb8b87004736cbce1b563ac28f6e1 ...
+setMinConfirmationsTx : 0x79a22a68cd74fe9afbee5787ec8865df7c2cb8b87004736cbce1b563ac28f6e1
+after update minConfirmations: 7
+removing : 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+Waiting 1 block confirmations for tx 0x865ce635c9ca176e23257066c5cfce670cb7657d1cfdea998e3501023ab86e8a ...
+removed validator 0xb64a5f7018a701a52f0c41e3a564830c7a430064 : 0x865ce635c9ca176e23257066c5cfce670cb7657d1cfdea998e3501023ab86e8a
+removing : 0x36df730f53f287f4831d25e29240de6bdb840ab5
+Waiting 1 block confirmations for tx 0x53c821c771246465dc4b9363a5de0716774c0f9a63c6a87a96ef75c875bb0773 ...
+removed validator 0x36df730f53f287f4831d25e29240de6bdb840ab5 : 0x53c821c771246465dc4b9363a5de0716774c0f9a63c6a87a96ef75c875bb0773
+adding : 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Waiting 1 block confirmations for tx 0x26eebb1c936a2d96463cf6e3ee54b955e10a6060910b21d6852172bdaedd5b16 ...
+addOraclesTx : 0x26eebb1c936a2d96463cf6e3ee54b955e10a6060910b21d6852172bdaedd5b16
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x030578b16457b9ed4302ddd46f1e6567986460fd
+found validator in contract: 0x6d275d56650316bd672e5b22359c5aceb02d6d76
+found validator in contract: 0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+
+
+
+
+********************************************************************************
+ npx hardhat deploy --tags 14_add_validators --network hecotest
+********************************************************************************
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 14_add_validators --network hecotest
+Nothing to compile
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  12: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Deployer has DEFAULT_ADMIN_ROLE
+Contract version: 101
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+existValidators: 0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x4da594b739611574663aea3edddc428e00c48fe1,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x36df730f53f287f4831d25e29240de6bdb840ab5
+validatorsForAdd: 3: 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+validatorsForRemove: 2: 0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x36df730f53f287f4831d25e29240de6bdb840ab5
+newMinConfirmation: 7
+old MinConfirmations : 6
+Waiting 1 block confirmations for tx 0xffd9318163ee523578477b91084ef43e81c6c9370e9cddadfca284c2b48b86f3 ...
+setMinConfirmationsTx : 0xffd9318163ee523578477b91084ef43e81c6c9370e9cddadfca284c2b48b86f3
+after update minConfirmations: 7
+removing : 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+Waiting 1 block confirmations for tx 0xcc3e9bd7684ef850f7856f2863fe5d4c6b3cdc276b13b00adcde408198c3dcac ...
+removed validator 0xb64a5f7018a701a52f0c41e3a564830c7a430064 : 0xcc3e9bd7684ef850f7856f2863fe5d4c6b3cdc276b13b00adcde408198c3dcac
+removing : 0x36df730f53f287f4831d25e29240de6bdb840ab5
+Waiting 1 block confirmations for tx 0x87e16b27318b2d1781518e4d17f4f3476fcd5b516344e203f12486b88bd17cd6 ...
+removed validator 0x36df730f53f287f4831d25e29240de6bdb840ab5 : 0x87e16b27318b2d1781518e4d17f4f3476fcd5b516344e203f12486b88bd17cd6
+adding : 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Waiting 1 block confirmations for tx 0x6cce796af83ba79c071b901d93be30992b78621092895215bffceb7450f8d68b ...
+addOraclesTx : 0x6cce796af83ba79c071b901d93be30992b78621092895215bffceb7450f8d68b
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x030578b16457b9ed4302ddd46f1e6567986460fd
+found validator in contract: 0x6d275d56650316bd672e5b22359c5aceb02d6d76
+found validator in contract: 0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+
+
+********************************************************************************
+ npx hardhat deploy --tags 14_add_validators --network mumbai
+********************************************************************************
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 14_add_validators --network mumbai
+Nothing to compile
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  12: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Deployer has DEFAULT_ADMIN_ROLE
+Contract version: 101
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+existValidators: 0x36df730f53f287f4831d25e29240de6bdb840ab5,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x4da594b739611574663aea3edddc428e00c48fe1,0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+validatorsForAdd: 3: 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+validatorsForRemove: 2: 0x36df730f53f287f4831d25e29240de6bdb840ab5,0xb64a5f7018a701a52f0c41e3a564830c7a430064
+newMinConfirmation: 7
+old MinConfirmations : 6
+Waiting 1 block confirmations for tx 0x1c13ec07849bda20667147dd4ec35ea5d276a884e0f5a351f3b1e2bb90c52d76 ...
+setMinConfirmationsTx : 0x1c13ec07849bda20667147dd4ec35ea5d276a884e0f5a351f3b1e2bb90c52d76
+after update minConfirmations: 7
+removing : 0x36df730f53f287f4831d25e29240de6bdb840ab5
+Waiting 1 block confirmations for tx 0x526966161824c60b2be463924a251a9df91c60baabee21289266cc4c392780de ...
+removed validator 0x36df730f53f287f4831d25e29240de6bdb840ab5 : 0x526966161824c60b2be463924a251a9df91c60baabee21289266cc4c392780de
+removing : 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+Waiting 1 block confirmations for tx 0xe94b57fff20278d2b73678461f179243bba7770c3fe969eb9421bfdebaa3f6d2 ...
+removed validator 0xb64a5f7018a701a52f0c41e3a564830c7a430064 : 0xe94b57fff20278d2b73678461f179243bba7770c3fe969eb9421bfdebaa3f6d2
+adding : 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Waiting 1 block confirmations for tx 0xc4c8249f4c1ea5779cd30d33f482efb6b56a828993f4a4a55ebe74f2c153c9cb ...
+addOraclesTx : 0xc4c8249f4c1ea5779cd30d33f482efb6b56a828993f4a4a55ebe74f2c153c9cb
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x030578b16457b9ed4302ddd46f1e6567986460fd
+found validator in contract: 0x6d275d56650316bd672e5b22359c5aceb02d6d76
+found validator in contract: 0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+
+
+
+
+
+
+********************************************************************************
+ npx hardhat deploy --tags 14_add_validators --network arethtest
+********************************************************************************
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 14_add_validators --network arethtest
+Nothing to compile
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+********************************************************************************
+new validators  12: 0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b,0x4da594b739611574663aea3edddc428e00c48fe1,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Deployer has DEFAULT_ADMIN_ROLE
+Contract version: 101
+found validator in contract: 0x36df730f53f287f4831d25e29240de6bdb840ab5
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+existValidators: 0x36df730f53f287f4831d25e29240de6bdb840ab5,0x3491a1d6653ca366df83a71b9b9922b5a164118c,0x4da594b739611574663aea3edddc428e00c48fe1,0x185f65aee9609804de01a02b25655b02f57e8f19,0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9,0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f,0x9ae654858b3089535a8aa028ef663f8b218d8796,0xb64a5f7018a701a52f0c41e3a564830c7a430064,0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd,0x1e69be715025e6bb6d8d651674ffc39cc85fb94f,0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+validatorsForAdd: 3: 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+validatorsForRemove: 2: 0x36df730f53f287f4831d25e29240de6bdb840ab5,0xb64a5f7018a701a52f0c41e3a564830c7a430064
+newMinConfirmation: 7
+old MinConfirmations : 6
+Waiting 1 block confirmations for tx 0x44b6466c4d78a025897b6cf59262493e6ef5f84b609c04fb4aafca65e3913661 ...
+setMinConfirmationsTx : 0x44b6466c4d78a025897b6cf59262493e6ef5f84b609c04fb4aafca65e3913661
+after update minConfirmations: 7
+removing : 0x36df730f53f287f4831d25e29240de6bdb840ab5
+Waiting 1 block confirmations for tx 0x6f531e09475606a3f1dcb889b33b979b72a33daf38865d0da2f75a881a34d856 ...
+removed validator 0x36df730f53f287f4831d25e29240de6bdb840ab5 : 0x6f531e09475606a3f1dcb889b33b979b72a33daf38865d0da2f75a881a34d856
+removing : 0xb64a5f7018a701a52f0c41e3a564830c7a430064
+Waiting 1 block confirmations for tx 0x4a92f2eaa850ec9b391835d60dae1120cc82bd62cb08513d9e15405835a760c4 ...
+removed validator 0xb64a5f7018a701a52f0c41e3a564830c7a430064 : 0x4a92f2eaa850ec9b391835d60dae1120cc82bd62cb08513d9e15405835a760c4
+adding : 0x030578b16457b9ed4302ddd46f1e6567986460fd,0x6d275d56650316bd672e5b22359c5aceb02d6d76,0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
+Waiting 1 block confirmations for tx 0x43fafbb268381570a8c7daa223a2a2716094f678f401d58a31f3e7f1fbbbf87e ...
+addOraclesTx : 0x43fafbb268381570a8c7daa223a2a2716094f678f401d58a31f3e7f1fbbbf87e
+found validator in contract: 0xb92958ae539f32e2d03d08d27dfa93104ac9466b
+found validator in contract: 0x3491a1d6653ca366df83a71b9b9922b5a164118c
+found validator in contract: 0x4da594b739611574663aea3edddc428e00c48fe1
+found validator in contract: 0x185f65aee9609804de01a02b25655b02f57e8f19
+found validator in contract: 0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9
+found validator in contract: 0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f
+found validator in contract: 0x9ae654858b3089535a8aa028ef663f8b218d8796
+found validator in contract: 0x1e69be715025e6bb6d8d651674ffc39cc85fb94f
+found validator in contract: 0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd
+found validator in contract: 0x030578b16457b9ed4302ddd46f1e6567986460fd
+found validator in contract: 0x6d275d56650316bd672e5b22359c5aceb02d6d76
+found validator in contract: 0x3c9e24ab4bb6236c54f229058c1ba35c561f90ae
