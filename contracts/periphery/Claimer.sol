@@ -45,6 +45,13 @@ contract Claimer is
         bytes signatures;
     }
 
+    /* ========== EVENTS ========== */
+
+    event BatchError(
+        uint256 index
+    );
+
+
     /* ========== CONSTRUCTOR  ========== */
 
     function initialize(
@@ -70,7 +77,9 @@ contract Claimer is
                     claim.signatures,
                     claim.autoParams)
             { }
-            catch {}
+            catch {
+                emit BatchError(i);
+            }
         }
     }
 
@@ -88,7 +97,9 @@ contract Claimer is
                 deploy.decimals,
                 deploy.signatures)
             { }
-            catch {}
+            catch {
+                emit BatchError(i);
+            }
         }
     }
 

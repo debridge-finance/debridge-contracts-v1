@@ -268,10 +268,16 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       }
 
       // deploy first token
-      await this.claimer.batchAssetsDeploy([batchDeploys[0]], {from: alice});
+      await expect(
+        this.claimer.batchAssetsDeploy([batchDeploys[0]], {from: alice})
+      ).to.not.emit(this.claimer, "BatchError");
 
       // Should not fall if the token has already been deployed
-      await this.claimer.batchAssetsDeploy(batchDeploys, {from: alice});
+      await expect(
+        this.claimer.batchAssetsDeploy(batchDeploys, {from: alice})
+      )
+        .to.emit(this.claimer, "BatchError")
+        .withArgs(0);
 
       for (let tokenAddress of tokenAddresses) {
         const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
@@ -376,18 +382,16 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       }
 
       //claim first request
-      await this.claimer.batchClaim(
-        [batchClaims[0]],
-        {
-          from: alice,
-        });
+      await expect(
+        this.claimer.batchClaim([batchClaims[0]], {from: alice})
+      ).to.not.emit(this.claimer, "BatchError");
 
       // Should not fall if the submission has already been claimed
-      await this.claimer.batchClaim(
-        batchClaims,
-        {
-          from: alice,
-        });
+      await expect(
+        this.claimer.batchClaim(batchClaims, {from: alice})
+      )
+        .to.emit(this.claimer, "BatchError")
+        .withArgs(0);
     });
 
     it("isSubmissionsUsed() should return true for claimed submissions", async function () {
