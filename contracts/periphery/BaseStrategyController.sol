@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IStrategy.sol";
 
 abstract contract BaseStrategyController is IStrategy {
@@ -30,7 +31,6 @@ abstract contract BaseStrategyController is IStrategy {
         address rewardToken;
         uint256 totalShares;
         uint256 totalReserves;
-        uint256 rewards;
         mapping(address => Validator) validators;
         bool isEnabled;
         bool exists;
@@ -45,21 +45,13 @@ abstract contract BaseStrategyController is IStrategy {
         return strategies[_collateral].strategyToken;
     }
 
-    function calculateShares(address _collateral, uint256 _amount) external view override returns (uint256) {
-        return _calculateShares(_collateral, _amount);
-    }
-
     function _calculateShares(address _collateral, uint256 _amount) internal view returns (uint256) {
-        Strategy storage strategy = strategies[_collateral];
-        if (strategy.totalReserves > 0) {
-            return (_amount * strategy.totalShares) / strategy.totalReserves;
+        uint256 totalReserves = _totalReserves(_collateral);
+        if (totalReserves > 0) {
+            return (_amount * strategies[_collateral].totalShares) / totalReserves;
         } else {
             return _amount;
         }
-    }
-
-    function calculateFromShares(address _collateral, uint256 _shares) external view override returns (uint256) {
-        return _calculateFromShares(_collateral, _shares);
     }
 
     function _calculateFromShares(address _collateral, uint256 _shares) internal view returns (uint256) {
@@ -107,13 +99,12 @@ abstract contract BaseStrategyController is IStrategy {
         return strategies[_collateral].totalShares;
     }
 
-    function rewards(address _collateral) external view override returns (uint256) {
-        return strategies[_collateral].rewards;
+    function totalReserves(address _collateral) external view override returns (uint256) {
+        return _totalReserves(_collateral);
     }
 
-    function totalReserves(address _collateral) external view override returns (uint256) {
-        // TODO: replace with ERC20.balanceOf(_collateral) + UnderlyingReserves
-        return strategies[_collateral].totalReserves;
+    function _totalReserves(address _collateral) internal view returns (uint256) {
+        return IERC20(_collateral).balanceOf(address(this)) + 
     }
 
     function isEnabled(address _collateral) external view override returns (bool) {
@@ -216,7 +207,7 @@ abstract contract BaseStrategyController is IStrategy {
         uint256 _sShares = (percentageToWithdraw * delegator.sShares) / denominator;
         
         uint256 amountToBePaid = _calculateFromShares(_collateral, _sShares);
-        _withdraw(_collateral, amount);
+        _withdraw(_collateral, amountToBePaid);
         uint256 amountToBeUnlocked = (percentageToWithdraw * delegator.lockedReserves) / denominator;
 
         delegator.sShares -= _sShares;
