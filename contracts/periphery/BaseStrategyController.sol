@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IStrategy.sol";
 
 abstract contract BaseStrategyController is IStrategy {
@@ -11,8 +10,14 @@ abstract contract BaseStrategyController is IStrategy {
     error MethodNotImplemented();
 
     struct Validator {
-        uint256 shares;
-        mapping(address => uint256) delegatorShares;
+        uint256 sShares;
+        mapping(address => Delegator) delegators;
+    }
+
+    struct Delegator {
+        uint256 sShares;
+        uint256 lockedShares;
+        uint256 lockedReserves;
     }
 
     struct Strategy {
@@ -73,7 +78,7 @@ abstract contract BaseStrategyController is IStrategy {
         address _validator,
         address _delegator
     ) internal view returns (uint256) {
-        return strategies[_collateral].validators[_validator].delegatorShares[_delegator];
+        return strategies[_collateral].validators[_validator].delegators[_delegator].sShares;
     }
 
     function validatorShares(address _collateral, address _validator)
@@ -90,7 +95,7 @@ abstract contract BaseStrategyController is IStrategy {
         view
         returns (uint256)
     {
-        return strategies[_collateral].validators[_validator].shares;
+        return strategies[_collateral].validators[_validator].sShares;
     }
 
     function totalShares(address _collateral) external view override returns (uint256) {
@@ -149,7 +154,7 @@ abstract contract BaseStrategyController is IStrategy {
         uint256 _slashingFraction
     ) external override returns(uint256) {
         uint256 _shares = _validatorShares(_collateral, _validator) * _slashingFraction;
-        strategies[_collateral].validators[_validator].shares -= _shares;
+        strategies[_collateral].validators[_validator].sShares -= _shares;
         // TODO
         //uint256 collateralAmount = calculateFromShares(_collateral, _shares);
         //withdraw(_collateral, _validator, collateralAmount, msg.sender);
@@ -163,8 +168,8 @@ abstract contract BaseStrategyController is IStrategy {
         uint256 _slashingFraction
     ) external override returns(uint256) {
         uint256 _shares = _delegatorShares(_collateral, _validator, _delegator) * _slashingFraction;
-        strategies[_collateral].validators[_validator].delegatorShares[_delegator] -= _shares;
-        strategies[_collateral].validators[_validator].shares -= _shares;
+        strategies[_collateral].validators[_validator].delegators[_delegator].sShares -= _shares;
+        strategies[_collateral].validators[_validator].sShares -= _shares;
         // TODO
         //uint256 collateralAmount = calculateFromShares(_collateral, _shares);
         //withdraw(_collateral, _validator, collateralAmount, msg.sender);
@@ -181,22 +186,35 @@ abstract contract BaseStrategyController is IStrategy {
         revert MethodNotImplemented(); // assumed to be overriden in imlementation contracts
     }
 
-    function deposit(address _collateral, address _validator, uint256 _amount) external override {
+    function deposit(address _collateral, address _validator, address _recipient, uint256 _shares, uint256 _amount) external override {
         _deposit(_collateral, _amount);
-        uint256 shares = _calculateShares(_collateral, _amount);
+        uint256 _sShares = _calculateShares(_collateral, _amount);
         Strategy storage strategy = strategies[_collateral];
-        strategy.validators[_validator].delegatorShares[msg.sender] += shares;
-        strategy.validators[_validator].shares += shares;
-        strategy.totalShares += shares;
+        Delegator storage delegator = validators[_validator].delegators[_recipient];
+        delegator.sShares += _sShares;
+        delegator.lockedShares += _shares;
+        delegator.lockedReserves += _amount;
+
+        strategy.validators[_validator].shares += _sShares;
+        strategy.totalShares += _sShares;
         strategy.totalReserves += _amount;
     }
 
-    function withdraw(address _collateral, address _validator, uint256 _shares) external override {
-        uint256 amount = _calculateFromShares(_collateral, _shares);
-        _withdraw(_collateral, amount);
-        
+    function withdraw(address _collateral, address _validator, address _recipient, uint256 _shares) external override {
         Strategy storage strategy = strategies[_collateral];
-        strategy.validators[_validator].delegatorShares[msg.sender] -= _shares;
+        Delegator storage delegator = validators[_validator].delegators[_recipient];
+        require(_shares >= delegator.lockedShares, "not enough locked shares");
+        uint256 percentageToWithdraw = _shares / delegator.lockedShares;
+        uint256 _sShares = percentageToWithdraw * delegator.sShares;
+        
+        uint256 amount = _calculateFromShares(_collateral, _sShares);
+        _withdraw(_collateral, amount);
+        uint256 lockedAmount = percentageToWithdraw * delegator.lockedReserves;
+
+        delegator.shares -= _sShares;
+        delegator.lockedShares += _shares;
+        delegator.lockedReserves += _amount;
+
         strategy.validators[_validator].shares -= _shares;
         strategy.totalShares -= _shares;
         strategy.totalReserves -= amount;
