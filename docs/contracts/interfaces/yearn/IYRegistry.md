@@ -1,0 +1,16 @@
+## `IYRegistry`
+
+
+
+
+
+
+### `getVaults() → address[]` (external)
+
+
+
+
+
+
+
+
