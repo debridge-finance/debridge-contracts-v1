@@ -31,7 +31,7 @@ store structure
 async function _readStore() {
   try {
     const data = await fs.promises.readFile(PROXIES_STORE);
-    if (data == "") {
+    if (data === "") {
       // empty store
       return {}
     } else {
@@ -99,23 +99,41 @@ async function deleteProxyDeployment(Factory, proxy_address) {
 }
 
 async function upgradeProxy(contractName, contractAddress, deployer) {
-  console.log(`\n*** Upgrade proxy for ${contractName} ***`);
+  console.log(`\n*** Upgrading proxy for ${contractName} ***`);
+  console.log('\tAddress: ', contractAddress);
   console.log('\tSigner: ', deployer);
+
+  const implementation = await getImplementationAddress(hre.ethers.provider, contractAddress)
+  console.log('\tCurrent implementation address:', implementation);
 
   const Factory = await hre.ethers.getContractFactory(contractName, deployer);
 
-  // real deploy
+  if (Factory.interface.functions['version()']) {
+    const currentProxy = await Factory.attach(contractAddress);
+    const version = await currentProxy.version();
+    console.log(`\tCurrent implementation version: ${version}`);
+  }
+
   const proxy = await hre.upgrades.upgradeProxy(contractAddress, Factory);
   const receipt = await proxy.deployed();
 
   // manual await for deploy transaction to prevent errors during deployment
   await waitTx(receipt.deployTransaction);
 
-  await saveProxyDeployment(Factory, proxy, {});
+  const newImplementation = await getImplementationAddress(hre.ethers.provider, contractAddress)
 
-  const implementation = await getImplementationAddress(hre.ethers.provider, proxy.address)
-  console.log('\tImplementation address:', implementation);
-  console.log('\tNew proxy deployed: ', proxy.address);
+  if (implementation !== newImplementation) {
+    console.log('\tProxy successfully upgraded!')
+    console.log('\tNew implementation address:', newImplementation);
+    if (proxy.version) {
+      const version = await proxy.version();
+      console.log(`\tNew implementation version: ${version}`);
+    }
+  } else {
+    console.log('\tImplementation doesn\'t changed!')
+  }
+
+  await saveProxyDeployment(Factory, proxy, {});
 
   return {
     contract: proxy,
@@ -167,6 +185,11 @@ async function deployProxy(contractName, deployer, args, reuseProxy) {
   const implementation = await getImplementationAddress(hre.ethers.provider, proxy.address)
   console.log('\tImplementation address:', implementation);
   console.log('\tNew proxy deployed: ', proxy.address);
+
+  if (proxy.version) {
+    const version = await proxy.version();
+    console.log(`\tNew proxy version: ${version}`);
+  }
 
   return {
     contract: proxy,

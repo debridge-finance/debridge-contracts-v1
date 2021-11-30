@@ -32,7 +32,9 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize() public initializer {
+    function initialize(IDeBridgeGate _debridgeGate, address _treasury) public initializer {
+        debridgeGate = _debridgeGate;
+        treasury = _treasury;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -42,7 +44,7 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
         _pause();
     }
 
-    function unpause() external onlyAdmin whenPaused {
+    function unpause() external onlyAdmin {
         _unpause();
     }
 
@@ -120,6 +122,6 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 102; // 1.0.2
     }
 }

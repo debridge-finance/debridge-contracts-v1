@@ -96,7 +96,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
             revert NotConfirmedByRequiredOracles();
 
         if (confirmations >= minConfirmations) {
-            // TODO: don't update state when verifying new asset deploy
             if (currentBlock == uint40(block.number)) {
                 submissionsInBlock += 1;
             } else {
