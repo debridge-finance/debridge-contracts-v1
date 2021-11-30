@@ -1,0 +1,583 @@
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_upgrade_testnet_29.11 --network kovan
+Compiling 120 files with 0.8.7
+Generating typings for: 121 artifacts in dir: typechain-types for target: ethers-v5
+Successfully generated 212 typings!
+Compilation finished successfully
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x0ca97cb9ebfe32f6ec30abe06901cdf0c317a34398a1f42cf04b4837c3eb1e98 ...
+        Implementation address: 0x3D1AEe342a50E1DC6b8ACB72Cf48905288255fc4
+        New proxy deployed:  0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC
+        New proxy version: 102
+1.1 Set new deployed SimpleFeeProxy in DebridgeGate - Calling DeBridgeGate.setFeeProxy(0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC)
+Waiting 1 block confirmations for tx 0x22d0a9be34cfc28da3a7ba39c5ecaadb5e4ab3459804e941e7e52c494187afc6 ...
+2. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0xc22a5d1b0155113C2ABbbf59aC71ef04E6d89a07
+        Current implementation version: 110
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_upgrade_testnet_29.11.js:
+Error: New storage layout is incompatible
+
+contracts\transfers\DeBridgeGate.sol:44: Renamed `confirmationAggregator` to `confirmationAggregatorObsolete`
+
+contracts\transfers\DeBridgeGate.sol:49: Renamed `callProxyAddresses` to `callProxyAddressesObsolete`
+
+contracts\transfers\DeBridgeGate.sol:55: Renamed `getChainSupport` to `getChainToConfig`
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_upgrade_testnet_29.11 --network kovan
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  1
+        Implementation address: 0x3D1AEe342a50E1DC6b8ACB72Cf48905288255fc4
+        Reuse Proxy with address: 0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC
+2. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0xc22a5d1b0155113C2ABbbf59aC71ef04E6d89a07
+        Current implementation version: 110
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_upgrade_testnet_29.11.js:
+Error: transaction failed (transactionHash="0xb797c6942f94721f00eccbc97719a6e8eb679e99793a768dd75dd70ab3ad2821", transaction={"hash":"0xb797c6942f94721f0e8eb679e99793a768dd75dd70ab3ad2821","type":0,"accessList":null,"blockHash":null,"blockNumber":null,"transactionIndex":null,"confirmations":0,"from":"0xB457d3ef24E51178A6b307C96EB","gasPrice":{"type":"BigNumber","hex":"0xb2d05e00"},"gasLimit":{"type":"BigNumber","hex":"0x5a64f8"},"to":"0x968Fe2BFcc21ce899a002FF73c3","value":{"type":"BigNumber","hex":"0x00"},"nonce":29,"data":"0x99a88ec400000000000000000000000068d936cb4723bdd38c488fd50514803f96789d2d00000000000741ce8471fa2b7b60637171f4a23e99fd5319f59","r":"0x59b6491ec717a9b6c7e01fab04bf0a5bf36da88dc3e00a22d48c66f362e882ed","s":"0x6253647e71ee24331465c00373708bfb34cf559452436a31fbc","v":119,"creates":null,"raw":"0xf8a91d84b2d05e00835a64f894968fe2bfcc21ce899a06696bb9d2faf002ff73c380b84499a88ec400000000000000036cb4723bdd38c488fd50514803f96789d2d000000000000000000000000741ce8471fa2b7b60637171f4a23e99fd5319f5977a059b6491ec717a9b6c7e01fab04bf0a5bf36da88dc3e00a22deda06253647e71ee24331465c003737c916fb78fe4c808bfb34cf559452436a31fbc","chainId":42}, receipt={"to":"0x968Fe2BFcc21ce899a06696bb9d2fAF002FF73c3","from":"058B57d3ef24E51178A6b307C96EB","contractAddress":null,"transactionIndex":3,"gasUsed":{"type":"BigNumber","hex":"0x5fa4"},"logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","b826cdadbf93a8df4dd2e72834512a61b5c84868880b5e2a407e6da161c52a541","transactionHash":"0xb797c6942f94721f00eccbc97719a6e8eb679e99793a768dd75dd70ab3ad2821",ockNumber":28592058,"confirmations":1,"cumulativeGasUsed":{"type":"BigNumber","hex":"0x0f54f4"},"effectiveGasPrice":{"type":"BigNumber","hex":"0xb2d05e00,"type":0,"byzantium":true}, code=CALL_EXCEPTION, version=providers/5.4.5)
+    at Logger.makeError (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\logger\src.ts\index.ts:225:28)
+    at Logger.throwError (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\logger\src.ts\index.ts:237:20)
+    at EthersProviderWrapper.<anonymous> (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\src.ts\base-provider.ts:1198:2
+    at step (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\lib\base-provider.js:48:23)
+    at Object.next (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\lib\base-provider.js:29:53)
+    at fulfilled (D:\Projects\Debridge\debridge-contracts-v1\node_modules\@ethersproject\providers\lib\base-provider.js:20:58)
+    at DeploymentsManager.executeDeployScripts (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\DeploymentsManager.ts:1076:19)
+    at async DeploymentsManager.runDeploy (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\DeploymentsManager.ts:906:5)
+    at async Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:217
+    at async Environment.run (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at async SimpleTaskDefinition.action (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat-deploy\src\index.ts:544:32)
+
+    at async Environment._runTaskDefinition (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at async Environment.run (D:\Projects\Debridge\debridge-contracts-v1\node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+-------------------
+deployed from 0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+-------------------
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network kovan
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0x3B38786685c4Fd6bC3E685086fC7f086BC254864
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x19fdc42d996066934c077f3b55abd22a97b7ce3db49239e152b2f740d13e8224 ...
+        Implementation address: 0x3D1AEe342a50E1DC6b8ACB72Cf48905288255fc4
+        New proxy deployed:  0x2F3c9FbC3353D8c106EC8afb550492eeAB664494
+        New proxy version: 102
+1.1 Set new deployed SimpleFeeProxy in DebridgeGate - Calling DeBridgeGate.setFeeProxy(0x2F3c9FbC3353D8c106EC8afb550492eeAB664494)
+Waiting 1 block confirmations for tx 0xcfd3975911324da0f603b00a7d44a7f1baa041320605405c509ef2899d86dad4 ...
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_2_upgrade_testnet_29.11.js:
+Error: transaction failed (transactionHash="0xcfd3975911324da0f603b00a7d44a7f1baa041320605405c509ef2899d86dad4", transaction={"hash":"0xcfd3975911324da0f603b00a7d44a7f1baa041320605405c509ef2899d86dad4","type":0,"accessList":null,"blockHash":null,"blockNumber":null,"transactionIndex":null,"confirmations":0,"from":"0x3B38786685c4Fd6bC3E685086fC7f086BC254864","gasPrice":{"type":"BigNumber","hex":"0xb2d05e00"},"gasLimit":{"type":"BigNumber","hex":"0x5a5f78"},"to":"0x68D936Cb4723BdD38C488FD50514803f96789d2D","value":{"type":"BigNumber","hex":"0x00"},"nonce":42,"data":"0x25be0be10000000000000000000000002f3c9fbc3353d8c106ec8afb550492eeab664494","r":"0xe2fc50d3df97235a729fd3b2ff74087f504f2035f4399a7606453a308c0c2507","s":"0x668baa09512cc1185ecef6938ee954638aec0a4075a4d4b270d8921f71b1b06b","v":120,"creates":null,"raw":"0xf8882a84b2d05e00835a5f789468d936cb4723bdd38c488fd50514803f96789d2d80a425be0be10000000000000000000000002f3c9fbc3353d8c106ec8afb550492eeab66449478a0e2fc50d3df97235a729fd3b2ff74087f504f2035f4399a7606453a308c0c2507a0668baa09512cc1185ecef6938ee954638aec0a4075a4d4b270d8921f71b1b06b","chainId":42}, receipt={"to":"0x68D936Cb4723BdD38C488FD50514803f96789d2D","from":"0x3B38786685c4Fd6bC3E685086fC7f086BC254864","contractAddress":null,"transactionIndex":6,"gasUsed":{"type":"BigNumber","hex":"0x7b2b"},"logsBloom":"0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","blockHash":"0x8a8fd5be6320eaa268b5197778b737b56187af754c720525fd990dd05f019422","transactionHash":"0xcfd3975911324da0f603b00a7d44a7f1baa041320605405c509ef2899d86dad4","logs":[],"blockNumber":28592453,"confirmations":1,"cumulativeGasUsed":{"type":"BigNumber","hex":"0x1cfd18"},"effectiveGasPrice":{"type":"BigNumber","hex":"0xb2d05e00"},"status":0,"type":0,"byzantium":true}, code=CALL_EXCEPTION, version=providers/5.4.5)
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network kovan
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  1
+        Implementation address: 0x3D1AEe342a50E1DC6b8ACB72Cf48905288255fc4
+        Reuse Proxy with address: 0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC
+2. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0xc22a5d1b0155113C2ABbbf59aC71ef04E6d89a07
+        Current implementation version: 110
+Waiting 1 block confirmations for tx 0xe21483efda61c92529a058ba4f05685bd99c95a017b1151d9779157371689118 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x741CE8471fa2b7b60637171F4a23E99fD5319f59
+        New implementation version: 121
+2.1 Update getChainFromConfig mapping - Calling DeBridgeGate.updateChainSupport
+chainIds:  [ 97, 256, 421611, 80001 ]
+chainSupportInfo:  [
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0xfb09be8e6565496d47b5161b8a91243b41249b5157aee7cda924d30f4b91d3c7 ...
+3. Upgrade CallProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        Current implementation version: 102
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_2_upgrade_testnet_29.11.js:
+Error: New storage layout is incompatible
+
+contracts\periphery\CallProxy.sol:18: Renamed `variation` to `submissionChainIdFrom`
+
+--------------
+After fix call proxy name variation
+--------------
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network kovan
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+3. Upgrade CallProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        Current implementation version: 102
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_2_upgrade_testnet_29.11.js:
+Error: insufficient funds for intrinsic transaction cost
+
+
+------------------------
+refill balance
+------------------------
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network kovan
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+3. Upgrade CallProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        Current implementation version: 102
+Waiting 1 block confirmations for tx 0x0fa9970c9232f2c3ea8574de75642b6ab1bd119fb5193090c6c6c517d597b22d ...
+        Proxy successfully upgraded!
+        New implementation address: 0x7C11AAF602BB87cd70C1aC5297E083766FC0BC3E
+        New implementation version: 120
+3.1 Set CallProxy in DebridgeGate - Calling DeBridgeGate.setCallProxy(0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669)
+Waiting 1 block confirmations for tx 0xa6a156d0934a081fd8b7bdb854bad817f71112e1310bbecaa1667eb24b533019 ...
+4. Deploy WethGate
+deploying "WethGate" (tx: 0x8459fc7fe1f344ecde0bc6a9929f04016d8c583ef8be401ba0c4e91d72633023)...: deployed at 0x2deb3F4773649FC87a8D1aCe97633424c35F053c with 224916 gas
+4.1 Set WethGate in DebridgeGate - Calling DeBridgeGate.setWethGate(0x2deb3F4773649FC87a8D1aCe97633424c35F053c)
+Waiting 1 block confirmations for tx 0x06b617df802675a3351058000e57886a029f91df36d2962e54cd68d9b75b3761 ...
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------
+END kovan
+----------------------------------------------------------------------------------------------------------------------
+
+
+
+----------------------------------------------------------------------------------------------------------------------
+START BSC
+----------------------------------------------------------------------------------------------------------------------
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network bsctest
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x43ebe4da741617911537936e8f9f1c4368573dd89d6499d1aa62f4516372a03c ...
+        Implementation address: 0x5879389f462EfB8184F6B694F5396A209198c628
+        New proxy deployed:  0xbd5462e24a3dd2d8553e2D6f6F9093fa809ad398
+        New proxy version: 102
+1.1 Set new deployed SimpleFeeProxy in DebridgeGate - Calling DeBridgeGate.setFeeProxy(0xbd5462e24a3dd2d8553e2D6f6F9093fa809ad398)
+Waiting 1 block confirmations for tx 0xbd699ef601b4b46fd8722570ab799b838a7a947ecc8dfa2220d8091098c05ea0 ...
+2. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0xd5a4a3F2896DB44FBf4598f8d6Af9FBc28A687b4
+        Current implementation version: 110
+Waiting 1 block confirmations for tx 0xabcd956369f67a9346201f916104d5de34b18ea8becb8e0f96f45ea8e82d3f9f ...
+        Proxy successfully upgraded!
+        New implementation address: 0x6ecd0D89eF36411D277F6244EE6e67dAb59ee8F3
+        New implementation version: 121
+2.1 Update getChainFromConfig mapping - Calling DeBridgeGate.updateChainSupport
+chainIds:  [ 256, 42, 421611, 80001 ]
+chainSupportInfo:  [
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0xe51b803c736258ea39bdd7cf7db9a4a14acaa9001de70174efe11f55d14bb4ff ...
+3. Upgrade CallProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        Current implementation version: 102
+Waiting 1 block confirmations for tx 0x32b8cdb69ac3f984e42d5f8de02781f9cdf436049cdb39e56a1d52502f0ac71e ...
+        Proxy successfully upgraded!
+        New implementation address: 0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC
+        New implementation version: 120
+3.1 Set CallProxy in DebridgeGate - Calling DeBridgeGate.setCallProxy(0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669)
+Waiting 1 block confirmations for tx 0x0054c435dc857596d28e350110edaf90b02687d1a2b1fd4182d81c348776dfd9 ...
+4. Deploy WethGate
+deploying "WethGate" (tx: 0x63513b18e9522b383a7174d0f1e15355f758931055bfa6ab60f7f93b5b873970)...: deployed at 0x9186806F7cB8Cc4FC63C47B7EC4E70360D08B61d with 223616 gas
+4.1 Set WethGate in DebridgeGate - Calling DeBridgeGate.setWethGate(0x9186806F7cB8Cc4FC63C47B7EC4E70360D08B61d)
+Waiting 1 block confirmations for tx 0x3008d0cffb36e5da842b724ca90994d990aa251939081188112e77aa9f497b9b ...
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+----------------------------------------------------------------------------------------------------------------------
+START HECO
+----------------------------------------------------------------------------------------------------------------------
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network hecotest
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_2_upgrade_testnet_29.11.js:
+FetchError: request to https://http-testnet.hecochain.com/ failed, reason: write EPROTO 42196:error:1409442E:SSL routines:ssl3_read_bytes:tlsv1 alert protocol version:c:\ws\deps\openssl\openssl\ssl\record\rec_layer_s3.c:1546:SSL alert number 70
+----
+but transaction was broadcasted
+https://testnet.hecoinfo.com/tx/0x6bc9e2bc8773be4aa9d97db4cbe69337b1c81d958b4db17cce57eea91e35f48c
+0x477589354476f8fcaee975cad0a1f30ae98d139b implementation of SimpleFeeProxy
+---
+
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network hecotest
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xb9fc136efa35c66de40b06b8f9e6738fd85b3a876b23de1d3951b6ca2a63aa19 ...
+        Implementation address: 0x477589354476F8FCAEe975CAD0a1F30aE98d139B
+        New proxy deployed:  0x6ecd0D89eF36411D277F6244EE6e67dAb59ee8F3
+        New proxy version: 102
+1.1 Set new deployed SimpleFeeProxy in DebridgeGate - Calling DeBridgeGate.setFeeProxy(0x6ecd0D89eF36411D277F6244EE6e67dAb59ee8F3)
+Waiting 1 block confirmations for tx 0x9c489cc17cc2dce3d9e127e9b2585056d489624c2db9eef464f309b1be121b55 ...
+2. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0xc22a5d1b0155113C2ABbbf59aC71ef04E6d89a07
+        Current implementation version: 110
+Waiting 1 block confirmations for tx 0x8adebda483600b861b90172ffbd925d572902178587aea5525d13b2107ea32ed ...
+        Proxy successfully upgraded!
+        New implementation address: 0x3D1AEe342a50E1DC6b8ACB72Cf48905288255fc4
+        New implementation version: 121
+2.1 Update getChainFromConfig mapping - Calling DeBridgeGate.updateChainSupport
+chainIds:  [ 97, 42, 421611, 80001 ]
+chainSupportInfo:  [
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0xe02ba33a0ffc89a320e82367869a716e5e883aa264504803f50e41d871419752 ...
+3. Upgrade CallProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        Current implementation version: 102
+Waiting 1 block confirmations for tx 0x9a5785907e01a7a16cc440ea326fa6a61bb8f26c38c9c372121ddf4eff7c130b ...
+        Proxy successfully upgraded!
+        New implementation address: 0x741CE8471fa2b7b60637171F4a23E99fD5319f59
+        New implementation version: 120
+3.1 Set CallProxy in DebridgeGate - Calling DeBridgeGate.setCallProxy(0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669)
+Waiting 1 block confirmations for tx 0x6448d60edd4bffb594a4005723c5feadf02b48b4968d0fa335a9164a271f3925 ...
+4. Deploy WethGate
+deploying "WethGate" (tx: 0x7e4a7014dfbf0afb6a89591b9ad415b2df8d26193d57b336d529f8f4fc7c69d1)...: deployed at 0x1Bf8d2c5467e4a41BF7b4B7F7579D16BcFEb131F
+with 224916 gas
+4.1 Set WethGate in DebridgeGate - Calling DeBridgeGate.setWethGate(0x1Bf8d2c5467e4a41BF7b4B7F7579D16BcFEb131F)
+Waiting 1 block confirmations for tx 0x468fd7f8f7679d8d3a7f9ff85dd4ab0b9a91576fd7f4e69aaeb69e75bedf54f7 ...
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+----------------------------------------------------------------------------------------------------------------------
+START MUMBAI
+----------------------------------------------------------------------------------------------------------------------
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network mumbai
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x805a81f2b363679165f16f4dcb873760d22ec8e5863ed7f99a3b637f8543f00a ...
+        Implementation address: 0xC0a3583028BF1897872da49bF5517eb1573d0552
+        New proxy deployed:  0x684f8cc023e13FD0aD15C65F11811C3Cb87B5051
+        New proxy version: 102
+1.1 Set new deployed SimpleFeeProxy in DebridgeGate - Calling DeBridgeGate.setFeeProxy(0x684f8cc023e13FD0aD15C65F11811C3Cb87B5051)
+Waiting 1 block confirmations for tx 0x7e6de9a4b6562589f2fb902a3f54f6689284a143c93ada26d17202467b144215 ...
+2. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0xd5a4a3F2896DB44FBf4598f8d6Af9FBc28A687b4
+        Current implementation version: 110
+Waiting 1 block confirmations for tx 0xc2c35e809e2d611929cbb995ab9cf90550b6c3fcb9578872d662b4bde2af007c ...
+        Proxy successfully upgraded!
+        New implementation address: 0x5879389f462EfB8184F6B694F5396A209198c628
+        New implementation version: 121
+2.1 Update getChainFromConfig mapping - Calling DeBridgeGate.updateChainSupport
+chainIds:  [ 256, 42, 97, 421611 ]
+chainSupportInfo:  [
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0x58399ba9f774c6912d299d1670c873a4a44ce17926e329d98dcb2c5920fe9f4a ...
+3. Upgrade CallProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        Current implementation version: 102
+Waiting 1 block confirmations for tx 0xa79295906b0b8907bc8a453c3caf71692c024c08cedd37445383c0d0b4d1c62b ...
+        Proxy successfully upgraded!
+        New implementation address: 0x6ecd0D89eF36411D277F6244EE6e67dAb59ee8F3
+        New implementation version: 120
+3.1 Set CallProxy in DebridgeGate - Calling DeBridgeGate.setCallProxy(0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669)
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_2_upgrade_testnet_29.11.js:
+HardhatError: HH109: Network connection timed out.
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network mumbai
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+3.1 Set CallProxy in DebridgeGate - Calling DeBridgeGate.setCallProxy(0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669)
+Waiting 1 block confirmations for tx 0x9b06ec839c13a48813038698fca6298eb7f508b5db64ef8fec3a0b3520a22210 ...
+4. Deploy WethGate
+deploying "WethGate" (tx: 0xa984d14b55e06bfa04f3c53163ef8e62921efd21bee8625754b15ee68b32df2a)...: deployed at 0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC
+with 224916 gas
+4.1 Set WethGate in DebridgeGate - Calling DeBridgeGate.setWethGate(0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC)
+Waiting 1 block confirmations for tx 0x9e6545d828c91c9e3c0d68c5bbf4177748d94b2df604ee8cde4752d7599b793d ...
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+----------------------------------------------------------------------------------------------------------------------
+START ARBITRUM
+----------------------------------------------------------------------------------------------------------------------
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network arethtest
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\16_2_upgrade_testnet_29.11.js:
+FetchError: request to https://rinkeby.arbitrum.io/rpc failed, reason: write EPROTO 60888:error:04091068:rsa routines:int_rsa_verify:bad signature:c:\ws\deps\openssl\openssl\crypto\rsa\rsa_sign.c:220:
+60888:error:1416D07B:SSL routines:tls_process_key_exchange:bad signature:c:\ws\deps\openssl\openssl\ssl\statem\statem_clnt.c:2416:
+
+
+------
+but transaction was broadcasted
+https://testnet.arbiscan.io/tx/0x3215c91bcbf9c1c1cdaf1eed6afd568b628d448422814687434bf115bd28c745
+------
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 16_2_upgrade_testnet_29.11 --network arethtest
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        16_upgrade_testnet_29.11
+********************************************************************************
+1. Deploy SimpleFeeProxy
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Args:  [
+  '0x68D936Cb4723BdD38C488FD50514803f96789d2D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xc5364dabf895f271a47550357bdf8ae26d19655c04d241d8b6f6b30f362bb248 ...
+        Implementation address: 0xC0a3583028BF1897872da49bF5517eb1573d0552
+        New proxy deployed:  0x684f8cc023e13FD0aD15C65F11811C3Cb87B5051
+        New proxy version: 102
+1.1 Set new deployed SimpleFeeProxy in DebridgeGate - Calling DeBridgeGate.setFeeProxy(0x684f8cc023e13FD0aD15C65F11811C3Cb87B5051)
+Waiting 1 block confirmations for tx 0x76765f501e9ff28ecd2bbe535db85ea0ec6984448e945aa62a3eea464b52055d ...
+2. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x68D936Cb4723BdD38C488FD50514803f96789d2D
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0xc22a5d1b0155113C2ABbbf59aC71ef04E6d89a07
+        Current implementation version: 110
+Waiting 1 block confirmations for tx 0x01033e8cde78d991c3257d26d54d72e3fa265cdf8cb16428c0350c4df515ce4c ...
+        Proxy successfully upgraded!
+        New implementation address: 0x5879389f462EfB8184F6B694F5396A209198c628
+        New implementation version: 121
+2.1 Update getChainFromConfig mapping - Calling DeBridgeGate.updateChainSupport
+chainIds:  [ 256, 42, 97, 80001 ]
+chainSupportInfo:  [
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0x363861e176df2f2b13ecf81d4a3fc9254dc2371334ef8776512e8b7e92783668 ...
+3. Upgrade CallProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669
+        Signer:  0xB485C8ba37A258B57d3ef24E51178A6b307C96EB
+        Current implementation address: 0x90Cb1CF7b9f261DA91A29FeD046C295ff56D18D7
+        Current implementation version: 102
+Waiting 1 block confirmations for tx 0x50ee86966b2fd00028b7a94e706cfc32fb11d330ed34381581295ce949049d16 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x6ecd0D89eF36411D277F6244EE6e67dAb59ee8F3
+        New implementation version: 120
+3.1 Set CallProxy in DebridgeGate - Calling DeBridgeGate.setCallProxy(0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669)
+Waiting 1 block confirmations for tx 0x2ffcfca2c1413d61b2155ae4a371c7f89e41bfa660329fcabc5ee210ae8cabad ...
+4. Deploy WethGate
+deploying "WethGate" (tx: 0xd5ad73492b542e52511b08b098c1cd4d8e2b32d3ab8d625fbb515abd343fdc3a)...: deployed at 0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC
+with 6728760 gas
+4.1 Set WethGate in DebridgeGate - Calling DeBridgeGate.setWethGate(0xf8c459c81Ae0e7b94C04bD251A664909Ae8Df0fC)
+Waiting 1 block confirmations for tx 0x94b7cc6894e47e9c989cddaf81f65005195536bbe81444b813606d599c85c76c ...
+PS D:\Projects\Debridge\debridge-contracts-v1>

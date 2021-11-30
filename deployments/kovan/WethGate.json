@@ -1,0 +1,140 @@
+{
+  "address": "0x2deb3F4773649FC87a8D1aCe97633424c35F053c",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IWETH",
+          "name": "_weth",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "EthTransferFailed",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "receiver",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "wad",
+          "type": "uint256"
+        }
+      ],
+      "name": "Withdrawal",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "version",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "weth",
+      "outputs": [
+        {
+          "internalType": "contract IWETH",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_receiver",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_wad",
+          "type": "uint256"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "transactionHash": "0x8459fc7fe1f344ecde0bc6a9929f04016d8c583ef8be401ba0c4e91d72633023",
+  "receipt": {
+    "to": null,
+    "from": "0xB485C8ba37A258B57d3ef24E51178A6b307C96EB",
+    "contractAddress": "0x2deb3F4773649FC87a8D1aCe97633424c35F053c",
+    "transactionIndex": 9,
+    "gasUsed": "224916",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xd7773d735286ec5045ca7e13107cf088dd5d0a44eba30853d3f4a66688d36e75",
+    "transactionHash": "0x8459fc7fe1f344ecde0bc6a9929f04016d8c583ef8be401ba0c4e91d72633023",
+    "logs": [],
+    "blockNumber": 28593603,
+    "cumulativeGasUsed": "1684270",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0xd0a1e359811322d97991e03f863a0c30c2cf029c"
+  ],
+  "solcInputHash": "ef9c2c0522506d1ad1ca240de7de0aef",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.7+commit.e28d00a7\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"contract IWETH\",\"name\":\"_weth\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"EthTransferFailed\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"receiver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"wad\",\"type\":\"uint256\"}],\"name\":\"Withdrawal\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"version\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"weth\",\"outputs\":[{\"internalType\":\"contract IWETH\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_receiver\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_wad\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/transfers/WethGate.sol\":\"WethGate\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"contracts/interfaces/IWETH.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\r\\npragma solidity 0.8.7;\\r\\n\\r\\ninterface IWETH {\\r\\n    function deposit() external payable;\\r\\n\\r\\n    function withdraw(uint256 wad) external;\\r\\n\\r\\n    function totalSupply() external view returns (uint256);\\r\\n\\r\\n    function balanceOf(address account) external view returns (uint256);\\r\\n\\r\\n    function transfer(address recipient, uint256 amount) external returns (bool);\\r\\n\\r\\n    function allowance(address owner, address spender) external view returns (uint256);\\r\\n\\r\\n    function approve(address spender, uint256 amount) external returns (bool);\\r\\n\\r\\n    function transferFrom(\\r\\n        address sender,\\r\\n        address recipient,\\r\\n        uint256 amount\\r\\n    ) external returns (bool);\\r\\n}\\r\\n\",\"keccak256\":\"0x2f3507ca7c18525290b9f2126f4d847ded379feb618cadf135b09429b023a466\",\"license\":\"MIT\"},\"contracts/interfaces/IWethGate.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\r\\npragma solidity 0.8.7;\\r\\n\\r\\ninterface IWethGate {\\r\\n    function withdraw(address receiver, uint wad) external;\\r\\n}\",\"keccak256\":\"0x7378badbdf313f95760a4a53fd99cdac6e09278d5066baa637276cc4ee19b47a\",\"license\":\"BUSL-1.1\"},\"contracts/transfers/WethGate.sol\":{\"content\":\"// SPDX-License-Identifier: BUSL-1.1\\r\\npragma solidity 0.8.7;\\r\\n\\r\\nimport \\\"../interfaces/IWETH.sol\\\";\\r\\nimport \\\"../interfaces/IWethGate.sol\\\";\\r\\n\\r\\ncontract WethGate is IWethGate\\r\\n{\\r\\n    IWETH public weth; // wrapped native token contract\\r\\n\\r\\n    /* ========== ERRORS ========== */\\r\\n\\r\\n    error EthTransferFailed();\\r\\n\\r\\n    /* ========== EVENTS ========== */\\r\\n\\r\\n    event Withdrawal(address indexed receiver, uint wad);\\r\\n\\r\\n    /* ========== CONSTRUCTOR  ========== */\\r\\n\\r\\n    constructor(IWETH _weth) {\\r\\n        weth = _weth;\\r\\n    }\\r\\n\\r\\n    function withdraw(address _receiver, uint _wad) external override {\\r\\n        weth.withdraw(_wad);\\r\\n        _safeTransferETH(_receiver, _wad);\\r\\n        emit Withdrawal(_receiver, _wad);\\r\\n    }\\r\\n\\r\\n    function _safeTransferETH(address _to, uint256 _value) internal {\\r\\n        (bool success, ) = _to.call{value: _value}(new bytes(0));\\r\\n        if (!success) revert EthTransferFailed();\\r\\n    }\\r\\n\\r\\n    // we need to accept ETH sends to unwrap WETH\\r\\n    receive() external payable {\\r\\n    }\\r\\n\\r\\n    // ============ Version Control ============\\r\\n    function version() external pure returns (uint256) {\\r\\n        return 101; // 1.0.1\\r\\n    }\\r\\n}\\r\\n\",\"keccak256\":\"0xc83c3d3688108e23cf2c6a648f3dc6a0991447ea8e918d1052354cdaa8abac1d\",\"license\":\"BUSL-1.1\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060405161033d38038061033d83398101604081905261002f91610054565b600080546001600160a01b0319166001600160a01b0392909216919091179055610084565b60006020828403121561006657600080fd5b81516001600160a01b038116811461007d57600080fd5b9392505050565b6102aa806100936000396000f3fe6080604052600436106100385760003560e01c80633fc8cef31461004457806354fd4d5014610081578063f3fef3a31461009d57600080fd5b3661003f57005b600080fd5b34801561005057600080fd5b50600054610064906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b34801561008d57600080fd5b5060405160658152602001610078565b3480156100a957600080fd5b506100bd6100b8366004610201565b6100bf565b005b600054604051632e1a7d4d60e01b8152600481018390526001600160a01b0390911690632e1a7d4d90602401600060405180830381600087803b15801561010557600080fd5b505af1158015610119573d6000803e3d6000fd5b50505050610127828261016e565b816001600160a01b03167f7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b658260405161016291815260200190565b60405180910390a25050565b604080516000808252602082019092526001600160a01b0384169083906040516101989190610239565b60006040518083038185875af1925050503d80600081146101d5576040519150601f19603f3d011682016040523d82523d6000602084013e6101da565b606091505b50509050806101fc57604051630db2c7f160e31b815260040160405180910390fd5b505050565b6000806040838503121561021457600080fd5b82356001600160a01b038116811461022b57600080fd5b946020939093013593505050565b6000825160005b8181101561025a5760208186018101518583015201610240565b81811115610269576000828501525b50919091019291505056fea26469706673582212206ab57b3bc19ca4e86b9d32cf905e3c8538d8b47bcafe20346054abc9703ddb0464736f6c63430008070033",
+  "deployedBytecode": "0x6080604052600436106100385760003560e01c80633fc8cef31461004457806354fd4d5014610081578063f3fef3a31461009d57600080fd5b3661003f57005b600080fd5b34801561005057600080fd5b50600054610064906001600160a01b031681565b6040516001600160a01b0390911681526020015b60405180910390f35b34801561008d57600080fd5b5060405160658152602001610078565b3480156100a957600080fd5b506100bd6100b8366004610201565b6100bf565b005b600054604051632e1a7d4d60e01b8152600481018390526001600160a01b0390911690632e1a7d4d90602401600060405180830381600087803b15801561010557600080fd5b505af1158015610119573d6000803e3d6000fd5b50505050610127828261016e565b816001600160a01b03167f7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b658260405161016291815260200190565b60405180910390a25050565b604080516000808252602082019092526001600160a01b0384169083906040516101989190610239565b60006040518083038185875af1925050503d80600081146101d5576040519150601f19603f3d011682016040523d82523d6000602084013e6101da565b606091505b50509050806101fc57604051630db2c7f160e31b815260040160405180910390fd5b505050565b6000806040838503121561021457600080fd5b82356001600160a01b038116811461022b57600080fd5b946020939093013593505050565b6000825160005b8181101561025a5760208186018101518583015201610240565b81811115610269576000828501525b50919091019291505056fea26469706673582212206ab57b3bc19ca4e86b9d32cf905e3c8538d8b47bcafe20346054abc9703ddb0464736f6c63430008070033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 24607,
+        "contract": "contracts/transfers/WethGate.sol:WethGate",
+        "label": "weth",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_contract(IWETH)6097"
+      }
+    ],
+    "types": {
+      "t_contract(IWETH)6097": {
+        "encoding": "inplace",
+        "label": "contract IWETH",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}
