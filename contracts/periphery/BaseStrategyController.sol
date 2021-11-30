@@ -4,13 +4,18 @@ pragma solidity 0.8.7;
 import "../interfaces/IStrategy.sol";
 
 abstract contract BaseStrategyController is IStrategy {
+
+    public constant denominator = 10e18;
+
     event StrategyReset(address _strategy, address collateral);
     error StrategyDisabled();
     error AlreadyExists();
     error MethodNotImplemented();
+    error WrongAmount();
 
     struct Validator {
         uint256 sShares;
+        uint256 totalReserves;
         mapping(address => Delegator) delegators;
     }
 
@@ -107,6 +112,7 @@ abstract contract BaseStrategyController is IStrategy {
     }
 
     function totalReserves(address _collateral) external view override returns (uint256) {
+        // TODO: replace with ERC20.balanceOf(_collateral) + UnderlyingReserves
         return strategies[_collateral].totalReserves;
     }
 
@@ -195,29 +201,38 @@ abstract contract BaseStrategyController is IStrategy {
         delegator.lockedShares += _shares;
         delegator.lockedReserves += _amount;
 
-        strategy.validators[_validator].shares += _sShares;
+        strategy.validators[_validator].sShares += _sShares;
+        strategy.validators[_validator].totalReserves += _amount;
         strategy.totalShares += _sShares;
         strategy.totalReserves += _amount;
     }
 
-    function withdraw(address _collateral, address _validator, address _recipient, uint256 _shares) external override {
+    function withdraw(address _collateral, address _validator, address _recipient, uint256 _shares) external override returns(bool, uint256) {
         Strategy storage strategy = strategies[_collateral];
         Delegator storage delegator = validators[_validator].delegators[_recipient];
-        require(_shares >= delegator.lockedShares, "not enough locked shares");
-        uint256 percentageToWithdraw = _shares / delegator.lockedShares;
-        uint256 _sShares = percentageToWithdraw * delegator.sShares;
+        if (shares > delegator.lockedShares) revert WrongAmount();       
+
+        uint256 percentageToWithdraw = _shares * denominator / delegator.lockedShares;
+        uint256 _sShares = (percentageToWithdraw * delegator.sShares) / denominator;
         
-        uint256 amount = _calculateFromShares(_collateral, _sShares);
+        uint256 amountToBePaid = _calculateFromShares(_collateral, _sShares);
         _withdraw(_collateral, amount);
-        uint256 lockedAmount = percentageToWithdraw * delegator.lockedReserves;
+        uint256 amountToBeUnlocked = (percentageToWithdraw * delegator.lockedReserves) / denominator;
 
-        delegator.shares -= _sShares;
-        delegator.lockedShares += _shares;
-        delegator.lockedReserves += _amount;
+        delegator.sShares -= _sShares;
+        delegator.lockedShares -= _shares;
+        delegator.lockedReserves -= amountToBeUnlocked;
 
-        strategy.validators[_validator].shares -= _shares;
-        strategy.totalShares -= _shares;
-        strategy.totalReserves -= amount;
+        strategy.validators[_validator].sShares -= _sShares;
+        strategy.validators[_validator].totalReserves -= amountToBePaid;
+        strategy.totalShares -= _sShares;
+        strategy.totalReserves -= amountToBePaid;
+
+        if (amountToBePaid > amountToBeUnlocked) {
+            return true, amountToBePaid - amountToBeUnlocked;
+        } else {
+            return false, amountToBeUnlocked - amountToBePaid;
+        }
     }
 
     // TODO: 

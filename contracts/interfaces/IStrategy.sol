@@ -3,7 +3,7 @@ pragma solidity 0.8.7;
 
 interface IStrategy {
     function deposit(address token, address validator, address recipient, uint256 shares, uint256 amount) external;
-    function withdraw(address token, address validator, address recipient, uint256 shares) external;
+    function withdraw(address token, address validator, address recipient, uint256 shares) external returns(bool, uint256);
 
     function withdrawAll(address token) external;
     function strategyToken(address token) external view returns(address);

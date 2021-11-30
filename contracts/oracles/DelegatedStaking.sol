@@ -469,28 +469,28 @@ contract DelegatedStaking is
         IStrategy strategyController = IStrategy(_strategy);
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_stakeToken];
         DelegatorsInfo storage delegation = validatorCollateral.delegators[msg.sender];
-        uint256 _amount = getAmountByShares(_validator, _stakeToken, _shares);
         if ((delegation.shares - delegation.locked) < _shares) revert WrongAmount();
+
+        uint256 _amount = getAmountByShares(_validator, _stakeToken, _shares);
         delegation.locked += _shares;
         validatorCollateral.locked += _shares;
+        collaterals[_stakeToken].totalLocked -= _amount;
 
         IERC20(_stakeToken).safeApprove(address(strategyController), 0);
         IERC20(_stakeToken).safeApprove(address(strategyController), _amount);
-        uint256 sharesBefore = strategyController.totalShares(_stakeToken);
-        // TODO: add recepient to deposit function
-        strategyController.deposit(_stakeToken, _validator, _amount);
-        // strategyController should issue shares on his side
-        collaterals[_stakeToken].totalLocked -= _amount;
+        strategyController.deposit(_stakeToken, _validator, msg.sender, _amount);
+
+
         emit DepositedToStrategy(_validator, msg.sender, _amount, _strategy, _stakeToken);
     }
 
     /**
      * @dev Withdraw token from strategies to claim rewards
      * @param _validator address of validator
-     * @param _shares number of shares to redeem
+     * @param _lockedShares number of shares to redeem
      * @param _strategy strategy to withdraw from.
      */
-    function withdrawFromStrategy(address _validator, uint256 _shares, address _strategy, address _stakeToken)
+    function withdrawFromStrategy(address _validator, uint256 _lockedShares, address _strategy, address _stakeToken)
         external
         nonReentrant
         whenNotPaused
@@ -498,30 +498,28 @@ contract DelegatedStaking is
         IStrategy strategyController = IStrategy(_strategy);
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_stakeToken];
         DelegatorsInfo storage delegation = validatorCollateral.delegators[msg.sender];
-
+        if (_lockedShares > delegation.locked) revert WrongAmount();
+        
         uint256 beforeBalance = IERC20(_stakeToken).balanceOf(address(this));
-        uint256 stakeTokenAmount = getAmountByShares(_validator, _stakeToken, _shares);
-        if (strategyController.delegatorShares(_stakeToken, _validator, msg.sender) < _shares) revert WrongAmount();
-        // TODO: stakeTokenAmount should be passed instead of _shares
-        strategyController.withdraw(_stakeToken, _validator, _shares);
-
+        (bool hasProfit, uint256 protfitLossAmount) = strategyController.withdraw(_stakeToken, _validator, msg.sender, _lockedShares);
         uint256 receivedAmount = IERC20(_stakeToken).balanceOf(address(this)) - beforeBalance;
-        collaterals[_stakeToken].totalLocked += receivedAmount;
-        
-        // TODO: rewardAmount can be negative, need to handle it properly
-        uint256 rewardAmount = receivedAmount - stakeTokenAmount;
-        collaterals[_stakeToken].rewards += rewardAmount;
-        validatorCollateral.accumulatedRewards += rewardAmount;
-        delegation.accumulatedRewards += rewardAmount;
-        uint256 rewardShares = validatorCollateral.shares > 0
-            ? getSharesByAmount(_validator, _stakeToken, rewardAmount)
-            : rewardAmount;
-        uint256 stakeTokenShares = getSharesByAmount(_validator, _stakeToken, stakeTokenAmount);
-        
-        changeVirtualBalances(_validator, _stakeToken, msg.sender, rewardAmount, rewardShares, true);
-        
-        delegation.locked -= stakeTokenShares;
-        validatorCollateral.locked -= stakeTokenShares;
+        uint256 profitLossShares = getSharesByAmount(_validator, _stakeToken, protfitLossAmount);
+
+        if (hasProfit) {
+            changeVirtualBalances(_validator, _stakeToken, msg.sender, protfitLossAmount, profitLossShares, true);
+            delegation.accumulatedRewards += protfitLossAmount;
+            validatorCollateral.accumulatedRewards += protfitLossAmount;
+            collaterals[_stakeToken].rewards += protfitLossAmount;
+        } else {
+            changeVirtualBalances(_validator, _stakeToken, msg.sender, protfitLossAmount, profitLossShares, false);
+            delegation.accumulatedRewards -= protfitLossAmount;
+            validatorCollateral.accumulatedRewards -= protfitLossAmount;
+            collaterals[_stakeToken].rewards -= protfitLossAmount;
+        }
+
+        collaterals[_stakeToken].totalLocked += receivedAmount;        
+        delegation.locked -= _lockedShares;
+        validatorCollateral.locked -= _lockedShares;
 
         emit WithdrawnFromStrategy(_validator, msg.sender, receivedAmount, _strategy, _stakeToken);
     }
