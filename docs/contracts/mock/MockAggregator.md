@@ -1,45 +1,57 @@
-## `MockAggregator`
+
+
+
+## Functions
+### setAnswer
+```solidity
+  function setAnswer(
+  ) public
+```
 
 
 
 
-
-
-### `setAnswer(int256 _answer)` (public)
-
-
-
-
-
-### `latestRoundData() → uint80, int256, uint256, uint256, uint80` (external)
+### latestRoundData
+```solidity
+  function latestRoundData(
+  ) external returns (uint80, int256, uint256, uint256, uint80)
+```
 
 
 
 
-
-### `decimals() → uint8` (external)
-
-
-
-
-
-### `description() → string` (external)
+### decimals
+```solidity
+  function decimals(
+  ) external returns (uint8)
+```
 
 
 
 
-
-### `version() → uint256` (external)
-
-
-
-
-
-### `getRoundData(uint80 _roundId) → uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound` (external)
+### description
+```solidity
+  function description(
+  ) external returns (string)
+```
 
 
 
 
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
+
+
+
+
+### getRoundData
+```solidity
+  function getRoundData(
+  ) external returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)
+```
 
 
 

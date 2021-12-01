@@ -1,15 +1,12 @@
-## `ILinkToken`
 
 
 
-
-
-
-### `transferAndCall(address to, uint256 value, bytes data) → bool success` (external)
-
-
-
-
+## Functions
+### transferAndCall
+```solidity
+  function transferAndCall(
+  ) external returns (bool success)
+```
 
 
 

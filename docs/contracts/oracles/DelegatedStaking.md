@@ -1,544 +1,741 @@
-## `DelegatedStaking`
 
 
 
-
-
-### `onlyAdmin()`
-
-
-
-
-
-### `collateralEnabled(address _collateral)`
-
-
-
-
-
-### `notZeroAddress(address _address)`
-
-
-
-
-
-
-### `initialize(uint256 _withdrawTimelock, contract IPriceConsumer _priceConsumer, contract ISwapProxy _swapProxy, address _slashingTreasury)` (public)
-
-
+## Functions
+### initialize
+```solidity
+  function initialize(
+    uint256 _withdrawTimelock,
+    contract IPriceConsumer _priceConsumer,
+    contract ISwapProxy _slashingTreasury
+  ) public
+```
 
 Initializer that initializes the most important configurations.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_withdrawTimelock` | uint256 | Duration of withdrawal timelock.
+|`_priceConsumer` | contract IPriceConsumer | Price consumer contract.
+|`_slashingTreasury` | contract ISwapProxy | Address of slashing treasury.
 
-### `stake(address _receiver, address _validator, address _collateral, uint256 _amount)` (external)
-
-
+### stake
+```solidity
+  function stake(
+    address _receiver,
+    address _validator,
+    address _collateral,
+    uint256 _amount
+  ) external
+```
 
 stake collateral to validator.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_receiver` | address | Delegator receiver address.
+|`_validator` | address | Validator address.
+|`_collateral` | address | address of collateral
+|`_amount` | uint256 | Amount to stake.
 
-### `requestUnstake(address _validator, address _collateral, address _recipient, uint256 _shares)` (external)
-
-
+### requestUnstake
+```solidity
+  function requestUnstake(
+    address _validator,
+    address _collateral,
+    address _recipient,
+    uint256 _shares
+  ) external
+```
 
 Withdraws validator reward.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_collateral` | address | Index of collateral
+|`_recipient` | address | Recepient reward.
+|`_shares` | uint256 | Shares to withdraw.
 
-### `executeUnstake(address _validator, uint256[] _withdrawIds)` (external)
-
-
+### executeUnstake
+```solidity
+  function executeUnstake(
+    address _validator,
+    uint256[] _withdrawIds
+  ) external
+```
 
 Execute withdrawal requests.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_withdrawIds` | uint256[] | Withdrawal identifiers.
 
-### `cancelUnstake(address _validator, uint256[] _withdrawIds)` (external)
-
-
+### cancelUnstake
+```solidity
+  function cancelUnstake(
+    address _validator,
+    uint256[] _withdrawIds
+  ) external
+```
 
 Cancel unstake.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_withdrawIds` | uint256[] | Withdrawal identifiers.
 
-### `sendRewards(address _rewardToken, uint256 _amount)` (external)
-
-
+### sendRewards
+```solidity
+  function sendRewards(
+    address _rewardToken,
+    uint256 _amount
+  ) external
+```
 
 Receive protocol rewards.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_rewardToken` | address | Address of reward token.
+|`_amount` | uint256 | Amount of reward tokem.
 
-### `_calculateAndUpdateValidatorRewards(address _rewardToken, uint256 _rewardAmount) → uint256[], uint256[][]` (internal)
-
-
+### _calculateAndUpdateValidatorRewards
+```solidity
+  function _calculateAndUpdateValidatorRewards(
+    address _rewardToken,
+    uint256 _rewardAmount
+  ) internal returns (uint256[], uint256[][])
+```
 
 Calculates rewards to swapped and credited to validators collateral
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_rewardToken` | address | address of reward token
+|`_rewardAmount` | uint256 | amount of reward token
 
-### `distributeValidatorRewards(address _rewardToken)` (external)
-
-
+### distributeValidatorRewards
+```solidity
+  function distributeValidatorRewards(
+    address _rewardToken
+  ) external
+```
 
 Distributes validator rewards to validator/delegators
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_rewardToken` | address | address of reward token
 
-### `exchangeValidatorRewards(address _validator, address _collateral)` (external)
+### exchangeValidatorRewards
+```solidity
+  function exchangeValidatorRewards(
+  ) external
+```
 
 
 
 
-
-### `setProfitSharing(address _validator, uint256 _profitSharingBPS)` (external)
-
-
+### setProfitSharing
+```solidity
+  function setProfitSharing(
+    address _validator,
+    uint256 _profitSharingBPS
+  ) external
+```
 
 set basis points of profit sharing
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | address of validator
+|`_profitSharingBPS` | uint256 | profit sharing basis points
 
-### `updateSlashingTreasury(address _newTreasury)` (external)
-
-
+### updateSlashingTreasury
+```solidity
+  function updateSlashingTreasury(
+    address _newTreasury
+  ) external
+```
 
 Updates slashing treasury address.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_newTreasury` | address | New slashing treasury address.
 
-### `addValidator(address _validator, address _admin, uint256 _rewardWeightCoefficient, uint256 _profitSharingBPS)` (external)
-
-
+### addValidator
+```solidity
+  function addValidator(
+    address _validator,
+    address _admin
+  ) external
+```
 
 Add new validator.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_admin` | address | Admin address.
 
-### `setValidatorEnabled(address _validator, bool _isEnabled)` (external)
-
-
+### setValidatorEnabled
+```solidity
+  function setValidatorEnabled(
+    address _validator,
+    bool _isEnabled
+  ) external
+```
 
 Update validator enabled status.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_isEnabled` | bool | Is validator enabled.
 
-### `addCollateral(address _token, uint256 _maxStakeAmount)` (external)
-
-
+### addCollateral
+```solidity
+  function addCollateral(
+    address _token
+  ) external
+```
 
 Add a new collateral
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_token` | address | Address of token
 
-### `updateCollateralEnabled(address _collateral, bool _isEnabled)` (external)
-
-
+### updateCollateralEnabled
+```solidity
+  function updateCollateralEnabled(
+    address _collateral,
+    bool _isEnabled
+  ) external
+```
 
 Update collateral enabled
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_collateral` | address | address of collateral
+|`_isEnabled` | bool | bool of enable
 
-### `updateCollateral(address _collateral, uint256 _maxStakeAmount)` (external)
-
-
+### updateCollateral
+```solidity
+  function updateCollateral(
+    address _collateral,
+    uint256 _maxStakeAmount
+  ) external
+```
 
 update collateral max amount
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_collateral` | address | address of collateral
+|`_maxStakeAmount` | uint256 | max amount
 
-### `updateRewardWeight(address _validator, uint256 _value)` (external)
-
-
+### updateRewardWeight
+```solidity
+  function updateRewardWeight(
+    address _validator,
+    uint256 _value
+  ) external
+```
 
 update validator reward weight coefficient
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | address of validator
+|`_value` | uint256 | reward weight coefficient
 
-### `pauseUnstakeRequests(address _validator, uint256[] _withdrawIds, bool _paused)` (external)
-
-
+### pauseUnstakeRequests
+```solidity
+  function pauseUnstakeRequests(
+    address _validator,
+    uint256[] _withdrawIds,
+    bool _paused
+  ) external
+```
 
 Pause/unpause unstaking request.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_withdrawIds` | uint256[] | Withdraw requests ids.
+|`_paused` | bool | pause/unpause.
 
-### `setPriceConsumer(contract IPriceConsumer _priceConsumer)` (external)
-
-
+### setPriceConsumer
+```solidity
+  function setPriceConsumer(
+    contract IPriceConsumer _priceConsumer
+  ) external
+```
 
 Set Price Consumer
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_priceConsumer` | contract IPriceConsumer | address of price consumer
 
-### `setSwapProxy(contract ISwapProxy _swapProxy)` (external)
-
-
+### setSwapProxy
+```solidity
+  function setSwapProxy(
+    contract ISwapProxy _swapProxy
+  ) external
+```
 
 Set swap converter proxy.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_swapProxy` | contract ISwapProxy | Swap proxy address.
 
-### `setWithdrawTimelock(uint256 _newTimelock)` (external)
-
-
+### setWithdrawTimelock
+```solidity
+  function setWithdrawTimelock(
+    uint256 _newTimelock
+  ) external
+```
 
 Change withdrawal timelock.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_newTimelock` | uint256 | New timelock.
 
-### `setMinProfitSharing(uint256 _profitSharingBPS)` (external)
-
-
+### setMinProfitSharing
+```solidity
+  function setMinProfitSharing(
+    uint256 _profitSharingBPS
+  ) external
+```
 
 set min basis points of profit sharing
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_profitSharingBPS` | uint256 | profit sharing basis points
 
-### `slashUnstakeRequests(address _validator, uint256 _fromWithdrawId, uint256 _toWithdrawId, uint256 _slashPPM)` (public)
-
-
+### slashUnstakeRequests
+```solidity
+  function slashUnstakeRequests(
+    address _validator,
+    uint256 _fromWithdrawId,
+    uint256 _toWithdrawId,
+    uint256 _slashPPM
+  ) public
+```
 
 Slash withdrawal requests.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_fromWithdrawId` | uint256 | Starting from withdrawal identifier.
+|`_toWithdrawId` | uint256 | Up to withdrawal identifier.
+|`_slashPPM` | uint256 | Slashing ppm (1e6 DENOMINATOR)
 
-### `slashValidator(address _validator, address[] _collaterals, uint256[] _slashAmounts)` (external)
-
-
+### slashValidator
+```solidity
+  function slashValidator(
+    address _validator,
+    address[] _collaterals,
+    uint256[] _slashAmounts
+  ) external
+```
 
 Slash validator.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_collaterals` | address[] | Collaterals addresses.
+|`_slashAmounts` | uint256[] | Amounts to be slashed.
 
-### `slashDelegator(address _delegator, address _validator, address[] _collaterals, uint256[] _slashShares)` (external)
-
-
+### slashDelegator
+```solidity
+  function slashDelegator(
+    address _delegator,
+    address _validator,
+    address[] _collaterals,
+    uint256[] _slashShares
+  ) external
+```
 
 Slash delegator.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_delegator` | address | Delegator address.
+|`_validator` | address | Validator address.
+|`_collaterals` | address[] | Collaterals addresses.
+|`_slashShares` | uint256[] | Shares to be confiscated.
 
-### `withdrawSlashingTreasury()` (external)
-
-
+### withdrawSlashingTreasury
+```solidity
+  function withdrawSlashingTreasury(
+  ) external
+```
 
 Withdraw collected slashed amounts of all assets to protocol slashing treasury address
 
-### `getPricePerFullValidatorShare(address _validator, address _collateral) → uint256` (external)
 
-
+### getPricePerFullValidatorShare
+```solidity
+  function getPricePerFullValidatorShare(
+    address _validator,
+    address _collateral
+  ) external returns (uint256)
+```
 
 Get price per validator share
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Address of validator
+|`_collateral` | address | Address of collateral
 
-### `getPoolETHAmount(address _validator, address _collateral) → uint256` (public)
-
-
+### getPoolETHAmount
+```solidity
+  function getPoolETHAmount(
+    address _validator,
+    address _collateral
+  ) public returns (uint256)
+```
 
 Get ETH amount of validator collateral
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Address of validator
+|`_collateral` | address | Address of collateral
 
-### `getTotalETHAmount(address _validator) → uint256[] poolsAmounts, uint256 totalAmount` (public)
-
-
+#### Return Values:
+| Name                           | Type          | Description                                                                  |
+| :----------------------------- | :------------ | :--------------------------------------------------------------------------- |
+|`ETH`| address | amount with decimals 18
+### getTotalETHAmount
+```solidity
+  function getTotalETHAmount(
+    address _validator
+  ) public returns (uint256[] poolsAmounts, uint256 totalAmount)
+```
 
 Get total ETH amount of validator collateral
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Address of validator
 
-### `getWithdrawalRequest(address _validator, uint256 _withdrawalId) → struct DelegatedStaking.WithdrawalInfo` (external)
-
-
+### getWithdrawalRequest
+```solidity
+  function getWithdrawalRequest(
+    address _validator,
+    uint256 _withdrawalId
+  ) external returns (struct DelegatedStaking.WithdrawalInfo)
+```
 
 Get withdrawal request.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | Validator address.
+|`_withdrawalId` | uint256 | Withdrawal identifier.
 
-### `getRewards(address _validator, address _collateral) → uint256, uint256` (external)
-
-
+### getRewards
+```solidity
+  function getRewards(
+    address _validator,
+    address _collateral
+  ) external returns (uint256, uint256)
+```
 
 get delegator, collateral and protocol rewards
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | address of validator
+|`_collateral` | address | Address of collateral
 
-### `getValidatorCollateral(address _validator, address _collateral) → uint256 stakedAmount, uint256 shares, uint256 locked, uint256 accumulatedRewards, uint256 rewardsForWithdrawal` (external)
+### getValidatorCollateral
+```solidity
+  function getValidatorCollateral(
+  ) external returns (uint256 stakedAmount, uint256 shares, uint256 locked, uint256 accumulatedRewards, uint256 rewardsForWithdrawal)
+```
 
 
 
 
-
-### `getDelegatorsInfo(address _validator, address _collateral, address _delegator) → uint256 shares, uint256 locked, uint256 accumulatedRewards` (external)
-
-
+### getDelegatorsInfo
+```solidity
+  function getDelegatorsInfo(
+    address _validator,
+    address _collateral,
+    address _delegator
+  ) external returns (uint256 shares, uint256 locked, uint256 accumulatedRewards)
+```
 
 get delegator stakes: returns whether shares, locked shares and passed rewards
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_validator` | address | address of validator
+|`_collateral` | address | Address of collateral
+|`_delegator` | address | address of delegator
 
-### `version() → uint256` (external)
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 
 
+## Events
+### Staked
+```solidity
+  event Staked(
+  )
+```
 
 
-### `Staked(address sender, address receiver, address validator, address collateral, uint256 stakeAmount, uint256 receivedShares)`
 
+### UnstakeRequested
+```solidity
+  event UnstakeRequested(
+  )
+```
 
 
 
+### ValidatorRewardsExchanged
+```solidity
+  event ValidatorRewardsExchanged(
+  )
+```
 
-### `UnstakeRequested(address delegator, address validator, address collateral, address receipient, uint256 timelock, uint256 shares, uint256 tokenAmount, uint256 index)`
 
 
+### SlashedUnstakeRequest
+```solidity
+  event SlashedUnstakeRequest(
+  )
+```
 
 
 
-### `ValidatorRewardsExchanged(address _validator, address _admin, address _collateral, uint256 _rewardAmount)`
+### SlashedValidatorCollateral
+```solidity
+  event SlashedValidatorCollateral(
+  )
+```
 
 
 
+### SlashedValidatorRewards
+```solidity
+  event SlashedValidatorRewards(
+  )
+```
 
 
-### `SlashedUnstakeRequest(address delegator, address validator, address collateral, uint256 slashedAmount, uint256 index)`
 
+### UnstakeExecuted
+```solidity
+  event UnstakeExecuted(
+  )
+```
 
 
 
+### UnstakeCancelled
+```solidity
+  event UnstakeCancelled(
+  )
+```
 
-### `SlashedValidatorCollateral(address validator, address collateral, uint256 slashedAmount)`
 
 
+### UnstakePaused
+```solidity
+  event UnstakePaused(
+  )
+```
 
 
 
-### `SlashedValidatorRewards(address validator, address collateral, uint256 slashedAmount)`
+### Liquidated
+```solidity
+  event Liquidated(
+  )
+```
 
 
 
+### SlashedDelegator
+```solidity
+  event SlashedDelegator(
+  )
+```
 
 
-### `UnstakeExecuted(address delegator, address validator, address collateral, uint256 amount, uint256 withdrawalId)`
 
+### LiquidatedDelegator
+```solidity
+  event LiquidatedDelegator(
+  )
+```
 
 
 
+### DepositedToStrategy
+```solidity
+  event DepositedToStrategy(
+  )
+```
 
-### `UnstakeCancelled(address delegator, address validator, uint256 withdrawalId)`
 
 
+### WithdrawnFromStrategy
+```solidity
+  event WithdrawnFromStrategy(
+  )
+```
 
 
 
-### `UnstakePaused(address validator, uint256 withdrawalId, bool paused)`
+### EmergencyWithdrawnFromStrategy
+```solidity
+  event EmergencyWithdrawnFromStrategy(
+  )
+```
 
 
 
+### RecoveredFromEmergency
+```solidity
+  event RecoveredFromEmergency(
+  )
+```
 
 
-### `Liquidated(address validator, address collateral, uint256 amount)`
 
+### StrategyReset
+```solidity
+  event StrategyReset(
+  )
+```
 
 
 
+### RewardsReceived
+```solidity
+  event RewardsReceived(
+  )
+```
 
-### `SlashedDelegator(address delegator, address validator, address collateral, uint256 shares, uint256 amount)`
 
 
+### RewardsDistributed
+```solidity
+  event RewardsDistributed(
+  )
+```
 
 
 
-### `LiquidatedDelegator(address delegator, address validator, address collateral, uint256 amount)`
+### WithdrawSlashingTreasury
+```solidity
+  event WithdrawSlashingTreasury(
+  )
+```
 
 
 
+### UpdateSlashingTreasury
+```solidity
+  event UpdateSlashingTreasury(
+  )
+```
 
 
-### `DepositedToStrategy(address validator, address delegator, uint256 amount, address strategy, address collateral)`
 
+### WithdrawTimelockUpdated
+```solidity
+  event WithdrawTimelockUpdated(
+  )
+```
 
 
 
+### UpdateCollateralEnabled
+```solidity
+  event UpdateCollateralEnabled(
+  )
+```
 
-### `WithdrawnFromStrategy(address validator, address delegator, uint256 amount, address strategy, address collateral)`
 
 
+### UpdateCollateral
+```solidity
+  event UpdateCollateral(
+  )
+```
 
 
 
-### `EmergencyWithdrawnFromStrategy(uint256 amount, address strategy, address collateral)`
+### UpdateRewardWeight
+```solidity
+  event UpdateRewardWeight(
+  )
+```
 
 
 
-
-
-### `RecoveredFromEmergency(address validator, uint256 amount, address strategy, address collateral)`
-
-
-
-
-
-### `StrategyReset(address _strategy, address collateral)`
-
-
-
-
-
-### `RewardsReceived(address token, uint256 amount)`
-
-
-
-
-
-### `RewardsDistributed(address rewardToken, uint256 rewardAmount)`
-
-
-
-
-
-### `WithdrawSlashingTreasury(address collateral, uint256 amount)`
-
-
-
-
-
-### `UpdateSlashingTreasury(address newTreasury)`
-
-
-
-
-
-### `WithdrawTimelockUpdated(uint256 newTimelock)`
-
-
-
-
-
-### `UpdateCollateralEnabled(address collateral, bool isEnabled)`
-
-
-
-
-
-### `UpdateCollateral(address collateral, uint256 maxStakeAmount)`
-
-
-
-
-
-### `UpdateRewardWeight(address validator, uint256 value)`
-
-
-
-
-
-### `EnableValidator(address validator, bool isEnabled)`
-
-
-
-
-
-
-### `RewardInfo`
-
-
-uint256 totalAmount
-
-
-uint256 distributed
-
-
-### `WithdrawalInfo`
-
-
-address delegator
-
-
-uint256 amount
-
-
-uint256 slashingAmount
-
-
-uint256 timelock
-
-
-address receiver
-
-
-address collateral
-
-
-bool executed
-
-
-bool paused
-
-
-### `WithdrawalRequests`
-
-
-mapping(uint256 => struct DelegatedStaking.WithdrawalInfo) withdrawals
-
-
-uint256 count
-
-
-### `DelegatorsInfo`
-
-
-uint256 shares
-
-
-uint256 locked
-
-
-uint256 accumulatedRewards
-
-
-### `ValidatorCollateral`
-
-
-uint256 stakedAmount
-
-
-uint256 shares
-
-
-uint256 locked
-
-
-mapping(address => struct DelegatedStaking.DelegatorsInfo) delegators
-
-
-uint256 accumulatedRewards
-
-
-uint256 rewardsForWithdrawal
-
-
-### `ValidatorInfo`
-
-
-address admin
-
-
-mapping(address => struct DelegatedStaking.ValidatorCollateral) collateralPools
-
-
-uint256 rewardWeightCoefficient
-
-
-uint256 profitSharingBPS
-
-
-bool delegatorActionPaused
-
-
-bool isEnabled
-
-
-bool exists
-
-
-### `Collateral`
-
-
-uint256 slashedAmount
-
-
-uint256 totalLocked
-
-
-uint256 rewards
-
-
-uint256 maxStakeAmount
-
-
-uint8 decimals
-
-
-bool isEnabled
-
-
-bool exists
+### EnableValidator
+```solidity
+  event EnableValidator(
+  )
+```
 
 
 

@@ -1,45 +1,57 @@
-## `MockToken`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(string _name, string _symbol, uint8 _decimal)` (public)
-
-
-
-
-
-### `fallback()` (external)
+### fallback
+```solidity
+  function fallback(
+  ) external
+```
 
 
 
 
-
-### `receive()` (external)
-
-
-
-
-
-### `mint(address _receiver, uint256 _amount)` (external)
+### receive
+```solidity
+  function receive(
+  ) external
+```
 
 
 
 
-
-### `burn(uint256 _amount)` (external)
-
-
-
-
-
-### `decimals() → uint8` (public)
+### mint
+```solidity
+  function mint(
+  ) external
+```
 
 
 
 
+### burn
+```solidity
+  function burn(
+  ) external
+```
+
+
+
+
+### decimals
+```solidity
+  function decimals(
+  ) public returns (uint8)
+```
 
 
 

@@ -1,64 +1,85 @@
-## `IUniswapV2Factory`
+
+
+
+## Functions
+### feeTo
+```solidity
+  function feeTo(
+  ) external returns (address)
+```
 
 
 
 
-
-
-### `feeTo() → address` (external)
-
-
-
-
-
-### `feeToSetter() → address` (external)
+### feeToSetter
+```solidity
+  function feeToSetter(
+  ) external returns (address)
+```
 
 
 
 
-
-### `getPair(address tokenA, address tokenB) → address pair` (external)
-
-
-
-
-
-### `allPairs(uint256) → address pair` (external)
+### getPair
+```solidity
+  function getPair(
+  ) external returns (address pair)
+```
 
 
 
 
-
-### `allPairsLength() → uint256` (external)
-
-
-
-
-
-### `createPair(address tokenA, address tokenB) → address pair` (external)
+### allPairs
+```solidity
+  function allPairs(
+  ) external returns (address pair)
+```
 
 
 
 
-
-### `setFeeTo(address)` (external)
-
-
-
-
-
-### `setFeeToSetter(address)` (external)
+### allPairsLength
+```solidity
+  function allPairsLength(
+  ) external returns (uint256)
+```
 
 
 
 
+### createPair
+```solidity
+  function createPair(
+  ) external returns (address pair)
+```
 
 
-### `PairCreated(address token0, address token1, address pair, uint256)`
+
+
+### setFeeTo
+```solidity
+  function setFeeTo(
+  ) external
+```
 
 
 
 
+### setFeeToSetter
+```solidity
+  function setFeeToSetter(
+  ) external
+```
+
+
+
+
+## Events
+### PairCreated
+```solidity
+  event PairCreated(
+  )
+```
 
 
 

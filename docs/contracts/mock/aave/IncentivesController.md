@@ -1,53 +1,79 @@
-## `IncentivesController`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(address rewardToken)` (public)
-
-
-
-
-
-### `claimRewards(address[] assets, uint256 amount, address to) → uint256` (external)
-
-
+### claimRewards
+```solidity
+  function claimRewards(
+    address[] amount,
+    uint256 to
+  ) external returns (uint256)
+```
 
 Claims reward for an user, on all the assets of the lending pool, accumulating the pending rewards
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`amount` | address[] | Amount of rewards to claim
+|`to` | uint256 | Address that will be receiving the rewards
 
-### `getRewardsBalance(address[] assets, address user) → uint256` (external)
+#### Return Values:
+| Name                           | Type          | Description                                                                  |
+| :----------------------------- | :------------ | :--------------------------------------------------------------------------- |
+|`Rewards`| address[] | claimed
 
-
-
-
-
-### `claimRewardsOnBehalf(address[] assets, uint256 amount, address user, address to) → uint256` (external)
-
-
-
-
-
-### `getUserUnclaimedRewards(address user) → uint256` (external)
-
-
-
-
-
-### `REWARD_TOKEN() → address` (external)
+### getRewardsBalance
+```solidity
+  function getRewardsBalance(
+  ) external returns (uint256)
+```
 
 
 
 
+### claimRewardsOnBehalf
+```solidity
+  function claimRewardsOnBehalf(
+  ) external returns (uint256)
+```
 
 
-### `RewardsClaimed(address user, address to, uint256 amount)`
+
+
+### getUserUnclaimedRewards
+```solidity
+  function getUserUnclaimedRewards(
+  ) external returns (uint256)
+```
 
 
 
 
+### REWARD_TOKEN
+```solidity
+  function REWARD_TOKEN(
+  ) external returns (address)
+```
+
+
+
+
+## Events
+### RewardsClaimed
+```solidity
+  event RewardsClaimed(
+  )
+```
 
 
 

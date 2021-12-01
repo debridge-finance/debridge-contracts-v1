@@ -1,45 +1,57 @@
-## `IVault`
+
+
+
+## Functions
+### decimals
+```solidity
+  function decimals(
+  ) external returns (uint256)
+```
 
 
 
 
-
-
-### `decimals() → uint256` (external)
-
-
-
-
-
-### `deposit(uint256)` (external)
+### deposit
+```solidity
+  function deposit(
+  ) external
+```
 
 
 
 
-
-### `withdraw(uint256) → uint256` (external)
-
-
-
-
-
-### `withdrawAll()` (external)
+### withdraw
+```solidity
+  function withdraw(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `pricePerShare() → uint256` (external)
-
-
-
-
-
-### `totalAssets() → uint256` (external)
+### withdrawAll
+```solidity
+  function withdrawAll(
+  ) external
+```
 
 
 
 
+### pricePerShare
+```solidity
+  function pricePerShare(
+  ) external returns (uint256)
+```
+
+
+
+
+### totalAssets
+```solidity
+  function totalAssets(
+  ) external returns (uint256)
+```
 
 
 

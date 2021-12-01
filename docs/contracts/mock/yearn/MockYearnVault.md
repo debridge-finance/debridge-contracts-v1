@@ -1,69 +1,93 @@
-## `MockYearnVault`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(address _token, address _controller)` (public)
-
-
-
-
-
-### `balance() → uint256` (public)
+### balance
+```solidity
+  function balance(
+  ) public returns (uint256)
+```
 
 
 
 
-
-### `balanceOf(address _account) → uint256` (public)
-
-
-
-
-
-### `totalAssets() → uint256` (public)
+### balanceOf
+```solidity
+  function balanceOf(
+  ) public returns (uint256)
+```
 
 
 
 
-
-### `decimals() → uint256` (external)
-
-
-
-
-
-### `pricePerShare() → uint256` (public)
+### totalAssets
+```solidity
+  function totalAssets(
+  ) public returns (uint256)
+```
 
 
 
 
-
-### `setController(address _controller)` (public)
-
-
-
-
-
-### `deposit(uint256 _amount)` (public)
+### decimals
+```solidity
+  function decimals(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `withdrawAll()` (external)
-
-
-
-
-
-### `withdraw(uint256 _shares) → uint256` (public)
+### pricePerShare
+```solidity
+  function pricePerShare(
+  ) public returns (uint256)
+```
 
 
 
 
+### setController
+```solidity
+  function setController(
+  ) public
+```
+
+
+
+
+### deposit
+```solidity
+  function deposit(
+  ) public
+```
+
+
+
+
+### withdrawAll
+```solidity
+  function withdrawAll(
+  ) external
+```
+
+
+
+
+### withdraw
+```solidity
+  function withdraw(
+  ) public returns (uint256)
+```
 
 
 

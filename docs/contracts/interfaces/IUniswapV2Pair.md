@@ -1,208 +1,296 @@
-## `IUniswapV2Pair`
 
 
 
+## Functions
+### name
+```solidity
+  function name(
+  ) external returns (string)
+```
 
 
 
-### `name() → string` (external)
 
+### symbol
+```solidity
+  function symbol(
+  ) external returns (string)
+```
 
 
 
 
-### `symbol() → string` (external)
+### decimals
+```solidity
+  function decimals(
+  ) external returns (uint8)
+```
 
 
 
 
+### totalSupply
+```solidity
+  function totalSupply(
+  ) external returns (uint256)
+```
 
-### `decimals() → uint8` (external)
 
 
 
+### balanceOf
+```solidity
+  function balanceOf(
+  ) external returns (uint256)
+```
 
 
-### `totalSupply() → uint256` (external)
 
 
+### allowance
+```solidity
+  function allowance(
+  ) external returns (uint256)
+```
 
 
 
-### `balanceOf(address owner) → uint256` (external)
 
+### approve
+```solidity
+  function approve(
+  ) external returns (bool)
+```
 
 
 
 
-### `allowance(address owner, address spender) → uint256` (external)
+### transfer
+```solidity
+  function transfer(
+  ) external returns (bool)
+```
 
 
 
 
+### transferFrom
+```solidity
+  function transferFrom(
+  ) external returns (bool)
+```
 
-### `approve(address spender, uint256 value) → bool` (external)
 
 
 
+### DOMAIN_SEPARATOR
+```solidity
+  function DOMAIN_SEPARATOR(
+  ) external returns (bytes32)
+```
 
 
-### `transfer(address to, uint256 value) → bool` (external)
 
 
+### PERMIT_TYPEHASH
+```solidity
+  function PERMIT_TYPEHASH(
+  ) external returns (bytes32)
+```
 
 
 
-### `transferFrom(address from, address to, uint256 value) → bool` (external)
 
+### nonces
+```solidity
+  function nonces(
+  ) external returns (uint256)
+```
 
 
 
 
-### `DOMAIN_SEPARATOR() → bytes32` (external)
+### permit
+```solidity
+  function permit(
+  ) external
+```
 
 
 
 
+### MINIMUM_LIQUIDITY
+```solidity
+  function MINIMUM_LIQUIDITY(
+  ) external returns (uint256)
+```
 
-### `PERMIT_TYPEHASH() → bytes32` (external)
 
 
 
+### factory
+```solidity
+  function factory(
+  ) external returns (address)
+```
 
 
-### `nonces(address owner) → uint256` (external)
 
 
+### token0
+```solidity
+  function token0(
+  ) external returns (address)
+```
 
 
 
-### `permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)` (external)
 
+### token1
+```solidity
+  function token1(
+  ) external returns (address)
+```
 
 
 
 
-### `MINIMUM_LIQUIDITY() → uint256` (external)
+### getReserves
+```solidity
+  function getReserves(
+  ) external returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast)
+```
 
 
 
 
+### price0CumulativeLast
+```solidity
+  function price0CumulativeLast(
+  ) external returns (uint256)
+```
 
-### `factory() → address` (external)
 
 
 
+### price1CumulativeLast
+```solidity
+  function price1CumulativeLast(
+  ) external returns (uint256)
+```
 
 
-### `token0() → address` (external)
 
 
+### kLast
+```solidity
+  function kLast(
+  ) external returns (uint256)
+```
 
 
 
-### `token1() → address` (external)
 
+### mint
+```solidity
+  function mint(
+  ) external returns (uint256 liquidity)
+```
 
 
 
 
-### `getReserves() → uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast` (external)
+### burn
+```solidity
+  function burn(
+  ) external returns (uint256 amount0, uint256 amount1)
+```
 
 
 
 
+### swap
+```solidity
+  function swap(
+  ) external
+```
 
-### `price0CumulativeLast() → uint256` (external)
 
 
 
+### skim
+```solidity
+  function skim(
+  ) external
+```
 
 
-### `price1CumulativeLast() → uint256` (external)
 
 
+### sync
+```solidity
+  function sync(
+  ) external
+```
 
 
 
-### `kLast() → uint256` (external)
 
+### initialize
+```solidity
+  function initialize(
+  ) external
+```
 
 
 
 
-### `mint(address to) → uint256 liquidity` (external)
+## Events
+### Approval
+```solidity
+  event Approval(
+  )
+```
 
 
 
+### Transfer
+```solidity
+  event Transfer(
+  )
+```
 
 
-### `burn(address to) → uint256 amount0, uint256 amount1` (external)
 
+### Mint
+```solidity
+  event Mint(
+  )
+```
 
 
 
+### Burn
+```solidity
+  event Burn(
+  )
+```
 
-### `swap(uint256 amount0Out, uint256 amount1Out, address to, bytes data)` (external)
 
 
+### Swap
+```solidity
+  event Swap(
+  )
+```
 
 
 
-### `skim(address to)` (external)
-
-
-
-
-
-### `sync()` (external)
-
-
-
-
-
-### `initialize(address, address)` (external)
-
-
-
-
-
-
-### `Approval(address owner, address spender, uint256 value)`
-
-
-
-
-
-### `Transfer(address from, address to, uint256 value)`
-
-
-
-
-
-### `Mint(address sender, uint256 amount0, uint256 amount1)`
-
-
-
-
-
-### `Burn(address sender, uint256 amount0, uint256 amount1, address to)`
-
-
-
-
-
-### `Swap(address sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address to)`
-
-
-
-
-
-### `Sync(uint112 reserve0, uint112 reserve1)`
-
-
-
-
+### Sync
+```solidity
+  event Sync(
+  )
+```
 
 
 

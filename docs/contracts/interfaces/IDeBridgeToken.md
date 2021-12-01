@@ -1,21 +1,21 @@
-## `IDeBridgeToken`
+
+
+
+## Functions
+### mint
+```solidity
+  function mint(
+  ) external
+```
 
 
 
 
-
-
-### `mint(address _receiver, uint256 _amount)` (external)
-
-
-
-
-
-### `burn(uint256 _amount)` (external)
-
-
-
-
+### burn
+```solidity
+  function burn(
+  ) external
+```
 
 
 

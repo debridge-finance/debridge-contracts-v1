@@ -1,76 +1,102 @@
-## `MockCToken`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(address _comptroller, string _name, string _symbol, uint8 decimals_, address uderlyingAssetAddress)` (public)
-
-
-
-
-
-### `transferFrom(address sender, address recipient, uint256 amount) → bool` (public)
+### transferFrom
+```solidity
+  function transferFrom(
+  ) public returns (bool)
+```
 
 
 
 
-
-### `balanceOf(address owner) → uint256` (public)
-
-
-
-
-
-### `balanceOfCToken(address user) → uint256` (public)
+### balanceOf
+```solidity
+  function balanceOf(
+  ) public returns (uint256)
+```
 
 
 
 
-
-### `mint(address user, uint256 amount, uint256 index)` (external)
-
-
-
-
-
-### `burn(address user, address receiverOfUnderlying, uint256 amount, uint256 index)` (external)
+### balanceOfCToken
+```solidity
+  function balanceOfCToken(
+  ) public returns (uint256)
+```
 
 
 
 
-
-### `decimals() → uint8` (public)
-
-
-
-
-
-### `getBlockNumber() → uint256` (internal)
+### mint
+```solidity
+  function mint(
+  ) external
+```
 
 
 
 
-
-### `_setComptroller(address newComptroller)` (public)
-
-
-
-
-
-
-### `Mint(address to, uint256 value, uint256 index)`
+### burn
+```solidity
+  function burn(
+  ) external
+```
 
 
 
 
+### decimals
+```solidity
+  function decimals(
+  ) public returns (uint8)
+```
 
-### `Burn(address from, address target, uint256 value, uint256 index)`
+
+
+
+### getBlockNumber
+```solidity
+  function getBlockNumber(
+  ) internal returns (uint256)
+```
 
 
 
 
+### _setComptroller
+```solidity
+  function _setComptroller(
+  ) public
+```
+
+
+
+
+## Events
+### Mint
+```solidity
+  event Mint(
+  )
+```
+
+
+
+### Burn
+```solidity
+  event Burn(
+  )
+```
 
 
 

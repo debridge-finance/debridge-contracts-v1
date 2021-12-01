@@ -1,99 +1,138 @@
-## `MockYToken`
 
 
 
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
-### `constructor(address _registry, string name, string symbol, uint8 decimals, address _token)` (public)
 
+### setRegistry
+```solidity
+  function setRegistry(
+  ) external
+```
 
 
 
 
-### `setRegistry(address _registry)` (external)
+### totalSupply
+```solidity
+  function totalSupply(
+  ) public returns (uint256 total)
+```
 
 
 
 
+### balanceOf
+```solidity
+  function balanceOf(
+  ) public returns (uint256 balance)
+```
 
-### `totalSupply() → uint256 total` (public)
 
 
 
+### _transfer
+```solidity
+  function _transfer(
+  ) internal
+```
 
 
-### `balanceOf(address account) → uint256 balance` (public)
 
 
+### transfer
+```solidity
+  function transfer(
+  ) public returns (bool)
+```
 
 
 
-### `_transfer(address sender, address receiver, uint256 amount)` (internal)
 
+### mint
+```solidity
+  function mint(
+  ) external
+```
 
 
 
 
-### `transfer(address receiver, uint256 amount) → bool` (public)
+### burn
+```solidity
+  function burn(
+  ) external
+```
 
 
 
 
+### deposit
+```solidity
+  function deposit(
+  ) external returns (uint256)
+```
 
-### `mint(address account, uint256 amount)` (external)
 
 
 
+### withdraw
+```solidity
+  function withdraw(
+  ) external returns (uint256)
+```
 
 
-### `burn(address account, uint256 amount)` (external)
 
 
+### allVaults
+```solidity
+  function allVaults(
+  ) public returns (contract MockYearnVault[])
+```
 
 
 
-### `deposit(uint256 amount) → uint256` (external)
 
+### totalVaultBalance
+```solidity
+  function totalVaultBalance(
+  ) public returns (uint256 balance)
+```
 
 
 
 
-### `withdraw(uint256 amount) → uint256` (external)
+### totalAssets
+```solidity
+  function totalAssets(
+  ) public returns (uint256 assets)
+```
 
 
 
 
+### _deposit
+```solidity
+  function _deposit(
+  ) internal returns (uint256 deposited)
+```
 
-### `allVaults() → contract MockYearnVault[]` (public)
 
 
 
-
-
-### `totalVaultBalance(address account) → uint256 balance` (public)
-
-
-
-
-
-### `totalAssets() → uint256 assets` (public)
-
-
-
-
-
-### `_deposit(address depositor, address receiver, uint256 amount, bool pullFunds) → uint256 deposited` (internal)
-
-
-
-
-
-### `_withdraw(address sender, address receiver, uint256 amount) → uint256 withdrawn` (internal)
-
-
-
-
+### _withdraw
+```solidity
+  function _withdraw(
+  ) internal returns (uint256 withdrawn)
+```
 
 
 

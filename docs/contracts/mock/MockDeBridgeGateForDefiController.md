@@ -1,33 +1,39 @@
-## `MockDeBridgeGateForDefiController`
+
+
+
+## Functions
+### init
+```solidity
+  function init(
+  ) external
+```
 
 
 
 
-
-
-### `init()` (external)
-
-
-
-
-
-### `sendETH()` (external)
+### sendETH
+```solidity
+  function sendETH(
+  ) external
+```
 
 
 
 
-
-### `addDebridge(address tokenAddress, uint256 chainId, uint256 maxAmount, uint256 collectedFees, uint256 balance, uint256 lockedInStrategies, uint16 minReservesBps, uint256 chainFee, bool exist)` (public)
-
-
-
-
-
-### `getChainId() → uint256 cid` (public)
+### addDebridge
+```solidity
+  function addDebridge(
+  ) public
+```
 
 
 
 
+### getChainId
+```solidity
+  function getChainId(
+  ) public returns (uint256 cid)
+```
 
 
 

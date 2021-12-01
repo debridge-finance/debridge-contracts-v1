@@ -1,39 +1,48 @@
-## `IStrategy`
+
+
+
+## Functions
+### deposit
+```solidity
+  function deposit(
+  ) external
+```
 
 
 
 
-
-
-### `deposit(address token, uint256 amount)` (external)
-
-
-
-
-
-### `withdraw(address token, uint256 amount)` (external)
+### withdraw
+```solidity
+  function withdraw(
+  ) external
+```
 
 
 
 
-
-### `withdrawAll(address token)` (external)
-
-
-
-
-
-### `strategyToken(address token) → address` (external)
+### withdrawAll
+```solidity
+  function withdrawAll(
+  ) external
+```
 
 
 
 
+### strategyToken
+```solidity
+  function strategyToken(
+  ) external returns (address)
+```
 
-### `updateReserves(address account, address token) → uint256` (external)
 
 
 
-
+### updateReserves
+```solidity
+  function updateReserves(
+  ) external returns (uint256)
+```
 
 
 

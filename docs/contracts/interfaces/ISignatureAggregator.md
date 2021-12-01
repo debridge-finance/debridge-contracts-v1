@@ -1,82 +1,48 @@
-## `ISignatureAggregator`
+
+
+
+## Functions
+### submitMany
+```solidity
+  function submitMany(
+  ) external
+```
 
 
 
 
-
-
-### `submitMany(bytes32[] _submissionIds, bytes[] _signatures)` (external)
-
-
-
-
-
-### `submit(bytes32 _submissionId, bytes _signature)` (external)
+### submit
+```solidity
+  function submit(
+  ) external
+```
 
 
 
 
-
-### `getSubmissionConfirmations(bytes32 _submissionId) → uint8 _confirmations, bool _blockConfirmationPassed` (external)
-
-
-
-
-
-
-### `DeployConfirmed(bytes32 deployId, address operator, bytes signature)`
+### getSubmissionConfirmations
+```solidity
+  function getSubmissionConfirmations(
+  ) external returns (uint8 _confirmations, bool _blockConfirmationPassed)
+```
 
 
 
 
-
-### `Confirmed(bytes32 submissionId, address operator, bytes signature)`
-
-
-
-
-
-
-### `SubmissionInfo`
+## Events
+### DeployConfirmed
+```solidity
+  event DeployConfirmed(
+  )
+```
 
 
-uint8 confirmations
 
-
-bytes[] signatures
-
-
-mapping(address => bool) hasVerified
-
-
-### `DebridgeDeployInfo`
-
-
-uint256 chainId
-
-
-bytes nativeAddress
-
-
-uint8 decimals
-
-
-uint8 confirmations
-
-
-bool approved
-
-
-string name
-
-
-string symbol
-
-
-bytes[] signatures
-
-
-mapping(address => bool) hasVerified
+### Confirmed
+```solidity
+  event Confirmed(
+  )
+```
 
 
 

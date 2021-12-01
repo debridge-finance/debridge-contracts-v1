@@ -1,51 +1,57 @@
-## `CallProxy`
+
+
+
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 
 
 
-
-### `onlyGateRole()`
-
-
-
-
-
-
-### `initialize()` (public)
+### call
+```solidity
+  function call(
+  ) external returns (bool _result)
+```
 
 
 
 
-
-### `call(address _reserveAddress, address _receiver, bytes _data, uint256 _flags, bytes _nativeSender, uint256 _chainIdFrom) → bool _result` (external)
-
-
-
-
-
-### `callERC20(address _token, address _reserveAddress, address _receiver, bytes _data, uint256 _flags, bytes _nativeSender, uint256 _chainIdFrom) → bool _result` (external)
+### callERC20
+```solidity
+  function callERC20(
+  ) external returns (bool _result)
+```
 
 
 
 
-
-### `externalCall(address destination, uint256 value, bytes data, bytes _nativeSender, uint256 _chainIdFrom, bool storeSender) → bool result` (internal)
-
-
-
-
-
-### `receive()` (external)
+### externalCall
+```solidity
+  function externalCall(
+  ) internal returns (bool result)
+```
 
 
 
 
+### receive
+```solidity
+  function receive(
+  ) external
+```
 
-### `version() → uint256` (external)
 
 
 
-
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 

@@ -1,15 +1,12 @@
-## `IDefiController`
 
 
 
-
-
-
-### `claimReserve(address _tokenAddress, uint256 _amount)` (external)
-
-
-
-
+## Functions
+### claimReserve
+```solidity
+  function claimReserve(
+  ) external
+```
 
 
 

@@ -1,27 +1,30 @@
-## `IController`
+
+
+
+## Functions
+### withdraw
+```solidity
+  function withdraw(
+  ) external
+```
 
 
 
 
-
-
-### `withdraw(address, uint256)` (external)
-
-
-
-
-
-### `balanceOf(address) → uint256` (external)
+### balanceOf
+```solidity
+  function balanceOf(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `vaults(address) → address` (external)
-
-
-
-
+### vaults
+```solidity
+  function vaults(
+  ) external returns (address)
+```
 
 
 

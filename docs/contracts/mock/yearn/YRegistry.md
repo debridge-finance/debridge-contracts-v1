@@ -1,39 +1,48 @@
-## `YRegistry`
+
+
+
+## Functions
+### addVault
+```solidity
+  function addVault(
+  ) public
+```
 
 
 
 
-
-
-### `addVault(address _vault)` (public)
-
-
-
-
-
-### `setController(address _controller)` (internal)
+### setController
+```solidity
+  function setController(
+  ) internal
+```
 
 
 
 
-
-### `setVault(address _vault)` (internal)
-
-
-
-
-
-### `getVaultData(address _vault) → address` (internal)
+### setVault
+```solidity
+  function setVault(
+  ) internal
+```
 
 
 
 
+### getVaultData
+```solidity
+  function getVaultData(
+  ) internal returns (address)
+```
 
-### `getVaults() → contract MockYearnVault[]` (external)
 
 
 
-
+### getVaults
+```solidity
+  function getVaults(
+  ) external returns (contract MockYearnVault[])
+```
 
 
 

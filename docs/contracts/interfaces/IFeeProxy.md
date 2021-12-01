@@ -1,22 +1,22 @@
-## `IFeeProxy`
+
+
+
+## Functions
+### withdrawFee
+```solidity
+  function withdrawFee(
+  ) external
+```
 
 
 
 
-
-
-### `withdrawFee(address _tokenAddress)` (external)
-
-
-
-
-
-### `withdrawNativeFee()` (external)
-
-
+### withdrawNativeFee
+```solidity
+  function withdrawNativeFee(
+  ) external
+```
 
 Swap  Native tokens to deETH and then transfer reward to Ethereum network.
-
-
 
 

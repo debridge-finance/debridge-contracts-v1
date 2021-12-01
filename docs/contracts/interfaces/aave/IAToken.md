@@ -1,27 +1,30 @@
-## `IAToken`
+
+
+
+## Functions
+### UNDERLYING_ASSET_ADDRESS
+```solidity
+  function UNDERLYING_ASSET_ADDRESS(
+  ) external returns (address)
+```
 
 
 
 
-
-
-### `UNDERLYING_ASSET_ADDRESS() → address` (external)
-
-
-
-
-
-### `getIncentivesController() → contract IAaveIncentivesController` (external)
+### getIncentivesController
+```solidity
+  function getIncentivesController(
+  ) external returns (contract IAaveIncentivesController)
+```
 
 
 
 
-
-### `balanceOf(address user) → uint256` (external)
-
-
-
-
+### balanceOf
+```solidity
+  function balanceOf(
+  ) external returns (uint256)
+```
 
 
 

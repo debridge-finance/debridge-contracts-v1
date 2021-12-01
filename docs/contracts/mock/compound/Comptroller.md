@@ -1,27 +1,30 @@
-## `Comptroller`
+
+
+
+## Functions
+### claimComp
+```solidity
+  function claimComp(
+  ) public
+```
 
 
 
 
-
-
-### `claimComp(address holder, contract ICToken[] cTokens)` (public)
-
-
-
-
-
-### `addMarket(address cToken)` (public)
+### addMarket
+```solidity
+  function addMarket(
+  ) public
+```
 
 
 
 
-
-### `getAllMarkets() → address[]` (public)
-
-
-
-
+### getAllMarkets
+```solidity
+  function getAllMarkets(
+  ) public returns (address[])
+```
 
 
 

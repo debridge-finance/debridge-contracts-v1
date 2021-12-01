@@ -1,39 +1,48 @@
-## `MockLinkToken`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(string _name, string _symbol, uint8 _decimal)` (public)
-
-
-
-
-
-### `mint(address _receiver, uint256 _amount)` (external)
+### mint
+```solidity
+  function mint(
+  ) external
+```
 
 
 
 
-
-### `burn(uint256 _amount)` (external)
-
-
-
-
-
-### `decimals() → uint8` (public)
+### burn
+```solidity
+  function burn(
+  ) external
+```
 
 
 
 
+### decimals
+```solidity
+  function decimals(
+  ) public returns (uint8)
+```
 
-### `transferAndCall(address _to, uint256 _value, bytes _data) → bool success` (public)
 
 
 
-
+### transferAndCall
+```solidity
+  function transferAndCall(
+  ) public returns (bool success)
+```
 
 
 

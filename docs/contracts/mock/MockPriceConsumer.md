@@ -1,41 +1,62 @@
-## `MockPriceConsumer`
+
+
+
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 
 
 
-
-
-### `initialize(address _weth, address _factory)` (public)
-
-
-
-
-
-### `getPriceOfTokenInWETH(address _token) → uint256` (external)
-
-
+### getPriceOfTokenInWETH
+```solidity
+  function getPriceOfTokenInWETH(
+    address _token
+  ) external returns (uint256)
+```
 
 get Price of Token in WETH
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_token` | address | address of token
 
-### `getRate(address _base, address _quote) → uint256` (public)
-
-
+### getRate
+```solidity
+  function getRate(
+    address _base,
+    address _quote
+  ) public returns (uint256)
+```
 
 get Price of Token in another token
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_base` | address | address of base token
+|`_quote` | address | address of quote token
+ETH/USD = 3000 (ETH is base, USD is quote)
+Rate = reserveQuote / reserveBase
 
-### `getPairAddress(address _token0, address _token1) → address` (public)
+### getPairAddress
+```solidity
+  function getPairAddress(
+  ) public returns (address)
+```
 
 
 
 
-
-### `addPriceFeed(address _token, uint256 _price)` (external)
-
-
-
-
+### addPriceFeed
+```solidity
+  function addPriceFeed(
+  ) external
+```
 
 
 

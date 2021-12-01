@@ -1,88 +1,118 @@
-## `MockWeth`
 
 
 
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
-### `constructor(string _name, string _symbol)` (public)
 
+### receive
+```solidity
+  function receive(
+  ) external
+```
 
 
 
 
-### `receive()` (external)
+### deposit
+```solidity
+  function deposit(
+  ) public
+```
 
 
 
 
+### withdraw
+```solidity
+  function withdraw(
+  ) public
+```
 
-### `deposit()` (public)
 
 
 
+### _safeTransferETH
+```solidity
+  function _safeTransferETH(
+  ) internal
+```
 
 
-### `withdraw(uint256 wad)` (public)
 
 
+### totalSupply
+```solidity
+  function totalSupply(
+  ) public returns (uint256)
+```
 
 
 
-### `_safeTransferETH(address to, uint256 value)` (internal)
 
+### approve
+```solidity
+  function approve(
+  ) public returns (bool)
+```
 
 
 
 
-### `totalSupply() → uint256` (public)
+### transfer
+```solidity
+  function transfer(
+  ) public returns (bool)
+```
 
 
 
 
+### transferFrom
+```solidity
+  function transferFrom(
+  ) public returns (bool)
+```
 
-### `approve(address guy, uint256 wad) → bool` (public)
 
 
 
+## Events
+### Approval
+```solidity
+  event Approval(
+  )
+```
 
 
-### `transfer(address dst, uint256 wad) → bool` (public)
 
+### Transfer
+```solidity
+  event Transfer(
+  )
+```
 
 
 
+### Deposit
+```solidity
+  event Deposit(
+  )
+```
 
-### `transferFrom(address src, address dst, uint256 wad) → bool` (public)
 
 
-
-
-
-
-### `Approval(address src, address guy, uint256 wad)`
-
-
-
-
-
-### `Transfer(address src, address dst, uint256 wad)`
-
-
-
-
-
-### `Deposit(address dst, uint256 wad)`
-
-
-
-
-
-### `Withdrawal(address src, uint256 wad)`
-
-
-
-
+### Withdrawal
+```solidity
+  event Withdrawal(
+  )
+```
 
 
 

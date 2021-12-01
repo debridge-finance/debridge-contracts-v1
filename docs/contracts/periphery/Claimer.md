@@ -1,109 +1,76 @@
-## `Claimer`
 
 
 
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 
-### `onlyAdmin()`
 
 
+### batchClaim
+```solidity
+  function batchClaim(
+  ) external
+```
 
 
 
 
-### `initialize(contract DeBridgeGate _deBridgeGate)` (public)
+### batchAssetsDeploy
+```solidity
+  function batchAssetsDeploy(
+  ) external
+```
 
 
 
 
+### isSubmissionsUsed
+```solidity
+  function isSubmissionsUsed(
+  ) external returns (bool[] result)
+```
 
-### `batchClaim(struct Claimer.ClaimInfo[] _claims)` (external)
 
 
 
+### isDebridgesExists
+```solidity
+  function isDebridgesExists(
+  ) external returns (bool[] result)
+```
 
 
-### `batchAssetsDeploy(struct Claimer.AssetDeployInfo[] _deploys)` (external)
 
 
+### setDeBridgeGate
+```solidity
+  function setDeBridgeGate(
+  ) external
+```
 
 
 
-### `isSubmissionsUsed(bytes32[] _submissionIds) → bool[] result` (external)
 
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 
 
-### `isDebridgesExists(bytes32[] _debridgeIds) → bool[] result` (external)
-
-
-
-
-
-### `setDeBridgeGate(contract DeBridgeGate _deBridgeGate)` (external)
-
-
-
-
-
-### `version() → uint256` (external)
-
-
-
-
-
-
-### `BatchError(uint256 index)`
-
-
-
-
-
-
-### `ClaimInfo`
-
-
-bytes32 debridgeId
-
-
-uint256 amount
-
-
-uint256 chainIdFrom
-
-
-address receiver
-
-
-uint256 nonce
-
-
-bytes signatures
-
-
-bytes autoParams
-
-
-### `AssetDeployInfo`
-
-
-bytes nativeTokenAddress
-
-
-uint256 nativeChainId
-
-
-string name
-
-
-string symbol
-
-
-uint8 decimals
-
-
-bytes signatures
+## Events
+### BatchError
+```solidity
+  event BatchError(
+  )
+```
 
 
 

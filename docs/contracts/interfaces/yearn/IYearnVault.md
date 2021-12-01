@@ -1,33 +1,39 @@
-## `IYearnVault`
+
+
+
+## Functions
+### deposit
+```solidity
+  function deposit(
+  ) external returns (uint256)
+```
 
 
 
 
-
-
-### `deposit(uint256 _amount, address recipient) → uint256` (external)
-
-
-
-
-
-### `withdraw(uint256 maxShares, address recipient, uint256 maxLoss) → uint256` (external)
+### withdraw
+```solidity
+  function withdraw(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `token() → address` (external)
-
-
-
-
-
-### `controller() → address` (external)
+### token
+```solidity
+  function token(
+  ) external returns (address)
+```
 
 
 
 
+### controller
+```solidity
+  function controller(
+  ) external returns (address)
+```
 
 
 

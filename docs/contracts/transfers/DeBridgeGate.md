@@ -1,347 +1,625 @@
-## `DeBridgeGate`
 
 
 
-
-
-### `onlyFeeProxy()`
-
-
-
-
-
-### `onlyDefiController()`
-
-
-
-
-
-### `onlyFeeContractUpdater()`
-
-
-
-
-
-### `onlyAdmin()`
-
-
-
-
-
-### `onlyGovMonitoring()`
-
-
-
-
-
-### `lockClaim()`
-
-
-
-lock for claim method
-
-
-### `initialize(uint8 _excessConfirmations, contract IWETH _weth)` (public)
-
-
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 Constructor that initializes the most important configurations.
 
-### `send(address _tokenAddress, uint256 _amount, uint256 _chainIdTo, bytes _receiver, bytes _permit, bool _useAssetFee, uint32 _referralCode, bytes _autoParams)` (external)
 
-
+### send
+```solidity
+  function send(
+    address _tokenAddress,
+    uint256 _amount,
+    uint256 _chainIdTo,
+    bytes _receiver,
+    bytes _permit,
+    bool _useAssetFee,
+    uint32 _referralCode,
+    bytes _autoParams
+  ) external
+```
 
 Locks asset on the chain and enables withdraw on the other chain.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_tokenAddress` | address | Asset identifier.
+|`_amount` | uint256 | Amount to be transfered (note: the fee can be applyed).
+|`_chainIdTo` | uint256 | Chain id of the target chain.
+|`_receiver` | bytes | Receiver address.
+|`_permit` | bytes | deadline + signature for approving the spender by signature.
+|`_useAssetFee` | bool | use assets fee for pay protocol fix (work only for specials token)
+|`_referralCode` | uint32 | Referral code
+|`_autoParams` | bytes | Auto params for external call in target network
 
-### `claim(bytes32 _debridgeId, uint256 _amount, uint256 _chainIdFrom, address _receiver, uint256 _nonce, bytes _signatures, bytes _autoParams)` (external)
-
-
+### claim
+```solidity
+  function claim(
+    bytes32 _debridgeId,
+    uint256 _amount,
+    uint256 _chainIdFrom,
+    address _receiver,
+    uint256 _nonce,
+    bytes _signatures,
+    bytes _autoParams
+  ) external
+```
 
 Unlock the asset on the current chain and transfer to receiver.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
+|`_amount` | uint256 | Amount of the transfered asset (note: the fee can be applyed).
+|`_chainIdFrom` | uint256 | Chain where submission was sent
+|`_receiver` | address | Receiver address.
+|`_nonce` | uint256 | Submission id.
+|`_signatures` | bytes | Validators signatures to confirm
+|`_autoParams` | bytes | Auto params for external call
 
-### `flash(address _tokenAddress, address _receiver, uint256 _amount, bytes _data)` (external)
+### flash
+```solidity
+  function flash(
+  ) external
+```
 
 
 
 
-
-### `deployNewAsset(bytes _nativeTokenAddress, uint256 _nativeChainId, string _name, string _symbol, uint8 _decimals, bytes _signatures)` (external)
-
-
-
-
-
-### `autoUpdateFixedNativeFee(uint256 _globalFixedNativeFee)` (external)
+### deployNewAsset
+```solidity
+  function deployNewAsset(
+  ) external
+```
 
 
+
+
+### autoUpdateFixedNativeFee
+```solidity
+  function autoUpdateFixedNativeFee(
+    uint256 _globalFixedNativeFee
+  ) external
+```
 
 Update native fix fee. called by our fee update contract
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_globalFixedNativeFee` | uint256 |  new value
 
-### `updateChainSupport(uint256[] _chainIds, struct IDeBridgeGate.ChainSupportInfo[] _chainSupportInfo, bool _isChainFrom)` (external)
-
-
-
-Update asset's fees.
-
-
-### `updateGlobalFee(uint256 _globalFixedNativeFee, uint16 _globalTransferFeeBps)` (external)
-
-
-
-
-
-### `updateAssetFixedFees(bytes32 _debridgeId, uint256[] _supportedChainIds, uint256[] _assetFeesInfo)` (external)
-
-
+### updateChainSupport
+```solidity
+  function updateChainSupport(
+    uint256[] _chainIds,
+    struct IDeBridgeGate.ChainSupportInfo[] _chainSupportInfo,
+    bool _isChainFrom
+  ) external
+```
 
 Update asset's fees.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_chainIds` | uint256[] | Chain identifiers.
+|`_chainSupportInfo` | struct IDeBridgeGate.ChainSupportInfo[] | Chain support info.
+|`_isChainFrom` | bool | is true for editing getChainFromConfig.
 
-### `updateExcessConfirmations(uint8 _excessConfirmations)` (external)
+### updateGlobalFee
+```solidity
+  function updateGlobalFee(
+  ) external
+```
 
 
 
 
+### updateAssetFixedFees
+```solidity
+  function updateAssetFixedFees(
+    bytes32 _debridgeId,
+    uint256[] _supportedChainIds,
+    uint256[] _assetFeesInfo
+  ) external
+```
 
-### `setChainSupport(uint256 _chainId, bool _isSupported, bool _isChainFrom)` (external)
+Update asset's fees.
+
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
+|`_supportedChainIds` | uint256[] | Chain identifiers.
+|`_assetFeesInfo` | uint256[] | Chain support info.
+
+### updateExcessConfirmations
+```solidity
+  function updateExcessConfirmations(
+  ) external
+```
 
 
+
+
+### setChainSupport
+```solidity
+  function setChainSupport(
+    uint256 _chainId,
+    bool _isSupported,
+    bool _isChainFrom
+  ) external
+```
 
 Set support for the chains where the token can be transfered.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_chainId` | uint256 | Chain id where tokens are sent.
+|`_isSupported` | bool | Whether the token is transferable to the other chain.
+|`_isChainFrom` | bool | is true for editing getChainFromConfig.
 
-### `setCallProxy(address _callProxy)` (external)
-
-
+### setCallProxy
+```solidity
+  function setCallProxy(
+    address _callProxy
+  ) external
+```
 
 Set proxy address.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_callProxy` | address | Address of the proxy that executes external calls.
 
-### `updateAsset(bytes32 _debridgeId, uint256 _maxAmount, uint16 _minReservesBps, uint256 _amountThreshold)` (external)
-
-
+### updateAsset
+```solidity
+  function updateAsset(
+    bytes32 _debridgeId,
+    uint256 _maxAmount,
+    uint16 _minReservesBps
+  ) external
+```
 
 Add support for the asset.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
+|`_maxAmount` | uint256 | Maximum amount of current chain token to be wrapped.
+|`_minReservesBps` | uint16 | Minimal reserve ration in BPS.
 
-### `setSignatureVerifier(address _verifier)` (external)
-
-
+### setSignatureVerifier
+```solidity
+  function setSignatureVerifier(
+    address _verifier
+  ) external
+```
 
 Set signature verifier address.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_verifier` | address | Signature verifier address.
 
-### `setDeBridgeTokenDeployer(address _deBridgeTokenDeployer)` (external)
-
-
+### setDeBridgeTokenDeployer
+```solidity
+  function setDeBridgeTokenDeployer(
+    address _deBridgeTokenDeployer
+  ) external
+```
 
 Set asset deployer address.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_deBridgeTokenDeployer` | address | Asset deployer address.
 
-### `setDefiController(address _defiController)` (external)
-
-
+### setDefiController
+```solidity
+  function setDefiController(
+    address _defiController
+  ) external
+```
 
 Set defi controoler.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_defiController` | address | Defi controller address address.
 
-### `setFeeContractUpdater(address _value)` (external)
-
-
+### setFeeContractUpdater
+```solidity
+  function setFeeContractUpdater(
+    address _value
+  ) external
+```
 
 Set fee contract updater, that can update fix native fee
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_value` | address | new contract address.
 
-### `setWethGate(contract IWethGate _wethGate)` (external)
-
-
+### setWethGate
+```solidity
+  function setWethGate(
+    contract IWethGate _wethGate
+  ) external
+```
 
 Set wethGate contract, that uses for weth withdraws affected by EIP1884
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_wethGate` | contract IWethGate | address of new wethGate contract.
 
-### `pause()` (external)
-
-
+### pause
+```solidity
+  function pause(
+  ) external
+```
 
 Stop all transfers.
 
-### `unpause()` (external)
 
-
+### unpause
+```solidity
+  function unpause(
+  ) external
+```
 
 Allow transfers.
 
-### `withdrawFee(bytes32 _debridgeId)` (external)
 
-
+### withdrawFee
+```solidity
+  function withdrawFee(
+    bytes32 _debridgeId
+  ) external
+```
 
 Withdraw fees.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
 
-### `requestReserves(address _tokenAddress, uint256 _amount)` (external)
-
-
+### requestReserves
+```solidity
+  function requestReserves(
+    address _tokenAddress,
+    uint256 _amount
+  ) external
+```
 
 Request the assets to be used in defi protocol.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_tokenAddress` | address | Asset address.
+|`_amount` | uint256 | Amount of tokens to request.
 
-### `returnReserves(address _tokenAddress, uint256 _amount)` (external)
-
-
+### returnReserves
+```solidity
+  function returnReserves(
+    address _tokenAddress,
+    uint256 _amount
+  ) external
+```
 
 Return the assets that were used in defi protocol.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_tokenAddress` | address | Asset address.
+|`_amount` | uint256 | Amount of tokens to claim.
 
-### `setFeeProxy(address _feeProxy)` (external)
-
-
+### setFeeProxy
+```solidity
+  function setFeeProxy(
+    address _feeProxy
+  ) external
+```
 
 Set fee converter proxy.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_feeProxy` | address | Fee proxy address.
 
-### `blockSubmission(bytes32[] _submissionIds, bool isBlocked)` (external)
+### blockSubmission
+```solidity
+  function blockSubmission(
+  ) external
+```
 
 
 
 
-
-### `updateFlashFee(uint256 _flashFeeBps)` (external)
-
-
+### updateFlashFee
+```solidity
+  function updateFlashFee(
+    uint256 _flashFeeBps
+  ) external
+```
 
 Update flash fees.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_flashFeeBps` | uint256 | new fee in BPS
 
-### `updateFeeDiscount(address _address, uint16 _discountFixBps, uint16 _discountTransferBps)` (external)
-
-
+### updateFeeDiscount
+```solidity
+  function updateFeeDiscount(
+    address _address,
+    uint16 _discountFixBps,
+    uint16 _discountTransferBps
+  ) external
+```
 
 Update discount.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_address` | address | customer address
+|`_discountFixBps` | uint16 |  fix discount in BPS
+|`_discountTransferBps` | uint16 | transfer % discount in BPS
 
-### `receive()` (external)
-
-
-
-
-
-### `_checkConfirmations(bytes32 _submissionId, bytes32 _debridgeId, uint256 _amount, bytes _signatures)` (internal)
-
-
-
-
-
-### `_addAsset(bytes32 _debridgeId, address _tokenAddress, bytes _nativeAddress, uint256 _nativeChainId)` (internal)
+### receive
+```solidity
+  function receive(
+  ) external
+```
 
 
+
+
+### _checkConfirmations
+```solidity
+  function _checkConfirmations(
+  ) internal
+```
+
+
+
+
+### _addAsset
+```solidity
+  function _addAsset(
+    bytes32 _debridgeId,
+    address _tokenAddress,
+    bytes _nativeAddress,
+    uint256 _nativeChainId
+  ) internal
+```
 
 Add support for the asset.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
+|`_tokenAddress` | address | Address of the asset on the current chain.
+|`_nativeAddress` | bytes | Address of the asset on the native chain.
+|`_nativeChainId` | uint256 | Native chain id.
 
-### `_send(bytes _permit, address _tokenAddress, uint256 _amount, uint256 _chainIdTo, bool _useAssetFee) → uint256 amountAfterFee, bytes32 debridgeId, struct IDeBridgeGate.FeeParams feeParams` (internal)
-
-
+### _send
+```solidity
+  function _send(
+    bytes _amount,
+    address _chainIdTo,
+    uint256 _permit
+  ) internal returns (uint256 amountAfterFee, bytes32 debridgeId, struct IDeBridgeGate.FeeParams feeParams)
+```
 
 Locks asset on the chain and enables minting on the other chain.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_amount` | bytes | Amount to be transfered (note: the fee can be applyed).
+|`_chainIdTo` | address | Chain id of the target chain.
+|`_permit` | uint256 | deadline + signature for approving the spender by signature.
 
-### `_validateToken(address _token)` (internal)
-
-
-
-
-
-### `_validateAutoParams(bytes _autoParams, uint256 _amount) → struct IDeBridgeGate.SubmissionAutoParamsTo autoParams` (internal)
-
-
-
-
-
-### `_claim(bytes32 _submissionId, bytes32 _debridgeId, address _receiver, uint256 _amount, uint256 _chainIdFrom, struct IDeBridgeGate.SubmissionAutoParamsFrom _autoParams) → bool isNativeToken` (internal)
+### _validateToken
+```solidity
+  function _validateToken(
+  ) internal
+```
 
 
+
+
+### _validateAutoParams
+```solidity
+  function _validateAutoParams(
+  ) internal returns (struct IDeBridgeGate.SubmissionAutoParamsTo autoParams)
+```
+
+
+
+
+### _claim
+```solidity
+  function _claim(
+    bytes32 _debridgeId,
+    bytes32 _receiver,
+    address _amount
+  ) internal returns (bool isNativeToken)
+```
 
 Unlock the asset on the current chain and transfer to receiver.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
+|`_receiver` | bytes32 | Receiver address.
+|`_amount` | address | Amount of the transfered asset (note: the fee can be applyed).
 
-### `_mintOrTransfer(address _token, address _receiver, uint256 _amount, bool isNativeToken)` (internal)
-
-
-
-
-
-### `_safeTransferETH(address to, uint256 value)` (internal)
-
-
-
-
-
-### `_withdrawWeth(address _receiver, uint256 _amount)` (internal)
+### _mintOrTransfer
+```solidity
+  function _mintOrTransfer(
+  ) internal
+```
 
 
 
 
-
-### `_normalizeTokenAmount(address _token, uint256 _amount) → uint256` (internal)
-
-
-
-
-
-### `getDefiAvaliableReserves(address _tokenAddress) → uint256` (external)
+### _safeTransferETH
+```solidity
+  function _safeTransferETH(
+  ) internal
+```
 
 
 
 
+### _withdrawWeth
+```solidity
+  function _withdrawWeth(
+  ) internal
+```
 
-### `getDebridgeId(uint256 _chainId, address _tokenAddress) → bytes32` (public)
 
 
+
+### _normalizeTokenAmount
+```solidity
+  function _normalizeTokenAmount(
+  ) internal returns (uint256)
+```
+
+
+
+
+### getDefiAvaliableReserves
+```solidity
+  function getDefiAvaliableReserves(
+  ) external returns (uint256)
+```
+
+
+
+
+### getDebridgeId
+```solidity
+  function getDebridgeId(
+    uint256 _chainId,
+    address _tokenAddress
+  ) public returns (bytes32)
+```
 
 Calculates asset identifier.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_chainId` | uint256 | Current chain id.
+|`_tokenAddress` | address | Address of the asset on the other chain.
 
-### `getbDebridgeId(uint256 _chainId, bytes _tokenAddress) → bytes32` (public)
-
-
+### getbDebridgeId
+```solidity
+  function getbDebridgeId(
+    uint256 _chainId,
+    bytes _tokenAddress
+  ) public returns (bytes32)
+```
 
 Calculates asset identifier.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_chainId` | uint256 | Current chain id.
+|`_tokenAddress` | bytes | Address of the asset on the other chain.
 
-### `getDebridgeChainAssetFixedFee(bytes32 _debridgeId, uint256 _chainId) → uint256` (external)
-
-
+### getDebridgeChainAssetFixedFee
+```solidity
+  function getDebridgeChainAssetFixedFee(
+    bytes32 _debridgeId,
+    uint256 _chainId
+  ) external returns (uint256)
+```
 
 Returns asset fixed fee value for specified debridge and chainId.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
+|`_chainId` | uint256 | Chain id.
 
-### `getSubmissionIdFrom(bytes32 _debridgeId, uint256 _chainIdFrom, uint256 _amount, address _receiver, uint256 _nonce, struct IDeBridgeGate.SubmissionAutoParamsFrom autoParams, bool hasAutoParams) → bytes32` (public)
-
-
+### getSubmissionIdFrom
+```solidity
+  function getSubmissionIdFrom(
+    bytes32 _debridgeId,
+    uint256 _chainIdFrom,
+    uint256 _receiver,
+    address _amount,
+    uint256 _nonce
+  ) public returns (bytes32)
+```
 
 Calculate submission id for auto claimable transfer.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Asset identifier.
+|`_chainIdFrom` | uint256 | Chain identifier of the chain where tokens are sent from.
+|`_receiver` | uint256 | Receiver address.
+|`_amount` | address | Amount of the transfered asset (note: the fee can be applyed).
+|`_nonce` | uint256 | Submission id.
 
-### `getNativeTokenInfo(address currentTokenAddress) → uint256 nativeChainId, bytes nativeAddress` (external)
-
-
-
-
-
-### `getChainId() → uint256 cid` (public)
-
-
-
-
-
-### `version() → uint256` (external)
-
-
+### getNativeTokenInfo
+```solidity
+  function getNativeTokenInfo(
+  ) external returns (uint256 nativeChainId, bytes nativeAddress)
+```
 
 
+
+
+### getChainId
+```solidity
+  function getChainId(
+  ) public returns (uint256 cid)
+```
+
+
+
+
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 

@@ -1,27 +1,30 @@
-## `MockFeeProxy`
+
+
+
+## Functions
+### initializeMock
+```solidity
+  function initializeMock(
+  ) public
+```
 
 
 
 
-
-
-### `initializeMock(contract IUniswapV2Factory _uniswapFactory, contract IWETH _weth)` (public)
-
-
-
-
-
-### `overrideChainId(uint256 _chainId)` (external)
-
-
+### overrideChainId
+```solidity
+  function overrideChainId(
+  ) external
+```
 
 override chain id (BSC/HECO)
 
-### `getChainId() → uint256 cid` (public)
 
-
-
-
+### getChainId
+```solidity
+  function getChainId(
+  ) public returns (uint256 cid)
+```
 
 
 

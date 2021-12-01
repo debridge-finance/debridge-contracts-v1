@@ -1,15 +1,12 @@
-## `ISwapProxy`
 
 
 
-
-
-
-### `swap(address _fromToken, address _toToken, address _receiver) → uint256` (external)
-
-
-
-
+## Functions
+### swap
+```solidity
+  function swap(
+  ) external returns (uint256)
+```
 
 
 

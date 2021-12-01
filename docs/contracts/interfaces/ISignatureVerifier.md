@@ -1,28 +1,30 @@
-## `ISignatureVerifier`
+
+
+
+## Functions
+### submit
+```solidity
+  function submit(
+  ) external
+```
 
 
 
 
-
-
-### `submit(bytes32 _submissionId, bytes _signatures, uint8 _excessConfirmations)` (external)
-
-
-
-
-
-
-### `Confirmed(bytes32 submissionId, address operator)`
+## Events
+### Confirmed
+```solidity
+  event Confirmed(
+  )
+```
 
 
 
-
-
-### `DeployConfirmed(bytes32 deployId, address operator)`
-
-
-
-
+### DeployConfirmed
+```solidity
+  event DeployConfirmed(
+  )
+```
 
 
 

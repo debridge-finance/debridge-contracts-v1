@@ -1,69 +1,131 @@
-## `SignatureAggregator`
 
 
 
-
-
-
-### `initialize(uint8 _minConfirmations, uint8 _excessConfirmations)` (public)
-
-
+## Functions
+### initialize
+```solidity
+  function initialize(
+    uint8 _minConfirmations,
+    uint8 _excessConfirmations
+  ) public
+```
 
 Constructor that initializes the most important configurations.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_minConfirmations` | uint8 | Common confirmations count.
+|`_excessConfirmations` | uint8 | Confirmations count in case of excess activity.
 
-### `confirmNewAsset(bytes _tokenAddress, uint256 _chainId, string _name, string _symbol, uint8 _decimals, bytes _signature)` (external)
-
-
+### confirmNewAsset
+```solidity
+  function confirmNewAsset(
+  ) external
+```
 
 Confirms the transfer request.
 
-### `submitMany(bytes32[] _submissionIds, bytes[] _signatures)` (external)
 
-
+### submitMany
+```solidity
+  function submitMany(
+    bytes32[] _submissionIds,
+    bytes[] _signatures
+  ) external
+```
 
 Confirms few transfer requests.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_submissionIds` | bytes32[] | Submission identifiers.
+|`_signatures` | bytes[] | Oracles signature.
 
-### `submit(bytes32 _submissionId, bytes _signature)` (external)
-
-
+### submit
+```solidity
+  function submit(
+    bytes32 _submissionId,
+    bytes _signature
+  ) external
+```
 
 Confirms the transfer request.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_submissionId` | bytes32 | Submission identifier.
+|`_signature` | bytes | Oracle's signature.
 
-### `_submit(bytes32 _submissionId, bytes _signature)` (internal)
-
-
+### _submit
+```solidity
+  function _submit(
+    bytes32 _submissionId,
+    bytes _signature
+  ) internal
+```
 
 Confirms single transfer request.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_submissionId` | bytes32 | Submission identifier.
+|`_signature` | bytes | Oracle's signature.
 
-### `getSubmissionConfirmations(bytes32 _submissionId) → uint8 _confirmations, bool _confirmed` (external)
-
-
+### getSubmissionConfirmations
+```solidity
+  function getSubmissionConfirmations(
+    bytes32 _submissionId
+  ) external returns (uint8 _confirmations, bool _confirmed)
+```
 
 Returns whether transfer request is confirmed.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_submissionId` | bytes32 | Submission identifier.
 
-### `getSubmissionSignatures(bytes32 _submissionId) → bytes[]` (external)
-
-
+#### Return Values:
+| Name                           | Type          | Description                                                                  |
+| :----------------------------- | :------------ | :--------------------------------------------------------------------------- |
+|`_confirmations`| bytes32 | number of confirmation.
+|`_confirmed`|  | Whether transfer request is confirmed.
+### getSubmissionSignatures
+```solidity
+  function getSubmissionSignatures(
+    bytes32 _submissionId
+  ) external returns (bytes[])
+```
 
 Returns whether transfer request is confirmed.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_submissionId` | bytes32 | Submission identifier.
 
-### `_checkSignature(bytes _signature, bytes32 _message)` (internal)
+#### Return Values:
+| Name                           | Type          | Description                                                                  |
+| :----------------------------- | :------------ | :--------------------------------------------------------------------------- |
+|`Oracles`| bytes32 | signatures.
+### _checkSignature
+```solidity
+  function _checkSignature(
+  ) internal
+```
 
 
 
 
-
-### `version() → uint256` (external)
-
-
-
-
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 

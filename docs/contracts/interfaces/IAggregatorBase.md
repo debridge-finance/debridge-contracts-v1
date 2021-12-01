@@ -1,46 +1,36 @@
-## `IAggregatorBase`
 
 
 
+## Events
+### AddOracle
+```solidity
+  event AddOracle(
+  )
+```
 
 
 
-
-### `AddOracle(address oracle, bool required)`
-
-
-
-
-
-### `UpdateOracle(address oracle, bool required, bool isValid)`
+### UpdateOracle
+```solidity
+  event UpdateOracle(
+  )
+```
 
 
 
-
-
-### `DeployApproved(bytes32 deployId)`
-
-
-
-
-
-### `SubmissionApproved(bytes32 submissionId)`
+### DeployApproved
+```solidity
+  event DeployApproved(
+  )
+```
 
 
 
-
-
-
-### `OracleInfo`
-
-
-bool exist
-
-
-bool isValid
-
-
-bool required
+### SubmissionApproved
+```solidity
+  event SubmissionApproved(
+  )
+```
 
 
 

@@ -1,33 +1,39 @@
-## `ICallProxy`
+
+
+
+## Functions
+### submissionChainIdFrom
+```solidity
+  function submissionChainIdFrom(
+  ) external returns (uint256)
+```
 
 
 
 
-
-
-### `submissionChainIdFrom() → uint256` (external)
-
-
-
-
-
-### `submissionNativeSender() → bytes` (external)
+### submissionNativeSender
+```solidity
+  function submissionNativeSender(
+  ) external returns (bytes)
+```
 
 
 
 
-
-### `call(address _fallbackAddress, address _receiver, bytes _data, uint256 _flags, bytes _nativeSender, uint256 _chainIdFrom) → bool` (external)
-
-
-
-
-
-### `callERC20(address _token, address _fallbackAddress, address _receiver, bytes _data, uint256 _flags, bytes _nativeSender, uint256 _chainIdFrom) → bool` (external)
+### call
+```solidity
+  function call(
+  ) external returns (bool)
+```
 
 
 
 
+### callERC20
+```solidity
+  function callERC20(
+  ) external returns (bool)
+```
 
 
 

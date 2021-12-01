@@ -1,57 +1,75 @@
-## `MockCompoundController`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(address _comptroller)` (public)
-
-
-
-
-
-### `mapToCTokens()` (internal)
+### mapToCTokens
+```solidity
+  function mapToCTokens(
+  ) internal
+```
 
 
 
 
-
-### `strategyToken(address _token) → address` (public)
-
-
-
-
-
-### `updateReserves(address _account, address _token) → uint256` (external)
+### strategyToken
+```solidity
+  function strategyToken(
+  ) public returns (address)
+```
 
 
 
 
-
-### `deposit(address _token, uint256 _amount)` (external)
-
-
-
-
-
-### `withdrawAll(address _token)` (external)
+### updateReserves
+```solidity
+  function updateReserves(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `withdraw(address _token, uint256 _amount)` (public)
-
-
-
-
-
-### `_collectProtocolToken(address _token)` (internal)
+### deposit
+```solidity
+  function deposit(
+  ) external
+```
 
 
 
 
+### withdrawAll
+```solidity
+  function withdrawAll(
+  ) external
+```
+
+
+
+
+### withdraw
+```solidity
+  function withdraw(
+  ) public
+```
+
+
+
+
+### _collectProtocolToken
+```solidity
+  function _collectProtocolToken(
+  ) internal
+```
 
 
 

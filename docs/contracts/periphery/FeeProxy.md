@@ -1,125 +1,164 @@
-## `FeeProxy`
+
+
+
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 
 
 
-
-### `onlyWorker()`
-
-
-
-
-
-### `onlyAdmin()`
+### pause
+```solidity
+  function pause(
+  ) external
+```
 
 
 
 
-
-
-### `initialize(contract IUniswapV2Factory _uniswapFactory, contract IWETH _weth)` (public)
-
-
-
-
-
-### `pause()` (external)
+### unpause
+```solidity
+  function unpause(
+  ) external
+```
 
 
 
 
-
-### `unpause()` (external)
-
-
-
-
-
-### `setUniswapFactory(contract IUniswapV2Factory _uniswapFactory)` (external)
+### setUniswapFactory
+```solidity
+  function setUniswapFactory(
+  ) external
+```
 
 
 
 
-
-### `setDebridgeGate(contract IDeBridgeGate _debridgeGate)` (external)
-
-
-
-
-
-### `setTreasury(uint256 _chainId, bytes _treasuryAddress)` (external)
+### setDebridgeGate
+```solidity
+  function setDebridgeGate(
+  ) external
+```
 
 
 
 
-
-### `setDeEthToken(address _deEthToken)` (external)
-
-
-
-
-
-### `setFeeProxyAddress(uint256 _chainId, bytes _address)` (external)
+### setTreasury
+```solidity
+  function setTreasury(
+  ) external
+```
 
 
 
 
+### setDeEthToken
+```solidity
+  function setDeEthToken(
+  ) external
+```
 
-### `withdrawFee(address _tokenAddress)` (external)
 
 
+
+### setFeeProxyAddress
+```solidity
+  function setFeeProxyAddress(
+  ) external
+```
+
+
+
+
+### withdrawFee
+```solidity
+  function withdrawFee(
+  ) external
+```
 
 Transfer tokens to native chain and then create swap to deETH
 and transfer reward to Ethereum network.
 
-### `withdrawNativeFee()` (external)
 
-
+### withdrawNativeFee
+```solidity
+  function withdrawNativeFee(
+  ) external
+```
 
 Swap native tokens to deETH and then transfer reward to Ethereum network.
 
-### `receive()` (external)
+
+### receive
+```solidity
+  function receive(
+  ) external
+```
 
 
 
 
-
-### `getbDebridgeId(uint256 _chainId, bytes _tokenAddress) → bytes32` (public)
-
-
+### getbDebridgeId
+```solidity
+  function getbDebridgeId(
+    uint256 _chainId,
+    bytes _tokenAddress
+  ) public returns (bytes32)
+```
 
 Calculates asset identifier.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_chainId` | uint256 | Current chain id.
+|`_tokenAddress` | bytes | Address of the asset on the other chain.
 
-### `getDebridgeId(uint256 _chainId, address _tokenAddress) → bytes32` (public)
-
-
-
-
-
-### `toAddress(bytes _bytes) → address result` (internal)
-
-
-
-
-
-### `getChainId() → uint256 cid` (public)
+### getDebridgeId
+```solidity
+  function getDebridgeId(
+  ) public returns (bytes32)
+```
 
 
 
 
-
-### `_safeTransferETH(address to, uint256 value)` (internal)
-
-
-
-
-
-### `version() → uint256` (external)
+### toAddress
+```solidity
+  function toAddress(
+  ) internal returns (address result)
+```
 
 
 
 
+### getChainId
+```solidity
+  function getChainId(
+  ) public returns (uint256 cid)
+```
+
+
+
+
+### _safeTransferETH
+```solidity
+  function _safeTransferETH(
+  ) internal
+```
+
+
+
+
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 

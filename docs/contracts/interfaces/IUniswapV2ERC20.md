@@ -1,100 +1,138 @@
-## `IUniswapV2ERC20`
 
 
 
+## Functions
+### name
+```solidity
+  function name(
+  ) external returns (string)
+```
 
 
 
-### `name() → string` (external)
 
+### symbol
+```solidity
+  function symbol(
+  ) external returns (string)
+```
 
 
 
 
-### `symbol() → string` (external)
+### decimals
+```solidity
+  function decimals(
+  ) external returns (uint8)
+```
 
 
 
 
+### totalSupply
+```solidity
+  function totalSupply(
+  ) external returns (uint256)
+```
 
-### `decimals() → uint8` (external)
 
 
 
+### balanceOf
+```solidity
+  function balanceOf(
+  ) external returns (uint256)
+```
 
 
-### `totalSupply() → uint256` (external)
 
 
+### allowance
+```solidity
+  function allowance(
+  ) external returns (uint256)
+```
 
 
 
-### `balanceOf(address owner) → uint256` (external)
 
+### approve
+```solidity
+  function approve(
+  ) external returns (bool)
+```
 
 
 
 
-### `allowance(address owner, address spender) → uint256` (external)
+### transfer
+```solidity
+  function transfer(
+  ) external returns (bool)
+```
 
 
 
 
+### transferFrom
+```solidity
+  function transferFrom(
+  ) external returns (bool)
+```
 
-### `approve(address spender, uint256 value) → bool` (external)
 
 
 
+### DOMAIN_SEPARATOR
+```solidity
+  function DOMAIN_SEPARATOR(
+  ) external returns (bytes32)
+```
 
 
-### `transfer(address to, uint256 value) → bool` (external)
 
 
+### PERMIT_TYPEHASH
+```solidity
+  function PERMIT_TYPEHASH(
+  ) external returns (bytes32)
+```
 
 
 
-### `transferFrom(address from, address to, uint256 value) → bool` (external)
 
+### nonces
+```solidity
+  function nonces(
+  ) external returns (uint256)
+```
 
 
 
 
-### `DOMAIN_SEPARATOR() → bytes32` (external)
+### permit
+```solidity
+  function permit(
+  ) external
+```
 
 
 
 
+## Events
+### Approval
+```solidity
+  event Approval(
+  )
+```
 
-### `PERMIT_TYPEHASH() → bytes32` (external)
 
 
-
-
-
-### `nonces(address owner) → uint256` (external)
-
-
-
-
-
-### `permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)` (external)
-
-
-
-
-
-
-### `Approval(address owner, address spender, uint256 value)`
-
-
-
-
-
-### `Transfer(address from, address to, uint256 value)`
-
-
-
-
+### Transfer
+```solidity
+  event Transfer(
+  )
+```
 
 
 

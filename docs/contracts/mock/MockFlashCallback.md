@@ -1,21 +1,25 @@
-## `MockFlashCallback`
 
 
 
+## Functions
+### flashCallback
+```solidity
+  function flashCallback(
+    uint256 fee
+  ) external
+```
 
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`fee` | uint256 | The fee amount in token due to the pool by the end of the flash
 
-### `flashCallback(uint256 fee, bytes)` (external)
-
-
-
-
-
-### `flash(address _flashReceiver, address _tokenAddress, address _receiver, uint256 _amount, bool _revert)` (external)
-
-
-
-
+### flash
+```solidity
+  function flash(
+  ) external
+```
 
 
 

@@ -1,57 +1,75 @@
-## `IWETH`
+
+
+
+## Functions
+### deposit
+```solidity
+  function deposit(
+  ) external
+```
 
 
 
 
-
-
-### `deposit()` (external)
-
-
-
-
-
-### `withdraw(uint256 wad)` (external)
+### withdraw
+```solidity
+  function withdraw(
+  ) external
+```
 
 
 
 
-
-### `totalSupply() → uint256` (external)
-
-
-
-
-
-### `balanceOf(address account) → uint256` (external)
+### totalSupply
+```solidity
+  function totalSupply(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `transfer(address recipient, uint256 amount) → bool` (external)
-
-
-
-
-
-### `allowance(address owner, address spender) → uint256` (external)
+### balanceOf
+```solidity
+  function balanceOf(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `approve(address spender, uint256 amount) → bool` (external)
-
-
-
-
-
-### `transferFrom(address sender, address recipient, uint256 amount) → bool` (external)
+### transfer
+```solidity
+  function transfer(
+  ) external returns (bool)
+```
 
 
 
 
+### allowance
+```solidity
+  function allowance(
+  ) external returns (uint256)
+```
+
+
+
+
+### approve
+```solidity
+  function approve(
+  ) external returns (bool)
+```
+
+
+
+
+### transferFrom
+```solidity
+  function transferFrom(
+  ) external returns (bool)
+```
 
 
 

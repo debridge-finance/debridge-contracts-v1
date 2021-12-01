@@ -1,57 +1,75 @@
-## `ICToken`
+
+
+
+## Functions
+### underlying
+```solidity
+  function underlying(
+  ) external returns (address)
+```
 
 
 
 
-
-
-### `underlying() → address` (external)
-
-
-
-
-
-### `balanceOfUnderlying(address account) → uint256` (external)
+### balanceOfUnderlying
+```solidity
+  function balanceOfUnderlying(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `isCToken() → bool` (external)
-
-
-
-
-
-### `mint(uint256 mintAmount) → uint256` (external)
+### isCToken
+```solidity
+  function isCToken(
+  ) external returns (bool)
+```
 
 
 
 
-
-### `redeem(uint256 redeemAmount) → uint256` (external)
-
-
-
-
-
-### `redeemUnderlying(uint256 redeemAmount) → uint256` (external)
+### mint
+```solidity
+  function mint(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `exchangeRateCurrent() → uint256` (external)
-
-
-
-
-
-### `exchangeRateStored() → uint256` (external)
+### redeem
+```solidity
+  function redeem(
+  ) external returns (uint256)
+```
 
 
 
 
+### redeemUnderlying
+```solidity
+  function redeemUnderlying(
+  ) external returns (uint256)
+```
+
+
+
+
+### exchangeRateCurrent
+```solidity
+  function exchangeRateCurrent(
+  ) external returns (uint256)
+```
+
+
+
+
+### exchangeRateStored
+```solidity
+  function exchangeRateStored(
+  ) external returns (uint256)
+```
 
 
 

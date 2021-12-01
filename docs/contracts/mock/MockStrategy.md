@@ -1,39 +1,48 @@
-## `MockStrategy`
+
+
+
+## Functions
+### deposit
+```solidity
+  function deposit(
+  ) external
+```
 
 
 
 
-
-
-### `deposit(address, uint256 _amount)` (external)
-
-
-
-
-
-### `withdraw(address, uint256 _amount)` (external)
+### withdraw
+```solidity
+  function withdraw(
+  ) external
+```
 
 
 
 
-
-### `withdrawAll(address)` (external)
-
-
-
-
-
-### `updateReserves(address, address) → uint256` (external)
+### withdrawAll
+```solidity
+  function withdrawAll(
+  ) external
+```
 
 
 
 
+### updateReserves
+```solidity
+  function updateReserves(
+  ) external returns (uint256)
+```
 
-### `strategyToken(address) → address` (external)
 
 
 
-
+### strategyToken
+```solidity
+  function strategyToken(
+  ) external returns (address)
+```
 
 
 

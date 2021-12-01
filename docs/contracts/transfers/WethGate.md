@@ -1,46 +1,58 @@
-## `WethGate`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(contract IWETH _weth)` (public)
-
-
-
-
-
-### `withdraw(address _receiver, uint256 _wad)` (external)
+### withdraw
+```solidity
+  function withdraw(
+  ) external
+```
 
 
 
 
-
-### `_safeTransferETH(address _to, uint256 _value)` (internal)
-
-
-
-
-
-### `receive()` (external)
+### _safeTransferETH
+```solidity
+  function _safeTransferETH(
+  ) internal
+```
 
 
 
 
-
-### `version() → uint256` (external)
-
-
-
-
-
-
-### `Withdrawal(address receiver, uint256 wad)`
+### receive
+```solidity
+  function receive(
+  ) external
+```
 
 
 
 
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
+
+
+
+
+## Events
+### Withdrawal
+```solidity
+  event Withdrawal(
+  )
+```
 
 
 

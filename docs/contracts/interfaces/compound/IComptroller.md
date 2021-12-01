@@ -1,27 +1,30 @@
-## `IComptroller`
+
+
+
+## Functions
+### getAllMarkets
+```solidity
+  function getAllMarkets(
+  ) external returns (address[])
+```
 
 
 
 
-
-
-### `getAllMarkets() → address[]` (external)
-
-
-
-
-
-### `claimComp(address holder)` (external)
+### claimComp
+```solidity
+  function claimComp(
+  ) external
+```
 
 
 
 
-
-### `claimComp(address holder, address[] cTokens)` (external)
-
-
-
-
+### claimComp
+```solidity
+  function claimComp(
+  ) external
+```
 
 
 

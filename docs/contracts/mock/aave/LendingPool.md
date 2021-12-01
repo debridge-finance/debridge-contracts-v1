@@ -1,121 +1,111 @@
-## `LendingPool`
 
 
 
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 
 
-### `initialize(contract LendingPoolAddressesProvider provider)` (public)
 
+### addReserveAsset
+```solidity
+  function addReserveAsset(
+  ) public
+```
 
 
 
 
-### `addReserveAsset(address underlyingAsset, address aTokenAddress)` (public)
+### deposit
+```solidity
+  function deposit(
+  ) external
+```
 
 
 
 
+### withdraw
+```solidity
+  function withdraw(
+  ) external returns (uint256)
+```
 
-### `deposit(address asset, uint256 amount, address onBehalfOf, uint16 referralCode)` (external)
 
 
 
+### getReserveData
+```solidity
+  function getReserveData(
+  ) external returns (struct LendingPool.ReserveData)
+```
 
 
-### `withdraw(address asset, uint256 amount, address to) → uint256` (external)
 
 
+### getReserveNormalizedIncome
+```solidity
+  function getReserveNormalizedIncome(
+  ) external returns (uint256)
+```
 
 
 
-### `getReserveData(address asset) → struct LendingPool.ReserveData` (external)
 
+### calculateLinearInterest
+```solidity
+  function calculateLinearInterest(
+  ) internal returns (uint256)
+```
 
 
 
 
-### `getReserveNormalizedIncome(address asset) → uint256` (external)
+### setCurrentTime
+```solidity
+  function setCurrentTime(
+  ) public
+```
 
 
 
 
+### increaseCurrentTime
+```solidity
+  function increaseCurrentTime(
+  ) public
+```
 
-### `calculateLinearInterest(uint256 rate, uint40 lastUpdateTimestamp) → uint256` (internal)
 
 
 
+### _now
+```solidity
+  function _now(
+  ) internal returns (uint256)
+```
 
 
-### `setCurrentTime(uint256 _currentTime)` (public)
 
 
+## Events
+### Deposit
+```solidity
+  event Deposit(
+  )
+```
 
 
 
-### `increaseCurrentTime(uint256 _timeDelta)` (public)
-
-
-
-
-
-### `_now() → uint256` (internal)
-
-
-
-
-
-
-### `Deposit(address reserve, address user, address onBehalfOf, uint256 amount, uint16 referral)`
-
-
-
-
-
-### `Withdraw(address asset, address user, address onBehalfOf, uint256 amount)`
-
-
-
-
-
-
-### `ReserveData`
-
-
-bool configuration
-
-
-uint128 liquidityIndex
-
-
-uint128 variableBorrowIndex
-
-
-uint128 currentLiquidityRate
-
-
-uint128 currentVariableBorrowRate
-
-
-uint128 currentStableBorrowRate
-
-
-uint40 lastUpdateTimestamp
-
-
-address aTokenAddress
-
-
-address stableDebtTokenAddress
-
-
-address variableDebtTokenAddress
-
-
-address interestRateStrategyAddress
-
-
-uint8 id
+### Withdraw
+```solidity
+  event Withdraw(
+  )
+```
 
 
 

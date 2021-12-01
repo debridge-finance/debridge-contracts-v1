@@ -1,51 +1,66 @@
-## `IStakedAave`
+
+
+
+## Functions
+### COOLDOWN_SECONDS
+```solidity
+  function COOLDOWN_SECONDS(
+  ) external returns (uint256)
+```
 
 
 
 
-
-
-### `COOLDOWN_SECONDS() → uint256` (external)
-
-
-
-
-
-### `getTotalRewardsBalance(address staker) → uint256` (external)
+### getTotalRewardsBalance
+```solidity
+  function getTotalRewardsBalance(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `stakersCooldowns(address staker) → uint256` (external)
-
-
-
-
-
-### `stake(address to, uint256 amount)` (external)
+### stakersCooldowns
+```solidity
+  function stakersCooldowns(
+  ) external returns (uint256)
+```
 
 
 
 
-
-### `redeem(address to, uint256 amount)` (external)
-
-
-
-
-
-### `cooldown()` (external)
+### stake
+```solidity
+  function stake(
+  ) external
+```
 
 
 
 
+### redeem
+```solidity
+  function redeem(
+  ) external
+```
 
-### `claimRewards(address to, uint256 amount)` (external)
+
+
+
+### cooldown
+```solidity
+  function cooldown(
+  ) external
+```
 
 
 
 
+### claimRewards
+```solidity
+  function claimRewards(
+  ) external
+```
 
 
 

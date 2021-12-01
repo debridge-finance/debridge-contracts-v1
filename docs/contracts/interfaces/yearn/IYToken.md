@@ -1,21 +1,21 @@
-## `IYToken`
+
+
+
+## Functions
+### deposit
+```solidity
+  function deposit(
+  ) external
+```
 
 
 
 
-
-
-### `deposit(uint256 _amount)` (external)
-
-
-
-
-
-### `withdraw(uint256 _shares)` (external)
-
-
-
-
+### withdraw
+```solidity
+  function withdraw(
+  ) external
+```
 
 
 

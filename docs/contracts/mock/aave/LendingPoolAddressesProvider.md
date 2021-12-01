@@ -1,21 +1,21 @@
-## `LendingPoolAddressesProvider`
+
+
+
+## Functions
+### getLendingPool
+```solidity
+  function getLendingPool(
+  ) external returns (address)
+```
 
 
 
 
-
-
-### `getLendingPool() → address` (external)
-
-
-
-
-
-### `setLendingPool(address _lendingPool)` (external)
-
-
-
-
+### setLendingPool
+```solidity
+  function setLendingPool(
+  ) external
+```
 
 
 

@@ -1,63 +1,66 @@
-## `SwapProxy`
+
+
+
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 
 
 
-
-### `onlySystem()`
-
-
-
-
-
-### `onlyAdmin()`
+### pause
+```solidity
+  function pause(
+  ) external
+```
 
 
 
 
-
-
-### `initialize(contract IUniswapV2Factory _uniswapFactory)` (public)
-
-
-
-
-
-### `pause()` (external)
+### unpause
+```solidity
+  function unpause(
+  ) external
+```
 
 
 
 
-
-### `unpause()` (external)
-
-
-
-
-
-### `setUniswapFactory(contract IUniswapV2Factory _uniswapFactory)` (external)
+### setUniswapFactory
+```solidity
+  function setUniswapFactory(
+  ) external
+```
 
 
 
 
-
-### `swap(address _fromToken, address _toToken, address _receiver) → uint256 amountOut` (external)
-
-
-
-
-
-### `getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) → uint256 amountOut` (public)
+### swap
+```solidity
+  function swap(
+  ) external returns (uint256 amountOut)
+```
 
 
 
 
+### getAmountOut
+```solidity
+  function getAmountOut(
+  ) public returns (uint256 amountOut)
+```
 
-### `version() → uint256` (external)
 
 
 
-
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 

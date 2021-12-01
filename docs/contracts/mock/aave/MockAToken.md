@@ -1,76 +1,102 @@
-## `MockAToken`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(contract LendingPool pool, contract IncentivesController controller, string _name, string _symbol, uint8 _decimal, address uderlyingAssetAddress)` (public)
-
-
-
-
-
-### `mint(address user, uint256 amount, uint256 index) → bool` (external)
+### mint
+```solidity
+  function mint(
+  ) external returns (bool)
+```
 
 
 
 
-
-### `burn(address user, address receiverOfUnderlying, uint256 amount, uint256 index)` (external)
-
-
-
-
-
-### `hack(address[] users)` (external)
+### burn
+```solidity
+  function burn(
+  ) external
+```
 
 
 
 
-
-### `decimals() → uint8` (public)
-
-
-
-
-
-### `balanceOf(address user) → uint256` (public)
+### hack
+```solidity
+  function hack(
+  ) external
+```
 
 
 
 
-
-### `balanceOfAToken(address user) → uint256` (public)
-
-
-
-
-
-### `getIncentivesController() → contract IncentivesController` (external)
+### decimals
+```solidity
+  function decimals(
+  ) public returns (uint8)
+```
 
 
 
 
-
-### `transferFrom(address sender, address recipient, uint256 amount) → bool` (public)
-
-
-
-
-
-
-### `Mint(address to, uint256 value, uint256 index)`
+### balanceOf
+```solidity
+  function balanceOf(
+  ) public returns (uint256)
+```
 
 
 
 
+### balanceOfAToken
+```solidity
+  function balanceOfAToken(
+  ) public returns (uint256)
+```
 
-### `Burn(address from, address target, uint256 value, uint256 index)`
+
+
+
+### getIncentivesController
+```solidity
+  function getIncentivesController(
+  ) external returns (contract IncentivesController)
+```
 
 
 
 
+### transferFrom
+```solidity
+  function transferFrom(
+  ) public returns (bool)
+```
+
+
+
+
+## Events
+### Mint
+```solidity
+  event Mint(
+  )
+```
+
+
+
+### Burn
+```solidity
+  event Burn(
+  )
+```
 
 
 

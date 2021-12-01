@@ -1,15 +1,12 @@
-## `DeBridgeTokenProxy`
 
 
 
-
-
-
-### `constructor(address beacon, bytes data)` (public)
-
-
-
-
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 

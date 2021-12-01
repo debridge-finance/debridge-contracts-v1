@@ -1,142 +1,154 @@
-## `DefiController`
+
+
+
+## Functions
+### initialize
+```solidity
+  function initialize(
+  ) public
+```
 
 
 
 
-
-### `onlyWorker()`
-
-
-
-
-
-### `onlyAdmin()`
+### depositToStrategy
+```solidity
+  function depositToStrategy(
+  ) internal
+```
 
 
 
 
-
-
-### `initialize()` (public)
-
-
-
-
-
-### `depositToStrategy(uint256 _amount, address _strategy)` (internal)
+### withdrawFromStrategy
+```solidity
+  function withdrawFromStrategy(
+  ) internal
+```
 
 
 
 
-
-### `withdrawFromStrategy(uint256 _amount, address _strategy)` (internal)
-
-
-
-
-
-### `rebalanceStrategy(address _strategy)` (external)
+### rebalanceStrategy
+```solidity
+  function rebalanceStrategy(
+  ) external
+```
 
 
 
 
-
-### `isStrategyUnbalanced(address _strategy) → uint256 _deltaAmount, bool _toDeposit` (public)
-
-
-
-
-
-### `addStrategy(address _strategy, bool _isEnabled, uint16 _maxReservesBps, address _stakeToken, address _strategyToken)` (external)
+### isStrategyUnbalanced
+```solidity
+  function isStrategyUnbalanced(
+  ) public returns (uint256 _deltaAmount, bool _toDeposit)
+```
 
 
+
+
+### addStrategy
+```solidity
+  function addStrategy(
+  ) external
+```
 
 add new strategy
 
-### `updateStrategy(address _strategy, bool _isEnabled, uint16 _maxReservesBps)` (external)
+
+### updateStrategy
+```solidity
+  function updateStrategy(
+  ) external
+```
 
 
 
 
-
-### `setDeBridgeGate(contract IDeBridgeGate _deBridgeGate)` (external)
-
-
-
-
-
-### `addWorker(address _worker)` (external)
+### setDeBridgeGate
+```solidity
+  function setDeBridgeGate(
+  ) external
+```
 
 
 
 
-
-### `removeWorker(address _worker)` (external)
-
-
-
-
-
-### `pause()` (external)
+### addWorker
+```solidity
+  function addWorker(
+  ) external
+```
 
 
+
+
+### removeWorker
+```solidity
+  function removeWorker(
+  ) external
+```
+
+
+
+
+### pause
+```solidity
+  function pause(
+  ) external
+```
 
 Disable strategies rebalancing for workers
 
-### `unpause()` (external)
 
-
+### unpause
+```solidity
+  function unpause(
+  ) external
+```
 
 Allow strategies rebalancing for workers
 
-### `version() → uint256` (external)
+
+### version
+```solidity
+  function version(
+  ) external returns (uint256)
+```
 
 
 
 
-
-
-### `AddStrategy(address strategy, bool isEnabled, uint16 maxReservesBps, address stakeToken, address strategyToken)`
-
-
-
-
-
-### `UpdateStrategy(address strategy, bool isEnabled, uint16 maxReservesBps)`
+## Events
+### AddStrategy
+```solidity
+  event AddStrategy(
+  )
+```
 
 
 
-
-
-### `DepositToStrategy(address strategy, uint256 amount)`
-
-
-
-
-
-### `WithdrawFromStrategy(address strategy, uint256 amount)`
+### UpdateStrategy
+```solidity
+  event UpdateStrategy(
+  )
+```
 
 
 
+### DepositToStrategy
+```solidity
+  event DepositToStrategy(
+  )
+```
 
 
 
-### `Strategy`
-
-
-bool exists
-
-
-bool isEnabled
-
-
-uint16 maxReservesBps
-
-
-address stakeToken
-
-
-address strategyToken
+### WithdrawFromStrategy
+```solidity
+  event WithdrawFromStrategy(
+  )
+```
 
 
 

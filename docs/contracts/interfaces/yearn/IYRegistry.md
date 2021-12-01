@@ -1,15 +1,12 @@
-## `IYRegistry`
 
 
 
-
-
-
-### `getVaults() → address[]` (external)
-
-
-
-
+## Functions
+### getVaults
+```solidity
+  function getVaults(
+  ) external returns (address[])
+```
 
 
 

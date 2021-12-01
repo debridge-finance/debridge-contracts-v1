@@ -1,21 +1,21 @@
-## `AaveProtocolDataProvider`
+
+
+
+## Functions
+### constructor
+```solidity
+  function constructor(
+  ) public
+```
 
 
 
 
-
-
-### `constructor(contract LendingPoolAddressesProvider addressesProvider)` (public)
-
-
-
-
-
-### `getReserveTokensAddresses(address asset) → address aTokenAddress, address stableDebtTokenAddress, address variableDebtTokenAddress` (external)
-
-
-
-
+### getReserveTokensAddresses
+```solidity
+  function getReserveTokensAddresses(
+  ) external returns (address aTokenAddress, address stableDebtTokenAddress, address variableDebtTokenAddress)
+```
 
 
 
