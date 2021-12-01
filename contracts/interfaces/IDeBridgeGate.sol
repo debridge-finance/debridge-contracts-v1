@@ -69,11 +69,15 @@ interface IDeBridgeGate {
 
     /* ========== FUNCTIONS ========== */
 
-    /// @dev Locks asset on the chain and enables minting on the other chain.
+    /// @dev Locks asset on the chain and enables withdraw on the other chain.
     /// @param _tokenAddress Asset identifier.
-    /// @param _receiver Receiver address.
-    /// @param _amount Amount to be transfered (note: the fee can be applyed).
+    /// @param _amount Amount to be transferred (note: the fee can be applied).
     /// @param _chainIdTo Chain id of the target chain.
+    /// @param _receiver Receiver address.
+    /// @param _permit deadline + signature for approving the spender by signature.
+    /// @param _useAssetFee use assets fee for pay protocol fix (work only for specials token)
+    /// @param _referralCode Referral code
+    /// @param _autoParams Auto params for external call in target network
     function send(
         address _tokenAddress,
         uint256 _amount,
@@ -87,9 +91,12 @@ interface IDeBridgeGate {
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
+    /// @param _amount Amount of the transferred asset (note: the fee can be applied).
+    /// @param _chainIdFrom Chain where submission was sent
     /// @param _receiver Receiver address.
-    /// @param _amount Amount of the transfered asset (note: the fee can be applyed).
     /// @param _nonce Submission id.
+    /// @param _signatures Validators signatures to confirm
+    /// @param _autoParams Auto params for external call
     function claim(
         bytes32 _debridgeId,
         uint256 _amount,
@@ -100,6 +107,11 @@ interface IDeBridgeGate {
         bytes calldata _autoParams
     ) external;
 
+    /// @dev Get a flash loan, msg.sender must implement IFlashCallback
+    /// @param _tokenAddress An asset to loan
+    /// @param _receiver Where funds should be sent
+    /// @param _amount Amount to loan
+    /// @param _data Data to pass to sender's flashCallback function
     function flash(
         address _tokenAddress,
         address _receiver,
@@ -107,6 +119,8 @@ interface IDeBridgeGate {
         bytes memory _data
     ) external;
 
+    /// @dev Get reserves of a token available to use in defi
+    /// @param _tokenAddress Token address
     function getDefiAvaliableReserves(address _tokenAddress) external view returns (uint256);
 
     /// @dev Request the assets to be used in defi protocol.
@@ -119,15 +133,20 @@ interface IDeBridgeGate {
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount) external;
 
-    /// @dev Withdraw fees.
+    /// @dev Withdraw fees to feeProxy
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external;
 
+    /// @dev Get native chain id and native address of a token
+    /// @param currentTokenAddress address of a token on the current chain
     function getNativeTokenInfo(address currentTokenAddress)
         external
         view
         returns (uint256 chainId, bytes memory nativeAddress);
 
+    /// @dev Returns asset fixed fee value for specified debridge and chainId.
+    /// @param _debridgeId Asset identifier.
+    /// @param _chainId Chain id.
     function getDebridgeChainAssetFixedFee(
         bytes32 _debridgeId,
         uint256 _chainId

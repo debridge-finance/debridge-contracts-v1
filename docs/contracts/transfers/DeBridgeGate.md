@@ -5,11 +5,18 @@
 ### initialize
 ```solidity
   function initialize(
+    uint8 _excessConfirmations,
+    contract IWETH _weth
   ) public
 ```
 
 Constructor that initializes the most important configurations.
 
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_excessConfirmations` | uint8 | minimal required confirmations in case of too many confirmations
+|`_weth` | contract IWETH | wrapped native token contract
 
 ### send
 ```solidity
@@ -31,7 +38,7 @@ Locks asset on the chain and enables withdraw on the other chain.
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_tokenAddress` | address | Asset identifier.
-|`_amount` | uint256 | Amount to be transfered (note: the fee can be applyed).
+|`_amount` | uint256 | Amount to be transferred (note: the fee can be applied).
 |`_chainIdTo` | uint256 | Chain id of the target chain.
 |`_receiver` | bytes | Receiver address.
 |`_permit` | bytes | deadline + signature for approving the spender by signature.
@@ -58,7 +65,7 @@ Unlock the asset on the current chain and transfer to receiver.
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_debridgeId` | bytes32 | Asset identifier.
-|`_amount` | uint256 | Amount of the transfered asset (note: the fee can be applyed).
+|`_amount` | uint256 | Amount of the transferred asset (note: the fee can be applied).
 |`_chainIdFrom` | uint256 | Chain where submission was sent
 |`_receiver` | address | Receiver address.
 |`_nonce` | uint256 | Submission id.
@@ -68,20 +75,46 @@ Unlock the asset on the current chain and transfer to receiver.
 ### flash
 ```solidity
   function flash(
+    address _tokenAddress,
+    address _receiver,
+    uint256 _amount,
+    bytes _data
   ) external
 ```
 
+Get a flash loan, msg.sender must implement IFlashCallback
 
-
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_tokenAddress` | address | An asset to loan
+|`_receiver` | address | Where funds should be sent
+|`_amount` | uint256 | Amount to loan
+|`_data` | bytes | Data to pass to sender's flashCallback function
 
 ### deployNewAsset
 ```solidity
   function deployNewAsset(
+    bytes _nativeTokenAddress,
+    uint256 _nativeChainId,
+    string _name,
+    string _symbol,
+    uint8 _decimals,
+    bytes _signatures
   ) external
 ```
 
+Deploy a DeBridgeTokenProxy for an asset
 
-
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_nativeTokenAddress` | bytes | A token address on a native chain
+|`_nativeChainId` | uint256 | The token native chain's id
+|`_name` | string | The token's name
+|`_symbol` | string | The token's symbol
+|`_decimals` | uint8 | The token's decimals
+|`_signatures` | bytes | Validators' signatures
 
 ### autoUpdateFixedNativeFee
 ```solidity
@@ -118,11 +151,18 @@ Update asset's fees.
 ### updateGlobalFee
 ```solidity
   function updateGlobalFee(
+    uint256 _globalFixedNativeFee,
+    uint16 _globalTransferFeeBps
   ) external
 ```
 
+Update fallbacks for fixed fee in native asset and transfer fee
 
-
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_globalFixedNativeFee` | uint256 | Fallback fixed fee in native asset, used if a chain fixed fee is set to 0
+|`_globalTransferFeeBps` | uint16 | Fallback transfer fee in BPS, used if a chain transfer fee is set to 0
 
 ### updateAssetFixedFees
 ```solidity
@@ -145,11 +185,16 @@ Update asset's fees.
 ### updateExcessConfirmations
 ```solidity
   function updateExcessConfirmations(
+    uint8 _excessConfirmations
   ) external
 ```
 
+Update minimal amount of required signatures, must be > SignatureVerifier.minConfirmations to have an effect
 
-
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_excessConfirmations` | uint8 | Minimal amount of required signatures
 
 ### setChainSupport
 ```solidity
@@ -160,7 +205,7 @@ Update asset's fees.
   ) external
 ```
 
-Set support for the chains where the token can be transfered.
+Set support for the chains where the token can be transferred.
 
 #### Parameters:
 | Name | Type | Description                                                          |
@@ -188,11 +233,12 @@ Set proxy address.
   function updateAsset(
     bytes32 _debridgeId,
     uint256 _maxAmount,
-    uint16 _minReservesBps
+    uint16 _minReservesBps,
+    uint256 _amountThreshold
   ) external
 ```
 
-Add support for the asset.
+Update an asset settings
 
 #### Parameters:
 | Name | Type | Description                                                          |
@@ -200,6 +246,7 @@ Add support for the asset.
 |`_debridgeId` | bytes32 | Asset identifier.
 |`_maxAmount` | uint256 | Maximum amount of current chain token to be wrapped.
 |`_minReservesBps` | uint16 | Minimal reserve ration in BPS.
+|`_amountThreshold` | uint256 | Threshold amount after which Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of SignatureVerifier.minConfirmations
 
 ### setSignatureVerifier
 ```solidity
@@ -236,12 +283,12 @@ Set asset deployer address.
   ) external
 ```
 
-Set defi controoler.
+Set defi controller.
 
 #### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
-|`_defiController` | address | Defi controller address address.
+|`_defiController` | address | Defi controller address.
 
 ### setFeeContractUpdater
 ```solidity
@@ -296,7 +343,7 @@ Allow transfers.
   ) external
 ```
 
-Withdraw fees.
+Withdraw fees to feeProxy
 
 #### Parameters:
 | Name | Type | Description                                                          |
@@ -352,11 +399,18 @@ Set fee converter proxy.
 ### blockSubmission
 ```solidity
   function blockSubmission(
+    bytes32[] _submissionIds,
+    bool isBlocked
   ) external
 ```
 
+Block or unblock a list of submissions
 
-
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_submissionIds` | bytes32[] | Ids of submissions to block/unblock
+|`isBlocked` | bool | True to block, false to unblock
 
 ### updateFlashFee
 ```solidity
@@ -442,7 +496,7 @@ Locks asset on the chain and enables minting on the other chain.
 #### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
-|`_amount` | bytes | Amount to be transfered (note: the fee can be applyed).
+|`_amount` | bytes | Amount to be transferred (note: the fee can be applied).
 |`_chainIdTo` | address | Chain id of the target chain.
 |`_permit` | uint256 | deadline + signature for approving the spender by signature.
 
@@ -521,11 +575,16 @@ Unlock the asset on the current chain and transfer to receiver.
 ### getDefiAvaliableReserves
 ```solidity
   function getDefiAvaliableReserves(
+    address _tokenAddress
   ) external returns (uint256)
 ```
 
+Get reservers of a token available to use in defi
 
-
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_tokenAddress` | address | Token address
 
 ### getDebridgeId
 ```solidity
@@ -580,9 +639,11 @@ Returns asset fixed fee value for specified debridge and chainId.
   function getSubmissionIdFrom(
     bytes32 _debridgeId,
     uint256 _chainIdFrom,
-    uint256 _receiver,
-    address _amount,
-    uint256 _nonce
+    uint256 _amount,
+    address _receiver,
+    uint256 _nonce,
+    struct IDeBridgeGate.SubmissionAutoParamsFrom autoParams,
+    bool hasAutoParams
   ) public returns (bytes32)
 ```
 
@@ -593,18 +654,25 @@ Calculate submission id for auto claimable transfer.
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_debridgeId` | bytes32 | Asset identifier.
 |`_chainIdFrom` | uint256 | Chain identifier of the chain where tokens are sent from.
-|`_receiver` | uint256 | Receiver address.
-|`_amount` | address | Amount of the transfered asset (note: the fee can be applyed).
+|`_amount` | uint256 | Amount of the transferred asset (note: the fee can be applied).
+|`_receiver` | address | Receiver address.
 |`_nonce` | uint256 | Submission id.
+|`autoParams` | struct IDeBridgeGate.SubmissionAutoParamsFrom | Auto params for external call
+|`hasAutoParams` | bool | True if auto params are provided
 
 ### getNativeTokenInfo
 ```solidity
   function getNativeTokenInfo(
+    address currentTokenAddress
   ) external returns (uint256 nativeChainId, bytes nativeAddress)
 ```
 
+Get native chain id and native address of a token
 
-
+#### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`currentTokenAddress` | address | address of a token on the current chain
 
 ### getChainId
 ```solidity
