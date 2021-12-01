@@ -45,49 +45,6 @@
 * [Flags.md](libraries/Flags.md)
 * [SignatureUtil.md](libraries/SignatureUtil.md)
 
-### Mock
-* [MockAggregator.md](mock/MockAggregator.md)
-* [MockDeBridgeGate.md](mock/MockDeBridgeGate.md)
-* [MockDeBridgeGateForDefiController.md](mock/MockDeBridgeGateForDefiController.md)
-* [MockDefiController.md](mock/MockDefiController.md)
-* [MockDelegatedStaking.md](mock/MockDelegatedStaking.md)
-* [MockExternalContract.md](mock/MockExternalContract.md)
-* [MockFeeProxy.md](mock/MockFeeProxy.md)
-* [MockFlashCallback.md](mock/MockFlashCallback.md)
-* [MockInvalidToken.md](mock/MockInvalidToken.md)
-* [MockLinkToken.md](mock/MockLinkToken.md)
-* [MockPriceConsumer.md](mock/MockPriceConsumer.md)
-* [MockProxyConsumer.md](mock/MockProxyConsumer.md)
-* [MockProxyReceiver.md](mock/MockProxyReceiver.md)
-* [MockProxyReceiverAlwaysReverting.md](mock/MockProxyReceiverAlwaysReverting.md)
-* [MockStrategy.md](mock/MockStrategy.md)
-* [MockToken.md](mock/MockToken.md)
-* [MockWeth.md](mock/MockWeth.md)
-#### Aave
-* [AaveProtocolDataProvider.md](mock/aave/AaveProtocolDataProvider.md)
-* [IncentivesController.md](mock/aave/IncentivesController.md)
-* [LendingPool.md](mock/aave/LendingPool.md)
-* [LendingPoolAddressesProvider.md](mock/aave/LendingPoolAddressesProvider.md)
-* [MockAToken.md](mock/aave/MockAToken.md)
-* [MockAaveController.md](mock/aave/MockAaveController.md)
-##### Libraries
-* [WadRayMath.md](mock/aave/libraries/WadRayMath.md)
-
-#### Compound
-* [Comptroller.md](mock/compound/Comptroller.md)
-* [MockCToken.md](mock/compound/MockCToken.md)
-* [MockCompoundController.md](mock/compound/MockCompoundController.md)
-
-#### Yearn
-* [EnumerableSet.md](mock/yearn/EnumerableSet.md)
-* [IController.md](mock/yearn/IController.md)
-* [IVault.md](mock/yearn/IVault.md)
-* [MockYController.md](mock/yearn/MockYController.md)
-* [MockYToken.md](mock/yearn/MockYToken.md)
-* [MockYearnController.md](mock/yearn/MockYearnController.md)
-* [MockYearnVault.md](mock/yearn/MockYearnVault.md)
-* [YRegistry.md](mock/yearn/YRegistry.md)
-
 ### Oracles
 * [DelegatedStaking.md](oracles/DelegatedStaking.md)
 * [DelegatedStakingHelper.md](oracles/DelegatedStakingHelper.md)
