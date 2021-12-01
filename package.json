@@ -13,7 +13,8 @@
     "test": "hardhat test",
     "contract-size": "hardhat size-contracts",
     "coverage": "hardhat coverage",
-    "docs": "solidity-docgen -i ./contracts/ -e ./contracts/mock/ -o ./docs/contracts/ --solc-module solc-0.8.7 -t ./docs/templates && ts-node docs/generateTableOfContents/index.ts",
+    "docs:solidity-docgen": "solidity-docgen -i ./contracts/ -e ./contracts/mock -o ./docs/contracts/ --solc-module solc-0.8.7 -t ./docs/templates",
+    "docs": "yarn docs:solidity-docgen  && ts-node docs/removeAllButWhitelistedDocs.ts && ts-node docs/generateTableOfContents/index.ts",
     "docs:assert-in-sync": "ts-node docs/checkDocsAreInSync.ts"
   },
   "repository": {
@@ -31,8 +32,11 @@
     "@openzeppelin/contracts": "^4.3.2",
     "@openzeppelin/contracts-upgradeable": "^4.3.2",
     "@openzeppelin/test-helpers": "^0.5.13",
+    "@types/delete-empty": "^3.0.2",
     "@types/dotenv-flow": "^3.2.0",
+    "@types/globby": "^9.1.0",
     "@types/lodash": "^4.14.177",
+    "delete-empty": "^3.0.0",
     "dotenv-flow": "^3.2.0",
     "ganache-cli": "^6.12.2",
     "lodash": "^4.17.21",

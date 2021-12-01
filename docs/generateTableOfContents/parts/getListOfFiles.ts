@@ -1,12 +1,12 @@
 import globby from "globby";
 import set from "lodash/set";
-import {CONTRACTS_PATH} from "./constants";
+import {CONTRACT_DOCS_PATH} from "./constants";
 import {ListOfFiles} from "./types/ListOfFiles";
 
 export default async function getListOfFiles(): Promise<ListOfFiles> {
-    const pathsFromRoot = await globby([`${CONTRACTS_PATH}**/*.md`]);
+    const pathsFromRoot = await globby([`${CONTRACT_DOCS_PATH}**/*.md`]);
 
-    const pathToContractsDirLength = `${CONTRACTS_PATH}`.length;
+    const pathToContractsDirLength = `${CONTRACT_DOCS_PATH}`.length;
     const removeContractsDir = (path: string): string => path.slice(pathToContractsDirLength);
     const contractsPaths = pathsFromRoot
         .map(removeContractsDir)
