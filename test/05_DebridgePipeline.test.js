@@ -60,6 +60,9 @@ let deETHAddressInHECO = "0";
 let deCakeAddressInHECO = "0";
 let deBNBAddressInHECO = "0";
 
+let feesCalculatorETH;
+let feesCalculatorBSC;
+
 const discountsValues = [0, 5000, 10000];
 contract("DeBridgeGate real pipeline mode", function () {
   before(async function () {
@@ -97,6 +100,8 @@ contract("DeBridgeGate real pipeline mode", function () {
     const SignatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier", alice);
     const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
+    const FeesCalculatorFactory = await ethers.getContractFactory("FeesCalculator", alice);
+
     const MockFeeProxyFactory = await ethers.getContractFactory("MockFeeProxy", alice);
     const MockExternalFactory = await ethers.getContractFactory("MockExternalContract", alice);
 
@@ -418,6 +423,16 @@ contract("DeBridgeGate real pipeline mode", function () {
         },
       ],
       true
+    );
+
+    // deploy FeesCalculator contracts
+    feesCalculatorETH = await upgrades.deployProxy(
+      FeesCalculatorFactory,
+      [this.debridgeETH.address],
+    );
+    feesCalculatorBSC = await upgrades.deployProxy(
+      FeesCalculatorFactory,
+      [this.debridgeBSC.address],
     );
 
     // set debridge address
@@ -1077,6 +1092,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         });
         sentEvents.push(sentEvent);
 
+        await testSubmissionFees(
+          feesCalculatorETH,
+          sentEvent,
+          tokenAddress,
+          amount,
+          chainIdTo,
+          sender,
+          false,
+          0,
+        )
+
         const newBalance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
         const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
         assert.equal(balance.add(amount).toString(), newBalance.toString());
@@ -1151,6 +1177,17 @@ contract("DeBridgeGate real pipeline mode", function () {
           return x.event == "Sent";
         });
         sentEvents.push(sentEvent);
+
+        await testSubmissionFees(
+          feesCalculatorETH,
+          sentEvent,
+          tokenAddress,
+          amount,
+          chainIdTo,
+          sender,
+          false,
+          0,
+        )
 
         const newBalance = toBN(await this.wethETH.balanceOf(this.debridgeETH.address));
         const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
@@ -1233,6 +1270,17 @@ contract("DeBridgeGate real pipeline mode", function () {
           return x.event == "Sent";
         });
         sentEvents.push(sentEvent);
+
+        await testSubmissionFees(
+          feesCalculatorETH,
+          sentEvent,
+          tokenAddress,
+          amount,
+          chainIdTo,
+          sender,
+          false,
+          0,
+        )
 
         const newNativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
           this.nativeDebridgeIdETH
@@ -1327,6 +1375,17 @@ contract("DeBridgeGate real pipeline mode", function () {
           return x.event == "Sent";
         });
         sentEvents.push(sentEvent);
+
+        await testSubmissionFees(
+          feesCalculatorETH,
+          sentEvent,
+          tokenAddress,
+          amount,
+          chainIdTo,
+          alice,
+          false,
+          0,
+        )
 
         const newNativeDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(
           this.nativeDebridgeIdETH
@@ -1523,6 +1582,17 @@ contract("DeBridgeGate real pipeline mode", function () {
           let receipt = await tx.wait();
           let event = receipt.events.find((x) => x.event == "Sent");
           assert.equal(event.args.receiver, receiver);
+
+          await testSubmissionFees(
+            feesCalculatorETH,
+            event,
+            ZERO_ADDRESS,
+            amount,
+            bscChainId,
+            alice,
+            false,
+            0,
+          )
         }
       });
     });
@@ -1830,7 +1900,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         expect(discount).to.equal(discountFromContract.discountFixBps);
       });
 
-      it("should burning (deETH, deLink) when the amount is suficient", async function () {
+      it("should burning (deETH, deLink) when the amount is sufficient", async function () {
         let tokensAddresses = [deETHAddressInBSC, deLinkAddressInBSC];
         for (let currentToken of tokensAddresses) {
           const chainIdTo = ethChainId;
@@ -1881,6 +1951,17 @@ contract("DeBridgeGate real pipeline mode", function () {
             return x.event == "Sent";
           });
           burnEvents.push(burnEvent);
+
+          await testSubmissionFees(
+            feesCalculatorBSC,
+            burnEvent,
+            currentToken,
+            amount,
+            chainIdTo,
+            bobAccount.address,
+            false,
+            0,
+          )
 
           const newNativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
             nativeBSCDebridgeId
@@ -1976,6 +2057,17 @@ contract("DeBridgeGate real pipeline mode", function () {
           // console.log(receipt);
           let event = receipt.events.find((x) => x.event == "Sent");
           assert.equal(event.args.receiver, receiver);
+
+          await testSubmissionFees(
+            feesCalculatorBSC,
+            event,
+            currentToken,
+            amount,
+            ethChainId,
+            bobAccount.address,
+            false,
+            0,
+          )
         }
       });
     });
@@ -2235,6 +2327,17 @@ contract("DeBridgeGate real pipeline mode", function () {
       this.nativeSubmission = sentEvent;
       this.sentEventsBSC.push(sentEvent);
 
+      await testSubmissionFees(
+        feesCalculatorBSC,
+        sentEvent,
+        tokenAddress,
+        amount,
+        chainIdTo,
+        alice,
+        false,
+        0,
+      )
+
       const newBalance = toBN(await this.wethBSC.balanceOf(this.debridgeBSC.address));
       // const newDebridgeInfo = await this.debridgeBSC.getDebridge(debridgeId);
       const newDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.debridgeWethBSCId);
@@ -2289,6 +2392,17 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
       this.cakeSubmission = sentEvent;
       this.sentEventsBSC.push(sentEvent);
+
+      await testSubmissionFees(
+        feesCalculatorBSC,
+        sentEvent,
+        tokenAddress,
+        amount,
+        chainIdTo,
+        alice,
+        false,
+        0,
+      )
 
       const newNativeDebridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(
         this.nativeDebridgeIdBSC
@@ -2475,6 +2589,17 @@ contract("DeBridgeGate real pipeline mode", function () {
       const sentReceipt = await sentTx.wait();
       const sentEvent = sentReceipt.events.find(i => i.event == "Sent");
 
+      await testSubmissionFees(
+        feesCalculatorETH,
+        sentEvent,
+        ZERO_ADDRESS,
+        amount,
+        bscChainId,
+        sender.address,
+        false,
+        executionFee,
+      )
+
       const submissionIdFrom = await this.debridgeBSC.getSubmissionIdFrom(
         this.debridgeWethId,
         ethChainId,
@@ -2558,6 +2683,17 @@ contract("DeBridgeGate real pipeline mode", function () {
       sentEvent = sentReceipt.events.find(i => i.event == "Sent");
       // console.log(sentEvent)
 
+      await testSubmissionFees(
+        feesCalculatorETH,
+        sentEvent,
+        ZERO_ADDRESS,
+        amount,
+        bscChainId,
+        ethAccount.address,
+        false,
+        0,
+      )
+
       const balanceAfterSend = toBN(await web3.eth.getBalance(ethAccount.address));
       const sentTxFee = sentReceipt.gasUsed * sentTx.gasPrice;
       assert.equal(balanceAfterSend.toString(), balanceInitial.sub(amount).sub(sentTxFee).toString());
@@ -2622,6 +2758,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnReceipt = await burnTx.wait();
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
+
+        await testSubmissionFees(
+          feesCalculatorBSC,
+          burnEvent,
+          deETHToken.address,
+          sentEvent.args.amount,
+          ethChainId,
+          bscAccount.address,
+          false,
+          executionFee,
+        )
 
         // worker call claim on ETH to get native tokens back
         const claimTx = await this.debridgeETH
@@ -2699,6 +2846,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
         const callProxyAddress = await this.debridgeETH.callProxy();
+
+        await testSubmissionFees(
+          feesCalculatorBSC,
+          burnEvent,
+          deETHToken.address,
+          sentEvent.args.amount,
+          ethChainId,
+          bscAccount.address,
+          false,
+          executionFee,
+        )
 
         // worker call claim on ETH to get native tokens back
         await expect(
@@ -2788,6 +2946,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
 
+        await testSubmissionFees(
+          feesCalculatorBSC,
+          burnEvent,
+          deETHToken.address,
+          sentEvent.args.amount,
+          ethChainId,
+          bscAccount.address,
+          false,
+          executionFee,
+        )
+
         // worker call claim on ETH to get native tokens back
         const claimTx = await this.debridgeETH
           .connect(workerAccount)
@@ -2864,6 +3033,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
         const callProxyAddress = await this.debridgeETH.callProxy();
+
+        await testSubmissionFees(
+          feesCalculatorBSC,
+          burnEvent,
+          deETHToken.address,
+          sentEvent.args.amount,
+          ethChainId,
+          bscAccount.address,
+          false,
+          executionFee,
+        )
 
         // worker call claim on ETH to get native tokens back
         await expect(
@@ -2963,6 +3143,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
 
+        await testSubmissionFees(
+          feesCalculatorBSC,
+          burnEvent,
+          deETHToken.address,
+          sentEvent.args.amount,
+          ethChainId,
+          bscAccount.address,
+          false,
+          executionFee,
+        )
+
         // worker call claim on ETH to get native tokens back
         await expect(
           this.debridgeETH
@@ -3054,6 +3245,17 @@ contract("DeBridgeGate real pipeline mode", function () {
         const burnReceipt = await burnTx.wait();
         const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
         // console.log(burnEvent)
+
+        await testSubmissionFees(
+          feesCalculatorBSC,
+          burnEvent,
+          deETHToken.address,
+          sentEvent.args.amount,
+          ethChainId,
+          bscAccount.address,
+          false,
+          executionFee,
+        )
 
         // worker call claim on ETH to get native tokens back
         await expectRevert(
@@ -3521,7 +3723,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const chainId = 100;
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const debridgeId = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
-      console.log(debridgeId);
+
       const debridgeIdSignatureVerifier = await this.signatureVerifierETH.getDebridgeId(chainId, tokenAddress);
       const debridgeIdConfirmationAggregator = await this.signatureVerifierBSC.getDebridgeId(chainId, tokenAddress);
 
@@ -3548,4 +3750,28 @@ contract("DeBridgeGate real pipeline mode", function () {
       assert.equal(deployIdSignatureVerifier, calculatedDeployId);
     });
   });
+
+  async function testSubmissionFees(
+    feesCalculator,
+    sentEvent,
+    tokenAddress,
+    amount,
+    chainIdTo,
+    sender,
+    useAssetFee,
+    executionFee
+  ) {
+    const feeInfo = await feesCalculator.getTransferFees(
+      tokenAddress,
+      amount,
+      chainIdTo,
+      sender,
+      useAssetFee,
+      executionFee,
+    )
+    assert.equal(sentEvent.args.amount.toString(), feeInfo.amountAfterFee.toString());
+    assert.equal(sentEvent.args.feeParams.fixFee.toString(), feeInfo.fixFee.toString());
+    assert.equal(sentEvent.args.feeParams.transferFee.toString(), feeInfo.transferFee.toString());
+    assert.equal(sentEvent.args.feeParams.useAssetFee, feeInfo.useAssetFee);
+  }
 });
