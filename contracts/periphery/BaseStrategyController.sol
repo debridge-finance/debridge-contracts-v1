@@ -6,13 +6,22 @@ import "../interfaces/IStrategy.sol";
 
 abstract contract BaseStrategyController is IStrategy {
 
-    public constant denominator = 10e18;
+    uint256 public constant denominator = 10e18;
+    address public delegatedStaking;
 
     event StrategyReset(address _strategy, address collateral);
     error StrategyDisabled();
     error AlreadyExists();
     error MethodNotImplemented();
     error WrongAmount();
+    error AccessDenied();
+
+    /* ========== MODIFIERS ========== */
+
+    modifier onlyDelegatedStaking() {
+        if (msg.sender != delegatedStaking) revert AccessDenied();
+        _;
+    }
 
     struct Validator {
         uint256 sShares;
@@ -40,6 +49,10 @@ abstract contract BaseStrategyController is IStrategy {
     event EmergencyWithdrawnFromStrategy(uint256 amount, address strategy, address collateral);
 
     mapping(address => Strategy) public strategies; // collateral => Strategy
+
+    constructor(address _delegatedStaking) {
+        delegatedStaking = _delegatedStaking;
+    }
 
     function _strategyToken(address _collateral) internal view virtual returns (address) {
         return strategies[_collateral].strategyToken;
@@ -117,16 +130,16 @@ abstract contract BaseStrategyController is IStrategy {
 
     // TODO: Need to add Access Control to all functions below
 
-    function updateStrategyEnabled(address _collateral, bool _isEnabled) external override {
+    function updateStrategyEnabled(address _collateral, bool _isEnabled) external override onlyDelegatedStaking {
         strategies[_collateral].isEnabled = _isEnabled;
     }
 
-    function updateStrategyRecoverable(address _collateral, bool _isRecoverable) external override {
+    function updateStrategyRecoverable(address _collateral, bool _isRecoverable) external override onlyDelegatedStaking {
         strategies[_collateral].isRecoverable = _isRecoverable;
     }
 
     // TODO: fix tests which using this
-    function resetStrategy(address _collateral) external override {
+    function resetStrategy(address _collateral) external override onlyDelegatedStaking {
         Strategy storage strategy = strategies[_collateral];
         if (!strategy.isEnabled) revert StrategyDisabled();
         strategy.totalReserves = 0;
@@ -136,7 +149,7 @@ abstract contract BaseStrategyController is IStrategy {
         emit StrategyReset(address(this), _collateral);
     }
 
-    function addStrategy(address _collateral, address _rewardToken) external override {
+    function addStrategy(address _collateral, address _rewardToken) external override onlyDelegatedStaking {
         Strategy storage strategy = strategies[_collateral];
         if (strategy.exists) revert AlreadyExists();
         strategy.strategyToken = _strategyToken(_collateral);
@@ -149,7 +162,7 @@ abstract contract BaseStrategyController is IStrategy {
         address _validator,
         address _collateral,
         uint256 _slashingFraction
-    ) external override returns(uint256) {
+    ) external override onlyDelegatedStaking returns(uint256) {
         uint256 _shares = _validatorShares(_collateral, _validator) * _slashingFraction;
         strategies[_collateral].validators[_validator].sShares -= _shares;
         // TODO
@@ -163,7 +176,7 @@ abstract contract BaseStrategyController is IStrategy {
         address _delegator,
         address _collateral,
         uint256 _slashingFraction
-    ) external override returns(uint256) {
+    ) external override onlyDelegatedStaking returns(uint256) {
         uint256 _shares = _delegatorShares(_collateral, _validator, _delegator) * _slashingFraction;
         strategies[_collateral].validators[_validator].delegators[_delegator].sShares -= _shares;
         strategies[_collateral].validators[_validator].sShares -= _shares;
@@ -179,11 +192,11 @@ abstract contract BaseStrategyController is IStrategy {
         revert MethodNotImplemented(); // assumed to be overriden in imlementation contracts
     }
 
-    function _withdraw(address _collateral, uint256 _amount) internal virtual {
+    function _withdrawFromUnderlyingProtocol(address _collateral, uint256 _amount) internal virtual {
         revert MethodNotImplemented(); // assumed to be overriden in imlementation contracts
     }
 
-    function deposit(address _collateral, address _validator, address _recipient, uint256 _shares, uint256 _amount) external override {
+    function deposit(address _collateral, address _validator, address _recipient, uint256 _shares, uint256 _amount) external override onlyDelegatedStaking {
         _deposit(_collateral, _amount);
         uint256 _sShares = _calculateShares(_collateral, _amount);
         Strategy storage strategy = strategies[_collateral];
@@ -198,7 +211,7 @@ abstract contract BaseStrategyController is IStrategy {
         strategy.totalReserves += _amount;
     }
 
-    function withdraw(address _collateral, address _validator, address _recipient, uint256 _shares) external override returns(bool, uint256) {
+    function withdraw(address _collateral, address _validator, address _recipient, uint256 _shares) external override returns(bool, uint256) onlyDelegatedStaking {
         Strategy storage strategy = strategies[_collateral];
         Delegator storage delegator = validators[_validator].delegators[_recipient];
         if (shares > delegator.lockedShares) revert WrongAmount();       
@@ -207,7 +220,8 @@ abstract contract BaseStrategyController is IStrategy {
         uint256 _sShares = (percentageToWithdraw * delegator.sShares) / denominator;
         
         uint256 amountToBePaid = _calculateFromShares(_collateral, _sShares);
-        _withdraw(_collateral, amountToBePaid);
+        _ensureBalancesWithdrawal(_collateral, amountToBePaid);
+        IERC20(_collateral).safeTranfer(delegatedStaking, amountToBePaid);
         uint256 amountToBeUnlocked = (percentageToWithdraw * delegator.lockedReserves) / denominator;
 
         delegator.sShares -= _sShares;
@@ -220,8 +234,10 @@ abstract contract BaseStrategyController is IStrategy {
         strategy.totalReserves -= amountToBePaid;
 
         if (amountToBePaid > amountToBeUnlocked) {
+            // strategy profits
             return true, amountToBePaid - amountToBeUnlocked;
         } else {
+            // strategy losses
             return false, amountToBeUnlocked - amountToBePaid;
         }
     }

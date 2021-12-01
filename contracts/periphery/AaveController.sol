@@ -16,7 +16,8 @@ contract AaveController is BaseStrategyController {
     address public lendingPoolProvider;
     address public protocolDataProvider;
 
-    constructor(address _lendingPoolProvider, address _protocolDataProvider) {
+    constructor(address _delegatedStaking, address _lendingPoolProvider, address _protocolDataProvider) {
+        super(_delegatedStaking);
         lendingPoolProvider = _lendingPoolProvider;
         protocolDataProvider = _protocolDataProvider;
     }
@@ -58,35 +59,39 @@ contract AaveController is BaseStrategyController {
         _withdraw(_token, type(uint256).max);
     }
 
-    function _withdraw(address _token, uint256 _amount) internal override {
-        address lendPool = lendingPool();
-        address aToken = strategyToken(_token);
-        IERC20(_token).safeApprove(lendPool, 0);
-        IERC20(_token).safeApprove(lendPool, _amount);
-        uint256 maxAmount = IERC20(aToken).balanceOf(msg.sender);
+    function _ensureBalancesWithdrawal(address _token, uint256 _amount) internal override {
+        uint256 currentBalance = IERC20(_token).balanceOf(address(this));
+        
+        if (currentBalance < _amount) {
+            uint256 remainingTokensToWithdraw = _amount - currentBalance;
+            address lendPool = lendingPool();
+            address aToken = strategyToken(_token);
 
-        uint256 userBalance = IERC20(aToken).balanceOf(msg.sender);
-        uint256 amountToWithdraw = _amount;
+            uint256 maxAmount = IERC20(aToken).balanceOf(address(this));
+            
+            uint256 userBalance = IERC20(aToken).balanceOf(msg.sender);
+            uint256 amountToWithdraw = _amount;
 
-        if (_amount == type(uint256).max || _amount > userBalance) {
-            amountToWithdraw = userBalance;
-        }
+            if (_amount == type(uint256).max || _amount > userBalance) {
+                amountToWithdraw = userBalance;
+            }
 
-        IERC20(aToken).transferFrom(msg.sender, address(this), amountToWithdraw);
+            IERC20(aToken).transferFrom(msg.sender, address(this), amountToWithdraw);
 
-        uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
-            _token,
-            amountToWithdraw,
-            msg.sender
-        );
+            uint256 amountWithdrawn = ILendingPool(lendPool).withdraw(
+                _token,
+                amountToWithdraw,
+                msg.sender
+            );
 
-        _collectProtocolToken(aToken, amountToWithdraw / maxAmount);
+            _collectProtocolToken(aToken, amountToWithdraw / maxAmount);
 
-        require(
-            amountWithdrawn == _amount ||
-                (_amount == type(uint256).max && maxAmount == amountWithdrawn),
-            "Didn't withdraw requested amount"
-        );
+            require(
+                amountWithdrawn == _amount ||
+                    (_amount == type(uint256).max && maxAmount == amountWithdrawn),
+                "Didn't withdraw requested amount"
+            );
+        } 
     }
 
     // Collect stkAAVE
