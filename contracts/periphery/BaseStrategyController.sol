@@ -39,7 +39,7 @@ abstract contract BaseStrategyController is IStrategy {
         address strategyToken;
         address rewardToken;
         uint256 totalShares;
-        uint256 totalReserves;
+        // TODO: remove uint256 totalReserves and use updateReserves or TotalReseves function;
         mapping(address => Validator) validators;
         bool isEnabled;
         bool exists;
@@ -197,6 +197,7 @@ abstract contract BaseStrategyController is IStrategy {
     }
 
     function deposit(address _collateral, address _validator, address _recipient, uint256 _shares, uint256 _amount) external override onlyDelegatedStaking {
+        //TODO: transferFrom
         _deposit(_collateral, _amount);
         uint256 _sShares = _calculateShares(_collateral, _amount);
         Strategy storage strategy = strategies[_collateral];

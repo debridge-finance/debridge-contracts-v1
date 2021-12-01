@@ -32,13 +32,13 @@ contract AaveController is BaseStrategyController {
         return newATokenAddress;
     }
 
-    function updateReserves(address _account, address _token)
+    function updateReserves(address _token)
         external
         view
         override
         returns (uint256)
-    {
-        return IERC20(_token).balanceOf(_account);
+    {   
+        return IERC20(_token).balanceOf(address(this)) + IERC20(aToken).balanceOf(address(this));
     }
 
     function _deposit(address _token, uint256 _amount) internal override {
@@ -64,11 +64,12 @@ contract AaveController is BaseStrategyController {
         
         if (currentBalance < _amount) {
             uint256 remainingTokensToWithdraw = _amount - currentBalance;
+
             address lendPool = lendingPool();
             address aToken = strategyToken(_token);
 
             uint256 maxAmount = IERC20(aToken).balanceOf(address(this));
-            
+
             uint256 userBalance = IERC20(aToken).balanceOf(msg.sender);
             uint256 amountToWithdraw = _amount;
 
