@@ -13,7 +13,7 @@
     "test": "hardhat test",
     "contract-size": "hardhat size-contracts",
     "coverage": "hardhat coverage",
-    "docs": "solidity-docgen -i ./contracts/ -o ./docs/contracts/ --solc-module solc-0.8.7 && ts-node docs/generateTableOfContents/index.ts",
+    "docs": "solidity-docgen -i ./contracts/ -o ./docs/contracts/ --solc-module solc-0.8.7 -t ./docs/templates && ts-node docs/generateTableOfContents/index.ts",
     "docs:assert-in-sync": "ts-node docs/checkDocsAreInSync.ts"
   },
   "repository": {
