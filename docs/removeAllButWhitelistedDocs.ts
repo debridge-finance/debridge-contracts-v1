@@ -13,6 +13,8 @@ const whitelistedContracts = [
     'transfers/SignatureVerifier.sol',
     'interfaces/ISignatureVerifier.sol',
     'periphery/CallProxy.sol',
+    'interfaces/ICallProxy.sol',
+    'libraries/Flags.sol'
 ];
 
 const toContractPathFromProjectRoot = (path: string) => `contracts/${path}`;
