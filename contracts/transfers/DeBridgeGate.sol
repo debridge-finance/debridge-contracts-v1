@@ -323,7 +323,7 @@ contract DeBridgeGate is
         emit Flash(msg.sender, _tokenAddress, _receiver, _amount, paid);
     }
 
-    /// @dev Deploy a DeBridgeTokenProxy for an asset
+    /// @dev Deploy a deToken(DeBridgeTokenProxy) for an asset
     /// @param _nativeTokenAddress A token address on a native chain
     /// @param _nativeChainId The token native chain's id
     /// @param _name The token's name
