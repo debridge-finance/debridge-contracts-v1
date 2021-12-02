@@ -11,7 +11,7 @@ contract Claimer is
 {
     /* ========== STATE VARIABLES ========== */
 
-    DeBridgeGate public deBridgeGate; // wrapped native token contract
+    DeBridgeGate public deBridgeGate; // debridge gate address
 
     /* ========== ERRORS ========== */
 
