@@ -34,7 +34,7 @@ contract DeBridgeGate is
 
     /* ========== STATE VARIABLES ========== */
 
-    /// @dev Basis points or bps, set to 10_000 (equal to 1/10000). Used to express relative values (fees)
+    /// @dev Basis points or bps, set to 10 000 (equal to 1/10000). Used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
     /// @dev Role allowed to stop transfers
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
@@ -43,7 +43,7 @@ contract DeBridgeGate is
     address public deBridgeTokenDeployer;
     /// @dev Current signature verifier address to verify signatures.
     address public signatureVerifier;
-    /// @dev Minimal required confirmations in case sent amount is big, have no effect if < SignatureVerifier.minConfirmations
+    /// @dev Minimal required confirmations in case sent amount is big, have no effect if less than SignatureVerifier.minConfirmations
     uint8 public excessConfirmations;
     /// @dev Flash loan fee in basis points (1/10000)
     uint256 public flashFeeBps;
