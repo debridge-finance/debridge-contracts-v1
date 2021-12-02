@@ -17,7 +17,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE");
     /// @dev Chain from which the current submission is received
     uint256 public override submissionChainIdFrom;
-    /// @dev Chain from which the current submission is received
+    /// @dev Native sender of the current submission
     bytes public override submissionNativeSender;
 
     /* ========== ERRORS ========== */

@@ -5,7 +5,7 @@ interface ICallProxy {
 
     /// @dev Chain from which the current submission is received
     function submissionChainIdFrom() external returns (uint256);
-    /// @dev Chain from which the current submission is received
+    /// @dev Native sender of the current submission
     function submissionNativeSender() external returns (bytes memory);
 
     /// @dev Used for calls where native asset transfer is involved. 
