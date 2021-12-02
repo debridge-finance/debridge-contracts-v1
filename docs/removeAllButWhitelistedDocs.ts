@@ -11,6 +11,7 @@ const whitelistedContracts = [
     'transfers/DeBridgeTokenDeployer.sol',
     'interfaces/IDeBridgeTokenDeployer.sol',
     'transfers/SignatureVerifier.sol',
+    'interfaces/ISignatureVerifier.sol',
     'periphery/CallProxy.sol',
 ];
 
