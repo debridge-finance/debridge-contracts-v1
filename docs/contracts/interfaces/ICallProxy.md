@@ -2,32 +2,25 @@
 
 
 
-# Variables
 
-## DEBRIDGE_GATE_ROLE
-```solidity
-  bytes32 public constant DEBRIDGE_GATE_ROLE;
-```
-Role allowed to withdraw fee
-## submissionChainIdFrom
-```solidity
-  uint256 public submissionChainIdFrom;
-```
-Chain from which the current submission is received
-## submissionNativeSender
-```solidity
-  bytes public submissionNativeSender;
-```
-Native sender of the current submission
 
 # Functions
-## initialize
+## submissionChainIdFrom
 ```solidity
-  function initialize(
-  ) public
+  function submissionChainIdFrom(
+  ) external returns (uint256)
 ```
 
+Chain from which the current submission is received
 
+
+## submissionNativeSender
+```solidity
+  function submissionNativeSender(
+  ) external returns (bytes)
+```
+
+Native sender of the current submission
 
 
 ## call
@@ -39,7 +32,7 @@ Native sender of the current submission
             uint256 _flags,
             bytes _nativeSender,
             uint256 _chainIdFrom
-  ) external returns (bool _result)
+  ) external returns (bool)
 ```
 
 Used for calls where native asset transfer is involved. 
@@ -64,7 +57,7 @@ Used for calls where native asset transfer is involved.
             uint256 _flags,
             bytes _nativeSender,
             uint256 _chainIdFrom
-  ) external returns (bool _result)
+  ) external returns (bool)
 ```
 
 Used for calls where ERC20 transfer is involved. 
@@ -79,39 +72,6 @@ Used for calls where ERC20 transfer is involved.
 |`_flags` | uint256 | Flags to change certain behavior of this function, see Flags library for more details
 |`_nativeSender` | bytes | Native sender
 |`_chainIdFrom` | uint256 | Id of a chain that originated the request
-
-## externalCall
-```solidity
-  function externalCall(
-            address destination,
-            uint256 value,
-            bytes data,
-            bytes _nativeSender,
-            uint256 _chainIdFrom,
-            bool storeSender
-  ) internal returns (bool result)
-```
-
-
-
-
-## receive
-```solidity
-  function receive(
-  ) external
-```
-
-
-
-
-## version
-```solidity
-  function version(
-  ) external returns (uint256)
-```
-
-Get this contract's version
-
 
 
 
