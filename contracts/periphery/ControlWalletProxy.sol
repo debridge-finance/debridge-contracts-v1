@@ -3,33 +3,43 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "./CallProxy.sol";
 
-contract ControlWalletProxy is Initializable, AccessControlUpgradeable, PausableUpgradeable {
-    using SafeERC20 for IERC20;
+import "../interfaces/ICallProxy.sol";
+
+contract ControlWalletProxy is
+    Initializable,
+    AccessControlUpgradeable,
+    PausableUpgradeable
+{
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== STATE VARIABLES ========== */
 
-    // chainId => list of addresses that can control this contract
+    ICallProxy public callProxy;
+    // chainIdFrom => list of addresses that can control this contract
     mapping(uint256 => mapping(bytes => bool)) public controlParams;
-    CallProxy callProxy;
 
     /* ========== ERRORS ========== */
 
     error AdminBadRole();
-    error NativeSenderBadRole(bytes nativeSender, uint256 chainIdFrom);
     error CallProxyBadRole();
-
+    error NativeSenderBadRole(bytes nativeSender, uint256 chainIdFrom);
     error ExternalCallFailed();
 
     /* ========== EVENTS ========== */
 
-    event CallProxyUpdated(address callProxy); // emited when the new call proxy set
+    // emited when the new call proxy set
+    event CallProxyUpdated(address callProxy);
 
-    event CrontrollingAddressUpdated(bytes nativeSender, uint256 chainIdFrom, bool enabled);
+    // emited when controlling address updated
+    event ControlingAddressUpdated(
+        bytes nativeSender,
+        uint256 chainIdFrom,
+        bool enabled
+    );
 
     /* ========== MODIFIERS ========== */
 
@@ -45,7 +55,7 @@ contract ControlWalletProxy is Initializable, AccessControlUpgradeable, Pausable
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize(CallProxy _callProxy) public initializer {
+    function initialize(ICallProxy _callProxy) public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         callProxy = _callProxy;
     }
@@ -54,12 +64,14 @@ contract ControlWalletProxy is Initializable, AccessControlUpgradeable, Pausable
         address destination,
         bytes memory data
     ) external payable onlyCallProxy whenNotPaused returns (bool _result) {
-        uint256 amount = address(this).balance;
         bytes memory nativeSender = callProxy.submissionNativeSender();
         uint256 chainIdFrom = callProxy.submissionChainIdFrom();
 
-        if(!controlParams[chainIdFrom][nativeSender]) revert NativeSenderBadRole(nativeSender, chainIdFrom);
+        if(!controlParams[chainIdFrom][nativeSender]) {
+            revert NativeSenderBadRole(nativeSender, chainIdFrom);
+        }
 
+        uint256 amount = address(this).balance;
         _result = externalCall(
             destination,
             amount,
@@ -98,19 +110,38 @@ contract ControlWalletProxy is Initializable, AccessControlUpgradeable, Pausable
         }
     }
 
+    /* ========== ADMIN ========== */
+
+    function pause() external onlyAdmin {
+        _pause();
+    }
+
+    function unpause() external onlyAdmin {
+        _unpause();
+    }
+
     /// @dev Set proxy address.
     /// @param _callProxy Address of the proxy that executes external calls.
-    function setCallProxy(CallProxy _callProxy) external onlyAdmin {
+    function setCallProxy(ICallProxy _callProxy) external onlyAdmin {
         callProxy = _callProxy;
         emit CallProxyUpdated(address(_callProxy));
     }
 
-    function setControlingAddress(bytes memory _nativeSender, uint256 _chainIdFrom, bool enabled) external onlyAdmin {
-        controlParams[_chainIdFrom][_nativeSender] = enabled;
-        emit CrontrollingAddressUpdated(_nativeSender, _chainIdFrom, enabled);
+    function setControlingAddress(
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom,
+        bool _enabled
+    ) external onlyAdmin {
+        controlParams[_chainIdFrom][_nativeSender] = _enabled;
+        emit ControlingAddressUpdated(_nativeSender, _chainIdFrom, _enabled);
     }
 
-    function getControlingAddress(bytes memory _nativeSender, uint256 _chainIdFrom) external view returns (bool) {
+    // ============ VIEWS ============
+
+    function getControlingAddress(
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
+    ) external view returns (bool) {
         return controlParams[_chainIdFrom][_nativeSender];
     }
 
