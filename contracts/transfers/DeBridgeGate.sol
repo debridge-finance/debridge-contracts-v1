@@ -34,43 +34,65 @@ contract DeBridgeGate is
 
     /* ========== STATE VARIABLES ========== */
 
-    // Basis points or bps equal to 1/10000
-    // used to express relative values (fees)
+    /// @dev Basis points or bps, set to 10_000 (equal to 1/10000). Used to express relative values (fees)
     uint256 public constant BPS_DENOMINATOR = 10000;
-    bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE"); // role allowed to stop transfers
+    /// @dev Role allowed to stop transfers
+    bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
 
+    /// @dev Address of IDeBridgeTokenDeployer contract
     address public deBridgeTokenDeployer;
-    address public signatureVerifier; // current signatureVerifier address to verify signatures
-    // address public confirmationAggregator; // current aggregator address to verify by oracles confirmations
-    uint8 public excessConfirmations; // minimal required confirmations in case sent amount is big, have no effect if < SignatureVerifier.minConfirmations
-    uint256 public flashFeeBps; // fee in basis points (1/10000)
-    uint256 public nonce; //outgoing submissions count
+    /// @dev Current signature verifier address to verify signatures.
+    address public signatureVerifier;
+    /// @dev Minimal required confirmations in case sent amount is big, have no effect if < SignatureVerifier.minConfirmations
+    uint8 public excessConfirmations;
+    /// @dev Flash loan fee in basis points (1/10000)
+    uint256 public flashFeeBps;
+    /// @dev outgoing submissions count
+    uint256 public nonce;
 
-    mapping(bytes32 => DebridgeInfo) public getDebridge; // debridgeId (i.e. hash(native chainId, native tokenAddress)) => token
+    /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information. 
+    mapping(bytes32 => DebridgeInfo) public getDebridge;
+    /// @dev Maps debridgeId (see getDebridgeId) => fee information 
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
-    mapping(bytes32 => bool) public override isSubmissionUsed; // submissionId (i.e. hash( debridgeId, amount, receiver, nonce)) => whether is claimed
-    mapping(bytes32 => bool) public isBlockedSubmission; // submissionId  => is blocked
-    mapping(bytes32 => uint256) public getAmountThreshold; // debridge => amount threshold
-    mapping(uint256 => ChainSupportInfo) public getChainToConfig; // whether the chain for the asset is supported to send
-    mapping(uint256 => ChainSupportInfo) public getChainFromConfig;// whether the chain for the asset is supported to claim
-    mapping(address => DiscountInfo) public feeDiscount; //fee discount for address
+    /// @dev Returns whether the transfer with the submissionId was claimed.
+    /// submissionId is generated in getSubmissionIdFrom
+    mapping(bytes32 => bool) public override isSubmissionUsed;
+    /// @dev Returns whether the transfer with the submissionId is blocked.
+    mapping(bytes32 => bool) public isBlockedSubmission;
+    /// @dev Maps debridgeId (see getDebridgeId) to threshold amount after which 
+    /// Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of 
+    /// SignatureVerifier.minConfirmations
+    mapping(bytes32 => uint256) public getAmountThreshold;
+    /// @dev Whether the chain for the asset is supported to send
+    mapping(uint256 => ChainSupportInfo) public getChainToConfig;
+    /// @dev Whether the chain for the asset is supported to claim
+    mapping(uint256 => ChainSupportInfo) public getChainFromConfig;
+    /// @dev Fee discount for address
+    mapping(address => DiscountInfo) public feeDiscount;
+    /// @dev Returns native token info by wrapped token address
+    mapping(address => TokenInfo) public getNativeInfo;
 
-    mapping(address => TokenInfo) public getNativeInfo; //return native token info by wrapped token address
+    /// @dev Return DefiController that can supply liquidity to staking strategies (AAVE, Compound, etc.)
+    address public defiController;
+    /// @dev Returns proxy to convert the collected fees and transfer to Ethereum network to treasury
+    address public feeProxy;
+    /// @dev Returns address of the proxy to execute user's calls.
+    address public callProxy;
+    /// @dev Returns contract for wrapped native token.
+    IWETH public weth;
 
-    address public defiController; // proxy to use the locked assets in Defi protocols
-    address public feeProxy; // proxy to convert the collected fees into Link's
-    address public callProxy; // proxy to execute user's calls
-    IWETH public weth; // wrapped native token contract
+    /// @dev Contract address that can override globalFixedNativeFee
+    address public feeContractUpdater;
 
-    address public feeContractUpdater; // contract address that can override globalFixedNativeFee
-
-    // Fallback fixed fee in native asset, used if a chain fixed fee is set to 0
+    /// @dev Fallback fixed fee in native asset, used if a chain fixed fee is set to 0
     uint256 public globalFixedNativeFee;
-    // Fallback transfer fee in BPS, used if a chain transfer fee is set to 0
+    /// @dev Fallback transfer fee in BPS, used if a chain transfer fee is set to 0
     uint16 public globalTransferFeeBps;
 
+    /// @dev WethGate contract, that is used for weth withdraws affected by EIP1884
     IWethGate public wethGate;
-    bool public lockedClaim; //locker for claim method
+    /// @dev Locker for claim method
+    bool public lockedClaim;
 
     /* ========== ERRORS ========== */
 
@@ -1068,6 +1090,7 @@ contract DeBridgeGate is
         return (tokenInfo.nativeChainId, tokenInfo.nativeAddress);
     }
 
+    /// @dev Get current chain id
     function getChainId() public view virtual returns (uint256 cid) {
         assembly {
             cid := chainid()
@@ -1075,6 +1098,7 @@ contract DeBridgeGate is
     }
 
     // ============ Version Control ============
+    /// @dev Get this contract's version
     function version() external pure returns (uint256) {
         return 121; // 1.2.1
     }
