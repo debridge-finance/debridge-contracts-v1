@@ -3,6 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../transfers/DeBridgeGate.sol";
 
 contract Claimer is
@@ -103,6 +104,7 @@ contract Claimer is
         }
     }
 
+
     /* VIEW */
 
     function isSubmissionsUsed(
@@ -136,12 +138,29 @@ contract Claimer is
 
     /* ========== ADMIN ========== */
 
+    function withdrawFee(address[] memory _tokenAddresses) external onlyAdmin {
+        uint256 lenght =_tokenAddresses.length;
+        for (uint i = 0; i < lenght; i ++) {
+            IERC20(_tokenAddresses[i]).transfer(
+                msg.sender,
+                IERC20(_tokenAddresses[i]).balanceOf(address(this))
+            );
+        }
+    }
+
+    function withdrawSingleFee(address  _tokenAddresses) external onlyAdmin {
+        IERC20(_tokenAddresses).transfer(
+            msg.sender,
+            IERC20(_tokenAddresses).balanceOf(address(this))
+        );
+    }
+
     function setDeBridgeGate(DeBridgeGate _deBridgeGate) external onlyAdmin {
         deBridgeGate = _deBridgeGate;
     }
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 110; // 1.1.0
     }
 }

@@ -269,12 +269,12 @@ contract("DeBridgeGate light mode with batch claimer", function () {
 
       // deploy first token
       await expect(
-        this.claimer.batchAssetsDeploy([batchDeploys[0]], {from: alice})
+        this.claimer.batchAssetsDeploy([batchDeploys[0]], { from: alice })
       ).to.not.emit(this.claimer, "BatchError");
 
       // Should not fall if the token has already been deployed
       await expect(
-        this.claimer.batchAssetsDeploy(batchDeploys, {from: alice})
+        this.claimer.batchAssetsDeploy(batchDeploys, { from: alice })
       )
         .to.emit(this.claimer, "BatchError")
         .withArgs(0);
@@ -383,25 +383,58 @@ contract("DeBridgeGate light mode with batch claimer", function () {
 
       //claim first request
       await expect(
-        this.claimer.batchClaim([batchClaims[0]], {from: alice})
+        this.claimer.batchClaim([batchClaims[0]], { from: alice })
       ).to.not.emit(this.claimer, "BatchError");
 
       // Should not fall if the submission has already been claimed
       await expect(
-        this.claimer.batchClaim(batchClaims, {from: alice})
+        this.claimer.batchClaim(batchClaims, { from: alice })
       )
         .to.emit(this.claimer, "BatchError")
         .withArgs(0);
     });
 
     it("isSubmissionsUsed() should return true for claimed submissions", async function () {
-      const isSubmissionsUsed =  await this.claimer.isSubmissionsUsed(this.submissionForClaim);
+      const isSubmissionsUsed = await this.claimer.isSubmissionsUsed(this.submissionForClaim);
       assert.deepEqual(isSubmissionsUsed, this.submissionForClaim.map(i => true));
     });
 
     it("isSubmissionsUsed() should return false for unclaimed submissions", async function () {
-      const isSubmissionsUsed =  await this.claimer.isSubmissionsUsed(nonExistBytes32);
+      const isSubmissionsUsed = await this.claimer.isSubmissionsUsed(nonExistBytes32);
       assert.deepEqual(isSubmissionsUsed, nonExistBytes32.map(i => false));
+    });
+  });
+
+
+
+  context("Test withdraw fee", () => {
+    const mintAmount = toBN(toWei("100"));
+
+    before(async function () {
+      await this.dbrToken.mint(this.claimer.address, mintAmount, {
+        from: alice,
+      });
+      await this.mockToken.mint(this.claimer.address, mintAmount, {
+        from: alice,
+      });
+    });
+
+    it("Should withdraw fee by admin", async function () {
+      const userBalanceBeforeDBR = toBN(await this.dbrToken.balanceOf(alice));
+      const userBalanceBeforeMock = toBN(await this.mockToken.balanceOf(alice));
+      const results = await this.claimer.withdrawFee([this.dbrToken.address, this.mockToken.address]);
+      const userBalanceAfterDBR = toBN(await this.dbrToken.balanceOf(alice));
+      const userBalanceAfterMock = toBN(await this.mockToken.balanceOf(alice));
+
+      console.log(userBalanceBeforeDBR.toString());
+      console.log(userBalanceAfterDBR.toString());
+      assert.equal(
+        userBalanceBeforeDBR.add(mintAmount).toString(),
+        userBalanceAfterDBR.toString());
+
+      assert.equal(
+        userBalanceBeforeMock.add(mintAmount).toString(),
+        userBalanceAfterMock.toString());
     });
   });
 });
