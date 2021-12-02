@@ -1,6 +1,18 @@
 {{{natspec.userdoc}}}
 {{{natspec.devdoc}}}
 
+{{#if ownVariables}}
+## Variables:
+{{/if}}
+
+{{#ownVariables}}
+### {{name}}
+```solidity
+  {{type}} {{visibility}}{{#if constant}} constant{{/if}} {{name}};
+```
+{{#if natspec.devdoc}}{{natspec.devdoc}}{{else}}No description{{/if}}
+{{/ownVariables}}
+
 {{#if ownFunctions}}
 ## Functions
 {{/if}}
@@ -28,6 +40,7 @@
 {{#natspec.returns}}
 |`{{param}}`| {{#lookup ../args.types @index}}{{/lookup}} | {{{description}}}{{/natspec.returns}}{{/if}}
 {{/ownFunctions}}
+
 {{#if ownEvents}}
 ## Events
 {{/if}}
@@ -49,3 +62,31 @@
 {{#natspec.params}}
 |`{{param}}`| {{#lookup ../args.types @index}}{{/lookup}} | {{{description}}}{{/natspec.params}}{{/if}}
 {{/ownEvents}}
+
+{{#if ownStructs}}
+## Structs
+{{/if}}
+{{#ownStructs}}
+### {{name}}
+```solidity
+struct {{name}} {
+{{#each members}}
+    {{type}} {{name}};
+{{/each}}
+}
+```
+{{/ownStructs}}
+
+{{#if ownEnums}}
+## Enums
+{{/if}}
+{{# ownEnums}}
+### {{name}}
+```solidity
+enum {{name}} {
+{{#each members}}
+    {{name}}
+{{/each}}
+}
+```
+{{/ownEnums}}
