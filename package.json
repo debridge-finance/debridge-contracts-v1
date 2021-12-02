@@ -40,8 +40,11 @@
     "dotenv-flow": "^3.2.0",
     "ganache-cli": "^6.12.2",
     "lodash": "^4.17.21",
-    "solidity-docgen": "^0.5.16",
+    "solidity-docgen": "https://github.com/Vsevo1od/solidity-docgen#56fcb9fae85305235d0b3af7d086cb4f7b471d3b",
     "truffle": "^5.4.8"
+  },
+  "dependenciesComments": {
+    "solidity-docgen": "TODO use npm version after https://github.com/OpenZeppelin/solidity-docgen/issues/339 and https://github.com/OpenZeppelin/solidity-docgen/issues/303 are fixed"
   },
   "devDependencies": {
     "@ethersproject/constants": "^5.4.0",
