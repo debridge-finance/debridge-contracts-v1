@@ -11,6 +11,7 @@
     "build": "hardhat build",
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
     "test": "hardhat test",
+    "test:ci": "hardhat compile && hardhat test",
     "contract-size": "hardhat size-contracts",
     "coverage": "hardhat coverage"
   },
