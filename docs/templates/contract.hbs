@@ -3,11 +3,11 @@
 {{{natspec.devdoc}}}
 
 {{#if ownVariables}}
-## Variables:
+# Variables
 {{/if}}
 
 {{#ownVariables}}
-### {{name}}
+## {{name}}
 ```solidity
   {{type}} {{visibility}}{{#if constant}} constant{{/if}} {{name}};
 ```
@@ -15,10 +15,10 @@
 {{/ownVariables}}
 
 {{#if ownFunctions}}
-## Functions
+# Functions
 {{/if}}
 {{#ownFunctions}}
-### {{name}}
+## {{name}}
 ```solidity
   function {{name}}(
     {{#if natspec.params}}
@@ -35,13 +35,13 @@
 {{#if natspec.userdoc}}{{natspec.userdoc}}{{/if}}
 {{#if natspec.devdoc}}{{natspec.devdoc}}{{/if}}
 {{#if natspec.params}}
-#### Parameters:
+### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
 {{#natspec.params}}
 |`{{param}}` | {{#lookup ../args.types @index}}{{/lookup}} | {{ description }}{{/natspec.params}}{{/if}}
 {{#if natspec.returns}}
-#### Return Values:
+### Return Values:
 | Name                           | Type          | Description                                                                  |
 | :----------------------------- | :------------ | :--------------------------------------------------------------------------- |
 {{#natspec.returns}}
@@ -49,10 +49,10 @@
 {{/ownFunctions}}
 
 {{#if ownEvents}}
-## Events
+# Events
 {{/if}}
 {{#ownEvents}}
-### {{name}}
+## {{name}}
 ```solidity
   event {{name}}(
     {{#each args}}
@@ -63,7 +63,7 @@
 {{#if natspec.userdoc}}{{natspec.userdoc}}{{/if}}
 {{#if natspec.devdoc}}{{natspec.devdoc}}{{/if}}
 {{#if natspec.params}}
-#### Parameters:
+### Parameters:
 | Name                           | Type          | Description                                    |
 | :----------------------------- | :------------ | :--------------------------------------------- |
 {{#natspec.params}}
@@ -71,10 +71,10 @@
 {{/ownEvents}}
 
 {{#if ownStructs}}
-## Structs
+# Structs
 {{/if}}
 {{#ownStructs}}
-### {{name}}
+## {{name}}
 ```solidity
 struct {{name}} {
 {{#each members}}
@@ -85,10 +85,10 @@ struct {{name}} {
 {{/ownStructs}}
 
 {{#if ownEnums}}
-## Enums
+# Enums
 {{/if}}
 {{# ownEnums}}
-### {{name}}
+## {{name}}
 ```solidity
 enum {{name}} {
 {{#each members}}
