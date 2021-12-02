@@ -145,6 +145,6 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 120; // 1.0.3
+        return 120; // 1.2.0
     }
 }
