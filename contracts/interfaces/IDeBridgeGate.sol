@@ -69,7 +69,8 @@ interface IDeBridgeGate {
 
     /* ========== FUNCTIONS ========== */
 
-    /// @dev Locks asset on the chain and enables withdraw on the other chain.
+    /// @dev This method is used for the transfer of assets [from the native chain](https://docs.debridge.finance/the-core-protocol/transfers#transfer-from-native-chain).
+    /// It locks an asset in the smart contract in the native chain and enables minting of deAsset on the secondary chain.
     /// @param _tokenAddress Asset identifier.
     /// @param _amount Amount to be transferred (note: the fee can be applied).
     /// @param _chainIdTo Chain id of the target chain.
@@ -89,7 +90,8 @@ interface IDeBridgeGate {
         bytes calldata _autoParams
     ) external payable;
 
-    /// @dev Unlock the asset on the current chain and transfer to receiver.
+    /// @dev Is used for transfers [into the native chain](https://docs.debridge.finance/the-core-protocol/transfers#transfer-from-secondary-chain-to-native-chain)
+    /// to unlock the designated amount of asset from collateral and transfer it to the receiver.
     /// @param _debridgeId Asset identifier.
     /// @param _amount Amount of the transferred asset (note: the fee can be applied).
     /// @param _chainIdFrom Chain where submission was sent
@@ -123,17 +125,17 @@ interface IDeBridgeGate {
     /// @param _tokenAddress Token address
     function getDefiAvaliableReserves(address _tokenAddress) external view returns (uint256);
 
-    /// @dev Request the assets to be used in defi protocol.
+    /// @dev Request the assets to be used in DeFi protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to request.
     function requestReserves(address _tokenAddress, uint256 _amount) external;
 
-    /// @dev Return the assets that were used in defi protocol.
+    /// @dev Return the assets that were used in DeFi  protocol.
     /// @param _tokenAddress Asset address.
     /// @param _amount Amount of tokens to claim.
     function returnReserves(address _tokenAddress, uint256 _amount) external;
 
-    /// @dev Withdraw fees to feeProxy
+    /// @dev Withdraw collected fees to feeProxy
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external;
 
@@ -154,6 +156,8 @@ interface IDeBridgeGate {
 
     /* ========== EVENTS ========== */
 
+    /// @dev Emitted once the tokens are sent from the original(native) chain to the other chain; the transfer tokens
+    /// are expected to be claimed by the users.
     event Sent(
         bytes32 submissionId,
         bytes32 indexed debridgeId,
@@ -166,8 +170,9 @@ interface IDeBridgeGate {
         bytes autoParams,
         address nativeSender
         // bool isNativeToken //added to feeParams
-    ); // emited once the native tokens are locked to be sent to the other chain
+    );
 
+    /// @dev Emitted once the tokens are transferred and withdrawn on the original(native) chain.
     event Claimed(
         bytes32 submissionId,
         bytes32 indexed debridgeId,
@@ -177,8 +182,9 @@ interface IDeBridgeGate {
         uint256 indexed chainIdFrom,
         bytes autoParams,
         bool isNativeToken
-    ); // emited once the tokens are withdrawn on native chain
+    );
 
+    /// @dev Emitted when new asset support is added.
     event PairAdded(
         bytes32 debridgeId,
         address tokenAddress,
@@ -186,24 +192,31 @@ interface IDeBridgeGate {
         uint256 indexed nativeChainId,
         uint256 maxAmount,
         uint16 minReservesBps
-    ); // emited when new asset is supported
+    );
 
-    event ChainSupportUpdated(uint256 chainId, bool isSupported, bool isChainFrom); // Emits when the asset is allowed/disallowed to be transferred to the chain.
+    /// @dev Emitted when the asset is allowed/disallowed to be transferred to the chain.
+    event ChainSupportUpdated(uint256 chainId, bool isSupported, bool isChainFrom);
+    /// @dev Emitted when the supported chains are updated.
     event ChainsSupportUpdated(
         uint256 chainIds,
         ChainSupportInfo chainSupportInfo,
-        bool isChainFrom); // emited when the supported assets are updated
+        bool isChainFrom);
 
-    event CallProxyUpdated(address callProxy); // emited when the new call proxy set
+    /// @dev Emitted when the new call proxy is set.
+    event CallProxyUpdated(address callProxy);
+    /// @dev Emitted when the transfer request is executed.
     event AutoRequestExecuted(
         bytes32 submissionId,
         bool indexed success,
         address callProxy
-    ); // emited when the new call proxy set
+    );
 
-    event Blocked(bytes32 submissionId); //Block submission
-    event Unblocked(bytes32 submissionId); //UnBlock submission
+    /// @dev Emitted when a submission is blocked.
+    event Blocked(bytes32 submissionId);
+    /// @dev Emitted when a submission is unblocked.
+    event Unblocked(bytes32 submissionId);
 
+    /// @dev Emitted when a flash loan is successfully returned.
     event Flash(
         address sender,
         address indexed tokenAddress,
@@ -212,11 +225,14 @@ interface IDeBridgeGate {
         uint256 paid
     );
 
+    /// @dev Emitted when fee is withdrawn.
     event WithdrawnFee(bytes32 debridgeId, uint256 fee);
 
+    /// @dev Emitted when globalFixedNativeFee and globalTransferFeeBps are updated.
     event FixedNativeFeeUpdated(
         uint256 globalFixedNativeFee,
         uint256 globalTransferFeeBps);
 
+    /// @dev Emitted when globalFixedNativeFee is updated by feeContractUpdater
     event FixedNativeFeeAutoUpdated(uint256 globalFixedNativeFee);
 }

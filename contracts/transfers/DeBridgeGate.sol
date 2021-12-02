@@ -353,7 +353,7 @@ contract DeBridgeGate is
         _addAsset(debridgeId, deBridgeTokenAddress, _nativeTokenAddress, _nativeChainId);
     }
 
-    /// @dev Update native fix fee. called by our fee update contract
+    /// @dev Update native fix fee. Called by our fee update contract
     /// @param _globalFixedNativeFee  new value
     function autoUpdateFixedNativeFee(
         uint256 _globalFixedNativeFee
@@ -434,14 +434,14 @@ contract DeBridgeGate is
         emit ChainSupportUpdated(_chainId, _isSupported, _isChainFrom);
     }
 
-    /// @dev Set proxy address.
+    /// @dev Set address of the call proxy.
     /// @param _callProxy Address of the proxy that executes external calls.
     function setCallProxy(address _callProxy) external onlyAdmin {
         callProxy = _callProxy;
         emit CallProxyUpdated(_callProxy);
     }
 
-    /// @dev Update an asset settings
+    /// @dev Update specific asset's bridge parameters.
     /// @param _debridgeId Asset identifier.
     /// @param _maxAmount Maximum amount of current chain token to be wrapped.
     /// @param _minReservesBps Minimal reserve ration in BPS.
