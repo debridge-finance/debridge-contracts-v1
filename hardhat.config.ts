@@ -105,8 +105,9 @@ export default {
       chainId: 421611
     },
     mumbai: {
-      // url: "https://rpc-mumbai.maticvigil.com",
-      url:"https://apis.ankr.com/28e515e83aba427a8334cf38d63d0ae6/363542f636c41556afec7d1feb0f0a88/polygon/full/test",
+      //  url: "https://rpc-mumbai.maticvigil.com",
+       url: "https://matic-mumbai.chainstacklabs.com/",
+      //url:"https://apis.ankr.com/28e515e83aba427a8334cf38d63d0ae6/363542f636c41556afec7d1feb0f0a88/polygon/full/test",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       // gasPrice: 1e10, //10 Gwei
       chainId: 80001
