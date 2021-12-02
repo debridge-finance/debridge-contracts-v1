@@ -7,6 +7,7 @@ import assert from "assert";
 
 const whitelistedContracts = [
     'transfers/DeBridgeGate.sol',
+    'interfaces/IDeBridgeGate.sol',
     'transfers/DeBridgeTokenDeployer.sol',
     'transfers/SignatureVerifier.sol',
     'periphery/CallProxy.sol',
