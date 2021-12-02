@@ -64,7 +64,8 @@ interface IDeBridgeGate {
     }
 
     /* ========== PUBLIC VARS GETTERS ========== */
-
+    /// @dev Returns whether the transfer with the submissionId was claimed.
+    /// submissionId is generated in getSubmissionIdFrom
     function isSubmissionUsed(bytes32 submissionId) external returns (bool);
 
     /* ========== FUNCTIONS ========== */
