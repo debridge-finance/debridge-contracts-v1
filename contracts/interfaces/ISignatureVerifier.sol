@@ -5,11 +5,17 @@ interface ISignatureVerifier {
 
     /* ========== EVENTS ========== */
 
-    event Confirmed(bytes32 submissionId, address operator); // emitted once the submission is confirmed by the only oracle
-    event DeployConfirmed(bytes32 deployId, address operator); // emitted once the submission is confirmed by one oracle
+    /// @dev Emitted once the submission is confirmed by one oracle.
+    event Confirmed(bytes32 submissionId, address operator);
+    /// @dev Emitted once the submission is confirmed by min required amount of oracles.
+    event DeployConfirmed(bytes32 deployId, address operator);
 
     /* ========== FUNCTIONS ========== */
 
+    /// @dev Check confirmation (validate signatures) for the transfer request.
+    /// @param _submissionId Submission identifier.
+    /// @param _signatures Array of signatures by oracles.
+    /// @param _excessConfirmations override min confirmations count
     function submit(
         bytes32 _submissionId,
         bytes memory _signatures,
