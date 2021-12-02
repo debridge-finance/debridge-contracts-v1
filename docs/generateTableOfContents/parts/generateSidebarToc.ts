@@ -3,6 +3,7 @@ import {DirEntry, ListOfFiles} from "./types/ListOfFiles";
 import {isDir, isFile, notReadme} from "./filters";
 import {toLink} from "./toLink";
 import {CONTRACTS_PATH_IN_DOCS, README_NAME} from "./constants";
+import removeMdExtensionFromFileName from "./removeMdExtensionFromFileName";
 
 export default function generateSidebarToc(listOfFiles: ListOfFiles): string {
     const title = `## Contracts\n`;
@@ -36,6 +37,7 @@ function generateDirLinksWithSubLinks(
 
     const indent = (str: string): string => '  '.repeat(level) + str;
     const subLinks = fileEntries
+        .map(removeMdExtensionFromFileName)
         .map(([fileName, filePath]) => toLink(fileName, CONTRACTS_PATH_IN_DOCS + filePath))
         .map(indent)
         .join('\n');

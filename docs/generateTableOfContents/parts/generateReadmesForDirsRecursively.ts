@@ -5,6 +5,7 @@ import {FileEntry, ListOfFiles} from "./types/ListOfFiles";
 import {README_NAME} from "./constants";
 import {isDir, isFile, notReadme} from "./filters";
 import {toLink} from "./toLink";
+import removeMdExtensionFromFileName from "./removeMdExtensionFromFileName";
 
 // start with h2
 const TOP_LEVEL = 2;
@@ -56,6 +57,7 @@ function convertListOfFilesToMarkdown(
 
     const filesAsMarkdown = fileEntries
         .map(makePathRelative)
+        .map(removeMdExtensionFromFileName)
         .map(([fileName, filePath]) => toLink(fileName, filePath))
         .join('\n')
     ;
