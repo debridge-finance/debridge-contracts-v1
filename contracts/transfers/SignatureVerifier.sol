@@ -10,13 +10,15 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     using SignatureUtil for bytes32;
 
     /* ========== STATE VARIABLES ========== */
+    /// @dev Number of required confirmations per block after the extra check is enabled
+    uint8 public confirmationThreshold;
+    /// @dev submissions count in current block
+    uint40 public submissionsInBlock;
+    /// @dev Current block
+    uint40 public currentBlock;
 
-    uint8 public confirmationThreshold; // required confirmations per block after extra check enabled
-
-    uint40 public submissionsInBlock; //submissions count in current block
-    uint40 public currentBlock; //Current block
-
-    address public debridgeAddress; // Debridge gate address
+    /// @dev Debridge gate address
+    address public debridgeAddress;
 
     /* ========== ERRORS ========== */
 
@@ -36,7 +38,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _confirmationThreshold Confirmations per block after extra check enabled.
+    /// @param _confirmationThreshold Confirmations per block after the extra check is enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
         uint8 _minConfirmations,
@@ -50,10 +52,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     }
 
 
-    /// @dev Check is valid signatures.
-    /// @param _submissionId Submission identifier.
-    /// @param _signatures Array of signatures by oracles.
-    /// @param _excessConfirmations override min confirmations count
+    /// @inheritdoc ISignatureVerifier
     function submit(
         bytes32 _submissionId,
         bytes memory _signatures,
@@ -61,8 +60,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     ) external override onlyDeBridgeGate {
         //Need confirmation to confirm submission
         uint8 needConfirmations = _excessConfirmations > minConfirmations
-            ? _excessConfirmations
-            : minConfirmations;
+        ? _excessConfirmations
+        : minConfirmations;
         // Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
@@ -133,9 +132,9 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     /// @param _submissionId Submission identifier.
     /// @param _signature signature by oracle.
     function isValidSignature(bytes32 _submissionId, bytes memory _signature)
-        external
-        view
-        returns (bool)
+    external
+    view
+    returns (bool)
     {
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
@@ -149,6 +148,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     }
 
     // ============ Version Control ============
+    /// @dev Get this contract's version
     function version() external pure returns (uint256) {
         return 101; // 1.0.1
     }
