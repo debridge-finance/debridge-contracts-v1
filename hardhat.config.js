@@ -12,6 +12,7 @@ require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-solhint");
 require("prettier-plugin-solidity");
 require("solidity-coverage");
+require("@nomiclabs/hardhat-etherscan");
 
 module.exports = {
   gasReporter: {
@@ -149,4 +150,7 @@ module.exports = {
   mocha: {
     timeout: 100000
   },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
+  }
 }
