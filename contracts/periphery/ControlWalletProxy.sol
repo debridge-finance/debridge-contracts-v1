@@ -1,38 +1,29 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 import "../interfaces/ICallProxy.sol";
+import "../transfers/DeBridgeGate.sol";
 
-contract ControlWalletProxy is
-    Initializable,
-    AccessControlUpgradeable,
-    PausableUpgradeable
-{
+contract ControlWalletProxy is Initializable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== STATE VARIABLES ========== */
 
-    ICallProxy public callProxy;
+    DeBridgeGate public deBridgeGate;
     // chainIdFrom => list of addresses that can control this contract
     mapping(uint256 => mapping(bytes => bool)) public controlParams;
 
     /* ========== ERRORS ========== */
 
-    error AdminBadRole();
     error CallProxyBadRole();
     error NativeSenderBadRole(bytes nativeSender, uint256 chainIdFrom);
     error ExternalCallFailed();
 
     /* ========== EVENTS ========== */
-
-    // emited when the new call proxy set
-    event CallProxyUpdated(address callProxy);
 
     // emited when controlling address updated
     event ControlingAddressUpdated(
@@ -43,35 +34,40 @@ contract ControlWalletProxy is
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyAdmin() {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
-        _;
-    }
-
-    modifier onlyCallProxy() {
+    modifier onlyCallProxyFromControlingAddress() {
+        ICallProxy callProxy = ICallProxy(deBridgeGate.callProxy());
         if (address(callProxy) != msg.sender) revert CallProxyBadRole();
+
+        bytes memory nativeSender = callProxy.submissionNativeSender();
+        uint256 chainIdFrom = callProxy.submissionChainIdFrom();
+        if(!controlParams[chainIdFrom][nativeSender]) {
+            revert NativeSenderBadRole(nativeSender, chainIdFrom);
+        }
         _;
     }
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize(ICallProxy _callProxy) public initializer {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        callProxy = _callProxy;
+    function initialize(
+        DeBridgeGate _deBridgeGate,
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
+    ) public initializer {
+        deBridgeGate = _deBridgeGate;
+        controlParams[_chainIdFrom][_nativeSender] = true;
     }
 
     function call(
+        address token,
+        uint256 amount,
         address destination,
         bytes memory data
-    ) external payable onlyCallProxy whenNotPaused returns (bool _result) {
-        bytes memory nativeSender = callProxy.submissionNativeSender();
-        uint256 chainIdFrom = callProxy.submissionChainIdFrom();
-
-        if(!controlParams[chainIdFrom][nativeSender]) {
-            revert NativeSenderBadRole(nativeSender, chainIdFrom);
+    ) external payable onlyCallProxyFromControlingAddress returns (bool _result) {
+        if (token != address(0)) {
+            IERC20Upgradeable(token).safeApprove(destination, 0);
+            IERC20Upgradeable(token).safeApprove(destination, amount);
         }
 
-        uint256 amount = address(this).balance;
         _result = externalCall(
             destination,
             amount,
@@ -83,6 +79,25 @@ contract ControlWalletProxy is
         }
     }
 
+    function setControlingAddress(
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom,
+        bool _enabled
+    ) external onlyCallProxyFromControlingAddress {
+        controlParams[_chainIdFrom][_nativeSender] = _enabled;
+        emit ControlingAddressUpdated(_nativeSender, _chainIdFrom, _enabled);
+    }
+
+    // ============ VIEWS ============
+
+    function getControlingAddress(
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
+    ) external view returns (bool) {
+        return controlParams[_chainIdFrom][_nativeSender];
+    }
+
+    // ============ INTERNALS ============
 
     //gnosis
     //https://github.com/gnosis/MultiSigWallet/blob/ca981359cf5acd6a1f9db18e44777e45027df5e0/contracts/MultiSigWallet.sol#L244-L261
@@ -108,41 +123,6 @@ contract ControlWalletProxy is
                 0 // Output is ignored, therefore the output size is zero
             )
         }
-    }
-
-    /* ========== ADMIN ========== */
-
-    function pause() external onlyAdmin {
-        _pause();
-    }
-
-    function unpause() external onlyAdmin {
-        _unpause();
-    }
-
-    /// @dev Set proxy address.
-    /// @param _callProxy Address of the proxy that executes external calls.
-    function setCallProxy(ICallProxy _callProxy) external onlyAdmin {
-        callProxy = _callProxy;
-        emit CallProxyUpdated(address(_callProxy));
-    }
-
-    function setControlingAddress(
-        bytes memory _nativeSender,
-        uint256 _chainIdFrom,
-        bool _enabled
-    ) external onlyAdmin {
-        controlParams[_chainIdFrom][_nativeSender] = _enabled;
-        emit ControlingAddressUpdated(_nativeSender, _chainIdFrom, _enabled);
-    }
-
-    // ============ VIEWS ============
-
-    function getControlingAddress(
-        bytes memory _nativeSender,
-        uint256 _chainIdFrom
-    ) external view returns (bool) {
-        return controlParams[_chainIdFrom][_nativeSender];
     }
 
     // ============ Version Control ============
