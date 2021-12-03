@@ -217,7 +217,7 @@ are expected to be claimed by the users.
   )
 ```
 
-Emitted once the tokens are transferred and withdrawn on the original(native) chain.
+Emitted once the tokens are transferred and withdrawn on a target chain
 
 ## PairAdded
 ```solidity

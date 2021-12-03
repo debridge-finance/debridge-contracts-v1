@@ -173,7 +173,7 @@ interface IDeBridgeGate {
         // bool isNativeToken //added to feeParams
     );
 
-    /// @dev Emitted once the tokens are transferred and withdrawn on the original(native) chain.
+    /// @dev Emitted once the tokens are transferred and withdrawn on a target chain
     event Claimed(
         bytes32 submissionId,
         bytes32 indexed debridgeId,
