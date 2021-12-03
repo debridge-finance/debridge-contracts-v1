@@ -59,6 +59,9 @@ jobs:
         steps.cache-yarn-cache.outputs.cache-hit != 'true' ||
         steps.cache-node-modules.outputs.cache-hit != 'true'
 
+    - name: Check docs are in sync
+      run: yarn docs:assert-in-sync
+
     - name: Lint (prettier)
       run: yarn lint:check
       continue-on-error: true

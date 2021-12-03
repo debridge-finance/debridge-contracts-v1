@@ -13,9 +13,11 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     using Flags for uint256;
 
     /* ========== STATE VARIABLES ========== */
-
-    bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
+    /// @dev Role allowed to withdraw fee
+    bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE");
+    /// @dev Chain from which the current submission is received
     uint256 public override submissionChainIdFrom;
+    /// @dev Native sender of the current submission
     bytes public override submissionNativeSender;
 
     /* ========== ERRORS ========== */
@@ -38,6 +40,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /// @inheritdoc ICallProxy
     function call(
         address _reserveAddress,
         address _receiver,
@@ -66,6 +69,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         }
     }
 
+    /// @inheritdoc ICallProxy
     function callERC20(
         address _token,
         address _reserveAddress,
@@ -144,6 +148,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     }
 
     // ============ Version Control ============
+    /// @dev Get this contract's version
     function version() external pure returns (uint256) {
         return 120; // 1.2.0
     }
