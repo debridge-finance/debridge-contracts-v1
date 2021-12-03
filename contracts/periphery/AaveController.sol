@@ -32,12 +32,13 @@ contract AaveController is BaseStrategyController {
         return newATokenAddress;
     }
 
-    function updateReserves(address _token)
+    function totalReserves(address _token)
         external
         view
         override
         returns (uint256)
     {   
+        address aToken = strategyToken(_token);
         return IERC20(_token).balanceOf(address(this)) + IERC20(aToken).balanceOf(address(this));
     }
 

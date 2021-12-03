@@ -465,7 +465,8 @@ contract DelegatedStaking is
         external
         nonReentrant
         whenNotPaused
-    {
+    {   
+        // TODO: getStrategyControllerByValidator and Underlying Protocol function
         IStrategy strategyController = IStrategy(_strategy);
         ValidatorCollateral storage validatorCollateral = getValidatorInfo[_validator].collateralPools[_stakeToken];
         DelegatorsInfo storage delegation = validatorCollateral.delegators[msg.sender];
