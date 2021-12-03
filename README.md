@@ -6,7 +6,7 @@ UI deployed on [testv2.debridge.finance](https://testv2.debridge.finance/)
 
 The contracts directory contains the following subfolders:
 
-```jsx
+```
 contracts/
 	chainlink/ - related to chainlink integration
 	interfaces/ - contains interfaces of the project contracts
@@ -108,3 +108,7 @@ Where TEST_ORACLE_KEYS is private keys from ganache
 ```
 yarn test
 ```
+
+## Verify contract
+
+Add ETHERSCAN_API_KEY variable to your .env file before running `npx hardhat verify ...`
