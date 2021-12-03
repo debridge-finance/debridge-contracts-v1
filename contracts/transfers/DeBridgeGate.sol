@@ -2,9 +2,9 @@
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
@@ -28,7 +28,7 @@ contract DeBridgeGate is
     ReentrancyGuardUpgradeable,
     IDeBridgeGate
 {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     using SignatureUtil for bytes;
     using Flags for uint256;
 
@@ -298,12 +298,12 @@ contract DeBridgeGate is
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         if (!getDebridge[debridgeId].exist) revert DebridgeNotFound();
         uint256 currentFlashFee = (_amount * flashFeeBps) / BPS_DENOMINATOR;
-        uint256 balanceBefore = IERC20(_tokenAddress).balanceOf(address(this));
+        uint256 balanceBefore = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
 
-        IERC20(_tokenAddress).safeTransfer(_receiver, _amount);
+        IERC20Upgradeable(_tokenAddress).safeTransfer(_receiver, _amount);
         IFlashCallback(msg.sender).flashCallback(currentFlashFee, _data);
 
-        uint256 balanceAfter = IERC20(_tokenAddress).balanceOf(address(this));
+        uint256 balanceAfter = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
         if (balanceBefore + currentFlashFee > balanceAfter) revert FeeNotPaid();
 
         uint256 paid = balanceAfter - balanceBefore;
@@ -492,7 +492,7 @@ contract DeBridgeGate is
         } else {
             // don't need this check as we check that amount is not zero
             // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
-            IERC20(getDebridge[_debridgeId].tokenAddress).safeTransfer(feeProxy, amount);
+            IERC20Upgradeable(getDebridge[_debridgeId].tokenAddress).safeTransfer(feeProxy, amount);
         }
         emit WithdrawnFee(_debridgeId, amount);
     }
@@ -511,11 +511,11 @@ contract DeBridgeGate is
         if (!debridge.exist) revert DebridgeNotFound();
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
 
-        if (minReserves + _amount > IERC20(_tokenAddress).balanceOf(address(this)))
+        if (minReserves + _amount > IERC20Upgradeable(_tokenAddress).balanceOf(address(this)))
             revert NotEnoughReserves();
 
         debridge.lockedInStrategies += _amount;
-        IERC20(_tokenAddress).safeTransfer(defiController, _amount);
+        IERC20Upgradeable(_tokenAddress).safeTransfer(defiController, _amount);
     }
 
     /// @dev Return the assets that were used in defi protocol.
@@ -531,7 +531,7 @@ contract DeBridgeGate is
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
         debridge.lockedInStrategies -= _amount;
-        IERC20(debridge.tokenAddress).safeTransferFrom(
+        IERC20Upgradeable(debridge.tokenAddress).safeTransferFrom(
             defiController,
             address(this),
             _amount
@@ -723,7 +723,7 @@ contract DeBridgeGate is
             weth.deposit{value: _amount}();
             _useAssetFee = true;
         } else {
-            IERC20 token = IERC20(_tokenAddress);
+            IERC20Upgradeable token = IERC20Upgradeable(_tokenAddress);
             uint256 balanceBefore = token.balanceOf(address(this));
             token.safeTransferFrom(msg.sender, address(this), _amount);
             // Received real amount
@@ -896,7 +896,7 @@ contract DeBridgeGate is
         bool isNativeToken
     ) internal {
         if (isNativeToken) {
-            IERC20(_token).safeTransfer(_receiver, _amount);
+            IERC20Upgradeable(_token).safeTransfer(_receiver, _amount);
         } else {
             IDeBridgeToken(_token).mint(_receiver, _amount);
         }
@@ -920,7 +920,7 @@ contract DeBridgeGate is
             _safeTransferETH(_receiver, _amount);
         }
         else {
-            IERC20(address(weth)).safeTransfer(address(wethGate), _amount);
+            IERC20Upgradeable(address(weth)).safeTransfer(address(wethGate), _amount);
             wethGate.withdraw(_receiver, _amount);
         }
     }
