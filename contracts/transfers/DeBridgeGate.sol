@@ -523,10 +523,10 @@ IDeBridgeGate
 
     /// @inheritdoc IDeBridgeGate
     function requestReserves(address _tokenAddress, uint256 _amount)
-    external
-    override
-    onlyDefiController
-    nonReentrant
+        external
+        override
+        onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
@@ -542,10 +542,10 @@ IDeBridgeGate
 
     /// @inheritdoc IDeBridgeGate
     function returnReserves(address _tokenAddress, uint256 _amount)
-    external
-    override
-    onlyDefiController
-    nonReentrant
+        external
+        override
+        onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
