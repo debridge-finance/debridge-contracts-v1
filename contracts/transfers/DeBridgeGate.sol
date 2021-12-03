@@ -22,11 +22,11 @@ import "../libraries/Flags.sol";
 import "../interfaces/IWethGate.sol";
 
 contract DeBridgeGate is
-Initializable,
-AccessControlUpgradeable,
-PausableUpgradeable,
-ReentrancyGuardUpgradeable,
-IDeBridgeGate
+    Initializable,
+    AccessControlUpgradeable,
+    PausableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    IDeBridgeGate
 {
     using SafeERC20 for IERC20;
     using SignatureUtil for bytes;
@@ -497,7 +497,7 @@ IDeBridgeGate
     }
 
     /// @dev Allow transfers.
-    function unpause() external onlyAdmin {
+    function unpause() external onlyAdmin whenPaused {
         _unpause();
     }
 
@@ -1100,6 +1100,6 @@ IDeBridgeGate
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 121; // 1.2.1
+        return 120; // 1.2.0
     }
 }
