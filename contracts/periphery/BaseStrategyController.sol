@@ -29,7 +29,6 @@ abstract contract BaseStrategyController is IStrategy {
     address public constant DELEGATED_STAKING;
     uint256 public denominator = 10e18;
 
-
     /* ========== EVENTS ========== */
 
     event StrategyReset(address _strategy, address collateral);
@@ -53,12 +52,14 @@ abstract contract BaseStrategyController is IStrategy {
         DELEGATED_STAKING = _delegatedStaking;
     }
 
+    /* ========== METHODS TO BE IMPLEMENTED BY INHERITED STRATEGIES CONTROLLERS ========== */
+
     function strategyToken(address _collateral) public view virtual returns (address) {
         revert MethodNotImplemented();
     }
 
-    function getValidator() external override view returns (address) {
-        return VALIDATOR;
+    function _ensureBalancesWithdrawal(address _collateral, uint256 amountToBePaid) internal {
+        revert MethodNotImplemented();
     }
 
     function _totalReserves(address _collateral) internal view virtual returns (uint256) {
@@ -76,29 +77,10 @@ abstract contract BaseStrategyController is IStrategy {
         revert MethodNotImplemented();
     }
 
-    function _calculateShares(address _collateral, uint256 _amount)
-        internal
-        view
-        returns (uint256)
-    {
-        uint256 totalReserves = _totalReserves(_collateral);
-        if (totalReserves > 0) {
-            return (_amount * strategies[_collateral].sShares) / totalReserves;
-        } else {
-            return _amount;
-        }
-    }
+    /* ========== EXTERNAL ========== */
 
-    function _calculateFromShares(address _collateral, uint256 _shares)
-        internal
-        view
-        returns (uint256)
-    {
-        uint256 totalShares = strategies[_collateral].sShares;
-        if (totalShares == 0) {
-            return 0;
-        }
-        return (_shares * _totalReserves(_collateral)) / totalShares;
+    function getValidator() external view override returns (address) {
+        return VALIDATOR;
     }
 
     function delegatorShares(address _collateral, address _delegator)
@@ -110,24 +92,12 @@ abstract contract BaseStrategyController is IStrategy {
         return _delegatorShares(_collateral, _delegator);
     }
 
-    function _delegatorShares(address _collateral, address _delegator)
-        internal
-        view
-        returns (uint256)
-    {
-        return strategies[_collateral].delegators[_delegator].sShares;
-    }
-
     function totalShares(address _collateral) external view override returns (uint256) {
         return strategies[_collateral].sShares;
     }
 
     function totalReserves(address _collateral) external view override returns (uint256) {
         return _totalReserves(_collateral);
-    }
-
-    function isEnabled(address _collateral) external view override returns (bool) {
-        return strategies[_collateral].isEnabled;
     }
 
     function strategyInfo(address _collateral) external view override returns (bool, bool) {
@@ -246,6 +216,41 @@ abstract contract BaseStrategyController is IStrategy {
             // strategy losses
             return (false, amountToBeUnlocked - amountToBePaid);
         }
+    }
+
+    /* ========== INTERNAL ========== */
+
+    function _calculateShares(address _collateral, uint256 _amount)
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 totalReserves = _totalReserves(_collateral);
+        if (totalReserves > 0) {
+            return (_amount * strategies[_collateral].sShares) / totalReserves;
+        } else {
+            return _amount;
+        }
+    }
+
+    function _calculateFromShares(address _collateral, uint256 _shares)
+        internal
+        view
+        returns (uint256)
+    {
+        uint256 totalShares = strategies[_collateral].sShares;
+        if (totalShares == 0) {
+            return 0;
+        }
+        return (_shares * _totalReserves(_collateral)) / totalShares;
+    }
+
+    function _delegatorShares(address _collateral, address _delegator)
+        internal
+        view
+        returns (uint256)
+    {
+        return strategies[_collateral].delegators[_delegator].sShares;
     }
 
     // TODO:
