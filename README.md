@@ -104,6 +104,9 @@ INFURA_ID=xxx # Change to your infura id
 ```
 then run `yarn test`
 
+## Docs generation
+`yarn docs`
+
 ## Troubleshooting
 ###  Cannot find module '../typechain-types' or its corresponding type declarations.
 `hardhat clean`

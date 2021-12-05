@@ -5,8 +5,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/ISwapProxy.sol";
 import "../interfaces/IStrategy.sol";
@@ -55,7 +55,9 @@ contract DelegatedStaking is
     PausableUpgradeable,
     ReentrancyGuardUpgradeable
 {
-    using SafeERC20 for IERC20;
+    uint256 public constant UINT_MAX_VALUE =
+        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     struct RewardInfo {
         uint256 totalAmount; // total rewards
@@ -314,8 +316,24 @@ contract DelegatedStaking is
         ValidatorCollateral storage validatorCollateral = validator.collateralPools[_collateral];
         if (validatorCollateral.stakedAmount + _amount > collaterals[_collateral].maxStakeAmount)
             revert CollateralLimited();
-        IERC20(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
-        uint256 shares = changeVirtualBalances(_validator, _collateral, _receiver, _amount, 0, true);
+        DelegatorsInfo storage delegator = validatorCollateral.delegators[_receiver];
+
+        IERC20Upgradeable(_collateral).safeTransferFrom(msg.sender, address(this), _amount);
+
+        // Calculate amount of shares to be issued to delegator
+        uint256 shares = DelegatedStakingHelper._calculateShares(
+            _amount,
+            validatorCollateral.shares,
+            validatorCollateral.stakedAmount
+        );
+
+        //Increase total collateral of the protocol for this asset
+        collateral.totalLocked += _amount;
+        //Increase total collateral of the validator for this asset
+        validatorCollateral.stakedAmount += _amount;
+        validatorCollateral.shares += shares;
+        delegator.shares += shares;
+
         emit Staked(msg.sender, _receiver, _validator, _collateral, _amount, shares);
     }
 
@@ -397,7 +415,7 @@ contract DelegatedStaking is
 
             withdrawal.executed = true;
             uint256 withdrawAmount = withdrawal.amount - withdrawal.slashingAmount; // I think this is already accounted for on L#428
-            IERC20(withdrawal.collateral).safeTransfer(withdrawal.receiver, withdrawAmount);
+            IERC20Upgradeable(withdrawal.collateral).safeTransfer(withdrawal.receiver, withdrawAmount);
             emit UnstakeExecuted(
                 withdrawal.delegator,
                 _validator,
@@ -585,7 +603,7 @@ contract DelegatedStaking is
         whenNotPaused
         collateralEnabled(_rewardToken)
     {
-        IERC20(_rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
+        IERC20Upgradeable(_rewardToken).safeTransferFrom(msg.sender, address(this), _amount);
         getRewardsInfo[_rewardToken].totalAmount += _amount;
 
         emit RewardsReceived(_rewardToken, _amount);
@@ -695,11 +713,11 @@ contract DelegatedStaking is
             }
 
             // transfer direct to our swap contract
-            IERC20(_rewardToken).safeTransfer(address(swapProxy), tokenRewardAmount);
+            IERC20Upgradeable(_rewardToken).safeTransfer(address(swapProxy), tokenRewardAmount);
 
-            uint256 balanceBefore = IERC20(currentCollateral).balanceOf(address(this));
+            uint256 balanceBefore = IERC20Upgradeable(currentCollateral).balanceOf(address(this));
             swapProxy.swap(_rewardToken, currentCollateral, address(this));
-            uint256 balanceAfter = IERC20(currentCollateral).balanceOf(address(this));
+            uint256 balanceAfter = IERC20Upgradeable(currentCollateral).balanceOf(address(this));
             // override amount to received swapped tokens
             tokenRewardAmount = balanceAfter - balanceBefore;
             collaterals[currentCollateral].totalLocked += tokenRewardAmount;
@@ -1216,7 +1234,7 @@ contract DelegatedStaking is
             uint256 slashedAmount = currentCollateral.slashedAmount;
             if (slashedAmount > 0) {
                 currentCollateral.slashedAmount = 0;
-                IERC20(collateralAddress).safeTransfer(slashingTreasury, slashedAmount);
+                IERC20Upgradeable(collateralAddress).safeTransfer(slashingTreasury, slashedAmount);
                 emit WithdrawSlashingTreasury(collateralAddress, slashedAmount);
             }
         }

@@ -12,7 +12,10 @@
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
     "test": "hardhat test",
     "contract-size": "hardhat size-contracts",
-    "coverage": "hardhat coverage"
+    "coverage": "hardhat coverage",
+    "docs:solidity-docgen": "solidity-docgen -i ./contracts/ -e ./contracts/mock -o ./docs/contracts/ --solc-module solc-0.8.7 -t ./docs/templates",
+    "docs": "yarn docs:solidity-docgen  && ts-node docs/removeAllButWhitelistedDocs.ts && ts-node docs/generateTableOfContents/index.ts",
+    "docs:assert-in-sync": "ts-node docs/checkDocsAreInSync.ts"
   },
   "repository": {
     "type": "git",
@@ -29,15 +32,24 @@
     "@openzeppelin/contracts": "^4.3.2",
     "@openzeppelin/contracts-upgradeable": "^4.3.2",
     "@openzeppelin/test-helpers": "^0.5.13",
+    "@types/delete-empty": "^3.0.2",
     "@types/dotenv-flow": "^3.2.0",
+    "@types/globby": "^9.1.0",
+    "@types/lodash": "^4.14.177",
+    "delete-empty": "^3.0.0",
     "dotenv-flow": "^3.2.0",
     "ganache-cli": "^6.12.2",
+    "lodash": "^4.17.21",
+    "solidity-docgen": "https://github.com/Vsevo1od/solidity-docgen#56fcb9fae85305235d0b3af7d086cb4f7b471d3b",
     "truffle": "^5.4.8"
+  },
+  "dependenciesComments": {
+    "solidity-docgen": "TODO use npm version after https://github.com/OpenZeppelin/solidity-docgen/issues/339 and https://github.com/OpenZeppelin/solidity-docgen/issues/303 are fixed"
   },
   "devDependencies": {
     "@ethersproject/constants": "^5.4.0",
-    "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.11",
+    "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@nomiclabs/hardhat-solhint": "^2.0.0",
     "@nomiclabs/hardhat-truffle5": "2.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
@@ -59,6 +71,7 @@
     "hardhat-gas-reporter": "^1.0.4",
     "prettier": "^2.3.2",
     "prettier-plugin-solidity": "^1.0.0-beta.17",
+    "solc-0.8.7": "yarn:solc@0.8.7-fixed",
     "solhint": "^3.3.6",
     "solhint-plugin-prettier": "^0.0.5",
     "solidity-coverage": "^0.7.17",

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -13,7 +13,7 @@ import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IWETH.sol";
 
 contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeable, IFeeProxy {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -111,7 +111,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         address currentTreasuryAddress = toAddress(treasuryAddresses[chainId]);
 
         debridgeGate.withdrawFee(debridgeId);
-        uint256 amount = IERC20(_tokenAddress).balanceOf(address(this));
+        uint256 amount = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
         // original token chain is the same as contract chain
         if (chainId == nativeChainId) {
             //Reward is token (DBR, LINK, WETH, deDBT, deLINK, deETH)
@@ -128,7 +128,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
                 }
                 //If we are in Ethereum chain transfer to Treasury
                 if (chainId == ETH_CHAINID) {
-                    IERC20(address(weth)).safeTransfer(
+                    IERC20Upgradeable(address(weth)).safeTransfer(
                         address(currentTreasuryAddress),
                         weth.balanceOf(address(this))
                     );
@@ -136,7 +136,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
                     //create swap from Native token to deETH
                     _swap(address(weth), deEthToken, address(this));
                     //transfer deETH to Ethereum
-                    uint256 deEthAmount = IERC20(deEthToken).balanceOf(address(this));
+                    uint256 deEthAmount = IERC20Upgradeable(deEthToken).balanceOf(address(this));
                     _burnTransfer(deEthToken, deEthAmount, ETH_CHAINID, msg.value);
                 }
             }
@@ -176,7 +176,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
             weth.deposit{value: amount}();
             //create swap (BNB/HT) to deETH
             _swap(address(weth), deEthToken, address(this));
-            uint256 deEthBalance = IERC20(deEthToken).balanceOf(address(this));
+            uint256 deEthBalance = IERC20Upgradeable(deEthToken).balanceOf(address(this));
             //transfer deETH to Ethereum
             _burnTransfer(
                 deEthToken,
@@ -216,7 +216,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         uint256 _nativeChainId,
         uint256 _nativeFixFee
     ) private {
-        IERC20(_erc20Token).safeApprove(address(debridgeGate), _amount);
+        IERC20Upgradeable(_erc20Token).safeApprove(address(debridgeGate), _amount);
         debridgeGate.send{value: _nativeFixFee}(
             _erc20Token,
             _amount,
@@ -234,7 +234,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         address _toToken,
         address _receiver
     ) private {
-        IERC20 erc20 = IERC20(_fromToken);
+        IERC20Upgradeable erc20 = IERC20Upgradeable(_fromToken);
         uint256 _amount = erc20.balanceOf(address(this));
         IUniswapV2Pair uniswapPair = IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
         erc20.safeTransfer(address(uniswapPair), _amount);
