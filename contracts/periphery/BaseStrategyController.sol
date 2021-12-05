@@ -144,25 +144,33 @@ abstract contract BaseStrategyController is IStrategy {
         strategy.exists = true;
     }
 
+    function slashDelegatorDeposits(
+        address _delegator,
+        address _collateral,
+        uint256 _slashingFraction
+    ) external override onlyDelegatedStaking returns (uint256) {
+        return _slashDelegatorDeposits(_delegator, _collateral, _slashingFraction);
+    }
+
+    function _slashDelegatorDeposits(
+        address _delegator,
+        address _collateral,
+        uint256 _slashingFraction
+    ) internal returns (uint256) {
+        uint256 _shares = _delegatorShares(_collateral, _delegator) * _slashingFraction;
+        strategies[_collateral].delegators[_delegator].sShares -= _shares;
+        strategies[_collateral].sShares -= _shares;
+        // TODO: complete
+        return _shares;
+    }
+
     function slashValidatorDeposits(address _collateral, uint256 _slashingFraction)
         external
         override
         onlyDelegatedStaking
         returns (uint256)
     {
-        return slashDelegatorDeposits(VALIDATOR, _collateral, _slashingFraction);
-    }
-
-    function slashDelegatorDeposits(
-        address _delegator,
-        address _collateral,
-        uint256 _slashingFraction
-    ) external override onlyDelegatedStaking returns (uint256) {
-        uint256 _shares = _delegatorShares(_collateral, _delegator) * _slashingFraction;
-        strategies[_collateral].delegators[_delegator].sShares -= _shares;
-        strategies[_collateral].sShares -= _shares;
-        // TODO: complete
-        return _shares;
+        return _slashDelegatorDeposits(VALIDATOR, _collateral, _slashingFraction);
     }
 
     function deposit(
@@ -191,7 +199,7 @@ abstract contract BaseStrategyController is IStrategy {
     ) external override onlyDelegatedStaking returns (bool, uint256) {
         Strategy storage strategy = strategies[_collateral];
         Delegator storage delegator = strategy.delegators[_recipient];
-        if (shares > delegator.lockedShares) revert WrongAmount();
+        if (_shares > delegator.lockedShares) revert WrongAmount();
 
         uint256 percentageToWithdraw = (_shares * denominator) / delegator.lockedShares;
         uint256 _sShares = (percentageToWithdraw * delegator.sShares) / denominator;

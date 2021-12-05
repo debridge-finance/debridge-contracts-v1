@@ -328,7 +328,7 @@ contract DelegatedStaking is
         );
 
         //Increase total collateral of the protocol for this asset
-        collateral.totalLocked += _amount;
+        collaterals[_collateral].totalLocked += _amount;
         //Increase total collateral of the validator for this asset
         validatorCollateral.stakedAmount += _amount;
         validatorCollateral.shares += shares;

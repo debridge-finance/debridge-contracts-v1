@@ -57,7 +57,7 @@ contract AaveController is BaseStrategyController {
     }
 
     function withdrawAll(address _token) external override {
-        _withdraw(_token, type(uint256).max);
+        //_withdraw(_token, type(uint256).max);
     }
 
     function _ensureBalancesWithdrawal(address _token, uint256 _amount) internal override {

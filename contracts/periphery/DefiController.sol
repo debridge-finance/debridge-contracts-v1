@@ -98,8 +98,7 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         uint256 avaliableReserves = deBridgeGate.getDefiAvaliableReserves(strategy.stakeToken);
         uint256 maxStrategyReserves = (avaliableReserves * strategy.maxReservesBps) /
             BPS_DENOMINATOR;
-        uint256 currentReserves = strategyController.updateReserves(
-            address(this),
+        uint256 currentReserves = strategyController.totalReserves(
             strategy.strategyToken
         );
 

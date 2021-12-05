@@ -8,10 +8,8 @@ interface IStrategy {
     function withdraw(address token, address recipient, uint256 shares) external returns(bool, uint256);
 
     function withdrawAll(address token) external;
-    function strategyToken(address token) external view returns(address);
     function totalReserves(address token) external view returns(uint256);
     function totalShares(address token) external view returns(uint256);
-    function isEnabled(address token) external view returns(bool);
     function strategyInfo(address token) external view returns(bool, bool);
 
     function delegatorShares(address collateral, address delegator) external view returns(uint256);

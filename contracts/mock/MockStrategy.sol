@@ -20,7 +20,7 @@ contract MockStrategy is BaseStrategyController {
         balance += _amount;
     }
 
-    function _withdraw(
+    function _withdrawFromUnderlyingProtocol(
         address /* _token */,
         uint256 _amount
     ) internal override {
@@ -31,7 +31,7 @@ contract MockStrategy is BaseStrategyController {
         balance = 0;
     }
 
-    function updateReserves(
+    function totalReseves(
         address /* account */,
         address /* token */
     )
@@ -43,7 +43,7 @@ contract MockStrategy is BaseStrategyController {
         return balance;
     }
 
-    function strategyToken(address /* token */) external pure override returns(address){
+    function strategyToken(address /* token */) external pure returns(address){
         return address(0);
     }
 }
