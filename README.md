@@ -31,7 +31,7 @@ Helper to withdraw fees from DeBridgeGate and transfer them to a treasury.
 ## Transfers
 ### AggregatorBase
 The base contract for oracles management. 
-Allows adding/removing oracles, managing the minimal required amount of confirmations and assigning oracle admins.
+Allows adding/removing oracles, managing the minimal required amount of confirmations.
 ### DeBridgeGate
 Contract for assets transfers. The user can transfer the asset to any of the approved chains. 
 The admin manages the assets, fees and other important protocol parameters.
@@ -39,7 +39,7 @@ The admin manages the assets, fees and other important protocol parameters.
 ### DeBridgeTokenDeployer
 Deploys a deToken(DeBridgeTokenProxy) for an asset.
 ### SignatureVerifier
-It's deployed to a chain with high fees and is used to verify the transfer by oracles signatures. 
+It's used to verify that a transfer is signed by oracles.
 ### WethGate
 Upgradable contracts cannot receive ether via `transfer` because of increased SLOAD gas cost.
 We use this non-upgradeable contract as the recipient and then immediately transfer to an upgradable contract.
