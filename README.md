@@ -30,7 +30,7 @@ Implementation is DeBridgeToken.
 Helper to withdraw fees from DeBridgeGate and transfer them to a treasury.
 ## Transfers
 ### AggregatorBase
-The base contract for Chainlink oracles management. 
+The base contract for oracles management. 
 Allows adding/removing oracles, managing the minimal required amount of confirmations and assigning oracle admins.
 ### DeBridgeGate
 Contract for assets transfers. The user can transfer the asset to any of the approved chains. 
