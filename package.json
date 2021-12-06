@@ -13,9 +13,9 @@
     "test": "hardhat test",
     "contract-size": "hardhat size-contracts",
     "coverage": "hardhat coverage",
-    "docs:solidity-docgen": "solidity-docgen -i ./contracts/ -e ./contracts/mock -o ./docs/contracts/ --solc-module solc-0.8.7 -t ./docs/templates",
-    "docs": "yarn docs:solidity-docgen  && ts-node docs/removeAllButWhitelistedDocs.ts && ts-node docs/generateTableOfContents/index.ts",
-    "docs:assert-in-sync": "ts-node docs/checkDocsAreInSync.ts"
+    "docs:solidity-docgen": "solidity-docgen -i ./contracts/ -e ./contracts/mock -o ./docs/contracts/ --solc-module solc-0.8.7 -t scripts/docsGeneration/templates",
+    "docs": "yarn docs:solidity-docgen  && ts-node scripts/docsGeneration/removeAllButWhitelistedDocs.ts && ts-node scripts/docsGeneration/generateTableOfContents/index.ts",
+    "docs:assert-in-sync": "ts-node scripts/docsGeneration/checkDocsAreInSync.ts"
   },
   "repository": {
     "type": "git",
