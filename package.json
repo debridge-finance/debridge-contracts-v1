@@ -13,8 +13,7 @@
     "test": "hardhat test",
     "contract-size": "hardhat size-contracts",
     "coverage": "hardhat coverage",
-    "docs:solidity-docgen": "solidity-docgen -i ./contracts/ -e ./contracts/mock -o ./docs/contracts/ --solc-module solc-0.8.7 -t scripts/docsGeneration/templates",
-    "docs": "yarn docs:solidity-docgen  && ts-node scripts/docsGeneration/removeAllButWhitelistedDocs.ts && ts-node scripts/docsGeneration/generateTableOfContents/index.ts",
+    "docs": "ts-node scripts/docsGeneration/generate.ts --type all",
     "docs:assert-in-sync": "ts-node scripts/docsGeneration/checkDocsAreInSync.ts"
   },
   "repository": {
@@ -36,10 +35,13 @@
     "@types/dotenv-flow": "^3.2.0",
     "@types/globby": "^9.1.0",
     "@types/lodash": "^4.14.177",
+    "@types/rimraf": "^3.0.2",
+    "commander": "^8.3.0",
     "delete-empty": "^3.0.0",
     "dotenv-flow": "^3.2.0",
     "ganache-cli": "^6.12.2",
     "lodash": "^4.17.21",
+    "rimraf": "^3.0.2",
     "solidity-docgen": "https://github.com/Vsevo1od/solidity-docgen#56fcb9fae85305235d0b3af7d086cb4f7b471d3b",
     "truffle": "^5.4.8"
   },
