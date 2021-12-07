@@ -1,0 +1,8 @@
+{{#if (and
+              (isWhitelisted name)
+              (or natspec.userdoc natspec.devdoc)
+)}}
+## {{name}}
+{{natspec.userdoc}}
+{{natspec.devdoc}}
+{{/if}}
