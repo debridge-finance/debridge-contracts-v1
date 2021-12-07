@@ -9,13 +9,16 @@ import "../interfaces/IAggregatorBase.sol";
 /// managing the minimal required amount of confirmations.
 contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorBase {
     /* ========== STATE VARIABLES ========== */
-
-    uint8 public minConfirmations; // minimal required confirmations
-    uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
-    uint8 public requiredOraclesCount; // count of required oracles
-
+    /// @dev Minimal required confirmations
+    uint8 public minConfirmations;
+    /// @dev Minimal required confirmations in case of too many confirmations
+    uint8 public excessConfirmations;
+    /// @dev Count of required oracles
+    uint8 public requiredOraclesCount;
+    /// @dev Oracle addresses
     address[] public oracleAddresses;
-    mapping(address => OracleInfo) public getOracleInfo; // oracle address => oracle details
+    /// @dev Maps an oracle address to the oracle details
+    mapping(address => OracleInfo) public getOracleInfo;
 
     /* ========== ERRORS ========== */
 
@@ -47,7 +50,8 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
-    /// @param _minConfirmations Common confirmations count.
+    /// @param _minConfirmations Minimal required confirmations.
+    /// @param _minConfirmations Minimal required confirmations in case of too many confirmations.
     function initializeBase(uint8 _minConfirmations, uint8 _excessConfirmations) internal {
         if (_minConfirmations == 0 || _excessConfirmations < _minConfirmations) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
@@ -58,22 +62,22 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /* ========== ADMIN ========== */
 
     /// @dev Sets minimal required confirmations.
-    /// @param _minConfirmations Confirmation info.
+    /// @param _minConfirmations Minimal required confirmations.
     function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
         if (_minConfirmations < oracleAddresses.length / 2 + 1) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
     }
 
-    /// @dev Sets minimal required confirmations.
-    /// @param _excessConfirmations new excessConfirmations count.
+    /// @dev Sets minimal required confirmations in case of too many confirmations.
+    /// @param _excessConfirmations Minimal required confirmations in case of too many confirmations.
     function setExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
         if (_excessConfirmations < minConfirmations) revert LowMinConfirmations();
         excessConfirmations = _excessConfirmations;
     }
 
-    /// @dev Add oracle.
-    /// @param _oracles Oracles addresses.
-    /// @param _required Without this oracle, the transfer will not be confirmed
+    /// @dev Add oracles.
+    /// @param _oracles Oracles' addresses.
+    /// @param _required A transfer will not be confirmed without oracles having required set to true,
     function addOracles(
         address[] memory _oracles,
         bool[] memory _required
@@ -99,10 +103,10 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         }
     }
 
-    /// @dev Update oracle.
-    /// @param _oracle Oracle address.
-    /// @param _isValid is valid oracle
-    /// @param _required Without this oracle, the transfer will not be confirmed
+    /// @dev Update an oracle.
+    /// @param _oracle An oracle address.
+    /// @param _isValid Is this oracle valid, i.e. should it be treated as an oracle.
+    /// @param _required If set to true a transfer will not be confirmed without this oracle.
     function updateOracle(
         address _oracle,
         bool _isValid,
@@ -140,7 +144,11 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
 
     /* ========== VIEW ========== */
 
-    /// @dev Calculates asset identifier.
+    /// @dev Calculates asset identifier for deployment.
+    /// @param _debridgeId Id of an asset, see getDebridgeId.
+    /// @param _name Asset's name.
+    /// @param _symbol Asset's symbol.
+    /// @param _decimals Asset's decimals.
     function getDeployId(
         bytes32 _debridgeId,
         string memory _name,
