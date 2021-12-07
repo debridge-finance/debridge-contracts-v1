@@ -1,5 +1,6 @@
 import {readFileSync, writeFileSync} from "fs";
 import {escapeRegExp} from "lodash";
+import assert from "assert";
 
 export default function writeBetweenMarks(
     startMark: string,
@@ -8,6 +9,8 @@ export default function writeBetweenMarks(
     filePath: string
 ): void {
     const oldContent = readFileSync(filePath).toString();
+    assert(oldContent.includes(startMark) && oldContent.includes(endMark), `No marks found in ${filePath}`);
+
     const startMarkEscaped = escapeRegExp(startMark);
     const endMarkEscaped = escapeRegExp(endMark);
     const regexp = new RegExp(
