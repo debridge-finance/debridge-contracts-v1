@@ -35,6 +35,7 @@ Check confirmation (validate signatures) for the transfer request.
 
 Emitted once the submission is confirmed by one oracle.
 
+
 ## DeployConfirmed
 ```solidity
   event DeployConfirmed(
@@ -44,6 +45,7 @@ Emitted once the submission is confirmed by one oracle.
 ```
 
 Emitted once the submission is confirmed by min required amount of oracles.
+
 
 
 
