@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../interfaces/IDeBridgeToken.sol";
 
+/// @dev ERC20 token that is used as wrapped asset to represent the native token value on the other chains.
 contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeToken {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); // minter role identifier
     bytes32 public DOMAIN_SEPARATOR;

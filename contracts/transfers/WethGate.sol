@@ -4,6 +4,10 @@ pragma solidity 0.8.7;
 import "../interfaces/IWETH.sol";
 import "../interfaces/IWethGate.sol";
 
+/// @dev Upgradable contracts cannot receive ether via `transfer` because of increased SLOAD gas cost.
+/// We use this non-upgradeable contract as the recipient and then immediately transfer to an upgradable contract.
+/// More details about this issue can be found 
+/// [here](https://forum.openzeppelin.com/t/openzeppelin-upgradeable-contracts-affected-by-istanbul-hardfork/1616). 
 contract WethGate is IWethGate
 {
     IWETH public weth; // wrapped native token contract

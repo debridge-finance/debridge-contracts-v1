@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "../interfaces/IDeBridgeGate.sol";
 
+/// @dev Helper to withdraw fees from DeBridgeGate and transfer them to a treasury.
 contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
