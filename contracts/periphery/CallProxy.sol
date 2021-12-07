@@ -8,6 +8,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "../interfaces/ICallProxy.sol";
 import "../libraries/Flags.sol";
 
+/// @dev Proxy to execute the other contract calls.
+/// This contract is used when a user requests transfer with specific call of other contract.
 contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using Flags for uint256;

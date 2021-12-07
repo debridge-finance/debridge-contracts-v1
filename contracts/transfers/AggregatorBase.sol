@@ -5,6 +5,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "../interfaces/IAggregatorBase.sol";
 
+/// @dev The base contract for oracles management. Allows adding/removing oracles,
+/// managing the minimal required amount of confirmations.
 contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorBase {
     /* ========== STATE VARIABLES ========== */
 
