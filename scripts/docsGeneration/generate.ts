@@ -26,10 +26,14 @@ const docgenReadmeArgs = '--output ./tmp/ --templates scripts/docsGeneration/tem
 
 const compileHandlebarsHelpers = 'yarn tsc scripts/docsGeneration/handlebarsHelpers.ts --esModuleInterop --outDir tmp';
 
+function execAndLog(command: string): void {
+    console.log(execSync(command).toString());
+}
+
 function generateMainDocs() {
-    execSync(`${docgenCommonPart} ${docgenMainArgs}`);
-    execSync('yarn ts-node scripts/docsGeneration/removeAllButWhitelistedDocs.ts')
-    execSync('yarn ts-node scripts/docsGeneration/generateTableOfContents/index.ts')
+    execAndLog(`${docgenCommonPart} ${docgenMainArgs}`);
+    execAndLog('yarn ts-node scripts/docsGeneration/removeAllButWhitelistedDocs.ts')
+    execAndLog('yarn ts-node scripts/docsGeneration/generateTableOfContents/index.ts')
 }
 
 function addContractsDescriptionsToReadme(descriptions: string) {
@@ -42,8 +46,8 @@ function addContractsDescriptionsToReadme(descriptions: string) {
 }
 
 function generateDocForReadme() {
-    execSync(compileHandlebarsHelpers);
-    execSync(`${docgenCommonPart} ${docgenReadmeArgs}`);
+    execAndLog(compileHandlebarsHelpers);
+    execAndLog(`${docgenCommonPart} ${docgenReadmeArgs}`);
     const descriptions = readFileSync(GENERATED_CONTENTS_PATH)
         .toString()
         .trim()
