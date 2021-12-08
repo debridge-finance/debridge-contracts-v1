@@ -646,13 +646,11 @@ contract DeBridgeGate is
         debridge.chainId = _nativeChainId;
         // Don't override if the admin already set maxAmount in updateAsset method before
         if (debridge.maxAmount == 0) {
-            debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            debridge.maxAmount = type(uint256).max;
         }
         // debridge.minReservesBps = BPS;
         if (getAmountThreshold[_debridgeId] == 0) {
-            getAmountThreshold[
-                _debridgeId
-            ] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            getAmountThreshold[_debridgeId] = type(uint256).max;
         }
 
         TokenInfo storage tokenInfo = getNativeInfo[_tokenAddress];
