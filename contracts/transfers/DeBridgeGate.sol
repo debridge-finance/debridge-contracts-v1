@@ -779,11 +779,10 @@ contract DeBridgeGate is
             }
 
             // Calculate transfer fee
-            if (chainFees.transferFeeBps == 0) {
-                // use globalTransferFeeBps if value for chain is not set
-                chainFees.transferFeeBps = globalTransferFeeBps;
-            }
-            uint256 transferFee = (_amount * chainFees.transferFeeBps) / BPS_DENOMINATOR;
+            // use globalTransferFeeBps if value for chain is not set
+            uint256 transferFee = (chainFees.transferFeeBps == 0
+                ? globalTransferFeeBps : chainFees.transferFeeBps)
+                * _amount / BPS_DENOMINATOR;
             // apply discount for a transfer fee
             transferFee = _applyDiscount(transferFee, discountInfo.discountTransferBps);
 
