@@ -765,15 +765,15 @@ contract DeBridgeGate is
                     if (assetsFixedFee == 0) revert NotSupportedFixedFee();
                 }
                 // Apply discount for a asset fixed fee
-                assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+                assetsFixedFee = _applyDiscount(assetsFixedFee, discountInfo.discountFixBps);
                 feeParams.fixFee = assetsFixedFee;
             } else {
                 // collect fixed native fee for non native token transfers
 
                 // use globalFixedNativeFee if value for chain is not set
                 uint256 nativeFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
-                // Apply discount for a fixed native fee
-                nativeFee -= nativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+                // Apply discount for a native fixed fee
+                nativeFee = _applyDiscount(nativeFee, discountInfo.discountFixBps);
 
                 if (msg.value < nativeFee) revert TransferAmountNotCoverFees();
                 else if (msg.value > nativeFee) {
@@ -792,7 +792,7 @@ contract DeBridgeGate is
             }
             uint256 transferFee = (_amount * chainFees.transferFeeBps) / BPS_DENOMINATOR;
             // apply discount for a transfer fee
-            transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
+            transferFee = _applyDiscount(transferFee, discountInfo.discountTransferBps);
 
             uint256 totalFee = transferFee + assetsFixedFee;
             if (_amount < totalFee) revert TransferAmountNotCoverFees();
@@ -815,6 +815,13 @@ contract DeBridgeGate is
             IDeBridgeToken(debridge.tokenAddress).burn(amountAfterFee);
         }
         return (amountAfterFee, debridgeId, feeParams);
+    }
+
+    function _applyDiscount(
+        uint256 amount,
+        uint16 discountBps
+    ) internal pure returns (uint256) {
+        return amount - amount * discountBps / BPS_DENOMINATOR;
     }
 
     function _validateToken(address _token) internal {
