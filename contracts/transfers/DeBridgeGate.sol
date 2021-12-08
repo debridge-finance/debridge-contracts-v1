@@ -671,7 +671,6 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         bool _useAssetFee
     ) internal returns (
-        // bool isNativeToken,
         uint256 amountAfterFee,
         bytes32 debridgeId,
         FeeParams memory feeParams
@@ -800,7 +799,6 @@ contract DeBridgeGate is
             feeParams.isNativeToken = isNativeToken;
         }
 
-        // Is native token
         if (isNativeToken) {
             debridge.balance += amountAfterFee;
         }
@@ -858,7 +856,6 @@ contract DeBridgeGate is
     ) internal returns (bool isNativeToken) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
-        // if (debridge.chainId != getChainId()) revert WrongChain();
         isNativeToken = debridge.chainId == getChainId();
 
         if (isNativeToken) {
