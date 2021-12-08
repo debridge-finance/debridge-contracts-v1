@@ -50,17 +50,17 @@ contract DeBridgeGate is
     /// @dev outgoing submissions count
     uint256 public nonce;
 
-    /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information. 
+    /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information.
     mapping(bytes32 => DebridgeInfo) public getDebridge;
-    /// @dev Maps debridgeId (see getDebridgeId) => fee information 
+    /// @dev Maps debridgeId (see getDebridgeId) => fee information
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
     /// @dev Returns whether the transfer with the submissionId was claimed.
     /// submissionId is generated in getSubmissionIdFrom
     mapping(bytes32 => bool) public override isSubmissionUsed;
     /// @dev Returns whether the transfer with the submissionId is blocked.
     mapping(bytes32 => bool) public isBlockedSubmission;
-    /// @dev Maps debridgeId (see getDebridgeId) to threshold amount after which 
-    /// Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of 
+    /// @dev Maps debridgeId (see getDebridgeId) to threshold amount after which
+    /// Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of
     /// SignatureVerifier.minConfirmations
     mapping(bytes32 => uint256) public getAmountThreshold;
     /// @dev Whether the chain for the asset is supported to send
