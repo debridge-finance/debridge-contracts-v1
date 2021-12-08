@@ -734,7 +734,6 @@ contract DeBridgeGate is
 
         ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
         if (!chainFees.isSupported) revert WrongChainTo();
-        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
             if (msg.value < _amount) revert AmountMismatch();
@@ -751,6 +750,8 @@ contract DeBridgeGate is
             // Received real amount
             _amount = token.balanceOf(address(this)) - balanceBefore;
         }
+
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         //_processFeeForTransfer
         {
