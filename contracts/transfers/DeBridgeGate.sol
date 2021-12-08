@@ -177,12 +177,6 @@ contract DeBridgeGate is
         excessConfirmations = _excessConfirmations;
         weth = _weth;
 
-        _addAsset(
-            getDebridgeId(getChainId(), address(_weth)),
-            address(_weth),
-            abi.encodePacked(address(_weth)),
-            getChainId()
-        );
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         __ReentrancyGuard_init();
