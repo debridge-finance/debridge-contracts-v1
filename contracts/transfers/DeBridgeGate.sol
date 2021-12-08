@@ -756,17 +756,23 @@ contract DeBridgeGate is
             // calculate fixed fee
             uint256 assetsFixedFee;
             if (_useAssetFee) {
-                assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
-                if (assetsFixedFee == 0) revert NotSupportedFixedFee();
+                if (_tokenAddress == address(0)) {
+                    // collect asset fixed fee (in weth) for native token transfers
+                    assetsFixedFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
+                } else {
+                    // collect asset fixed fee for non native token transfers
+                    assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
+                    if (assetsFixedFee == 0) revert NotSupportedFixedFee();
+                }
                 // Apply discount for a asset fixed fee
                 assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
                 feeParams.fixFee = assetsFixedFee;
             } else {
-                // collect native fees
+                // collect fixed native fee for non native token transfers
 
                 // use globalFixedNativeFee if value for chain is not set
                 uint256 nativeFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
-                // Apply discount for a fixed fee
+                // Apply discount for a fixed native fee
                 nativeFee -= nativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
 
                 if (msg.value < nativeFee) revert TransferAmountNotCoverFees();
@@ -794,7 +800,6 @@ contract DeBridgeGate is
             amountAfterFee = _amount - totalFee;
 
             // initialize feeParams
-            // feeParams.fixFee = _useAssetFee ? assetsFixedFee : msg.value;
             feeParams.transferFee = transferFee;
             feeParams.useAssetFee = _useAssetFee;
             feeParams.receivedAmount = _amount;
