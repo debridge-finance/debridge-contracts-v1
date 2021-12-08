@@ -648,7 +648,8 @@ contract DeBridgeGate is
         if (debridge.maxAmount == 0) {
             debridge.maxAmount = type(uint256).max;
         }
-        // debridge.minReservesBps = BPS;
+        // set minReservesBps to 100% to prevent using new asset by DeFiController by default
+        debridge.minReservesBps = uint16(BPS_DENOMINATOR);
         if (getAmountThreshold[_debridgeId] == 0) {
             getAmountThreshold[_debridgeId] = type(uint256).max;
         }
