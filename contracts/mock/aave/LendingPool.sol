@@ -57,7 +57,7 @@ contract LendingPool {
         _reserves[underlyingAsset] = ReserveData(
             false,
             1000888888888888888888888888,
-            0,  
+            0,
             1001999999999999999999999999,
             0,
             0,
@@ -116,7 +116,7 @@ contract LendingPool {
     function getReserveNormalizedIncome(address asset)
         external
         view
-    returns (uint256) 
+    returns (uint256)
     {
         ReserveData storage reserve = _reserves[asset];
         uint40 timestamp = reserve.lastUpdateTimestamp;
@@ -126,7 +126,7 @@ contract LendingPool {
         //if the index was updated in the same block, no need to perform any calculation
         return reserve.liquidityIndex;
         }
-        
+
         uint256 cumulated =
         calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(
             reserve.liquidityIndex

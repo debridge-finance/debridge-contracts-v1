@@ -65,8 +65,8 @@ Returns whether the transfer with the submissionId is blocked.
 ```solidity
   mapping(bytes32 => uint256) public getAmountThreshold;
 ```
-Maps debridgeId (see getDebridgeId) to threshold amount after which 
-Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of 
+Maps debridgeId (see getDebridgeId) to threshold amount after which
+Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of
 SignatureVerifier.minConfirmations
 ## getChainToConfig
 ```solidity

@@ -8,7 +8,7 @@ interface ICallProxy {
     /// @dev Native sender of the current submission
     function submissionNativeSender() external returns (bytes memory);
 
-    /// @dev Used for calls where native asset transfer is involved. 
+    /// @dev Used for calls where native asset transfer is involved.
     /// @param _reserveAddress Receiver of the tokens if the call to _receiver fails
     /// @param _receiver Contract to be called
     /// @param _data Call data
@@ -24,7 +24,7 @@ interface ICallProxy {
         uint256 _chainIdFrom
     ) external payable returns (bool);
 
-    /// @dev Used for calls where ERC20 transfer is involved. 
+    /// @dev Used for calls where ERC20 transfer is involved.
     /// @param _token Asset address
     /// @param _reserveAddress Receiver of the tokens if the call to _receiver fails
     /// @param _receiver Contract to be called
