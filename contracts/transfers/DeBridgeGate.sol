@@ -38,6 +38,10 @@ contract DeBridgeGate is
     uint256 public constant BPS_DENOMINATOR = 10000;
     /// @dev Role allowed to stop transfers
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
+    /// @dev Value for lockedClaim variable when claim function is not entered
+    uint256 private constant _CLAIM_NOT_LOCKED = 1;
+    /// @dev Value for lockedClaim variable when claim function is entered
+    uint256 private constant _CLAIM_LOCKED = 2;
 
     /// @dev Address of IDeBridgeTokenDeployer contract
     address public deBridgeTokenDeployer;
@@ -92,7 +96,7 @@ contract DeBridgeGate is
     /// @dev WethGate contract, that is used for weth withdraws affected by EIP1884
     IWethGate public wethGate;
     /// @dev Locker for claim method
-    bool public lockedClaim;
+    uint256 public lockedClaim;
 
     /* ========== ERRORS ========== */
 
@@ -159,10 +163,10 @@ contract DeBridgeGate is
 
     /// @dev lock for claim method
     modifier lockClaim() {
-        if (lockedClaim) revert Locked();
-        lockedClaim = true;
+        if (lockedClaim == _CLAIM_LOCKED) revert Locked();
+        lockedClaim = _CLAIM_LOCKED;
         _;
-        lockedClaim = false;
+        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== CONSTRUCTOR  ========== */
@@ -177,9 +181,9 @@ contract DeBridgeGate is
         excessConfirmations = _excessConfirmations;
         weth = _weth;
 
-
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         __ReentrancyGuard_init();
+        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== send, claim ========== */
