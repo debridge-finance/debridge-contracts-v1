@@ -119,8 +119,6 @@ contract DeBridgeGate is
     error SubmissionAmountNotConfirmed();
     error SubmissionBlocked();
 
-    error AmountMismatch();
-
     error AssetAlreadyExist();
     error AssetNotConfirmed();
     error ZeroAddress();
@@ -736,11 +734,8 @@ contract DeBridgeGate is
         if (!chainFees.isSupported) revert WrongChainTo();
 
         if (_tokenAddress == address(0)) {
-            if (msg.value < _amount) revert AmountMismatch();
-            else if (msg.value > _amount) {
-                // refund extra eth
-                payable(msg.sender).transfer(msg.value - _amount);
-            }
+            // use msg.value as amount for native tokens
+            _amount = msg.value;
             weth.deposit{value: _amount}();
             _useAssetFee = true;
         } else {

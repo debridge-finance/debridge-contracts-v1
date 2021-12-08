@@ -1356,7 +1356,7 @@ contract("DeBridgeGate real pipeline mode", function () {
         // TODO: check sender's balance
       });
 
-      it("should refund extra native tokens when sending native tokens", async function () {
+      it("should overwrite amount when amount and msg.value mismatched when sending extra native tokens", async function () {
         const tokenAddress = ZERO_ADDRESS;
         const chainIdTo = bscChainId;
         const receiver = bob;
@@ -1381,11 +1381,19 @@ contract("DeBridgeGate real pipeline mode", function () {
           });
         const receipt = await tx.wait();
 
-        const refund = sendedAmount.sub(amount);
         const txCost = toBN(receipt.cumulativeGasUsed).mul(toBN(receipt.effectiveGasPrice));
         const newBalance = toBN(await web3.eth.getBalance(sender));
 
-        assert.equal(balance.sub(sendedAmount).add(refund).sub(txCost).toString(), newBalance.toString());
+        assert.equal(balance.sub(sendedAmount).sub(txCost).toString(), newBalance.toString());
+
+        const sentEvent = receipt.events.find((x) => {
+          return x.event == "Sent";
+        });
+
+        assert.equal(
+          sentEvent.args.feeParams.receivedAmount.toString(),
+          sendedAmount.toString()
+        )
       });
 
       it("should refund extra fee native tokens when sending ERC20", async function () {
@@ -1429,29 +1437,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         const newBalance = toBN(await web3.eth.getBalance(sender));
 
         assert.equal(balance.sub(sendedNativeFee).add(extraNativeFee).sub(txCost).toString(), newBalance.toString());
-      });
-
-      it("should reject sending too mismatched amount of native tokens", async function () {
-        const tokenAddress = ZERO_ADDRESS;
-        const receiver = bob;
-        const amount = toBN(toWei("1"));
-        const chainIdTo = bscChainId;
-        await expectRevert(
-          this.debridgeETH.send(
-            tokenAddress,
-            amount,
-            chainIdTo,
-            receiver,
-            [],
-            false,
-            referralCode,
-            [],
-            {
-              value: toWei("0.1"),
-              from: alice,
-            }),
-          "AmountMismatch()"
-        );
       });
 
       it("should reject sending tokens to unsupported chain", async function () {

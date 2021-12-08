@@ -444,31 +444,6 @@ contract("DeBridgeGate full with auto", function () {
       );
     });
 
-    it("should reject sending too mismatched amount of native tokens", async function () {
-      const tokenAddress = ZERO_ADDRESS;
-      const receiver = bob;
-      const amount = toBN(toWei("1"));
-      const chainIdTo = 42;
-      const autoParams = packSubmissionAutoParamsTo(claimFee, zeroFlag, reserveAddress, data);
-      await expectRevert(
-        this.debridge.send(
-          tokenAddress,
-          amount,
-          chainIdTo,
-          receiver,
-          [],
-          false,
-          referralCode,
-          autoParams,
-          {
-            value: toWei("0.1"),
-            from: alice,
-          }
-        ),
-        "AmountMismatch()"
-      );
-    });
-
     it("should reject sending tokens to unsupported chain", async function () {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
