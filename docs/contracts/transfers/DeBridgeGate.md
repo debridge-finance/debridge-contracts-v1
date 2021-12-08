@@ -64,8 +64,8 @@ Returns whether the transfer with the submissionId is blocked.
 ```solidity
   mapping(bytes32 => uint256) public getAmountThreshold;
 ```
-Maps debridgeId (see getDebridgeId) to threshold amount after which 
-Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of 
+Maps debridgeId (see getDebridgeId) to threshold amount after which
+Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of
 SignatureVerifier.minConfirmations
 ## getChainToConfig
 ```solidity
@@ -129,7 +129,7 @@ Fallback transfer fee in BPS, used if a chain transfer fee is set to 0
 WethGate contract, that is used for weth withdraws affected by EIP1884
 ## lockedClaim
 ```solidity
-  bool public lockedClaim;
+  uint256 public lockedClaim;
 ```
 Locker for claim method
 
@@ -637,6 +637,17 @@ Locks asset on the chain and enables minting on the other chain.
 |`_amount` | bytes | Amount to be transferred (note: the fee can be applied).
 |`_chainIdTo` | address | Chain id of the target chain.
 |`_permit` | uint256 | deadline + signature for approving the spender by signature.
+
+## _applyDiscount
+```solidity
+  function _applyDiscount(
+            uint256 amount,
+            uint16 discountBps
+  ) internal returns (uint256)
+```
+
+
+
 
 ## _validateToken
 ```solidity
