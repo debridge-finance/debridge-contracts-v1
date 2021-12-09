@@ -38,6 +38,10 @@ contract DeBridgeGate is
     uint256 public constant BPS_DENOMINATOR = 10000;
     /// @dev Role allowed to stop transfers
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
+    /// @dev Value for lockedClaim variable when claim function is not entered
+    uint256 private constant _CLAIM_NOT_LOCKED = 1;
+    /// @dev Value for lockedClaim variable when claim function is entered
+    uint256 private constant _CLAIM_LOCKED = 2;
 
     /// @dev Address of IDeBridgeTokenDeployer contract
     address public deBridgeTokenDeployer;
@@ -50,17 +54,17 @@ contract DeBridgeGate is
     /// @dev outgoing submissions count
     uint256 public nonce;
 
-    /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information. 
+    /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information.
     mapping(bytes32 => DebridgeInfo) public getDebridge;
-    /// @dev Maps debridgeId (see getDebridgeId) => fee information 
+    /// @dev Maps debridgeId (see getDebridgeId) => fee information
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
     /// @dev Returns whether the transfer with the submissionId was claimed.
     /// submissionId is generated in getSubmissionIdFrom
     mapping(bytes32 => bool) public override isSubmissionUsed;
     /// @dev Returns whether the transfer with the submissionId is blocked.
     mapping(bytes32 => bool) public isBlockedSubmission;
-    /// @dev Maps debridgeId (see getDebridgeId) to threshold amount after which 
-    /// Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of 
+    /// @dev Maps debridgeId (see getDebridgeId) to threshold amount after which
+    /// Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of
     /// SignatureVerifier.minConfirmations
     mapping(bytes32 => uint256) public getAmountThreshold;
     /// @dev Whether the chain for the asset is supported to send
@@ -92,7 +96,7 @@ contract DeBridgeGate is
     /// @dev WethGate contract, that is used for weth withdraws affected by EIP1884
     IWethGate public wethGate;
     /// @dev Locker for claim method
-    bool public lockedClaim;
+    uint256 public lockedClaim;
 
     /* ========== ERRORS ========== */
 
@@ -118,8 +122,6 @@ contract DeBridgeGate is
     error SubmissionNotConfirmed();
     error SubmissionAmountNotConfirmed();
     error SubmissionBlocked();
-
-    error AmountMismatch();
 
     error AssetAlreadyExist();
     error AssetNotConfirmed();
@@ -161,10 +163,10 @@ contract DeBridgeGate is
 
     /// @dev lock for claim method
     modifier lockClaim() {
-        if (lockedClaim) revert Locked();
-        lockedClaim = true;
+        if (lockedClaim == _CLAIM_LOCKED) revert Locked();
+        lockedClaim = _CLAIM_LOCKED;
         _;
-        lockedClaim = false;
+        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== CONSTRUCTOR  ========== */
@@ -179,15 +181,9 @@ contract DeBridgeGate is
         excessConfirmations = _excessConfirmations;
         weth = _weth;
 
-        _addAsset(
-            getDebridgeId(getChainId(), address(_weth)),
-            address(_weth),
-            abi.encodePacked(address(_weth)),
-            getChainId()
-        );
-
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         __ReentrancyGuard_init();
+        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== send, claim ========== */
@@ -646,13 +642,12 @@ contract DeBridgeGate is
         debridge.chainId = _nativeChainId;
         // Don't override if the admin already set maxAmount in updateAsset method before
         if (debridge.maxAmount == 0) {
-            debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            debridge.maxAmount = type(uint256).max;
         }
-        // debridge.minReservesBps = BPS;
+        // set minReservesBps to 100% to prevent using new asset by DeFiController by default
+        debridge.minReservesBps = uint16(BPS_DENOMINATOR);
         if (getAmountThreshold[_debridgeId] == 0) {
-            getAmountThreshold[
-                _debridgeId
-            ] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            getAmountThreshold[_debridgeId] = type(uint256).max;
         }
 
         TokenInfo storage tokenInfo = getNativeInfo[_tokenAddress];
@@ -680,7 +675,6 @@ contract DeBridgeGate is
         uint256 _chainIdTo,
         bool _useAssetFee
     ) internal returns (
-        // bool isNativeToken,
         uint256 amountAfterFee,
         bytes32 debridgeId,
         FeeParams memory feeParams
@@ -735,14 +729,10 @@ contract DeBridgeGate is
 
         ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
         if (!chainFees.isSupported) revert WrongChainTo();
-        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
-            if (msg.value < _amount) revert AmountMismatch();
-            else if (msg.value > _amount) {
-                // refund extra eth
-                payable(msg.sender).transfer(msg.value - _amount);
-            }
+            // use msg.value as amount for native tokens
+            _amount = msg.value;
             weth.deposit{value: _amount}();
             _useAssetFee = true;
         } else {
@@ -753,6 +743,8 @@ contract DeBridgeGate is
             _amount = token.balanceOf(address(this)) - balanceBefore;
         }
 
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
+
         //_processFeeForTransfer
         {
             DiscountInfo memory discountInfo = feeDiscount[msg.sender];
@@ -761,18 +753,24 @@ contract DeBridgeGate is
             // calculate fixed fee
             uint256 assetsFixedFee;
             if (_useAssetFee) {
-                assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
-                if (assetsFixedFee == 0) revert NotSupportedFixedFee();
+                if (_tokenAddress == address(0)) {
+                    // collect asset fixed fee (in weth) for native token transfers
+                    assetsFixedFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
+                } else {
+                    // collect asset fixed fee for non native token transfers
+                    assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
+                    if (assetsFixedFee == 0) revert NotSupportedFixedFee();
+                }
                 // Apply discount for a asset fixed fee
-                assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+                assetsFixedFee = _applyDiscount(assetsFixedFee, discountInfo.discountFixBps);
                 feeParams.fixFee = assetsFixedFee;
             } else {
-                // collect native fees
+                // collect fixed native fee for non native token transfers
 
                 // use globalFixedNativeFee if value for chain is not set
                 uint256 nativeFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
-                // Apply discount for a fixed fee
-                nativeFee -= nativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+                // Apply discount for a native fixed fee
+                nativeFee = _applyDiscount(nativeFee, discountInfo.discountFixBps);
 
                 if (msg.value < nativeFee) revert TransferAmountNotCoverFees();
                 else if (msg.value > nativeFee) {
@@ -785,13 +783,12 @@ contract DeBridgeGate is
             }
 
             // Calculate transfer fee
-            if (chainFees.transferFeeBps == 0) {
-                // use globalTransferFeeBps if value for chain is not set
-                chainFees.transferFeeBps = globalTransferFeeBps;
-            }
-            uint256 transferFee = (_amount * chainFees.transferFeeBps) / BPS_DENOMINATOR;
+            // use globalTransferFeeBps if value for chain is not set
+            uint256 transferFee = (chainFees.transferFeeBps == 0
+                ? globalTransferFeeBps : chainFees.transferFeeBps)
+                * _amount / BPS_DENOMINATOR;
             // apply discount for a transfer fee
-            transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
+            transferFee = _applyDiscount(transferFee, discountInfo.discountTransferBps);
 
             uint256 totalFee = transferFee + assetsFixedFee;
             if (_amount < totalFee) revert TransferAmountNotCoverFees();
@@ -799,14 +796,12 @@ contract DeBridgeGate is
             amountAfterFee = _amount - totalFee;
 
             // initialize feeParams
-            // feeParams.fixFee = _useAssetFee ? assetsFixedFee : msg.value;
             feeParams.transferFee = transferFee;
             feeParams.useAssetFee = _useAssetFee;
             feeParams.receivedAmount = _amount;
             feeParams.isNativeToken = isNativeToken;
         }
 
-        // Is native token
         if (isNativeToken) {
             debridge.balance += amountAfterFee;
         }
@@ -815,6 +810,13 @@ contract DeBridgeGate is
             IDeBridgeToken(debridge.tokenAddress).burn(amountAfterFee);
         }
         return (amountAfterFee, debridgeId, feeParams);
+    }
+
+    function _applyDiscount(
+        uint256 amount,
+        uint16 discountBps
+    ) internal pure returns (uint256) {
+        return amount - amount * discountBps / BPS_DENOMINATOR;
     }
 
     function _validateToken(address _token) internal {
@@ -857,7 +859,6 @@ contract DeBridgeGate is
     ) internal returns (bool isNativeToken) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
-        // if (debridge.chainId != getChainId()) revert WrongChain();
         isNativeToken = debridge.chainId == getChainId();
 
         if (isNativeToken) {
@@ -1100,6 +1101,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 121; // 1.2.1
+        return 130; // 1.3.0
     }
 }

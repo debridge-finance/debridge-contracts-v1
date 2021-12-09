@@ -455,31 +455,6 @@ contract("DeBridgeGate light mode", function () {
       );
     });
 
-    it("should reject sending too mismatched amount of native tokens", async function () {
-      const tokenAddress = ZERO_ADDRESS;
-      const receiver = bob;
-      const chainId = await this.debridge.getChainId();
-      const amount = toBN(toWei("1"));
-      const chainIdTo = 42;
-      const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      await expectRevert(
-        this.debridge.send(
-          tokenAddress,
-          amount,
-          chainIdTo,
-          receiver,
-          [],
-          false,
-          referralCode,
-          [],
-          {
-            value: toWei("0.1"),
-            from: alice,
-          }),
-        "AmountMismatch()"
-      );
-    });
-
     it("should reject sending tokens to unsupported chain", async function () {
       const tokenAddress = ZERO_ADDRESS;
       const receiver = bob;
