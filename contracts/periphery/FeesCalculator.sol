@@ -58,12 +58,8 @@ contract FeesCalculator is
         bool _useAssetFee,
         uint256 _executionFee
     ) external view returns (SubmissionFees memory feeInfo) {
-        if (_tokenAddress == address(0)) {
-            // override useAssetFee for native tokens
-            feeInfo.useAssetFee = true;
-        } else {
-            feeInfo.useAssetFee = _useAssetFee;
-        }
+        // override useAssetFee for native tokens
+        feeInfo.useAssetFee = _tokenAddress == address(0) ? true : _useAssetFee;
 
         // 1. protocol fee
         (feeInfo.fixFee, feeInfo.transferFee) = _calculateProtocolFees(
