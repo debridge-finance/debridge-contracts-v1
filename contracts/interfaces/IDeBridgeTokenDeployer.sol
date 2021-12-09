@@ -10,8 +10,8 @@ interface IDeBridgeTokenDeployer {
     /// @param _decimals The asset's decimals
     function deployAsset(
         bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol,
+        bytes32 _name,
+        bytes32 _symbol,
         uint8 _decimals
     ) external returns (address deTokenAddress);
 

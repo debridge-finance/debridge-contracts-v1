@@ -39,6 +39,9 @@ contract DeBridgeGate is
     /// @dev Role allowed to stop transfers
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
 
+    uint256 public constant SUBMISSION_PREFIX = 1;
+    uint256 public constant DEPLOY_PREFIX = 2;
+
     /// @dev Address of IDeBridgeTokenDeployer contract
     address public deBridgeTokenDeployer;
     /// @dev Current signature verifier address to verify signatures.
@@ -50,17 +53,17 @@ contract DeBridgeGate is
     /// @dev outgoing submissions count
     uint256 public nonce;
 
-    /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information. 
+    /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information.
     mapping(bytes32 => DebridgeInfo) public getDebridge;
-    /// @dev Maps debridgeId (see getDebridgeId) => fee information 
+    /// @dev Maps debridgeId (see getDebridgeId) => fee information
     mapping(bytes32 => DebridgeFeeInfo) public getDebridgeFeeInfo;
     /// @dev Returns whether the transfer with the submissionId was claimed.
     /// submissionId is generated in getSubmissionIdFrom
     mapping(bytes32 => bool) public override isSubmissionUsed;
     /// @dev Returns whether the transfer with the submissionId is blocked.
     mapping(bytes32 => bool) public isBlockedSubmission;
-    /// @dev Maps debridgeId (see getDebridgeId) to threshold amount after which 
-    /// Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of 
+    /// @dev Maps debridgeId (see getDebridgeId) to threshold amount after which
+    /// Math.max(excessConfirmations,SignatureVerifier.minConfirmations) is used instead of
     /// SignatureVerifier.minConfirmations
     mapping(bytes32 => uint256) public getAmountThreshold;
     /// @dev Whether the chain for the asset is supported to send
@@ -333,8 +336,8 @@ contract DeBridgeGate is
     function deployNewAsset(
         bytes memory _nativeTokenAddress,
         uint256 _nativeChainId,
-        string memory _name,
-        string memory _symbol,
+        bytes32 _name,
+        bytes32 _symbol,
         uint8 _decimals,
         bytes memory _signatures
     ) external nonReentrant whenNotPaused{
@@ -342,7 +345,7 @@ contract DeBridgeGate is
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
-        bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
+        bytes32 deployId = keccak256(abi.encodePacked(DEPLOY_PREFIX, debridgeId, _name, _symbol, _decimals));
 
         // verify signatures
         ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
@@ -1022,6 +1025,7 @@ contract DeBridgeGate is
         bool hasAutoParams
     ) public view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
             _debridgeId,
             _chainIdFrom,
             getChainId(),
@@ -1055,6 +1059,7 @@ contract DeBridgeGate is
         bool hasAutoParams
     ) private view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
             _debridgeId,
             getChainId(),
             _chainIdTo,

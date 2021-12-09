@@ -83,8 +83,8 @@ contract DeBridgeTokenDeployer is
     /// @param _decimals Asset decimals
     function deployAsset(
         bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol,
+        bytes32 _name,
+        bytes32 _symbol,
         uint8 _decimals)
         external
         override
@@ -92,11 +92,12 @@ contract DeBridgeTokenDeployer is
         returns (address deBridgeTokenAddress)
     {
         if (getDeployedAssetAddress[_debridgeId] != address(0)) revert DeployedAlready();
-
+        string memory name = bytes32ToString(_name);
+        string memory symbol = bytes32ToString(_symbol);
         OverridedTokenInfo memory overridedToken = overridedTokens[_debridgeId];
         if (overridedToken.accept) {
-            _name = overridedToken.name;
-            _symbol = overridedToken.symbol;
+            name = overridedToken.name;
+            symbol = overridedToken.symbol;
         }
 
         address[] memory minters = new address[](1);
@@ -130,8 +131,8 @@ contract DeBridgeTokenDeployer is
         getDeployedAssetAddress[_debridgeId] = deBridgeTokenAddress;
         emit DeBridgeTokenDeployed(
             deBridgeTokenAddress,
-            _name,
-            _symbol,
+            name,
+            symbol,
             _decimals
         );
     }
@@ -176,6 +177,20 @@ contract DeBridgeTokenDeployer is
         for (uint256 i = 0; i < _debridgeIds.length; i++) {
             overridedTokens[_debridgeIds[i]] = _tokens[i];
         }
+    }
+
+    // ============ Internal ============
+
+    function bytes32ToString(bytes32 input) internal pure returns (string memory) {
+        uint256 i;
+        while (i < 32 && input[i] != 0) {
+            i++;
+        }
+        bytes memory array = new bytes(i);
+        for (uint c = 0; c < i; c++) {
+            array[c] = input[c];
+        }
+        return string(array);
     }
 
     // ============ Version Control ============
