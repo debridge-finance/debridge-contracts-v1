@@ -25,8 +25,8 @@ contract ControlWalletProxy is Initializable {
 
     /* ========== EVENTS ========== */
 
-    // emited when controlling address updated
-    event ControlingAddressUpdated(
+    // emitted when controlling address updated
+    event ControllingAddressUpdated(
         bytes nativeSender,
         uint256 chainIdFrom,
         bool enabled
@@ -34,7 +34,7 @@ contract ControlWalletProxy is Initializable {
 
     /* ========== MODIFIERS ========== */
 
-    modifier onlyCallProxyFromControlingAddress() {
+    modifier onlyCallProxyFromControllingAddress() {
         ICallProxy callProxy = ICallProxy(deBridgeGate.callProxy());
         if (address(callProxy) != msg.sender) revert CallProxyBadRole();
 
@@ -62,7 +62,7 @@ contract ControlWalletProxy is Initializable {
         uint256 amount,
         address destination,
         bytes memory data
-    ) external payable onlyCallProxyFromControlingAddress returns (bool _result) {
+    ) external payable onlyCallProxyFromControllingAddress returns (bool _result) {
         if (token != address(0)) {
             IERC20Upgradeable(token).safeApprove(destination, 0);
             IERC20Upgradeable(token).safeApprove(destination, amount);
@@ -79,18 +79,18 @@ contract ControlWalletProxy is Initializable {
         }
     }
 
-    function setControlingAddress(
+    function setControllingAddress(
         bytes memory _nativeSender,
         uint256 _chainIdFrom,
         bool _enabled
-    ) external onlyCallProxyFromControlingAddress {
+    ) external onlyCallProxyFromControllingAddress {
         controlParams[_chainIdFrom][_nativeSender] = _enabled;
-        emit ControlingAddressUpdated(_nativeSender, _chainIdFrom, _enabled);
+        emit ControllingAddressUpdated(_nativeSender, _chainIdFrom, _enabled);
     }
 
     // ============ VIEWS ============
 
-    function getControlingAddress(
+    function getControllingAddress(
         bytes memory _nativeSender,
         uint256 _chainIdFrom
     ) external view returns (bool) {
