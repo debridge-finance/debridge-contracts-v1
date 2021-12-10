@@ -35,7 +35,7 @@ Native sender of the current submission
   ) external returns (bool)
 ```
 
-Used for calls where native asset transfer is involved. 
+Used for calls where native asset transfer is involved.
 
 ### Parameters:
 | Name | Type | Description                                                          |
@@ -60,7 +60,7 @@ Used for calls where native asset transfer is involved.
   ) external returns (bool)
 ```
 
-Used for calls where ERC20 transfer is involved. 
+Used for calls where ERC20 transfer is involved.
 
 ### Parameters:
 | Name | Type | Description                                                          |

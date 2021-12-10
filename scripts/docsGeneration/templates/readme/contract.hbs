@@ -1,0 +1,11 @@
+{{#if (and
+              (isWhitelisted name)
+              (or natspec.userdoc natspec.devdoc)
+)}}
+{{#if (isPathWithoutFileNameNeverSeen this.file.path) }}
+## {{getPathWithoutFileNameUpperFirst this.file.path}}
+{{/if}}
+### {{name}}
+{{natspec.userdoc}}
+{{natspec.devdoc}}
+{{/if}}

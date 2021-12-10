@@ -11,9 +11,17 @@ interface IAggregatorBase {
     }
 
     /* ========== EVENTS ========== */
-
-    event AddOracle(address oracle, bool required); // add oracle by admin
-    event UpdateOracle(address oracle, bool required, bool isValid); // update oracle by admin
-    event DeployApproved(bytes32 deployId); // emitted once the submission is confirmed by min required aount of oracles
-    event SubmissionApproved(bytes32 submissionId); // emitted once the submission is confirmed by min required aount of oracles
+    /// @dev Emitted when an oracle is added
+    /// @param oracle Address of an added oracle
+    /// @param required Is this oracle's signature required for every transfer
+    event AddOracle(address oracle, bool required);
+    /// @dev Emitted when an oracle is updated
+    /// @param oracle Address of an updated oracle
+    /// @param required Is this oracle's signature required for every transfer
+    /// @param isValid Is this oracle valid, i.e. should it be treated as an oracle
+    event UpdateOracle(address oracle, bool required, bool isValid);
+    /// @dev Emitted once the submission is confirmed by min required amount of oracles
+    event DeployApproved(bytes32 deployId);
+    /// @dev Emitted once the submission is confirmed by min required amount of oracles
+    event SubmissionApproved(bytes32 submissionId);
 }

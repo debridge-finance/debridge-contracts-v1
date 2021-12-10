@@ -21,6 +21,8 @@ import "../libraries/SignatureUtil.sol";
 import "../libraries/Flags.sol";
 import "../interfaces/IWethGate.sol";
 
+/// @dev Contract for assets transfers. The user can transfer the asset to any of the approved chains.
+/// The admin manages the assets, fees and other important protocol parameters.
 contract DeBridgeGate is
     Initializable,
     AccessControlUpgradeable,

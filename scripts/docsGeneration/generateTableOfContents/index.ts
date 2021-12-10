@@ -4,12 +4,7 @@ import generateReadmesForDirsRecursively from "./parts/generateReadmesForDirsRec
 import generateSidebarToc from "./parts/generateSidebarToc";
 import writeTocToSummary from "./parts/writeTocToSummary";
 
-
-async function main() {
-    const listOfFiles = await getListOfFiles();
-    generateReadmesForDirsRecursively(CONTRACT_DOCS_PATH, listOfFiles);
-    const sidebarToc = generateSidebarToc(listOfFiles);
-    await writeTocToSummary(sidebarToc);
-}
-
-main().catch(e => console.error(e));
+const listOfFiles = getListOfFiles();
+generateReadmesForDirsRecursively(CONTRACT_DOCS_PATH, listOfFiles);
+const sidebarToc = generateSidebarToc(listOfFiles);
+writeTocToSummary(sidebarToc);

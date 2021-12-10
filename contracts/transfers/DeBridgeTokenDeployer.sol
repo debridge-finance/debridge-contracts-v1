@@ -8,6 +8,7 @@ import "../interfaces/IDeBridgeTokenDeployer.sol";
 import "../periphery/DeBridgeToken.sol";
 import "../periphery/DeBridgeTokenProxy.sol";
 
+/// @dev Deploys a deToken(DeBridgeTokenProxy) for an asset.
 contract DeBridgeTokenDeployer is
     Initializable,
     AccessControlUpgradeable,
