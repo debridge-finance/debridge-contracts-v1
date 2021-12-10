@@ -136,20 +136,19 @@ contract FeesCalculator is
         (uint16 discountFixBps, uint16 discountTransferBps) = gate.feeDiscount(_sender);
 
         // calculate fixed fee
-        if (_useAssetFee) {
-            // calculate fixed asset fee
+        // use native fixed fees calculation for native tokens despite overwriting _useAssetFee
+        if (_useAssetFee && _tokenAddress != address(0)) {
+            // calculate fixed asset fee for ERC20 tokens
             bytes32 debridgeId = getDebridgeId(_tokenAddress);
             fixFee = gate.getDebridgeChainAssetFixedFee(debridgeId, _chainIdTo);
             if (fixFee == 0) revert DeBridgeGate.NotSupportedFixedFee();
-            // Apply discount for a asset fixed fee
-            fixFee -= fixFee * discountFixBps / BPS_DENOMINATOR;
         } else {
             // calculate native asset fee
             // use globalFixedNativeFee if value for chain is not setted
             fixFee = chainFixedNativeFee == 0 ? gate.globalFixedNativeFee() : chainFixedNativeFee;
-            // Apply discount for a fixed fee
-            fixFee -= fixFee * discountFixBps / BPS_DENOMINATOR;
         }
+        // Apply discount for a fixed fee
+        fixFee -= fixFee * discountFixBps / BPS_DENOMINATOR;
 
         // Calculate transfer fee
         if (chainTransferFeeBps == 0) {
@@ -185,6 +184,6 @@ contract FeesCalculator is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 102; // 1.0.2
     }
 }
