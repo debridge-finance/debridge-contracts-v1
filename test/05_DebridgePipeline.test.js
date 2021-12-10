@@ -3754,9 +3754,21 @@ contract("DeBridgeGate real pipeline mode", function () {
       useAssetFee,
       executionFee,
     )
-    assert.equal(sentEvent.args.amount.toString(), feeInfo.amountAfterFee.toString());
-    assert.equal(sentEvent.args.feeParams.fixFee.toString(), feeInfo.fixFee.toString());
-    assert.equal(sentEvent.args.feeParams.transferFee.toString(), feeInfo.transferFee.toString());
-    assert.equal(sentEvent.args.feeParams.useAssetFee, feeInfo.useAssetFee);
+    assert.equal(
+      sentEvent.args.amount.toString(),
+      feeInfo.amountAfterFee.toString()
+    );
+    assert.equal(
+      sentEvent.args.feeParams.fixFee.toString(),
+      feeInfo.fixFee.toString()
+    );
+    assert.equal(
+      sentEvent.args.feeParams.transferFee.toString(),
+      feeInfo.transferFee.toString()
+    );
+    assert.equal(
+      sentEvent.args.feeParams.useAssetFee,
+      feeInfo.useAssetFee
+    );
   }
 });
