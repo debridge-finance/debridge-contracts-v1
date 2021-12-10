@@ -848,6 +848,7 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         // getNativeInfo[WETH] should have correct nativeAddress
         const wethInfo = await this.debridgeETH.getNativeInfo(this.wethETH.address);
+        assert.equal(wethInfo.nativeChainId.toNumber(), ethChainId);
         assert.equal(
           wethInfo.nativeAddress.toLowerCase(),
           this.wethETH.address.toLowerCase()
@@ -1015,6 +1016,14 @@ contract("DeBridgeGate real pipeline mode", function () {
         // );
 
         // TODO: check sender's balance
+
+        // getNativeInfo[token_address] should be correct
+        const tokenNativeInfo = await this.debridgeETH.getNativeInfo(tokenAddress);
+        assert.equal(tokenNativeInfo.nativeChainId.toNumber(), ethChainId);
+        assert.equal(
+          tokenNativeInfo.nativeAddress.toLowerCase(),
+          tokenAddress.toLowerCase()
+        );
       });
 
       it("should send ERC20 tokens with permit", async function () {
