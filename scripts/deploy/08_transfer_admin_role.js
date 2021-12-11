@@ -6,6 +6,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
+  return;
 
   const multisig = deployInitParams.deBridgeTokenAdmin;
 

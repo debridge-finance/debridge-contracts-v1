@@ -55,13 +55,11 @@
   "kovan": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "minConfirmations": 2,
-    "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "minConfirmations": 1,
+    "confirmationThreshold": 1,
+    "excessConfirmations": 1,
     "oracles": [
-      "0x0022798ad168952c1da80157c0314d5c64f87e22",
-      "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
-      "0x2b4e172043527a9435f31688fef6f3589356d1aa"
+      "0x397021103ece90052b685170ad9476ad1a29cc27"
     ],
     "deploy": {
       "wethGate": true
@@ -76,9 +74,11 @@
       97,
       256,
       421611,
-      80001
+      80001,
+      7565164
     ],
     "fixedNativeFee": [
+      "10000000000000000",
       "10000000000000000",
       "10000000000000000",
       "10000000000000000",
@@ -87,6 +87,11 @@
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
       {
         "fixedNativeFee": "0",
         "transferFeeBps": "0",
@@ -112,13 +117,11 @@
   "hecotest": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "minConfirmations": 2,
-    "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "minConfirmations": 1,
+    "confirmationThreshold": 1,
+    "excessConfirmations": 1,
     "oracles": [
-      "0x0022798ad168952c1da80157c0314d5c64f87e22",
-      "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
-      "0x2b4e172043527a9435f31688fef6f3589356d1aa"
+      "0x397021103ece90052b685170ad9476ad1a29cc27"
     ],
     "deploy": {
       "wethGate": true
@@ -133,17 +136,24 @@
       97,
       42,
       421611,
-      80001
+      80001,
+      7565164
     ],
     "fixedNativeFee": [
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000"
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
     ],
     "globalFixedNativeFee": "100000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
       {
         "fixedNativeFee": "0",
         "transferFeeBps": "0",
@@ -169,13 +179,11 @@
   "bsctest": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "minConfirmations": 2,
-    "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "minConfirmations": 1,
+    "confirmationThreshold": 1,
+    "excessConfirmations": 1,
     "oracles": [
-      "0x0022798ad168952c1da80157c0314d5c64f87e22",
-      "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
-      "0x2b4e172043527a9435f31688fef6f3589356d1aa"
+      "0x397021103ece90052b685170ad9476ad1a29cc27"
     ],
     "deploy": {
       "wethGate": true
@@ -190,9 +198,11 @@
       256,
       42,
       421611,
-      80001
+      80001,
+      7565164
     ],
     "fixedNativeFee": [
+      "10000000000000000",
       "10000000000000000",
       "10000000000000000",
       "10000000000000000",
@@ -201,6 +211,11 @@
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
       {
         "fixedNativeFee": "0",
         "transferFeeBps": "0",
@@ -226,19 +241,17 @@
   "arethtest": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "minConfirmations": 2,
-    "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "minConfirmations": 1,
+    "confirmationThreshold": 1,
+    "excessConfirmations": 1,
     "oracles": [
-      "0x0022798ad168952c1da80157c0314d5c64f87e22",
-      "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
-      "0x2b4e172043527a9435f31688fef6f3589356d1aa"
+      "0x397021103ece90052b685170ad9476ad1a29cc27"
     ],
     "deploy": {
       "wethGate": true
     },
     "external": {
-      "WETH": "",
+      "WETH": "0x21D03141aCfc7A53252c513F25C361485082Cc82",
       "WETHName": "Wrapped AETH",
       "WETHSymbol": "WAETH",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
@@ -247,9 +260,11 @@
       256,
       42,
       97,
-      80001
+      80001,
+      7565164
     ],
     "fixedNativeFee": [
+      "10000000000000000",
       "10000000000000000",
       "10000000000000000",
       "10000000000000000",
@@ -277,25 +292,28 @@
         "fixedNativeFee": "0",
         "transferFeeBps": "0",
         "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
       }
     ]
   },
   "mumbai": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "minConfirmations": 2,
-    "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "minConfirmations": 1,
+    "confirmationThreshold": 1,
+    "excessConfirmations": 1,
     "oracles": [
-      "0x0022798ad168952c1da80157c0314d5c64f87e22",
-      "0x9b4cbd1c7e82cf9c217002eddb320a1286f47738",
-      "0x2b4e172043527a9435f31688fef6f3589356d1aa"
+      "0x397021103ece90052b685170ad9476ad1a29cc27"
     ],
     "deploy": {
       "wethGate": true
     },
     "external": {
-      "WETH": "",
+      "WETH": "0x21D03141aCfc7A53252c513F25C361485082Cc82",
       "WETHName": "Wrapped MATIC",
       "WETHSymbol": "WMATIC",
       "UniswapFactory": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
@@ -304,17 +322,24 @@
       256,
       42,
       97,
-      421611
+      421611,
+      7565164
     ],
     "fixedNativeFee": [
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000"
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000",
+      "10000000000000000"
     ],
     "globalFixedNativeFee": "100000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
       {
         "fixedNativeFee": "0",
         "transferFeeBps": "0",
