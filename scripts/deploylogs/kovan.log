@@ -221,3 +221,34 @@ Waiting 1 block confirmations for tx 0xf4dc2663ac02be98df6aaab59be7e043ebd477a05
         New proxy deployed:  0xF879390221c961F2Eb6a2c426eDeb1eaFe9f293B
         New proxy version: 101
 PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+------------------------------------------------------------------------------------------
+Upgrade to fix contracts (add assets weth)
+------------------------------------------------------------------------------------------
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags FixDeBridgeGate --network kovan
+Compiling 124 files with 0.8.7
+Generating typings for: 124 artifacts in dir: typechain-types for target: ethers-v5
+Successfully generated 214 typings!
+Compilation finished successfully
+********************************************************************************
+        Start upgrade deBridgeGate to fix 1.3.0.1 version
+        from DEPLOYER 0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+********************************************************************************
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x91C1Cf4032203D7905fE40FB573782F99D30E326
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Current implementation address: 0x1736123f5dB1291797feC5354132d2Fd8A478efA
+        Current implementation version: 130
+Waiting 1 block confirmations for tx 0xf91d0e47dd507fddf31a395669223f6d3af7c9812a70e1cb759964f02290fe23 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x0baE2E3c24Afc4f61bCd6e856D50862d85623dcD
+        New implementation version: 1301
+end upgradeProxy
+newVersion: 1301
+Start Fix Weth
