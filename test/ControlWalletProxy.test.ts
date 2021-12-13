@@ -115,11 +115,11 @@ describe('`call` method', () => {
             .to.be.revertedWith('CallProxyBadRole()');
     })
 
-    describe('only allowed native sender from chainId can call', async () => {
-        const setControllingAddress = async (address: string, chainId: BigNumberish): Promise<void> => {
+    describe('only allowed native sender from chainId can call', () => {
+        const addControllingAddress = async (address: string, chainId: BigNumberish): Promise<void> => {
             const callData = controlWalletProxy.interface.encodeFunctionData(
-                'setControllingAddress',
-                [address, chainId, true]
+                'addControllingAddress',
+                [address, chainId]
             );
 
             await expectCallThroughCallProxySuccess(
@@ -137,7 +137,7 @@ describe('`call` method', () => {
             ];
 
             await expectCallThroughCallProxyFail(...argsToTest);
-            await setControllingAddress(address, chainId);
+            await addControllingAddress(address, chainId);
             await expectCallThroughCallProxySuccess(...argsToTest);
         }
 
