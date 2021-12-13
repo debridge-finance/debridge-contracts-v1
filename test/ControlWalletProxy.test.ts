@@ -15,7 +15,7 @@ const CHAIN_ID_FROM_SET_IN_INIT = 22;
 type ERC20Mock = MockContract & { mock: { [K in keyof ERC20['functions']]: Stub } };
 type DeBridgeGateMock = MockContract & { mock: { [K in keyof DeBridgeGate['functions']]: Stub } };
 
-let [deployer, nativeSenderSetInInit, someRandomAddress]: SignerWithAddress[] = [];
+let [deployer, nativeSenderSetInInit, someRandomAddress1, someRandomAddress2]: SignerWithAddress[] = [];
 
 let deBridgeGateMock: DeBridgeGateMock;
 let callProxyMock: ICallProxy;
@@ -30,7 +30,7 @@ const initializeControlWalletProxy = async (): Promise<ContractTransaction> => c
 );
 
 before(async () => {
-    [deployer, nativeSenderSetInInit, someRandomAddress] = await ethers.getSigners();
+    [deployer, nativeSenderSetInInit, someRandomAddress1, someRandomAddress2] = await ethers.getSigners();
 });
 
 beforeEach(async () => {
@@ -96,7 +96,7 @@ const testOnlyCallProxyFromControllingAddressModifier = (
             CHAIN_ID_FROM_SET_IN_INIT,
         );
 
-        await expect(callFrom(someRandomAddress))
+        await expect(callFrom(someRandomAddress1))
             .to.be.revertedWith('CallProxyBadRole()');
 
         await expect(callFrom(deployer))
@@ -136,13 +136,13 @@ const testOnlyCallProxyFromControllingAddressModifier = (
         })
 
         test('address', async () => {
-            const wrongAddress = someRandomAddress.address;
+            const wrongAddress = someRandomAddress1.address;
 
             await theTest(wrongAddress, CHAIN_ID_FROM_SET_IN_INIT);
         })
 
         test('chainId and address', async () => {
-            const wrongAddress = someRandomAddress.address;
+            const wrongAddress = someRandomAddress1.address;
             const wrongChainId = CHAIN_ID_FROM_SET_IN_INIT + 1;
 
             await theTest(wrongAddress, wrongChainId);
@@ -182,19 +182,104 @@ describe('`call` method', () => {
     })
 })
 
-describe('add/remove calling address', async () => {
+describe('add/remove calling address', () => {
     let mockArgsForAddControllingAddress: [address: BytesLike, chainId: BigNumberish];
     let addControllingAddressCallData: string;
 
-    beforeEach(async () => {
-        const someChainId = CHAIN_ID_FROM_SET_IN_INIT + 3;
-        mockArgsForAddControllingAddress = [arrayify(someRandomAddress.address), someChainId,];
+    let addressTupleSetInInit: [string, BigNumberish];
+    let firstAddressTuple: [string, BigNumberish];
+    let secondAddressTuple: [string, BigNumberish];
+
+    const addressTupleCallData: Record<'addFirst' | 'addSecond' | 'removeFirst' | 'removeSecond' | 'removeSetInInit',
+        string> = {
+        addFirst: '',
+        addSecond: '',
+        removeFirst: '',
+        removeSecond: '',
+        removeSetInInit: '',
+    };
+
+
+    beforeEach(() => {
+        const someChainId0 = CHAIN_ID_FROM_SET_IN_INIT + 3;
+        mockArgsForAddControllingAddress = [arrayify(someRandomAddress1.address), someChainId0,];
         addControllingAddressCallData = controlWalletProxy.interface
             .encodeFunctionData('addControllingAddress', mockArgsForAddControllingAddress);
+
+        const someChainId1 = CHAIN_ID_FROM_SET_IN_INIT + 39;
+        const someChainId2 = CHAIN_ID_FROM_SET_IN_INIT + 93;
+
+        addressTupleSetInInit = [nativeSenderSetInInit.address, CHAIN_ID_FROM_SET_IN_INIT];
+        firstAddressTuple = [someRandomAddress1.address, someChainId1];
+        secondAddressTuple = [someRandomAddress1.address, someChainId2];
+
+        addressTupleCallData.addFirst = controlWalletProxy.interface.encodeFunctionData(
+            'addControllingAddress', firstAddressTuple
+        );
+        addressTupleCallData.addSecond = controlWalletProxy.interface.encodeFunctionData(
+            'addControllingAddress', secondAddressTuple
+        );
+        addressTupleCallData.removeFirst = controlWalletProxy.interface.encodeFunctionData(
+            'removeControllingAddress', firstAddressTuple
+        );
+        addressTupleCallData.removeSecond = controlWalletProxy.interface.encodeFunctionData(
+            'removeControllingAddress', secondAddressTuple
+        );
+        addressTupleCallData.removeSetInInit = controlWalletProxy.interface.encodeFunctionData(
+            'removeControllingAddress', addressTupleSetInInit
+        )
     })
 
     const callFrom = async (from: Signer) => controlWalletProxy.connect(from)
         .addControllingAddress(...mockArgsForAddControllingAddress);
 
     testOnlyCallProxyFromControllingAddressModifier(() => addControllingAddressCallData, callFrom);
+
+    test('adding increases controllingAddressesCount', async () => {
+        expect(await controlWalletProxy.controllingAddressesCount()).to.be.equal(1);
+
+        await callWalletThroughCallProxy(addressTupleCallData.addFirst);
+        expect(await controlWalletProxy.controllingAddressesCount()).to.be.equal(2);
+
+        await callWalletThroughCallProxy(addressTupleCallData.addSecond);
+        expect(await controlWalletProxy.controllingAddressesCount()).to.be.equal(3);
+    })
+    test("can't add already added", async () => {
+        await expectCallThroughCallProxySuccess(addressTupleCallData.addFirst);
+        await expectCallThroughCallProxyFail(addressTupleCallData.addFirst);
+    })
+
+    test('removing decreases controllingAddressesCount', async () => {
+        await callWalletThroughCallProxy(addressTupleCallData.addFirst);
+        await callWalletThroughCallProxy(addressTupleCallData.addSecond);
+
+        expect(await controlWalletProxy.controllingAddressesCount()).to.be.equal(3);
+
+        await callWalletThroughCallProxy(addressTupleCallData.removeFirst);
+        expect(await controlWalletProxy.controllingAddressesCount()).to.be.equal(2);
+
+        await callWalletThroughCallProxy(addressTupleCallData.removeSecond);
+        expect(await controlWalletProxy.controllingAddressesCount()).to.be.equal(1);
+    })
+    test("can't remove not in list", async () => {
+        await expectCallThroughCallProxyFail(addressTupleCallData.removeFirst);
+    })
+    test("can't remove last", async () => {
+        expect(await controlWalletProxy.controllingAddressesCount()).to.be.equal(1);
+        expect(await controlWalletProxy.isControllingAddress(...addressTupleSetInInit)).to.be.true;
+
+        await expectCallThroughCallProxyFail(addressTupleCallData.removeSetInInit);
+    })
+    test('becomes controlling address after add', async () => {
+        expect(await controlWalletProxy.isControllingAddress(...firstAddressTuple)).to.be.false;
+        await callWalletThroughCallProxy(addressTupleCallData.addFirst);
+        expect(await controlWalletProxy.isControllingAddress(...firstAddressTuple)).to.be.true;
+    })
+    test('stops being controlling address after remove', async () => {
+        await callWalletThroughCallProxy(addressTupleCallData.addFirst);
+        expect(await controlWalletProxy.isControllingAddress(...firstAddressTuple)).to.be.true;
+
+        await callWalletThroughCallProxy(addressTupleCallData.removeFirst);
+        expect(await controlWalletProxy.isControllingAddress(...firstAddressTuple)).to.be.false;
+    })
 })
