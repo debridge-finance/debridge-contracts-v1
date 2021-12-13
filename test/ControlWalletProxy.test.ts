@@ -31,6 +31,10 @@ const initializeControlWalletProxy = async (): Promise<ContractTransaction> => c
 
 before(async () => {
     [deployer, nativeSenderSetInInit, someRandomAddress] = await ethers.getSigners();
+});
+
+beforeEach(async () => {
+    erc20Mock = await deployMockContract(deployer, ERC20Json.abi) as ERC20Mock;
 
     const callProxyMockFactory = await ethers.getContractFactory('MockCallProxy', deployer);
     callProxyMockSetInGate = await callProxyMockFactory.deploy() as ICallProxy;
@@ -43,10 +47,6 @@ before(async () => {
     await initializeControlWalletProxy();
 });
 
-beforeEach(async () => {
-    erc20Mock = await deployMockContract(deployer, ERC20Json.abi) as ERC20Mock;
-});
-
 
 test('initializer can be called only once', async () => {
     await expect(initializeControlWalletProxy()).to.be.revertedWith("Initializable: contract is already initialized");
@@ -54,6 +54,7 @@ test('initializer can be called only once', async () => {
 
 describe('`call` method', () => {
     let mockArgsForCall: [string, BigNumberish, string, BytesLike];
+    let callWithMockArgsCallData: string;
 
     beforeEach(async () => {
         await erc20Mock.mock.approve.returns(true as any);
@@ -68,31 +69,95 @@ describe('`call` method', () => {
         mockArgsForCall = [
             erc20Mock.address, 0, destination.address, destinationData
         ];
+        callWithMockArgsCallData = controlWalletProxy.interface.encodeFunctionData('call', mockArgsForCall);
     })
 
     const callFrom = async (from: Signer) => controlWalletProxy.connect(from)
         .call(...mockArgsForCall);
 
-    const callThroughCallProxy = async () => {
-        const receiver = controlWalletProxy.address;
-        const data = controlWalletProxy.interface
-            .encodeFunctionData('call', mockArgsForCall);
+    const callThroughCallProxy = async (
+        nativeAddressToSetInCallProxy: string,
+        chainIdToSetInCallProxy: BigNumberish,
+        callData: string,
+    ) => callProxyMockSetInGate.call(
+        AddressZero,
+        controlWalletProxy.address,
+        callData,
+        Zero,
+        arrayify(nativeAddressToSetInCallProxy ?? nativeSenderSetInInit.address),
+        chainIdToSetInCallProxy ?? CHAIN_ID_FROM_SET_IN_INIT,
+    );
 
-        return callProxyMockSetInGate.call(
-            AddressZero,
-            receiver,
-            data,
-            Zero,
-            arrayify(nativeSenderSetInInit.address),
-            CHAIN_ID_FROM_SET_IN_INIT
-        );
-    };
+    const expectCallThroughCallProxyFail = async (
+        ...args: Parameters<typeof callThroughCallProxy>
+    ): Promise<void> =>
+        expect(callThroughCallProxy(...args))
+            .to.emit(callProxyMockSetInGate, 'MockCallProxyCallFail')
+
+    const expectCallThroughCallProxySuccess = async (
+        ...args: Parameters<typeof callThroughCallProxy>
+    ): Promise<void> =>
+        expect(callThroughCallProxy(...args))
+            .to.emit(callProxyMockSetInGate, 'MockCallProxyCallSuccess')
+
 
     test('only callProxy can call', async () => {
-        await expect(callThroughCallProxy()).to.emit(callProxyMockSetInGate, 'MockCallProxyCallSuccess');
+        await expectCallThroughCallProxySuccess(
+            nativeSenderSetInInit.address,
+            CHAIN_ID_FROM_SET_IN_INIT,
+            callWithMockArgsCallData,
+        );
+
         await expect(callFrom(someRandomAddress))
             .to.be.revertedWith('CallProxyBadRole()');
+
         await expect(callFrom(deployer))
             .to.be.revertedWith('CallProxyBadRole()');
+    })
+
+    describe('only allowed native sender from chainId can call', async () => {
+        const setControllingAddress = async (address: string, chainId: BigNumberish): Promise<void> => {
+            const callData = controlWalletProxy.interface.encodeFunctionData(
+                'setControllingAddress',
+                [address, chainId, true]
+            );
+
+            await expectCallThroughCallProxySuccess(
+                nativeSenderSetInInit.address,
+                CHAIN_ID_FROM_SET_IN_INIT,
+                callData,
+            );
+        }
+
+        const theTest = async (address: string, chainId: BigNumberish): Promise<void> => {
+            const argsToTest: Parameters<typeof callThroughCallProxy> = [
+                address,
+                chainId,
+                callWithMockArgsCallData,
+            ];
+
+            await expectCallThroughCallProxyFail(...argsToTest);
+            await setControllingAddress(address, chainId);
+            await expectCallThroughCallProxySuccess(...argsToTest);
+        }
+
+        test('chainId', async () => {
+            const wrongChainId = CHAIN_ID_FROM_SET_IN_INIT + 1;
+
+            await theTest(nativeSenderSetInInit.address, wrongChainId);
+        })
+
+        test('address', async () => {
+            const wrongAddress = someRandomAddress.address;
+
+            await theTest(wrongAddress, CHAIN_ID_FROM_SET_IN_INIT);
+        })
+
+        test('chainId and address', async () => {
+            const wrongAddress = someRandomAddress.address;
+            const wrongChainId = CHAIN_ID_FROM_SET_IN_INIT + 1;
+
+            await theTest(wrongAddress, wrongChainId);
+        })
     })
 })
