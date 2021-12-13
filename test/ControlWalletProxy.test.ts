@@ -48,8 +48,13 @@ beforeEach(async () => {
 });
 
 
-test('initializer can be called only once', async () => {
-    await expect(initializeControlWalletProxy()).to.be.revertedWith("Initializable: contract is already initialized");
+describe('initializer', async () => {
+    test('can be called only once', async () => {
+        await expect(initializeControlWalletProxy()).to.be.revertedWith("Initializable: contract is already initialized");
+    })
+    test('controllingAddressesCount is set to 1', async () => {
+        expect(await controlWalletProxy.controllingAddressesCount()).to.equal(1);
+    })
 })
 
 describe('`call` method', () => {
