@@ -57,60 +57,41 @@ describe('initializer', async () => {
     })
 })
 
-describe('`call` method', () => {
-    let mockArgsForCall: [string, BigNumberish, string, BytesLike];
-    let callWithMockArgsCallData: string;
+const callWalletThroughCallProxy = async (
+    callData: string,
+    nativeAddressToSetInCallProxy?: string,
+    chainIdToSetInCallProxy?: BigNumberish,
+) => callProxyMock.call(
+    AddressZero,
+    controlWalletProxy.address,
+    callData,
+    Zero,
+    arrayify(nativeAddressToSetInCallProxy ?? nativeSenderSetInInit.address),
+    chainIdToSetInCallProxy ?? CHAIN_ID_FROM_SET_IN_INIT,
+);
 
-    beforeEach(async () => {
-        await erc20Mock.mock.approve.returns(true as any);
-        await erc20Mock.mock.allowance.returns(0 as any);
-        await erc20Mock.mock.transfer.returns(true as any);
+// noinspection TypeScriptValidateTypes it's a bug in webStorm
+const expectCallThroughCallProxyFail = async (
+    ...args: Parameters<typeof callWalletThroughCallProxy>
+): Promise<void> =>
+    expect(callWalletThroughCallProxy(...args))
+        .to.emit(callProxyMock, 'MockCallProxyCallFail')
 
-        const mockAcceptAnyCallFactory = await ethers.getContractFactory('MockAcceptAnyCall', deployer);
-        const mockAcceptAnyCall = await mockAcceptAnyCallFactory.deploy();
-        const callDataForMockAcceptAnyCall = (new ethers.utils.Interface(["function someFunction()"]))
-            .encodeFunctionData('someFunction');
-
-        mockArgsForCall = [
-            erc20Mock.address, 0, mockAcceptAnyCall.address, callDataForMockAcceptAnyCall
-        ];
-        callWithMockArgsCallData = controlWalletProxy.interface.encodeFunctionData('call', mockArgsForCall);
-    })
-
-    const callFrom = async (from: Signer) => controlWalletProxy.connect(from)
-        .call(...mockArgsForCall);
-
-    const callWalletThroughCallProxy = async (
-        callData: string,
-        nativeAddressToSetInCallProxy?: string,
-        chainIdToSetInCallProxy?: BigNumberish,
-    ) => callProxyMock.call(
-        AddressZero,
-        controlWalletProxy.address,
-        callData,
-        Zero,
-        arrayify(nativeAddressToSetInCallProxy ?? nativeSenderSetInInit.address),
-        chainIdToSetInCallProxy ?? CHAIN_ID_FROM_SET_IN_INIT,
-    );
-
-    // noinspection TypeScriptValidateTypes it's a bug in webStorm
-    const expectCallThroughCallProxyFail = async (
-        ...args: Parameters<typeof callWalletThroughCallProxy>
-    ): Promise<void> =>
-        expect(callWalletThroughCallProxy(...args))
-            .to.emit(callProxyMock, 'MockCallProxyCallFail')
-
-    // noinspection TypeScriptValidateTypes it's a bug in webStorm
-    const expectCallThroughCallProxySuccess = async (
-        ...args: Parameters<typeof callWalletThroughCallProxy>
-    ): Promise<void> =>
-        expect(callWalletThroughCallProxy(...args))
-            .to.emit(callProxyMock, 'MockCallProxyCallSuccess')
+// noinspection TypeScriptValidateTypes it's a bug in webStorm
+const expectCallThroughCallProxySuccess = async (
+    ...args: Parameters<typeof callWalletThroughCallProxy>
+): Promise<void> =>
+    expect(callWalletThroughCallProxy(...args))
+        .to.emit(callProxyMock, 'MockCallProxyCallSuccess')
 
 
+const testOnlyCallProxyFromControllingAddressModifier = (
+    getCallData: () => string,
+    callFrom: (from: Signer) => Promise<ContractTransaction>
+) => {
     test('only callProxy can call', async () => {
         await expectCallThroughCallProxySuccess(
-            callWithMockArgsCallData,
+            getCallData(),
             nativeSenderSetInInit.address,
             CHAIN_ID_FROM_SET_IN_INIT,
         );
@@ -138,7 +119,7 @@ describe('`call` method', () => {
 
         const theTest = async (address: string, chainId: BigNumberish): Promise<void> => {
             const argsToTest: Parameters<typeof callWalletThroughCallProxy> = [
-                callWithMockArgsCallData,
+                getCallData(),
                 address,
                 chainId,
             ];
@@ -167,10 +148,53 @@ describe('`call` method', () => {
             await theTest(wrongAddress, wrongChainId);
         })
     })
+}
+
+describe('`call` method', () => {
+    let mockArgsForCall: [string, BigNumberish, string, BytesLike];
+    let callWithMockArgsCallData: string;
+
+    beforeEach(async () => {
+        await erc20Mock.mock.approve.returns(true as any);
+        await erc20Mock.mock.allowance.returns(0 as any);
+        await erc20Mock.mock.transfer.returns(true as any);
+
+        const mockAcceptAnyCallFactory = await ethers.getContractFactory('MockAcceptAnyCall', deployer);
+        const mockAcceptAnyCall = await mockAcceptAnyCallFactory.deploy();
+        const callDataForMockAcceptAnyCall = (new ethers.utils.Interface(["function someFunction()"]))
+            .encodeFunctionData('someFunction');
+
+        mockArgsForCall = [
+            erc20Mock.address, 0, mockAcceptAnyCall.address, callDataForMockAcceptAnyCall
+        ];
+        callWithMockArgsCallData = controlWalletProxy.interface.encodeFunctionData('call', mockArgsForCall);
+    })
+
+    const callFrom = async (from: Signer) => controlWalletProxy.connect(from)
+        .call(...mockArgsForCall);
+
+    testOnlyCallProxyFromControllingAddressModifier(() => callWithMockArgsCallData, callFrom);
 
     test('failed external call reverts', async () => {
         const callDataThatWillBeRejectedByWallet = (new ethers.utils.Interface(["function unknownFunction()"]))
             .encodeFunctionData('unknownFunction');
         await expectCallThroughCallProxyFail(callDataThatWillBeRejectedByWallet);
     })
+})
+
+describe('add/remove calling address', async () => {
+    let mockArgsForAddControllingAddress: [address: BytesLike, chainId: BigNumberish];
+    let addControllingAddressCallData: string;
+
+    beforeEach(async () => {
+        const someChainId = CHAIN_ID_FROM_SET_IN_INIT + 3;
+        mockArgsForAddControllingAddress = [arrayify(someRandomAddress.address), someChainId,];
+        addControllingAddressCallData = controlWalletProxy.interface
+            .encodeFunctionData('addControllingAddress', mockArgsForAddControllingAddress);
+    })
+
+    const callFrom = async (from: Signer) => controlWalletProxy.connect(from)
+        .addControllingAddress(...mockArgsForAddControllingAddress);
+
+    testOnlyCallProxyFromControllingAddressModifier(() => addControllingAddressCallData, callFrom);
 })
