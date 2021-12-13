@@ -120,7 +120,7 @@ contract ControlWalletProxy is Initializable {
 
     // ============ VIEWS ============
 
-    function getControllingAddress(
+    function isControllingAddress(
         bytes memory _nativeSender,
         uint256 _chainIdFrom
     ) external view returns (bool) {
