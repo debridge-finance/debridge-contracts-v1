@@ -186,9 +186,7 @@ describe('add/remove calling address', () => {
     let mockArgsForAddControllingAddress: [address: BytesLike, chainId: BigNumberish];
     let addControllingAddressCallData: string;
 
-    let addressTupleSetInInit: [string, BigNumberish];
-    let firstAddressTuple: [string, BigNumberish];
-    let secondAddressTuple: [string, BigNumberish];
+    let [addressTupleSetInInit, firstAddressTuple, secondAddressTuple]: [address: string, chainId: BigNumberish][] = [];
 
     const addressTupleCallData: Record<'addFirst' | 'addSecond' | 'removeFirst' | 'removeSecond' | 'removeSetInInit',
         string> = {
@@ -281,5 +279,15 @@ describe('add/remove calling address', () => {
 
         await callWalletThroughCallProxy(addressTupleCallData.removeFirst);
         expect(await controlWalletProxy.isControllingAddress(...firstAddressTuple)).to.be.false;
+    })
+
+    test.only('ControllingAddressUpdated is emitted on add and remove', async () => {
+        await expect(callWalletThroughCallProxy(addressTupleCallData.addFirst))
+            .to.emit(controlWalletProxy, 'ControllingAddressUpdated')
+            .withArgs(firstAddressTuple[0].toLowerCase(), firstAddressTuple[1], true)
+
+        await expect(callWalletThroughCallProxy(addressTupleCallData.removeFirst))
+            .to.emit(controlWalletProxy, 'ControllingAddressUpdated')
+            .withArgs(firstAddressTuple[0].toLowerCase(), firstAddressTuple[1], false)
     })
 })
