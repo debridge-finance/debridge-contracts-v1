@@ -167,4 +167,10 @@ describe('`call` method', () => {
             await theTest(wrongAddress, wrongChainId);
         })
     })
+
+    test('failed external call reverts', async () => {
+        const callDataThatWillBeRejectedByWallet = (new ethers.utils.Interface(["function unknownFunction()"]))
+            .encodeFunctionData('unknownFunction');
+        await expectCallThroughCallProxyFail(callDataThatWillBeRejectedByWallet);
+    })
 })
