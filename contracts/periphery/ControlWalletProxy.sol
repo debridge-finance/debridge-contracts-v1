@@ -16,12 +16,17 @@ contract ControlWalletProxy is Initializable {
     DeBridgeGate public deBridgeGate;
     // chainIdFrom => list of addresses that can control this contract
     mapping(uint256 => mapping(bytes => bool)) public controlParams;
+    uint8 public controllingAddressesCount;
 
     /* ========== ERRORS ========== */
 
     error CallProxyBadRole();
     error NativeSenderBadRole(bytes nativeSender, uint256 chainIdFrom);
     error ExternalCallFailed();
+
+    error AddressAlreadyAdded();
+    error RemovingMissingAddress();
+    error RemovingLastAddress();
 
     /* ========== EVENTS ========== */
 
@@ -54,6 +59,7 @@ contract ControlWalletProxy is Initializable {
         uint256 _chainIdFrom
     ) public initializer {
         deBridgeGate = _deBridgeGate;
+        controllingAddressesCount++;
         controlParams[_chainIdFrom][_nativeSender] = true;
     }
 
@@ -79,13 +85,37 @@ contract ControlWalletProxy is Initializable {
         }
     }
 
-    function setControllingAddress(
+    function addControllingAddress(
         bytes memory _nativeSender,
-        uint256 _chainIdFrom,
-        bool _enabled
+        uint256 _chainIdFrom
     ) external onlyCallProxyFromControllingAddress {
-        controlParams[_chainIdFrom][_nativeSender] = _enabled;
-        emit ControllingAddressUpdated(_nativeSender, _chainIdFrom, _enabled);
+        if(controlParams[_chainIdFrom][_nativeSender]) {
+            revert AddressAlreadyAdded();
+        }
+
+        controllingAddressesCount++;
+
+        controlParams[_chainIdFrom][_nativeSender] = true;
+
+        emit ControllingAddressUpdated(_nativeSender, _chainIdFrom, true);
+    }
+
+    function removeControllingAddress(
+        bytes memory _nativeSender,
+        uint256 _chainIdFrom
+    ) external onlyCallProxyFromControllingAddress {
+        if(!controlParams[_chainIdFrom][_nativeSender]) {
+            revert RemovingMissingAddress();
+        }
+
+        controllingAddressesCount--;
+        if (controllingAddressesCount == 0){
+            revert RemovingLastAddress();
+        }
+
+        controlParams[_chainIdFrom][_nativeSender] = false;
+
+        emit ControllingAddressUpdated(_nativeSender, _chainIdFrom, false);
     }
 
     // ============ VIEWS ============
