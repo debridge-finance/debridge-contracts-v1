@@ -5,6 +5,7 @@ import "./AggregatorBase.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../libraries/SignatureUtil.sol";
 
+/// @dev It's used to verify that a transfer is signed by oracles.
 contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;

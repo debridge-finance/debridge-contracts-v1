@@ -203,6 +203,7 @@ Returns asset fixed fee value for specified debridge and chainId.
 Emitted once the tokens are sent from the original(native) chain to the other chain; the transfer tokens
 are expected to be claimed by the users.
 
+
 ## Claimed
 ```solidity
   event Claimed(
@@ -219,6 +220,7 @@ are expected to be claimed by the users.
 
 Emitted once the tokens are transferred and withdrawn on a target chain
 
+
 ## PairAdded
 ```solidity
   event PairAdded(
@@ -233,6 +235,7 @@ Emitted once the tokens are transferred and withdrawn on a target chain
 
 Emitted when new asset support is added.
 
+
 ## ChainSupportUpdated
 ```solidity
   event ChainSupportUpdated(
@@ -243,6 +246,7 @@ Emitted when new asset support is added.
 ```
 
 Emitted when the asset is allowed/disallowed to be transferred to the chain.
+
 
 ## ChainsSupportUpdated
 ```solidity
@@ -255,6 +259,7 @@ Emitted when the asset is allowed/disallowed to be transferred to the chain.
 
 Emitted when the supported chains are updated.
 
+
 ## CallProxyUpdated
 ```solidity
   event CallProxyUpdated(
@@ -263,6 +268,7 @@ Emitted when the supported chains are updated.
 ```
 
 Emitted when the new call proxy is set.
+
 
 ## AutoRequestExecuted
 ```solidity
@@ -275,6 +281,7 @@ Emitted when the new call proxy is set.
 
 Emitted when the transfer request is executed.
 
+
 ## Blocked
 ```solidity
   event Blocked(
@@ -284,6 +291,7 @@ Emitted when the transfer request is executed.
 
 Emitted when a submission is blocked.
 
+
 ## Unblocked
 ```solidity
   event Unblocked(
@@ -292,6 +300,7 @@ Emitted when a submission is blocked.
 ```
 
 Emitted when a submission is unblocked.
+
 
 ## Flash
 ```solidity
@@ -306,6 +315,7 @@ Emitted when a submission is unblocked.
 
 Emitted when a flash loan is successfully returned.
 
+
 ## WithdrawnFee
 ```solidity
   event WithdrawnFee(
@@ -315,6 +325,7 @@ Emitted when a flash loan is successfully returned.
 ```
 
 Emitted when fee is withdrawn.
+
 
 ## FixedNativeFeeUpdated
 ```solidity
@@ -326,6 +337,7 @@ Emitted when fee is withdrawn.
 
 Emitted when globalFixedNativeFee and globalTransferFeeBps are updated.
 
+
 ## FixedNativeFeeAutoUpdated
 ```solidity
   event FixedNativeFeeAutoUpdated(
@@ -334,6 +346,7 @@ Emitted when globalFixedNativeFee and globalTransferFeeBps are updated.
 ```
 
 Emitted when globalFixedNativeFee is updated by feeContractUpdater
+
 
 
 # Structs
