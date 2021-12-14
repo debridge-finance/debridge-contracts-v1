@@ -43,6 +43,11 @@ contract DeBridgeGate is
     /// @dev Value for lockedClaim variable when claim function is entered
     uint256 private constant _CLAIM_LOCKED = 2;
 
+    /// @dev prefix to calculation submissionId
+    uint256 public constant SUBMISSION_PREFIX = 1;
+    /// @dev prefix to calculation deployId
+    uint256 public constant DEPLOY_PREFIX = 2;
+
     /// @dev Address of IDeBridgeTokenDeployer contract
     address public deBridgeTokenDeployer;
     /// @dev Current signature verifier address to verify signatures.
@@ -338,7 +343,7 @@ contract DeBridgeGate is
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
-        bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
+        bytes32 deployId =  keccak256(abi.encodePacked(DEPLOY_PREFIX, debridgeId, _name, _symbol, _decimals));
 
         // verify signatures
         ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
@@ -1023,6 +1028,7 @@ contract DeBridgeGate is
         bool hasAutoParams
     ) public view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
             _debridgeId,
             _chainIdFrom,
             getChainId(),
@@ -1056,6 +1062,7 @@ contract DeBridgeGate is
         bool hasAutoParams
     ) private view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
             _debridgeId,
             getChainId(),
             _chainIdTo,
@@ -1101,6 +1108,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 130; // 1.3.0
+        return 201; // 2.0.1
     }
 }

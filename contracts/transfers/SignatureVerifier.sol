@@ -150,6 +150,6 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 201; // 2.0.1
     }
 }

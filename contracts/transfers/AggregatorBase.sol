@@ -8,6 +8,9 @@ import "../interfaces/IAggregatorBase.sol";
 contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorBase {
     /* ========== STATE VARIABLES ========== */
 
+    /// @dev prefix to calculation deployId
+    uint256 public constant DEPLOY_PREFIX = 2;
+
     uint8 public minConfirmations; // minimal required confirmations
     uint8 public excessConfirmations; // minimal required confirmations in case of too many confirmations
     uint8 public requiredOraclesCount; // count of required oracles
@@ -145,7 +148,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         string memory _symbol,
         uint8 _decimals
     ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
+        return keccak256(abi.encodePacked(DEPLOY_PREFIX, _debridgeId, _name, _symbol, _decimals));
     }
 
     /// @dev Calculates asset identifier.
