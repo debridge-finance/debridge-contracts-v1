@@ -14,9 +14,9 @@ contract ControlWalletProxy is Initializable {
     /* ========== STATE VARIABLES ========== */
 
     DeBridgeGate public deBridgeGate;
+    uint256 public controllingAddressesCount;
     // chainIdFrom => list of addresses that can control this contract
     mapping(uint256 => mapping(bytes => bool)) public controlParams;
-    uint8 public controllingAddressesCount;
 
     /* ========== ERRORS ========== */
 
@@ -108,10 +108,11 @@ contract ControlWalletProxy is Initializable {
             revert RemovingMissingAddress();
         }
 
-        controllingAddressesCount--;
-        if (controllingAddressesCount == 0){
+        if (controllingAddressesCount == 1){
             revert RemovingLastAddress();
         }
+
+        controllingAddressesCount--;
 
         controlParams[_chainIdFrom][_nativeSender] = false;
 
