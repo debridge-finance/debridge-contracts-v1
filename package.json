@@ -8,7 +8,6 @@
     "lint:check": "solhint 'contracts/**/*.sol'",
     "lint:fix": "solhint --fix 'contracts/**/*.sol'",
     "compile": "hardhat compile",
-    "build": "hardhat build",
     "start-ganache": "ganache-cli --chainId 1 --seed alice",
     "test": "hardhat test",
     "test:ci": "hardhat compile && hardhat test",
