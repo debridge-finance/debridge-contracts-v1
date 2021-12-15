@@ -15,6 +15,16 @@ Basis points or bps, set to 10 000 (equal to 1/10000). Used to express relative 
   bytes32 public constant GOVMONITORING_ROLE;
 ```
 Role allowed to stop transfers
+## SUBMISSION_PREFIX
+```solidity
+  uint256 public constant SUBMISSION_PREFIX;
+```
+prefix to calculation submissionId
+## DEPLOY_PREFIX
+```solidity
+  uint256 public constant DEPLOY_PREFIX;
+```
+prefix to calculation deployId
 ## deBridgeTokenDeployer
 ```solidity
   address public deBridgeTokenDeployer;

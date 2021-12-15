@@ -5,6 +5,11 @@ managing the minimal required amount of confirmations.
 
 # Variables
 
+## DEPLOY_PREFIX
+```solidity
+  uint256 public constant DEPLOY_PREFIX;
+```
+prefix to calculation deployId
 ## minConfirmations
 ```solidity
   uint8 public minConfirmations;

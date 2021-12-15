@@ -1786,6 +1786,8 @@ contract("DeBridgeGate real pipeline mode", function () {
         this.nativeSubmission.args.nonce
       );
 
+      assert.equal(this.nativeSubmissionId, submissionId);
+
       let signatures = await submissionSignatures(bscWeb3, oracleKeys, submissionId);
 
       await this.debridgeBSC.claim(
@@ -3751,12 +3753,12 @@ contract("DeBridgeGate real pipeline mode", function () {
       const decimals = 18;
       const deployIdSignatureVerifier = await this.signatureVerifierETH.getDeployId(debridgeId, name, symbol, decimals);
       const deployIdConfirmationAggregator = await this.signatureVerifierBSC.getDeployId(debridgeId, name, symbol, decimals);
-
+      const DEPLOY_PREFIX = await this.signatureVerifierETH.DEPLOY_PREFIX();
       assert.equal(deployIdSignatureVerifier, deployIdConfirmationAggregator);
 
       const calculatedDeployId = ethers.utils.solidityKeccak256(
-        ['bytes32', 'string', 'string', 'uint8'],
-        [debridgeId, name, symbol, decimals]);
+        ['uint256', 'bytes32', 'string', 'string', 'uint8'],
+        [DEPLOY_PREFIX, debridgeId, name, symbol, decimals]);
       assert.equal(deployIdSignatureVerifier, calculatedDeployId);
     });
   });

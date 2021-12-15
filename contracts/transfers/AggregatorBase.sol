@@ -9,6 +9,10 @@ import "../interfaces/IAggregatorBase.sol";
 /// managing the minimal required amount of confirmations.
 contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorBase {
     /* ========== STATE VARIABLES ========== */
+
+    /// @dev prefix to calculation deployId
+    uint256 public constant DEPLOY_PREFIX = 2;
+
     /// @dev Minimal required confirmations
     uint8 public minConfirmations;
     /// @dev Minimal required confirmations in case of too many confirmations
@@ -155,7 +159,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         string memory _symbol,
         uint8 _decimals
     ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_debridgeId, _name, _symbol, _decimals));
+        return keccak256(abi.encodePacked(DEPLOY_PREFIX, _debridgeId, _name, _symbol, _decimals));
     }
 
     /// @dev Calculates asset identifier.
