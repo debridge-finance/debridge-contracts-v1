@@ -3,15 +3,12 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "../interfaces/IAggregatorBase.sol";
+import "../interfaces/IOraclesManager.sol";
 
 /// @dev The base contract for oracles management. Allows adding/removing oracles,
 /// managing the minimal required amount of confirmations.
-contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorBase {
+contract OraclesManager is Initializable, AccessControlUpgradeable, IOraclesManager {
     /* ========== STATE VARIABLES ========== */
-
-    /// @dev prefix to calculation deployId
-    uint256 public constant DEPLOY_PREFIX = 2;
 
     /// @dev Minimal required confirmations
     uint8 public minConfirmations;
@@ -28,16 +25,12 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
 
     error AdminBadRole();
     error OracleBadRole();
-    error DeBridgeGateBadRole();
-
 
     error OracleAlreadyExist();
     error OracleNotFound();
 
     error WrongArgument();
     error LowMinConfirmations();
-
-    error SubmittedAlready();
 
 
     /* ========== MODIFIERS ========== */
@@ -56,7 +49,7 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Minimal required confirmations.
     /// @param _excessConfirmations Minimal required confirmations in case of too many confirmations.
-    function initializeBase(uint8 _minConfirmations, uint8 _excessConfirmations) internal {
+    function initialize(uint8 _minConfirmations, uint8 _excessConfirmations) internal {
         if (_minConfirmations == 0 || _excessConfirmations < _minConfirmations) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
         excessConfirmations = _excessConfirmations;
@@ -143,33 +136,5 @@ contract AggregatorBase is Initializable, AccessControlUpgradeable, IAggregatorB
         oracleInfo.isValid = _isValid;
         oracleInfo.required = _required;
         emit UpdateOracle(_oracle, _required, _isValid);
-    }
-
-
-    /* ========== VIEW ========== */
-
-    /// @dev Calculates asset identifier for deployment.
-    /// @param _debridgeId Id of an asset, see getDebridgeId.
-    /// @param _name Asset's name.
-    /// @param _symbol Asset's symbol.
-    /// @param _decimals Asset's decimals.
-    function getDeployId(
-        bytes32 _debridgeId,
-        string memory _name,
-        string memory _symbol,
-        uint8 _decimals
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(DEPLOY_PREFIX, _debridgeId, _name, _symbol, _decimals));
-    }
-
-    /// @dev Calculates asset identifier.
-    /// @param _chainId Current chain id.
-    /// @param _tokenAddress Address of the asset on the other chain.
-    function getDebridgeId(uint256 _chainId, bytes memory _tokenAddress)
-        public
-        pure
-        returns (bytes32)
-    {
-        return keccak256(abi.encodePacked(_chainId, _tokenAddress));
     }
 }

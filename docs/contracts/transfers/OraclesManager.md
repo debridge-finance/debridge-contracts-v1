@@ -5,11 +5,6 @@ managing the minimal required amount of confirmations.
 
 # Variables
 
-## DEPLOY_PREFIX
-```solidity
-  uint256 public constant DEPLOY_PREFIX;
-```
-prefix to calculation deployId
 ## minConfirmations
 ```solidity
   uint8 public minConfirmations;
@@ -32,14 +27,14 @@ Count of required oracles
 Oracle addresses
 ## getOracleInfo
 ```solidity
-  mapping(address => struct IAggregatorBase.OracleInfo) public getOracleInfo;
+  mapping(address => struct IOraclesManager.OracleInfo) public getOracleInfo;
 ```
 Maps an oracle address to the oracle details
 
 # Functions
-## initializeBase
+## initialize
 ```solidity
-  function initializeBase(
+  function initialize(
             uint8 _minConfirmations,
             uint8 _excessConfirmations
   ) internal
@@ -114,42 +109,6 @@ Update an oracle.
 |`_oracle` | address | An oracle address.
 |`_isValid` | bool | Is this oracle valid, i.e. should it be treated as an oracle.
 |`_required` | bool | If set to true a transfer will not be confirmed without this oracle.
-
-## getDeployId
-```solidity
-  function getDeployId(
-            bytes32 _debridgeId,
-            string _name,
-            string _symbol,
-            uint8 _decimals
-  ) public returns (bytes32)
-```
-
-Calculates asset identifier for deployment.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_debridgeId` | bytes32 | Id of an asset, see getDebridgeId.
-|`_name` | string | Asset's name.
-|`_symbol` | string | Asset's symbol.
-|`_decimals` | uint8 | Asset's decimals.
-
-## getDebridgeId
-```solidity
-  function getDebridgeId(
-            uint256 _chainId,
-            bytes _tokenAddress
-  ) public returns (bytes32)
-```
-
-Calculates asset identifier.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_chainId` | uint256 | Current chain id.
-|`_tokenAddress` | bytes | Address of the asset on the other chain.
 
 
 

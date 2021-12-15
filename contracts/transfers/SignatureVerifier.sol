@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "./AggregatorBase.sol";
+import "./OraclesManager.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../libraries/SignatureUtil.sol";
 
 /// @dev It's used to verify that a transfer is signed by oracles.
-contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
+contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
 
@@ -23,6 +23,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /* ========== ERRORS ========== */
 
+    error DeBridgeGateBadRole();
     error NotConfirmedByRequiredOracles();
     error NotConfirmedThreshold();
     error SubmissionNotConfirmed();
@@ -47,7 +48,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint8 _excessConfirmations,
         address _debridgeAddress
     ) public initializer {
-        AggregatorBase.initializeBase(_minConfirmations, _excessConfirmations);
+        OraclesManager.initialize(_minConfirmations, _excessConfirmations);
         confirmationThreshold = _confirmationThreshold;
         debridgeAddress = _debridgeAddress;
     }

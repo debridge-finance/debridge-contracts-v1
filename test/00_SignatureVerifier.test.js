@@ -1,9 +1,8 @@
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { toWei, fromWei, toBN } = web3.utils;
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const ZERO_ADDRESS = ethers.constants.AddressZero;
 
-contract("ConfirmationAggregator", function () {
-  //TODO: add tests confirmNewAsset
+contract("SignatureVerifier", function () {
   before(async function () {
     this.signers = await ethers.getSigners();
     aliceAccount = this.signers[0];
@@ -23,18 +22,20 @@ contract("ConfirmationAggregator", function () {
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 3; //Confirmations count in case of excess activity.
 
-    const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator", alice);
+    const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
 
-    //   function initialize(
-    //     uint256 _minConfirmations,
-    //     uint256 _confirmationThreshold,
-    //     uint256 _excessConfirmations,
+    // function initialize(
+    //   uint8 _minConfirmations,
+    //   uint8 _confirmationThreshold,
+    //   uint8 _excessConfirmations,
+    //   address _debridgeAddress
     // )
 
-    this.aggregator = await upgrades.deployProxy(ConfirmationAggregator, [
+    this.aggregator = await upgrades.deployProxy(SignatureVerifier, [
       this.minConfirmations,
       this.confirmationThreshold,
       this.excessConfirmations,
+      ZERO_ADDRESS
     ]);
     this.initialOracles = [alice, bob, eve];
     await this.aggregator.deployed();
@@ -203,94 +204,6 @@ contract("ConfirmationAggregator", function () {
       await expectRevert(
         this.aggregator.connect(bobAccount).updateOracle(devid, false, false),
         "AdminBadRole()"
-      );
-    });
-  });
-
-  context("Test funding the contract", () => {
-    before(async function () {
-      const amount = toWei("100");
-      await this.linkToken.connect(aliceAccount).mint(alice, amount);
-      await this.dbrToken.connect(aliceAccount).mint(alice, amount);
-    });
-  });
-
-  context("Test data submission", () => {
-    it("should submit mint identifier by the oracle", async function () {
-      const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-
-      await this.aggregator.connect(bobAccount).submit(submission);
-      const mintInfo = await this.aggregator.getSubmissionInfo(submission);
-      assert.equal(mintInfo.confirmations, 1);
-    });
-
-    it("should submit burnt identifier by the oracle", async function () {
-      const submission = "0x80584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-
-      await this.aggregator.connect(bobAccount).submit(submission);
-      const burntInfo = await this.aggregator.getSubmissionInfo(submission);
-      assert.equal(burntInfo.confirmations, 1);
-    });
-
-    it("should submit mint identifier by the second oracle", async function () {
-      const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-
-      await this.aggregator.connect(aliceAccount).submit(submission);
-      const mintInfo = await this.aggregator.getSubmissionInfo(submission);
-      assert.equal(mintInfo.confirmations, 2);
-    });
-
-    it("should submit burnt identifier by the second oracle", async function () {
-      const submission = "0x80584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      await this.aggregator.connect(aliceAccount).submit(submission);
-      const burntInfo = await this.aggregator.getSubmissionInfo(submission);
-      assert.equal(burntInfo.confirmations, 2);
-    });
-
-    it("should submit mint identifier by the extra oracle", async function () {
-      const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-
-      await this.aggregator.connect(eveAccount).submit(submission);
-      const mintInfo = await this.aggregator.getSubmissionInfo(submission);
-      assert.equal(mintInfo.confirmations, 3);
-    });
-
-    it("should submit burnt identifier by the extra oracle", async function () {
-      const submission = "0x80584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      await this.aggregator.connect(eveAccount).submit(submission);
-      const burntInfo = await this.aggregator.getSubmissionInfo(submission);
-      assert.equal(burntInfo.confirmations, 3);
-    });
-
-    it("should reject submition of mint identifier if called by the non-admin", async function () {
-      const submission = "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
-      await expectRevert(
-        this.aggregator.connect(devidAccount).submit(submission),
-        "OracleBadRole()"
-      );
-    });
-
-    it("should reject submition of burnt identifier if called by the non-admin", async function () {
-      const submission = "0x2a16bc164de069184383a55bbddb893f418fd72781f5b2db1b68de1dc697ea44";
-      await expectRevert(
-        this.aggregator.connect(devidAccount).submit(submission),
-        "OracleBadRole()"
-      );
-    });
-
-    it("should reject submition of dublicated mint identifiers with the same id by the same oracle", async function () {
-      const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      await expectRevert(
-        this.aggregator.connect(bobAccount).submit(submission),
-        "SubmittedAlready()"
-      );
-    });
-
-    it("should reject submition of dublicated burnt identifiers with the same id by the same oracle", async function () {
-      const submission = "0x89584038ebea621ff70560fbaf39157324a6628536a6ba30650b3bf4fcb73aed";
-      await expectRevert(
-        this.aggregator.connect(bobAccount).submit(submission),
-        "SubmittedAlready()"
       );
     });
   });
