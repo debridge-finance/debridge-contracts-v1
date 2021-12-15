@@ -1,14 +1,22 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 import "../interfaces/IDeBridgeToken.sol";
 
 /// @dev ERC20 token that is used as wrapped asset to represent the native token value on the other chains.
-contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeToken {
+contract DeBridgeToken is
+    Initializable,
+    AccessControlUpgradeable,
+    ERC20PausableUpgradeable,
+    IDeBridgeToken
+{
     /// @dev Minter role identifier
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    /// @dev Pauser role identifier
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     /// @dev Domain separator as described in [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md#rationale)
     bytes32 public DOMAIN_SEPARATOR;
     /// @dev Typehash as described in [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md#rationale).
@@ -23,11 +31,17 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
     /* ========== ERRORS ========== */
 
     error MinterBadRole();
+    error PauserBadRole();
 
     /* ========== MODIFIERS ========== */
 
     modifier onlyMinter() {
         if (!hasRole(MINTER_ROLE, msg.sender)) revert MinterBadRole();
+        _;
+    }
+
+    modifier onlyPauser() {
+        if (!hasRole(PAUSER_ROLE, msg.sender)) revert PauserBadRole();
         _;
     }
 
@@ -49,12 +63,15 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
             bytes(name_).length == 0 ? symbol_ : name_));
         symbol_ = string(abi.encodePacked("de", symbol_));
 
-        __ERC20_init(name_, symbol_);
+        __ERC20_init_unchained(name_, symbol_);
 
         _setupRole(DEFAULT_ADMIN_ROLE, admin);
-        for (uint256 i = 0; i < minters.length; i++) {
+        _setupRole(PAUSER_ROLE, admin);
+        uint256 mintersCount = minters.length;
+        for (uint256 i = 0; i < mintersCount; i++) {
             _setupRole(MINTER_ROLE, minters[i]);
         }
+
         uint256 chainId;
         assembly {
             chainId := chainid()
@@ -127,5 +144,23 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
     /// @dev Asset's decimals
     function decimals() public view override returns (uint8) {
         return _decimals;
+    }
+
+    /// @dev Pauses all token transfers. The caller must have the `PAUSER_ROLE`.
+    function pause() public onlyPauser {
+        _pause();
+    }
+
+     /// @dev Unpauses all token transfers. The caller must have the `PAUSER_ROLE`.
+    function unpause() public onlyPauser {
+        _unpause();
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        super._beforeTokenTransfer(from, to, amount);
     }
 }

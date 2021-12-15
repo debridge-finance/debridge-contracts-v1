@@ -9,6 +9,11 @@ ERC20 token that is used as wrapped asset to represent the native token value on
   bytes32 public constant MINTER_ROLE;
 ```
 Minter role identifier
+## PAUSER_ROLE
+```solidity
+  bytes32 public constant PAUSER_ROLE;
+```
+Pauser role identifier
 ## DOMAIN_SEPARATOR
 ```solidity
   bytes32 public DOMAIN_SEPARATOR;
@@ -117,6 +122,36 @@ Approves the spender by signature.
 ```
 
 Asset's decimals
+
+
+## pause
+```solidity
+  function pause(
+  ) public
+```
+
+Pauses all token transfers. The caller must have the `PAUSER_ROLE`.
+
+
+## unpause
+```solidity
+  function unpause(
+  ) public
+```
+
+Unpauses all token transfers. The caller must have the `PAUSER_ROLE`.
+
+
+## _beforeTokenTransfer
+```solidity
+  function _beforeTokenTransfer(
+            address from,
+            address to,
+            uint256 amount
+  ) internal
+```
+
+
 
 
 
