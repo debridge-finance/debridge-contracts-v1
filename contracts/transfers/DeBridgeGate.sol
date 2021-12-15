@@ -126,20 +126,17 @@ contract DeBridgeGate is
     error InvalidTokenToSend();
 
     error SubmissionUsed();
-    error SubmissionNotConfirmed();
-    error SubmissionAmountNotConfirmed();
     error SubmissionBlocked();
 
     error AssetAlreadyExist();
-    error AssetNotConfirmed();
     error ZeroAddress();
 
     error ProposedFeeTooHigh();
-    error FeeNotPaid();
+    error FlashFeeNotPaid();
 
     error NotEnoughReserves();
     error EthTransferFailed();
-    error Locked();
+    error ClaimLocked();
 
     /* ========== MODIFIERS ========== */
 
@@ -170,7 +167,7 @@ contract DeBridgeGate is
 
     /// @dev lock for claim method
     modifier lockClaim() {
-        if (lockedClaim == _CLAIM_LOCKED) revert Locked();
+        if (lockedClaim == _CLAIM_LOCKED) revert ClaimLocked();
         lockedClaim = _CLAIM_LOCKED;
         _;
         lockedClaim = _CLAIM_NOT_LOCKED;
@@ -319,7 +316,7 @@ contract DeBridgeGate is
         IFlashCallback(msg.sender).flashCallback(currentFlashFee, _data);
 
         uint256 balanceAfter = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
-        if (balanceBefore + currentFlashFee > balanceAfter) revert FeeNotPaid();
+        if (balanceBefore + currentFlashFee > balanceAfter) revert FlashFeeNotPaid();
 
         uint256 paid = balanceAfter - balanceBefore;
         getDebridgeFeeInfo[debridgeId].collectedFees += paid;
@@ -345,7 +342,7 @@ contract DeBridgeGate is
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
-        bytes32 deployId =  keccak256(abi.encodePacked(DEPLOY_PREFIX, debridgeId, _name, _symbol, _decimals));
+        bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
 
         // verify signatures
         ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
@@ -1089,6 +1086,20 @@ contract DeBridgeGate is
         }
         // regular submission
         return keccak256(packedSubmission);
+    }
+
+    /// @dev Calculates asset identifier for deployment.
+    /// @param _debridgeId Id of an asset, see getDebridgeId.
+    /// @param _name Asset's name.
+    /// @param _symbol Asset's symbol.
+    /// @param _decimals Asset's decimals.
+    function getDeployId(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(DEPLOY_PREFIX, _debridgeId, _name, _symbol, _decimals));
     }
 
     /// @inheritdoc IDeBridgeGate

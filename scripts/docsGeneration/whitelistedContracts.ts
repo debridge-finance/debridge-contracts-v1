@@ -16,8 +16,8 @@ const contractsWhitelistedForDocs = [
 
     'libraries/Flags.sol',
 
-    'transfers/AggregatorBase.sol',
-    'interfaces/IAggregatorBase.sol',
+    'transfers/OraclesManager.sol',
+    'interfaces/IOraclesManager.sol',
 
     'transfers/WethGate.sol',
     'interfaces/IWethGate.sol',

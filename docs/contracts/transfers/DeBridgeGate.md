@@ -833,6 +833,26 @@ Calculate submission id for auto claimable transfer.
 |`autoParams` | struct IDeBridgeGate.SubmissionAutoParamsFrom | Auto params for external call
 |`hasAutoParams` | bool | True if auto params are provided
 
+## getDeployId
+```solidity
+  function getDeployId(
+            bytes32 _debridgeId,
+            string _name,
+            string _symbol,
+            uint8 _decimals
+  ) public returns (bytes32)
+```
+
+Calculates asset identifier for deployment.
+
+### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_debridgeId` | bytes32 | Id of an asset, see getDebridgeId.
+|`_name` | string | Asset's name.
+|`_symbol` | string | Asset's symbol.
+|`_decimals` | uint8 | Asset's decimals.
+
 ## getNativeTokenInfo
 ```solidity
   function getNativeTokenInfo(

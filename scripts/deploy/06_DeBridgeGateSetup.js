@@ -35,19 +35,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // await waitTx(tx);
 
 
-
-  // // --------------------------------
-  // //    setup ConfirmationAggregator
-  // // --------------------------------
-
-  // if (deployInitParams.deploy.ConfirmationAggregator) {
-  //   let confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
-  //   console.log(`deBridge setAggregator ${confirmationAggregator.address}`);
-  //   tx = await deBridgeGateInstance.setAggregator(confirmationAggregator.address);
-  //   await waitTx(tx);
-  // }
-
-
   // --------------------------------
   //    setup CallProxy
   // --------------------------------

@@ -13,7 +13,6 @@ contract MockDeBridgeGate is DeBridgeGate {
     function initializeMock(
         uint8 _excessConfirmations,
         address _signatureVerifier,
-        // address _confirmationAggregator,
         address _callProxy,
         IWETH _weth,
         address _feeProxy,
@@ -21,18 +20,9 @@ contract MockDeBridgeGate is DeBridgeGate {
         address _defiController,
         uint256 overrideChainId
     ) public initializer {
-        // DeBridgeGate.initialize(_excessConfirmations,
-        // _signatureVerifier,
-        // _confirmationAggregator,
-        // _callProxy,
-        // _weth,
-        // _feeProxy,
-        // _defiController);
-
         chainId = overrideChainId;
 
         signatureVerifier = _signatureVerifier;
-        // confirmationAggregator = _confirmationAggregator;
 
         callProxy = _callProxy;
         defiController = _defiController;

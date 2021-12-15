@@ -553,22 +553,15 @@ contract("DeBridgeGate real pipeline mode", function () {
         .addOracles([alice], [true]);
 
       //TODO: check that we added oracles
-      assert.equal(await this.signatureVerifierBSC.requiredOraclesCount(), 1);
-      // assert.equal(
-      //   (await this.signatureVerifierBSC.oracleAddresses()).length,
-      //   this.initialOracles.length + 1
-      // );
-      assert.equal(await this.signatureVerifierHECO.requiredOraclesCount(), 1);
-      // assert.equal(
-      //   (await this.signatureVerifierHECO.oracleAddresses()).length,
-      //   this.initialOracles.length + 1
-      // );
-
-      assert.equal(await this.signatureVerifierETH.requiredOraclesCount(), 1);
-      // assert.equal(
-      //   (await this.signatureVerifierETH.oracleAddresses()).length,
-      //   this.initialOracles.length + 1
-      // );
+      assert.equal(
+        await this.signatureVerifierBSC.requiredOraclesCount(),
+        1);
+      assert.equal(
+        await this.signatureVerifierHECO.requiredOraclesCount(),
+        1);
+      assert.equal(
+        await this.signatureVerifierETH.requiredOraclesCount(),
+        1);
     });
 
     it("Update fixed fee for WETH", async function () {
@@ -715,63 +708,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     //   );
     // });
   });
-
-  //TODO: ADDDDD
-  //it("should reject add external asset without DSRM confirmation", async function() {
-  //  const tokenAddress = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
-  //  const chainId = 56;
-  //  const name = "SPARK";
-  //  const symbol = "SPARK Dollar";
-  //  const decimals = 18;
-
-  //  //start from 1 (skipped alice)
-  //  for (let i = 1; i < this.initialOracles.length; i++) {
-  //    this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
-  //      from: this.initialOracles[i],
-  //    })
-  //  }
-
-  //  //TODO: need to deploy assets by debridge gate
-  //  await expectRevert(
-  //      this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
-  //      from: alice,
-  //    }),
-  //    "Not confirmed by required oracles"
-  //  );
-  //});
-
-  //it("should reject add external asset without -1 confirmation", async function() {
-  //  const tokenAddress = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
-  //  const chainId = 56;
-  //  const name = "MUSD";
-  //  const symbol = "Magic Dollar";
-  //  const decimals = 18;
-
-  //  for (let i = 1; i < this.initialOracles.length; i++) {
-  //    this.confirmationAggregator.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, {
-  //      from: this.initialOracles[i],
-  //    })
-  //  }
-
-  //  //TODO: need to deploy assets by debridge gate
-  //  await expectRevert(
-  //      this.signatureVerifier.confirmNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures, {
-  //      from: alice,
-  //    }),
-  //    "not confirmed"
-  //  );
-  //});
-
-  // it("should update excessConfirmations if called by the admin", async function() {
-  //   let newExcessConfirmations = 9;
-  //   await this.debridgeETH.updateExcessConfirmations(
-  //     newExcessConfirmations,
-  //     {
-  //       from: alice,
-  //     }
-  //   );
-  //   assert.equal(await this.debridgeETH.excessConfirmations(), newExcessConfirmations);
-  // });
 
   discountsValues.forEach(discount => {
     context(`Test send method from ETH to BSC. discount: ${(discount * 100) / BPS}%`, () => {
@@ -1377,9 +1313,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       const name = await this.linkToken.name();
       const symbol = await this.linkToken.symbol();
       const decimals = (await this.linkToken.decimals()).toString();
-      const debridgeId = await this.signatureVerifierBSC.getDebridgeId(chainId, tokenAddress);
+      const debridgeId = await this.debridgeBSC.getDebridgeId(chainId, tokenAddress);
 
-      const deployId = await this.signatureVerifierBSC.getDeployId(
+      const deployId = await this.debridgeBSC.getDeployId(
         debridgeId,
         name,
         symbol,
@@ -1408,26 +1344,13 @@ contract("DeBridgeGate real pipeline mode", function () {
     });
 
     it("should deploy list of new assets", async function () {
-
-      // const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
-      // //console.log('debridgeId '+debridgeId);
-      // const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
-
-      // let signatures = "0x";
-      // for (let i = 0; i < oracleKeys.length; i++) {
-      //   const oracleKey = oracleKeys[i];
-      //   let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-      //   // remove first 0x
-      //   signatures += currentSignature.substring(2, currentSignature.length);
-      // }
-
       let tokenNativeAddress = this.wethETH.address;
       let tokenNativeChainId = ethChainId;
       let tokenName = "Wrapped ETH";
       let tokenSymbol = "WETH";
       let tokenDecimals = 18;
-      let debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      let deployId = await this.signatureVerifierBSC.getDeployId(
+      let debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      let deployId = await this.debridgeBSC.getDeployId(
         debridgeId,
         tokenName,
         tokenSymbol,
@@ -1468,8 +1391,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "Wrapped HT";
       tokenSymbol = "WHT";
       tokenDecimals = 18;
-      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.signatureVerifierBSC.getDeployId(
+      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.debridgeBSC.getDeployId(
         debridgeId,
         tokenName,
         tokenSymbol,
@@ -1490,8 +1413,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "PancakeSwap Token";
       tokenSymbol = "Cake";
       tokenDecimals = 18;
-      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.signatureVerifierBSC.getDeployId(
+      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.debridgeBSC.getDeployId(
         debridgeId,
         tokenName,
         tokenSymbol,
@@ -1512,8 +1435,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "Wrapped BNB";
       tokenSymbol = "WBNB";
       tokenDecimals = 18;
-      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.signatureVerifierBSC.getDeployId(
+      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.debridgeBSC.getDeployId(
         debridgeId,
         tokenName,
         tokenSymbol,
@@ -1534,8 +1457,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       tokenName = "";
       tokenSymbol = "NONAME";
       tokenDecimals = 18;
-      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      deployId = await this.signatureVerifierBSC.getDeployId(
+      debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.debridgeBSC.getDeployId(
         debridgeId,
         tokenName,
         tokenSymbol,
@@ -1582,8 +1505,8 @@ contract("DeBridgeGate real pipeline mode", function () {
       let tokenName = "Wrapped ETH";
       let tokenSymbol = "WETH";
       let tokenDecimals = 18;
-      let debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      let deployId = await this.signatureVerifierBSC.getDeployId(
+      let debridgeId = await this.debridgeBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      let deployId = await this.debridgeBSC.getDeployId(
         debridgeId,
         tokenName,
         tokenSymbol,
@@ -1621,30 +1544,6 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
       this.linkSubmissionId = this.linkSubmission.args.submissionId;
     });
-    // it("Oracles confirm transfers (without required oracle)", async function () {
-    //   for (let sentEvent of sentEvents) {
-    //     for (let oracle of this.initialOracles) {
-    //       await this.confirmationAggregatorBSC
-    //         .connect(oracle.account)
-    //         .submit(sentEvent.args.submissionId);
-    //     }
-    //   }
-    // });
-    // it("check confirmation without required oracle", async function () {
-    //   let submissionInfo = await this.confirmationAggregatorBSC.getSubmissionInfo(
-    //     this.nativeSubmissionId
-    //   );
-    //   let submissionConfirmations = await this.confirmationAggregatorBSC.getSubmissionConfirmations(
-    //     this.nativeSubmissionId
-    //   );
-
-    //   assert.equal(submissionInfo.confirmations, this.initialOracles.length);
-    //   assert.equal(submissionInfo.requiredConfirmations, 0);
-    //   assert.equal(submissionInfo.isConfirmed, false);
-
-    //   assert.equal(this.initialOracles.length, submissionConfirmations[0]);
-    //   assert.equal(false, submissionConfirmations[1]);
-    // });
 
     it("should reject native token without confirmation from required oracle", async function () {
       let signatures = await submissionSignatures(bscWeb3, oracleKeys.slice(1, oracleKeys.length), this.linkSubmissionId);
@@ -1685,55 +1584,6 @@ contract("DeBridgeGate real pipeline mode", function () {
         "WrongChainFrom()"
       );
     });
-
-    // it("confirm by required oracle", async function () {
-    //   await this.confirmationAggregatorBSC
-    //     .connect(aliceAccount)
-    //     .submit(this.nativeSubmissionId);
-
-    //   await this.confirmationAggregatorBSC
-    //     .connect(aliceAccount)
-    //     .submit(this.linkSubmissionId);
-    // });
-
-    // it("check confirmations", async function () {
-    //   const submissionInfo = await this.confirmationAggregatorBSC.getSubmissionInfo(
-    //     this.nativeSubmissionId
-    //   );
-    //   // struct SubmissionInfo {
-    //   //   uint256 block; // confirmation block
-    //   //   uint256 confirmations; // received confirmations count
-    //   //   uint256 requiredConfirmations; // required oracles (DSRM) received confirmations count
-    //   //   bool isConfirmed; // is confirmed submission (user can claim)
-    //   //   mapping(address => bool) hasVerified; // verifier => has already voted
-    //   // }
-    //   assert.equal(submissionInfo.confirmations, this.initialOracles.length + 1);
-    //   assert.equal(submissionInfo.requiredConfirmations, 1);
-    //   assert.equal(submissionInfo.isConfirmed, true);
-    // });
-
-    //TODO: should reject exceed amount
-    // it("should reject exceed amount", async function() {
-
-    //   const debridgeId = await this.debridgeETH.getDebridgeId(
-    //     chainId,
-    //     tokenAddress
-    //   );
-    //   await expectRevert(
-    //     this.debridgeETH.mint(
-    //       debridgeId,
-    //       chainId,
-    //       receiver,
-    //       amount,
-    //       nonce,
-    //       [],
-    //       {
-    //         from: alice,
-    //       }
-    //     ),
-    //     "amount not confirmed"
-    //   );
-    // });
 
     it("update reduce ExcessConfirmations if called by the admin", async function () {
       let newExcessConfirmations = 3;
@@ -3736,11 +3586,11 @@ contract("DeBridgeGate real pipeline mode", function () {
       const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
       const debridgeId = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
 
-      const debridgeIdSignatureVerifier = await this.signatureVerifierETH.getDebridgeId(chainId, tokenAddress);
-      const debridgeIdConfirmationAggregator = await this.signatureVerifierBSC.getDebridgeId(chainId, tokenAddress);
+      const debridgeIdETH = await this.debridgeETH.getDebridgeId(chainId, tokenAddress);
+      const debridgeIdBSC = await this.debridgeBSC.getDebridgeId(chainId, tokenAddress);
 
-      assert.equal(debridgeId, debridgeIdSignatureVerifier);
-      assert.equal(debridgeIdSignatureVerifier, debridgeIdConfirmationAggregator);
+      assert.equal(debridgeId, debridgeIdETH);
+      assert.equal(debridgeIdETH, debridgeIdBSC);
 
       const calculatedDebridgeId = ethers.utils.solidityKeccak256(['uint256', 'bytes'], [chainId, tokenAddress]);
       assert.equal(debridgeId, calculatedDebridgeId);
@@ -3751,15 +3601,15 @@ contract("DeBridgeGate real pipeline mode", function () {
       const name = "TEST_TOKEN";
       const symbol = "TEST";
       const decimals = 18;
-      const deployIdSignatureVerifier = await this.signatureVerifierETH.getDeployId(debridgeId, name, symbol, decimals);
-      const deployIdConfirmationAggregator = await this.signatureVerifierBSC.getDeployId(debridgeId, name, symbol, decimals);
-      const DEPLOY_PREFIX = await this.signatureVerifierETH.DEPLOY_PREFIX();
-      assert.equal(deployIdSignatureVerifier, deployIdConfirmationAggregator);
+      const deployIdETH = await this.debridgeETH.getDeployId(debridgeId, name, symbol, decimals);
+      const deployIdBSC = await this.debridgeBSC.getDeployId(debridgeId, name, symbol, decimals);
+      const DEPLOY_PREFIX = await this.debridgeETH.DEPLOY_PREFIX();
+      assert.equal(deployIdETH, deployIdBSC);
 
       const calculatedDeployId = ethers.utils.solidityKeccak256(
         ['uint256', 'bytes32', 'string', 'string', 'uint8'],
         [DEPLOY_PREFIX, debridgeId, name, symbol, decimals]);
-      assert.equal(deployIdSignatureVerifier, calculatedDeployId);
+      assert.equal(deployIdETH, calculatedDeployId);
     });
   });
 
