@@ -30,12 +30,6 @@ contract MockDeBridgeGate is DeBridgeGate {
         // _defiController);
 
         chainId = overrideChainId;
-        _addAsset(
-            getDebridgeId(chainId, address(_weth)),
-            address(_weth),
-            abi.encodePacked(address(_weth)),
-            chainId
-        );
 
         signatureVerifier = _signatureVerifier;
         // confirmationAggregator = _confirmationAggregator;

@@ -716,275 +716,6 @@ contract("DeBridgeGate real pipeline mode", function () {
     // });
   });
 
-  context("Test managing assets", () => {
-    before(async function () {
-      currentChainId = await this.debridgeETH.chainId();
-      const newSupply = toWei("100");
-      await this.linkToken.mint(alice, newSupply, {
-        from: alice,
-      });
-      await this.dbrToken.mint(alice, newSupply, {
-        from: alice,
-      });
-    });
-
-    it("should revert deploying new asset without signatures", async function() {
-      await expectRevert(
-        this.debridgeBSC.deployNewAsset(this.wethETH.address, bscChainId, "Wrapped ETH", "deETH", 18, []),
-        "NotConfirmedByRequiredOracles()");
-      await expectRevert(
-        this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []),
-        "NotConfirmedByRequiredOracles()");
-      await expectRevert(
-        this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []),
-        "NotConfirmedByRequiredOracles()");
-      await expectRevert(
-        this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []),
-        "NotConfirmedByRequiredOracles()");
-      await expectRevert(
-        this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18, []),
-        "NotConfirmedByRequiredOracles()");
-    });
-
-    it("should deploy new asset if called with validators signatures", async function () {
-      const tokenAddress = this.linkToken.address;
-      const chainId = ethChainId;
-      const maxAmount = toWei("1000000");
-      const amountThreshold = toWei("10");
-      const name = await this.linkToken.name();
-      const symbol = await this.linkToken.symbol();
-      const decimals = (await this.linkToken.decimals()).toString();
-      const debridgeId = await this.signatureVerifierBSC.getDebridgeId(chainId, tokenAddress);
-
-      const deployId = await this.signatureVerifierBSC.getDeployId(
-        debridgeId,
-        name,
-        symbol,
-        decimals
-      );
-      const deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-
-      await this.debridgeBSC.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
-      const debridge = await this.debridgeBSC.getDebridge(debridgeId);
-      const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
-      assert.equal(debridge.maxAmount.toString(), maxAmount);
-      assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
-      assert.equal(debridge.balance.toString(), "0");
-      assert.equal(debridge.minReservesBps.toString(), minReservesBps);
-
-      assert.equal(await this.debridgeBSC.getAmountThreshold(debridgeId), amountThreshold);
-
-      // Deploy tokens
-      let tx = await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, deploySignatures);
-      let receipt = await tx.wait();
-      let pairAddedEvent = receipt.events.find((x) => {
-          return x.event == "PairAdded";
-      });
-      deLinkAddressInBSC = pairAddedEvent.args.tokenAddress;
-      // console.log(`deLinkAddressInBSC ${deLinkAddressInBSC}`);
-    });
-
-    it("should deploy list of new assets", async function () {
-
-        // const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
-        // //console.log('debridgeId '+debridgeId);
-        // const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
-
-        // let signatures = "0x";
-        // for (let i = 0; i < oracleKeys.length; i++) {
-        //   const oracleKey = oracleKeys[i];
-        //   let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-        //   // remove first 0x
-        //   signatures += currentSignature.substring(2, currentSignature.length);
-        // }
-
-        let tokenNativeAddress = this.wethETH.address;
-        let tokenNativeChainId = ethChainId;
-        let tokenName = "Wrapped ETH";
-        let tokenSymbol = "WETH";
-        let tokenDecimals = 18;
-        let debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-        let deployId = await this.signatureVerifierBSC.getDeployId(
-          debridgeId,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals
-        );
-        let deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-
-        //Override name/sybmol
-        await this.deBridgeTokenDeployerBSC.setOverridedTokenInfo(
-          [debridgeId],
-          [
-            {
-              accept: true,
-              name: "ETH",
-              symbol: "ETH",
-            }
-          ]
-        );
-
-        let tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
-        let receipt = await tx.wait();
-        let pairAddedEvent = receipt.events.find((x) => {
-            return x.event == "PairAdded";
-        });
-        deETHAddressInBSC = pairAddedEvent.args.tokenAddress;
-        // console.log(`deETHAddressInBSC ${deETHAddressInBSC}`);
-
-        tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
-        receipt = await tx.wait();
-        pairAddedEvent = receipt.events.find((x) => {
-            return x.event == "PairAdded";
-        });
-        deETHAddressInHECO = pairAddedEvent.args.tokenAddress;
-        // console.log(`deETHAddressInHECO ${deETHAddressInHECO}`);
-
-        tokenNativeAddress = this.wethHECO.address;
-        tokenNativeChainId = hecoChainId;
-        tokenName = "Wrapped HT";
-        tokenSymbol = "WHT";
-        tokenDecimals = 18;
-        debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-        deployId = await this.signatureVerifierBSC.getDeployId(
-          debridgeId,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals
-        );
-        deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-        tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
-        receipt = await tx.wait();
-        pairAddedEvent = receipt.events.find((x) => {
-            return x.event == "PairAdded";
-        });
-        deHTAddressInBSC = pairAddedEvent.args.tokenAddress;
-        // console.log(`deHTAddressInBSC ${deHTAddressInBSC}`);
-
-
-        tokenNativeAddress = this.cakeToken.address;
-        tokenNativeChainId = bscChainId;
-        tokenName = "PancakeSwap Token";
-        tokenSymbol = "Cake";
-        tokenDecimals = 18;
-        debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-        deployId = await this.signatureVerifierBSC.getDeployId(
-          debridgeId,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals
-        );
-        deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-        tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
-        receipt = await tx.wait();
-        pairAddedEvent = receipt.events.find((x) => {
-            return x.event == "PairAdded";
-        });
-        deCakeAddressInHECO = pairAddedEvent.args.tokenAddress;
-        // console.log(`deCakeAddressInHECO ${deCakeAddressInHECO}`);
-
-
-        tokenNativeAddress = this.wethBSC.address;
-        tokenNativeChainId = bscChainId;
-        tokenName = "Wrapped BNB";
-        tokenSymbol = "WBNB";
-        tokenDecimals = 18;
-        debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-        deployId = await this.signatureVerifierBSC.getDeployId(
-          debridgeId,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals
-        );
-        deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-        tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
-        receipt = await tx.wait();
-        pairAddedEvent = receipt.events.find((x) => {
-            return x.event == "PairAdded";
-        });
-        deBNBAddressInHECO = pairAddedEvent.args.tokenAddress;
-
-
-        //this.emptyNameToken.address, hecoChainId, "", "NONAME", 18
-        tokenNativeAddress = this.emptyNameToken.address;
-        tokenNativeChainId = hecoChainId;
-        tokenName = "";
-        tokenSymbol = "NONAME";
-        tokenDecimals = 18;
-        debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-        deployId = await this.signatureVerifierBSC.getDeployId(
-          debridgeId,
-          tokenName,
-          tokenSymbol,
-          tokenDecimals
-        );
-        deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-        tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
-        receipt = await tx.wait();
-        pairAddedEvent = receipt.events.find((x) => {
-            return x.event == "PairAdded";
-        });
-        const deEmptyNameTokenAddressInBSC = pairAddedEvent.args.tokenAddress;
-        const deEmptyNameToken = await DeBridgeToken.at(deEmptyNameTokenAddressInBSC);
-        assert.equal( await deEmptyNameToken.symbol(), "deNONAME");
-        // detoken name should use symbol because original name is empty
-        assert.equal( await deEmptyNameToken.name(), "deBridge NONAME");
-        assert.equal( (await deEmptyNameToken.decimals()).toString(), "18");
-
-        // console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
-
-        //Check that new deployed token with correct values
-        const wethDebridgeId =  await this.debridgeBSC.getDebridgeId(ethChainId, this.wethETH.address);
-        const wethDebridge = await this.debridgeBSC.getDebridge(wethDebridgeId);
-        const deWethTokenAddress = wethDebridge.tokenAddress;
-        const deBridgeTokenInstance = await DeBridgeToken.at(deWethTokenAddress);
-        // console.log(deWethTokenAddress);
-        // console.log(await deBridgeTokenInstance.symbol());
-        // console.log(await deBridgeTokenInstance.name());
-        // console.log(await deBridgeTokenInstance.decimals());
-        assert.equal( await deBridgeTokenInstance.symbol(), "deETH");
-        assert.equal( await deBridgeTokenInstance.name(), "deBridge ETH");
-        assert.equal( (await deBridgeTokenInstance.decimals()).toString(), "18");
-
-
-        const deBNBInHecoTokenInstance = await DeBridgeToken.at(deBNBAddressInHECO);
-        assert.equal( await deBNBInHecoTokenInstance.symbol(), "deWBNB");
-        assert.equal( await deBNBInHecoTokenInstance.name(), "deBridge Wrapped BNB");
-        assert.equal( (await deBNBInHecoTokenInstance.decimals()).toString(), "18");
-    });
-
-    it("should reject deploy new asset twice", async function () {
-      let tokenNativeAddress = this.wethETH.address;
-      let tokenNativeChainId = ethChainId;
-      let tokenName = "Wrapped ETH";
-      let tokenSymbol = "WETH";
-      let tokenDecimals = 18;
-      let debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
-      let deployId = await this.signatureVerifierBSC.getDeployId(
-        debridgeId,
-        tokenName,
-        tokenSymbol,
-        tokenDecimals
-      );
-      let deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
-      await expectRevert(
-        this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures),
-        "AssetAlreadyExist()");
-    });
-
-    it("should have same output for getDebridgeId/getbDebridgeId", async function () {
-      const chainIdFrom = await this.debridgeETH.chainId();
-      // const chainIdTo = await this.debridgeBSC.chainId();
-      const nativeDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, ZERO_ADDRESS);
-      const nativeDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, ZERO_ADDRESS);
-      assert.equal(nativeDebridgeIdFrom, nativeDebridgeIdTo);
-
-      const tokenDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, this.linkToken.address);
-      const tokenDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, this.linkToken.address);
-      assert.equal(tokenDebridgeIdFrom, tokenDebridgeIdTo);
-    });
-  });
-
   //TODO: ADDDDD
   //it("should reject add external asset without DSRM confirmation", async function() {
   //  const tokenAddress = "0x5A0b54D5dc17e0AadC383d2db43B0a0D3E029c4c";
@@ -1133,6 +864,21 @@ contract("DeBridgeGate real pipeline mode", function () {
         // );
 
         // TODO: check sender's balance
+
+        // test getNativeInfo mapping to be sure that _addAsset call in send added correct asset
+
+        // getNativeInfo[address(0)] should be empty
+        const ethInfo = await this.debridgeETH.getNativeInfo(ZERO_ADDRESS);
+        assert.equal(ethInfo.nativeChainId, 0);
+        assert.equal(ethInfo.nativeAddress, '0x');
+
+        // getNativeInfo[WETH] should have correct nativeAddress
+        const wethInfo = await this.debridgeETH.getNativeInfo(this.wethETH.address);
+        assert.equal(wethInfo.nativeChainId.toNumber(), ethChainId);
+        assert.equal(
+          wethInfo.nativeAddress.toLowerCase(),
+          this.wethETH.address.toLowerCase()
+        );
       });
 
       it("should send native tokens with rounding", async function () {
@@ -1318,6 +1064,14 @@ contract("DeBridgeGate real pipeline mode", function () {
         // );
 
         // TODO: check sender's balance
+
+        // getNativeInfo[token_address] should be correct
+        const tokenNativeInfo = await this.debridgeETH.getNativeInfo(tokenAddress);
+        assert.equal(tokenNativeInfo.nativeChainId.toNumber(), ethChainId);
+        assert.equal(
+          tokenNativeInfo.nativeAddress.toLowerCase(),
+          tokenAddress.toLowerCase()
+        );
       });
 
       it("should send ERC20 tokens with permit", async function () {
@@ -1580,6 +1334,277 @@ contract("DeBridgeGate real pipeline mode", function () {
           )
         }
       });
+    });
+  });
+
+  // test adding assets after calling send method
+
+  context("Test managing assets", () => {
+    before(async function () {
+      currentChainId = await this.debridgeETH.chainId();
+      const newSupply = toWei("100");
+      await this.linkToken.mint(alice, newSupply, {
+        from: alice,
+      });
+      await this.dbrToken.mint(alice, newSupply, {
+        from: alice,
+      });
+    });
+
+    it("should revert deploying new asset without signatures", async function() {
+      await expectRevert(
+        this.debridgeBSC.deployNewAsset(this.wethETH.address, bscChainId, "Wrapped ETH", "deETH", 18, []),
+        "NotConfirmedByRequiredOracles()");
+      await expectRevert(
+        this.debridgeBSC.deployNewAsset(this.wethETH.address, hecoChainId, "Wrapped HT", "deHT", 18, []),
+        "NotConfirmedByRequiredOracles()");
+      await expectRevert(
+        this.debridgeHECO.deployNewAsset(this.wethETH.address, ethChainId, "Wrapped ETH", "deETH", 18, []),
+        "NotConfirmedByRequiredOracles()");
+      await expectRevert(
+        this.debridgeHECO.deployNewAsset(this.cakeToken.address, bscChainId, "PancakeSwap Token", "Cake", 18, []),
+        "NotConfirmedByRequiredOracles()");
+      await expectRevert(
+        this.debridgeHECO.deployNewAsset(this.wethBSC.address, bscChainId, "Wrapped BNB", "deBNB", 18, []),
+        "NotConfirmedByRequiredOracles()");
+    });
+
+    it("should deploy new asset if called with validators signatures", async function () {
+      const tokenAddress = this.linkToken.address;
+      const chainId = ethChainId;
+      const maxAmount = toWei("1000000");
+      const amountThreshold = toWei("10");
+      const name = await this.linkToken.name();
+      const symbol = await this.linkToken.symbol();
+      const decimals = (await this.linkToken.decimals()).toString();
+      const debridgeId = await this.signatureVerifierBSC.getDebridgeId(chainId, tokenAddress);
+
+      const deployId = await this.signatureVerifierBSC.getDeployId(
+        debridgeId,
+        name,
+        symbol,
+        decimals
+      );
+      const deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+
+      await this.debridgeBSC.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
+      const debridge = await this.debridgeBSC.getDebridge(debridgeId);
+      const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(debridgeId);
+      assert.equal(debridge.maxAmount.toString(), maxAmount);
+      assert.equal(debridgeFeeInfo.collectedFees.toString(), "0");
+      assert.equal(debridge.balance.toString(), "0");
+      assert.equal(debridge.minReservesBps.toString(), minReservesBps);
+
+      assert.equal(await this.debridgeBSC.getAmountThreshold(debridgeId), amountThreshold);
+
+      // Deploy tokens
+      let tx = await this.debridgeBSC.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, deploySignatures);
+      let receipt = await tx.wait();
+      let pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      deLinkAddressInBSC = pairAddedEvent.args.tokenAddress;
+      // console.log(`deLinkAddressInBSC ${deLinkAddressInBSC}`);
+    });
+
+    it("should deploy list of new assets", async function () {
+
+      // const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+      // //console.log('debridgeId '+debridgeId);
+      // const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+
+      // let signatures = "0x";
+      // for (let i = 0; i < oracleKeys.length; i++) {
+      //   const oracleKey = oracleKeys[i];
+      //   let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
+      //   // remove first 0x
+      //   signatures += currentSignature.substring(2, currentSignature.length);
+      // }
+
+      let tokenNativeAddress = this.wethETH.address;
+      let tokenNativeChainId = ethChainId;
+      let tokenName = "Wrapped ETH";
+      let tokenSymbol = "WETH";
+      let tokenDecimals = 18;
+      let debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      let deployId = await this.signatureVerifierBSC.getDeployId(
+        debridgeId,
+        tokenName,
+        tokenSymbol,
+        tokenDecimals
+      );
+      let deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+
+      //Override name/sybmol
+      await this.deBridgeTokenDeployerBSC.setOverridedTokenInfo(
+        [debridgeId],
+        [
+          {
+            accept: true,
+            name: "ETH",
+            symbol: "ETH",
+          }
+        ]
+      );
+
+      let tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      let receipt = await tx.wait();
+      let pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      deETHAddressInBSC = pairAddedEvent.args.tokenAddress;
+      // console.log(`deETHAddressInBSC ${deETHAddressInBSC}`);
+
+      tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      receipt = await tx.wait();
+      pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      deETHAddressInHECO = pairAddedEvent.args.tokenAddress;
+      // console.log(`deETHAddressInHECO ${deETHAddressInHECO}`);
+
+      tokenNativeAddress = this.wethHECO.address;
+      tokenNativeChainId = hecoChainId;
+      tokenName = "Wrapped HT";
+      tokenSymbol = "WHT";
+      tokenDecimals = 18;
+      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.signatureVerifierBSC.getDeployId(
+        debridgeId,
+        tokenName,
+        tokenSymbol,
+        tokenDecimals
+      );
+      deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+      tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      receipt = await tx.wait();
+      pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      deHTAddressInBSC = pairAddedEvent.args.tokenAddress;
+      // console.log(`deHTAddressInBSC ${deHTAddressInBSC}`);
+
+
+      tokenNativeAddress = this.cakeToken.address;
+      tokenNativeChainId = bscChainId;
+      tokenName = "PancakeSwap Token";
+      tokenSymbol = "Cake";
+      tokenDecimals = 18;
+      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.signatureVerifierBSC.getDeployId(
+        debridgeId,
+        tokenName,
+        tokenSymbol,
+        tokenDecimals
+      );
+      deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+      tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      receipt = await tx.wait();
+      pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      deCakeAddressInHECO = pairAddedEvent.args.tokenAddress;
+      // console.log(`deCakeAddressInHECO ${deCakeAddressInHECO}`);
+
+
+      tokenNativeAddress = this.wethBSC.address;
+      tokenNativeChainId = bscChainId;
+      tokenName = "Wrapped BNB";
+      tokenSymbol = "WBNB";
+      tokenDecimals = 18;
+      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.signatureVerifierBSC.getDeployId(
+        debridgeId,
+        tokenName,
+        tokenSymbol,
+        tokenDecimals
+      );
+      deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+      tx =  await this.debridgeHECO.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      receipt = await tx.wait();
+      pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      deBNBAddressInHECO = pairAddedEvent.args.tokenAddress;
+
+
+      //this.emptyNameToken.address, hecoChainId, "", "NONAME", 18
+      tokenNativeAddress = this.emptyNameToken.address;
+      tokenNativeChainId = hecoChainId;
+      tokenName = "";
+      tokenSymbol = "NONAME";
+      tokenDecimals = 18;
+      debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      deployId = await this.signatureVerifierBSC.getDeployId(
+        debridgeId,
+        tokenName,
+        tokenSymbol,
+        tokenDecimals
+      );
+      deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+      tx =  await this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures);
+      receipt = await tx.wait();
+      pairAddedEvent = receipt.events.find((x) => {
+          return x.event == "PairAdded";
+      });
+      const deEmptyNameTokenAddressInBSC = pairAddedEvent.args.tokenAddress;
+      const deEmptyNameToken = await DeBridgeToken.at(deEmptyNameTokenAddressInBSC);
+      assert.equal( await deEmptyNameToken.symbol(), "deNONAME");
+      // detoken name should use symbol because original name is empty
+      assert.equal( await deEmptyNameToken.name(), "deBridge NONAME");
+      assert.equal( (await deEmptyNameToken.decimals()).toString(), "18");
+
+      // console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
+
+      //Check that new deployed token with correct values
+      const wethDebridgeId =  await this.debridgeBSC.getDebridgeId(ethChainId, this.wethETH.address);
+      const wethDebridge = await this.debridgeBSC.getDebridge(wethDebridgeId);
+      const deWethTokenAddress = wethDebridge.tokenAddress;
+      const deBridgeTokenInstance = await DeBridgeToken.at(deWethTokenAddress);
+      // console.log(deWethTokenAddress);
+      // console.log(await deBridgeTokenInstance.symbol());
+      // console.log(await deBridgeTokenInstance.name());
+      // console.log(await deBridgeTokenInstance.decimals());
+      assert.equal( await deBridgeTokenInstance.symbol(), "deETH");
+      assert.equal( await deBridgeTokenInstance.name(), "deBridge ETH");
+      assert.equal( (await deBridgeTokenInstance.decimals()).toString(), "18");
+
+
+      const deBNBInHecoTokenInstance = await DeBridgeToken.at(deBNBAddressInHECO);
+      assert.equal( await deBNBInHecoTokenInstance.symbol(), "deWBNB");
+      assert.equal( await deBNBInHecoTokenInstance.name(), "deBridge Wrapped BNB");
+      assert.equal( (await deBNBInHecoTokenInstance.decimals()).toString(), "18");
+    });
+
+    it("should reject deploy new asset twice", async function () {
+      let tokenNativeAddress = this.wethETH.address;
+      let tokenNativeChainId = ethChainId;
+      let tokenName = "Wrapped ETH";
+      let tokenSymbol = "WETH";
+      let tokenDecimals = 18;
+      let debridgeId = await this.signatureVerifierBSC.getDebridgeId(tokenNativeChainId, tokenNativeAddress);
+      let deployId = await this.signatureVerifierBSC.getDeployId(
+        debridgeId,
+        tokenName,
+        tokenSymbol,
+        tokenDecimals
+      );
+      let deploySignatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+      await expectRevert(
+        this.debridgeBSC.deployNewAsset(tokenNativeAddress, tokenNativeChainId, tokenName, tokenSymbol, tokenDecimals, deploySignatures),
+        "AssetAlreadyExist()");
+    });
+
+    it("should have same output for getDebridgeId/getbDebridgeId", async function () {
+      const chainIdFrom = await this.debridgeETH.chainId();
+      // const chainIdTo = await this.debridgeBSC.chainId();
+      const nativeDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, ZERO_ADDRESS);
+      const nativeDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, ZERO_ADDRESS);
+      assert.equal(nativeDebridgeIdFrom, nativeDebridgeIdTo);
+
+      const tokenDebridgeIdFrom = await this.debridgeETH.getDebridgeId(chainIdFrom, this.linkToken.address);
+      const tokenDebridgeIdTo = await this.debridgeETH.getbDebridgeId(chainIdFrom, this.linkToken.address);
+      assert.equal(tokenDebridgeIdFrom, tokenDebridgeIdTo);
     });
   });
 
