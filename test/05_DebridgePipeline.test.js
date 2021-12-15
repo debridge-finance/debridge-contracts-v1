@@ -732,11 +732,12 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
         const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+        const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
         let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
-          .mul(amount)
-          .div(BPS)
-          .add(toBN(supportedChainInfo.fixedNativeFee));
+          .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
+          .div(BPS);
         feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
+        feesWithFix = feesWithFix.add(fixedNativeFeeAfterDiscount);
 
         let sendTx = await this.debridgeETH.send(
           tokenAddress,
@@ -833,11 +834,12 @@ contract("DeBridgeGate real pipeline mode", function () {
 
         const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(this.debridgeWethId);
         const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+        const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
         let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
-          .mul(amount)
-          .div(BPS)
-          .add(toBN(supportedChainInfo.fixedNativeFee));
+          .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
+          .div(BPS);
         feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
+        feesWithFix = feesWithFix.add(fixedNativeFeeAfterDiscount);
 
         let sendTx = await this.debridgeETH.send(
           tokenAddress,
@@ -2157,15 +2159,17 @@ contract("DeBridgeGate real pipeline mode", function () {
       //   chainId,
       //   tokenAddress
       // );
+      const discount = 0;
       const balance = toBN(await this.wethBSC.balanceOf(this.debridgeBSC.address));
       // const debridge = await this.debridgeBSC.getDebridge(debridgeId);
       //collect fee in weth bsc
       const debridgeFeeInfo = await this.debridgeBSC.getDebridgeFeeInfo(this.debridgeWethBSCId);
       const supportedChainInfo = await this.debridgeBSC.getChainToConfig(chainIdTo);
+      const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
       let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
-        .mul(amount)
+        .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
         .div(BPS)
-        .add(toBN(supportedChainInfo.fixedNativeFee));
+        .add(fixedNativeFeeAfterDiscount);
 
       let sendTx = await this.debridgeBSC.send(
         tokenAddress,

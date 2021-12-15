@@ -135,7 +135,6 @@ contract FeesCalculator is
 
         (uint16 discountFixBps, uint16 discountTransferBps) = gate.feeDiscount(_sender);
 
-        uint256 assetsFixedFee;
         // calculate fixed fee
         // use native fixed fees calculation for native tokens despite overwriting _useAssetFee
         if (_useAssetFee) {
@@ -148,7 +147,6 @@ contract FeesCalculator is
                 fixFee = gate.getDebridgeChainAssetFixedFee(debridgeId, _chainIdTo);
                 if (fixFee == 0) revert DeBridgeGate.NotSupportedFixedFee();
             }
-            assetsFixedFee = fixFee;
         } else {
             // calculate native asset fee
             // use globalFixedNativeFee if value for chain is not setted
@@ -156,6 +154,7 @@ contract FeesCalculator is
         }
         // Apply discount for a fixed fee
         fixFee -= fixFee * discountFixBps / BPS_DENOMINATOR;
+        uint256 assetsFixedFee = _useAssetFee ? fixFee: 0;
 
         // Calculate transfer fee
         if (chainTransferFeeBps == 0) {
