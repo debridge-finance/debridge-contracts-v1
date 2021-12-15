@@ -720,10 +720,12 @@ contract DeBridgeGate is
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) {
             if (isNativeToken) {
+                // Use WETH as a token address for native tokens
+                address assetAddress = _tokenAddress == address(0) ? address(weth) : _tokenAddress;
                 _addAsset(
                     debridgeId,
-                    _tokenAddress == address(0) ? address(weth) : _tokenAddress,
-                    abi.encodePacked(_tokenAddress),
+                    assetAddress,
+                    abi.encodePacked(assetAddress),
                     getChainId()
                 );
             } else revert DebridgeNotFound();
@@ -1103,6 +1105,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 130; // 1.3.0
+        return 131; // 1.3.1
     }
 }
