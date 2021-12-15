@@ -137,11 +137,16 @@ contract FeesCalculator is
 
         // calculate fixed fee
         // use native fixed fees calculation for native tokens despite overwriting _useAssetFee
-        if (_useAssetFee && _tokenAddress != address(0)) {
-            // calculate fixed asset fee for ERC20 tokens
-            bytes32 debridgeId = getDebridgeId(_tokenAddress);
-            fixFee = gate.getDebridgeChainAssetFixedFee(debridgeId, _chainIdTo);
-            if (fixFee == 0) revert DeBridgeGate.NotSupportedFixedFee();
+        if (_useAssetFee) {
+            if (_tokenAddress == address(0)) {
+                fixFee = chainFixedNativeFee == 0 ? gate.globalFixedNativeFee() : chainFixedNativeFee;
+            }
+            else {
+                // calculate fixed asset fee for ERC20 tokens
+                bytes32 debridgeId = getDebridgeId(_tokenAddress);
+                fixFee = gate.getDebridgeChainAssetFixedFee(debridgeId, _chainIdTo);
+                if (fixFee == 0) revert DeBridgeGate.NotSupportedFixedFee();
+            }
         } else {
             // calculate native asset fee
             // use globalFixedNativeFee if value for chain is not setted
@@ -149,13 +154,14 @@ contract FeesCalculator is
         }
         // Apply discount for a fixed fee
         fixFee -= fixFee * discountFixBps / BPS_DENOMINATOR;
+        uint256 assetsFixedFee = _useAssetFee ? fixFee: 0;
 
         // Calculate transfer fee
         if (chainTransferFeeBps == 0) {
             // use globalTransferFeeBps if value for chain is not setted
             chainTransferFeeBps = gate.globalTransferFeeBps();
         }
-        transferFee = (_amount * chainTransferFeeBps) / BPS_DENOMINATOR;
+        transferFee = (_amount - assetsFixedFee) * chainTransferFeeBps / BPS_DENOMINATOR;
         // apply discount for a transfer fee
         transferFee -= transferFee * discountTransferBps / BPS_DENOMINATOR;
 

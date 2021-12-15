@@ -351,10 +351,15 @@ contract("DeBridgeGate light mode", function () {
       const balance = toBN(await this.weth.balanceOf(this.debridge.address));
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeWethId);
       const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
-      const feesWithFix = toBN(supportedChainInfo.transferFeeBps)
-        .mul(amount)
-        .div(BPS)
-        .add(toBN(supportedChainInfo.fixedNativeFee));
+
+      const discount = 0;
+      const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
+      let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
+        .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
+        .div(BPS);
+      feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
+      feesWithFix = feesWithFix.add(fixedNativeFeeAfterDiscount);
+
       await this.debridge.send(
         tokenAddress,
         amount,

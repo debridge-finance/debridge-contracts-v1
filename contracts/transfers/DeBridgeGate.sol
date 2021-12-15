@@ -769,6 +769,7 @@ contract DeBridgeGate is
                 }
                 // Apply discount for a asset fixed fee
                 assetsFixedFee = _applyDiscount(assetsFixedFee, discountInfo.discountFixBps);
+                if (_amount < assetsFixedFee) revert TransferAmountNotCoverFees();
                 feeParams.fixFee = assetsFixedFee;
             } else {
                 // collect fixed native fee for non native token transfers
@@ -792,7 +793,7 @@ contract DeBridgeGate is
             // use globalTransferFeeBps if value for chain is not set
             uint256 transferFee = (chainFees.transferFeeBps == 0
                 ? globalTransferFeeBps : chainFees.transferFeeBps)
-                * _amount / BPS_DENOMINATOR;
+                * (_amount - assetsFixedFee) / BPS_DENOMINATOR;
             // apply discount for a transfer fee
             transferFee = _applyDiscount(transferFee, discountInfo.discountTransferBps);
 
