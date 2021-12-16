@@ -62,8 +62,8 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     ) external override onlyDeBridgeGate {
         //Need confirmation to confirm submission
         uint8 needConfirmations = _excessConfirmations > minConfirmations
-        ? _excessConfirmations
-        : minConfirmations;
+            ? _excessConfirmations
+            : minConfirmations;
         // Count of required(DSRM) oracles confirmation
         uint256 currentRequiredOraclesCount;
         // stack variable to aggregate confirmations and write to storage once
@@ -134,9 +134,9 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     /// @param _submissionId Submission identifier.
     /// @param _signature signature by oracle.
     function isValidSignature(bytes32 _submissionId, bytes memory _signature)
-    external
-    view
-    returns (bool)
+        external
+        view
+        returns (bool)
     {
         (bytes32 r, bytes32 s, uint8 v) = _signature.splitSignature();
         address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);

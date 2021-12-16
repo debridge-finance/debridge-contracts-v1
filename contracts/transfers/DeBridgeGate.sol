@@ -24,11 +24,11 @@ import "../interfaces/IWethGate.sol";
 /// @dev Contract for assets transfers. The user can transfer the asset to any of the approved chains.
 /// The admin manages the assets, fees and other important protocol parameters.
 contract DeBridgeGate is
-Initializable,
-AccessControlUpgradeable,
-PausableUpgradeable,
-ReentrancyGuardUpgradeable,
-IDeBridgeGate
+    Initializable,
+    AccessControlUpgradeable,
+    PausableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    IDeBridgeGate
 {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using SignatureUtil for bytes;
@@ -348,7 +348,7 @@ IDeBridgeGate
         ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
 
         address deBridgeTokenAddress = IDeBridgeTokenDeployer(deBridgeTokenDeployer)
-        .deployAsset(debridgeId, _name, _symbol, _decimals);
+            .deployAsset(debridgeId, _name, _symbol, _decimals);
 
         _addAsset(debridgeId, deBridgeTokenAddress, _nativeTokenAddress, _nativeChainId);
     }
@@ -523,10 +523,10 @@ IDeBridgeGate
 
     /// @inheritdoc IDeBridgeGate
     function requestReserves(address _tokenAddress, uint256 _amount)
-    external
-    override
-    onlyDefiController
-    nonReentrant
+        external
+        override
+        onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
@@ -542,10 +542,10 @@ IDeBridgeGate
 
     /// @inheritdoc IDeBridgeGate
     function returnReserves(address _tokenAddress, uint256 _amount)
-    external
-    override
-    onlyDefiController
-    nonReentrant
+        external
+        override
+        onlyDefiController
+        nonReentrant
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         DebridgeInfo storage debridge = getDebridge[debridgeId];
@@ -595,7 +595,7 @@ IDeBridgeGate
         uint16 _discountTransferBps
     ) external onlyAdmin {
         if (_address == address(0) ||
-        _discountFixBps > BPS_DENOMINATOR ||
+            _discountFixBps > BPS_DENOMINATOR ||
             _discountTransferBps > BPS_DENOMINATOR
         ) revert WrongArgument();
         DiscountInfo storage discountInfo = feeDiscount[_address];
@@ -702,8 +702,8 @@ IDeBridgeGate
 
         TokenInfo memory nativeTokenInfo = getNativeInfo[_tokenAddress];
         bool isNativeToken = nativeTokenInfo.nativeChainId  == 0
-        ? true // token not in mapping
-        : nativeTokenInfo.nativeChainId == getChainId(); // token native chain id the same
+            ? true // token not in mapping
+            : nativeTokenInfo.nativeChainId == getChainId(); // token native chain id the same
 
         if (isNativeToken) {
             //We use WETH debridgeId for transfer ETH
@@ -876,8 +876,8 @@ IDeBridgeGate
 
         address _token = debridge.tokenAddress;
         bool unwrapETH = isNativeToken
-        && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
-        && _token == address(weth);
+            && _autoParams.flags.getFlag(Flags.UNWRAP_ETH)
+            && _token == address(weth);
 
         if (_autoParams.executionFee > 0) {
             _mintOrTransfer(_token, msg.sender, _autoParams.executionFee, isNativeToken);
@@ -966,8 +966,8 @@ IDeBridgeGate
         uint256 _amount
     ) internal view returns (uint256) {
         uint256 decimals = _token == address(0)
-        ? 18
-        : IERC20Metadata(_token).decimals();
+            ? 18
+            : IERC20Metadata(_token).decimals();
         uint256 maxDecimals = 8;
         if (decimals > maxDecimals) {
             uint256 multiplier = 10 ** (decimals - maxDecimals);
@@ -980,10 +980,10 @@ IDeBridgeGate
 
     /// @inheritdoc IDeBridgeGate
     function getDefiAvaliableReserves(address _tokenAddress)
-    external
-    view
-    override
-    returns (uint256)
+        external
+        view
+        override
+        returns (uint256)
     {
         DebridgeInfo storage debridge = getDebridge[getDebridgeId(getChainId(), _tokenAddress)];
         return (debridge.balance * (BPS_DENOMINATOR - debridge.minReservesBps)) / BPS_DENOMINATOR;
