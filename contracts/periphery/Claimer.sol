@@ -3,6 +3,7 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../transfers/DeBridgeGate.sol";
 
 contract Claimer is
@@ -11,7 +12,7 @@ contract Claimer is
 {
     /* ========== STATE VARIABLES ========== */
 
-    DeBridgeGate public deBridgeGate; // wrapped native token contract
+    DeBridgeGate public deBridgeGate; // debridge gate address
 
     /* ========== ERRORS ========== */
 
@@ -36,6 +37,22 @@ contract Claimer is
         bytes autoParams;
     }
 
+    struct AssetDeployInfo {
+        bytes nativeTokenAddress;
+        uint256 nativeChainId;
+        string name;
+        string symbol;
+        uint8 decimals;
+        bytes signatures;
+    }
+
+    /* ========== EVENTS ========== */
+
+    event BatchError(
+        uint256 index
+    );
+
+
     /* ========== CONSTRUCTOR  ========== */
 
     function initialize(
@@ -48,7 +65,7 @@ contract Claimer is
 
     function batchClaim(
         ClaimInfo[] calldata _claims
-    ) external  {
+    ) external {
         uint256 claimsCount = _claims.length;
         for (uint256 i = 0; i < claimsCount; i++) {
             ClaimInfo memory claim = _claims[i];
@@ -61,20 +78,81 @@ contract Claimer is
                     claim.signatures,
                     claim.autoParams)
             { }
-            catch {}
+            catch {
+                emit BatchError(i);
+            }
+        }
+    }
+
+    function batchAssetsDeploy(
+        AssetDeployInfo[] calldata _deploys
+    ) external {
+        uint256 count = _deploys.length;
+        for (uint256 i = 0; i < count; i++) {
+            AssetDeployInfo memory deploy = _deploys[i];
+            try deBridgeGate.deployNewAsset(
+                deploy.nativeTokenAddress,
+                deploy.nativeChainId,
+                deploy.name,
+                deploy.symbol,
+                deploy.decimals,
+                deploy.signatures)
+            { }
+            catch {
+                emit BatchError(i);
+            }
         }
     }
 
 
+    /* VIEW */
+
     function isSubmissionsUsed(
-        bytes32[] memory _submissionIds
-    ) external view  returns (bool[] memory) {
+        bytes32[] calldata _submissionIds
+    ) external view returns (bool[] memory result) {
         uint256 count = _submissionIds.length;
-        bool[] memory isUsed = new bool[](count);
+        result = new bool[](count);
         for (uint256 i = 0; i < count; i++) {
-           isUsed[i] = deBridgeGate.isSubmissionUsed(_submissionIds[i]);
+           result[i] = deBridgeGate.isSubmissionUsed(_submissionIds[i]);
         }
-        return isUsed;
+    }
+
+    function isDebridgesExists(
+        bytes32[] calldata _debridgeIds
+    ) external view returns (bool[] memory result) {
+        uint256 count = _debridgeIds.length;
+        result = new bool[](count);
+        for (uint256 i = 0; i < count; i++) {
+            (
+                , //uint256 chainId,
+                , //uint256 maxAmount,
+                , //uint256 balance,
+                , //uint256 lockedInStrategies,
+                , //address tokenAddress,
+                , //uint16 minReservesBps,
+                bool exist
+            ) = deBridgeGate.getDebridge(_debridgeIds[i]);
+            result[i] = exist;
+        }
+    }
+
+    /* ========== ADMIN ========== */
+
+    function withdrawFee(address[] memory _tokenAddresses) external onlyAdmin {
+        uint256 lenght =_tokenAddresses.length;
+        for (uint i = 0; i < lenght; i ++) {
+            IERC20(_tokenAddresses[i]).transfer(
+                msg.sender,
+                IERC20(_tokenAddresses[i]).balanceOf(address(this))
+            );
+        }
+    }
+
+    function withdrawSingleFee(address  _tokenAddresses) external onlyAdmin {
+        IERC20(_tokenAddresses).transfer(
+            msg.sender,
+            IERC20(_tokenAddresses).balanceOf(address(this))
+        );
     }
 
     function setDeBridgeGate(DeBridgeGate _deBridgeGate) external onlyAdmin {
@@ -83,6 +161,6 @@ contract Claimer is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 110; // 1.1.0
     }
 }

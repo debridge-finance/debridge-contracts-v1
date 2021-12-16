@@ -3,13 +3,15 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "../interfaces/ICallProxy.sol";
 import "../libraries/Flags.sol";
 
+/// @dev Proxy to execute the other contract calls.
+/// This contract is used when a user requests transfer with specific call of other contract.
 contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     using Flags for uint256;
 
     /* ========== STATE VARIABLES ========== */
@@ -79,9 +81,9 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         bytes memory _nativeSender,
         uint256 _chainIdFrom
     ) external override onlyGateRole returns (bool _result) {
-        uint256 amount = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).safeApprove(_receiver, 0);
-        IERC20(_token).safeApprove(_receiver, amount);
+        uint256 amount = IERC20Upgradeable(_token).balanceOf(address(this));
+        IERC20Upgradeable(_token).safeApprove(_receiver, 0);
+        IERC20Upgradeable(_token).safeApprove(_receiver, amount);
 
         _result = externalCall(
             _receiver,
@@ -92,13 +94,13 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             _flags.getFlag(Flags.PROXY_WITH_SENDER)
         );
 
-        amount = IERC20(_token).balanceOf(address(this));
+        amount = IERC20Upgradeable(_token).balanceOf(address(this));
 
         if (!_result &&_flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
         if (!_result || amount > 0) {
-            IERC20(_token).safeTransfer(_reserveAddress, amount);
+            IERC20Upgradeable(_token).safeTransfer(_reserveAddress, amount);
         }
     }
 

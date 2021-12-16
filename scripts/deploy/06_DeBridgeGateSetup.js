@@ -35,19 +35,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // await waitTx(tx);
 
 
-
-  // // --------------------------------
-  // //    setup ConfirmationAggregator
-  // // --------------------------------
-
-  // if (deployInitParams.deploy.ConfirmationAggregator) {
-  //   let confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
-  //   console.log(`deBridge setAggregator ${confirmationAggregator.address}`);
-  //   tx = await deBridgeGateInstance.setAggregator(confirmationAggregator.address);
-  //   await waitTx(tx);
-  // }
-
-
   // --------------------------------
   //    setup CallProxy
   // --------------------------------
@@ -124,12 +111,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   // await waitTx(tx);
 
 
-  const chainId = await deBridgeGateInstance.getChainId();
-  console.log(`chainId: ${chainId}`);
-  const wethDebridgeId = await deBridgeGateInstance.getDebridgeId(chainId, wethAddress);
-  console.log(`wethDebridgeId: ${wethDebridgeId}`);
-
-
   // --------------------------------
   //    calling updateChainSupport
   // --------------------------------
@@ -166,24 +147,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
   console.log("deployInitParams.supportedChains: ", deployInitParams.supportedChains);
   console.log("deployInitParams.fixedNativeFee: ", deployInitParams.fixedNativeFee);
-
-
-  // --------------------------------
-  //    calling updateAssetFixedFees
-  // --------------------------------
-
-  // function updateAssetFixedFees(
-  //   bytes32 _debridgeId,
-  //   uint256[] memory _supportedChainIds,
-  //   uint256[] memory _assetFeesInfo
-  // )
-  console.log("deBridgeGate updateAssetFixedFeesTx for WETH");
-  tx = await deBridgeGateInstance.updateAssetFixedFees(
-    wethDebridgeId,
-    deployInitParams.supportedChains,
-    deployInitParams.fixedNativeFee
-  );
-  await waitTx(tx);
 
 
   // --------------------------------

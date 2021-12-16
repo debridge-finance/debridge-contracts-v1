@@ -170,7 +170,7 @@ interface IDeBridgeGate {
         FeeParams feeParams,
         bytes autoParams,
         address nativeSender
-    // bool isNativeToken //added to feeParams
+        // bool isNativeToken //added to feeParams
     );
 
     /// @dev Emitted once the tokens are transferred and withdrawn on a target chain

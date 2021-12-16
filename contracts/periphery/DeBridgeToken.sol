@@ -1,21 +1,37 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 import "../interfaces/IDeBridgeToken.sol";
 
-contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeToken {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE"); // minter role identifier
+/// @dev ERC20 token that is used as wrapped asset to represent the native token value on the other chains.
+contract DeBridgeToken is
+    Initializable,
+    AccessControlUpgradeable,
+    ERC20PausableUpgradeable,
+    IDeBridgeToken
+{
+    /// @dev Minter role identifier
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    /// @dev Pauser role identifier
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    /// @dev Domain separator as described in [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md#rationale)
     bytes32 public DOMAIN_SEPARATOR;
+    /// @dev Typehash as described in [EIP-712](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md#rationale).
+    /// =keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     bytes32 public constant PERMIT_TYPEHASH =
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
-    mapping(address => uint256) public nonces; // transfer's counter
+    /// @dev Transfers counter
+    mapping(address => uint256) public nonces;
+    /// @dev Asset's decimals
     uint8 internal _decimals;
 
     /* ========== ERRORS ========== */
 
     error MinterBadRole();
+    error PauserBadRole();
 
     /* ========== MODIFIERS ========== */
 
@@ -24,9 +40,16 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
         _;
     }
 
+    modifier onlyPauser() {
+        if (!hasRole(PAUSER_ROLE, msg.sender)) revert PauserBadRole();
+        _;
+    }
+
     /// @dev Constructor that initializes the most important configurations.
     /// @param name_ Asset's name.
     /// @param symbol_ Asset's symbol.
+    /// @param decimals_ Asset's decimals.
+    /// @param admin Address to set as asset's admin.
     /// @param minters The accounts allowed to int new tokens.
     function initialize(
         string memory name_,
@@ -40,12 +63,15 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
             bytes(name_).length == 0 ? symbol_ : name_));
         symbol_ = string(abi.encodePacked("de", symbol_));
 
-        __ERC20_init(name_, symbol_);
+        __ERC20_init_unchained(name_, symbol_);
 
         _setupRole(DEFAULT_ADMIN_ROLE, admin);
-        for (uint256 i = 0; i < minters.length; i++) {
+        _setupRole(PAUSER_ROLE, admin);
+        uint256 mintersCount = minters.length;
+        for (uint256 i = 0; i < mintersCount; i++) {
             _setupRole(MINTER_ROLE, minters[i]);
         }
+
         uint256 chainId;
         assembly {
             chainId := chainid()
@@ -63,15 +89,12 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
         );
     }
 
-    /// @dev Issues new tokens.
-    /// @param _receiver Token's receiver.
-    /// @param _amount Amount to be minted.
+    /// @inheritdoc IDeBridgeToken
     function mint(address _receiver, uint256 _amount) external override onlyMinter {
         _mint(_receiver, _amount);
     }
 
-    /// @dev Destroys existed tokens.
-    /// @param _amount Amount to be burnt.
+    /// @inheritdoc IDeBridgeToken
     function burn(uint256 _amount) external override onlyMinter {
         _burn(msg.sender, _amount);
     }
@@ -118,7 +141,26 @@ contract DeBridgeToken is ERC20Upgradeable, AccessControlUpgradeable, IDeBridgeT
         _approve(_owner, _spender, _value);
     }
 
+    /// @dev Asset's decimals
     function decimals() public view override returns (uint8) {
         return _decimals;
+    }
+
+    /// @dev Pauses all token transfers. The caller must have the `PAUSER_ROLE`.
+    function pause() public onlyPauser {
+        _pause();
+    }
+
+     /// @dev Unpauses all token transfers. The caller must have the `PAUSER_ROLE`.
+    function unpause() public onlyPauser {
+        _unpause();
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual override {
+        super._beforeTokenTransfer(from, to, amount);
     }
 }

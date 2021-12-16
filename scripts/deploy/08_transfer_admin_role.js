@@ -63,17 +63,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   await transferAdminRole(signatureVerifier, "SignatureVerifier");
 
 
-
-  // --------------------------------
-  //    ConfirmationAggregator
-  // --------------------------------
-
-  // if (deployInitParams.deploy.ConfirmationAggregator) {
-  //   const confirmationAggregator = await getLastDeployedProxy("ConfirmationAggregator", deployer);
-  //   await transferAdminRole(confirmationAggregator, "ConfirmationAggregator");
-  // }
-
-
   // --------------------------------
   //    CallProxy
   // --------------------------------

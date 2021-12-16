@@ -8,8 +8,8 @@ interface IStrategy {
 
     function withdrawAll(address token) external;
     function strategyToken(address token) external view returns(address);
-    function updateReserves(address account, address token) 
-        external 
-        view 
+    function updateReserves(address account, address token)
+        external
+        view
         returns(uint256);
 }

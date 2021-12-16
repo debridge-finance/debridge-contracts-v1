@@ -2,9 +2,9 @@
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
@@ -21,6 +21,8 @@ import "../libraries/SignatureUtil.sol";
 import "../libraries/Flags.sol";
 import "../interfaces/IWethGate.sol";
 
+/// @dev Contract for assets transfers. The user can transfer the asset to any of the approved chains.
+/// The admin manages the assets, fees and other important protocol parameters.
 contract DeBridgeGate is
 Initializable,
 AccessControlUpgradeable,
@@ -28,7 +30,7 @@ PausableUpgradeable,
 ReentrancyGuardUpgradeable,
 IDeBridgeGate
 {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     using SignatureUtil for bytes;
     using Flags for uint256;
 
@@ -38,6 +40,15 @@ IDeBridgeGate
     uint256 public constant BPS_DENOMINATOR = 10000;
     /// @dev Role allowed to stop transfers
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
+    /// @dev Value for lockedClaim variable when claim function is not entered
+    uint256 private constant _CLAIM_NOT_LOCKED = 1;
+    /// @dev Value for lockedClaim variable when claim function is entered
+    uint256 private constant _CLAIM_LOCKED = 2;
+
+    /// @dev prefix to calculation submissionId
+    uint256 public constant SUBMISSION_PREFIX = 1;
+    /// @dev prefix to calculation deployId
+    uint256 public constant DEPLOY_PREFIX = 2;
 
     /// @dev Address of IDeBridgeTokenDeployer contract
     address public deBridgeTokenDeployer;
@@ -47,7 +58,7 @@ IDeBridgeGate
     uint8 public excessConfirmations;
     /// @dev Flash loan fee in basis points (1/10000)
     uint256 public flashFeeBps;
-    /// @dev Outgoing submissions count
+    /// @dev outgoing submissions count
     uint256 public nonce;
 
     /// @dev Maps debridgeId (see getDebridgeId) => bridge-specific information.
@@ -92,7 +103,7 @@ IDeBridgeGate
     /// @dev WethGate contract, that is used for weth withdraws affected by EIP1884
     IWethGate public wethGate;
     /// @dev Locker for claim method
-    bool public lockedClaim;
+    uint256 public lockedClaim;
 
     /* ========== ERRORS ========== */
 
@@ -115,22 +126,17 @@ IDeBridgeGate
     error InvalidTokenToSend();
 
     error SubmissionUsed();
-    error SubmissionNotConfirmed();
-    error SubmissionAmountNotConfirmed();
     error SubmissionBlocked();
 
-    error AmountMismatch();
-
     error AssetAlreadyExist();
-    error AssetNotConfirmed();
     error ZeroAddress();
 
     error ProposedFeeTooHigh();
-    error FeeNotPaid();
+    error FlashFeeNotPaid();
 
     error NotEnoughReserves();
     error EthTransferFailed();
-    error Locked();
+    error ClaimLocked();
 
     /* ========== MODIFIERS ========== */
 
@@ -161,10 +167,10 @@ IDeBridgeGate
 
     /// @dev lock for claim method
     modifier lockClaim() {
-        if (lockedClaim) revert Locked();
-        lockedClaim = true;
+        if (lockedClaim == _CLAIM_LOCKED) revert ClaimLocked();
+        lockedClaim = _CLAIM_LOCKED;
         _;
-        lockedClaim = false;
+        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== CONSTRUCTOR  ========== */
@@ -179,15 +185,9 @@ IDeBridgeGate
         excessConfirmations = _excessConfirmations;
         weth = _weth;
 
-        _addAsset(
-            getDebridgeId(getChainId(), address(_weth)),
-            address(_weth),
-            abi.encodePacked(address(_weth)),
-            getChainId()
-        );
-
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         __ReentrancyGuard_init();
+        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== send, claim ========== */
@@ -310,13 +310,13 @@ IDeBridgeGate
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         if (!getDebridge[debridgeId].exist) revert DebridgeNotFound();
         uint256 currentFlashFee = (_amount * flashFeeBps) / BPS_DENOMINATOR;
-        uint256 balanceBefore = IERC20(_tokenAddress).balanceOf(address(this));
+        uint256 balanceBefore = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
 
-        IERC20(_tokenAddress).safeTransfer(_receiver, _amount);
+        IERC20Upgradeable(_tokenAddress).safeTransfer(_receiver, _amount);
         IFlashCallback(msg.sender).flashCallback(currentFlashFee, _data);
 
-        uint256 balanceAfter = IERC20(_tokenAddress).balanceOf(address(this));
-        if (balanceBefore + currentFlashFee > balanceAfter) revert FeeNotPaid();
+        uint256 balanceAfter = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
+        if (balanceBefore + currentFlashFee > balanceAfter) revert FlashFeeNotPaid();
 
         uint256 paid = balanceAfter - balanceBefore;
         getDebridgeFeeInfo[debridgeId].collectedFees += paid;
@@ -342,7 +342,7 @@ IDeBridgeGate
 
         if (getDebridge[debridgeId].exist) revert AssetAlreadyExist();
 
-        bytes32 deployId =  keccak256(abi.encodePacked(debridgeId, _name, _symbol, _decimals));
+        bytes32 deployId = getDeployId(debridgeId, _name, _symbol, _decimals);
 
         // verify signatures
         ISignatureVerifier(signatureVerifier).submit(deployId, _signatures, excessConfirmations);
@@ -516,7 +516,7 @@ IDeBridgeGate
         } else {
             // don't need this check as we check that amount is not zero
             // if (!getDebridge[_debridgeId].exist) revert DebridgeNotFound();
-            IERC20(getDebridge[_debridgeId].tokenAddress).safeTransfer(feeProxy, amount);
+            IERC20Upgradeable(getDebridge[_debridgeId].tokenAddress).safeTransfer(feeProxy, amount);
         }
         emit WithdrawnFee(_debridgeId, amount);
     }
@@ -533,11 +533,11 @@ IDeBridgeGate
         if (!debridge.exist) revert DebridgeNotFound();
         uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
 
-        if (minReserves + _amount > IERC20(_tokenAddress).balanceOf(address(this)))
+        if (minReserves + _amount > IERC20Upgradeable(_tokenAddress).balanceOf(address(this)))
             revert NotEnoughReserves();
 
         debridge.lockedInStrategies += _amount;
-        IERC20(_tokenAddress).safeTransfer(defiController, _amount);
+        IERC20Upgradeable(_tokenAddress).safeTransfer(defiController, _amount);
     }
 
     /// @inheritdoc IDeBridgeGate
@@ -551,7 +551,7 @@ IDeBridgeGate
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
         debridge.lockedInStrategies -= _amount;
-        IERC20(debridge.tokenAddress).safeTransferFrom(
+        IERC20Upgradeable(debridge.tokenAddress).safeTransferFrom(
             defiController,
             address(this),
             _amount
@@ -646,13 +646,12 @@ IDeBridgeGate
         debridge.chainId = _nativeChainId;
         // Don't override if the admin already set maxAmount in updateAsset method before
         if (debridge.maxAmount == 0) {
-            debridge.maxAmount = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            debridge.maxAmount = type(uint256).max;
         }
-        // debridge.minReservesBps = BPS;
+        // set minReservesBps to 100% to prevent using new asset by DeFiController by default
+        debridge.minReservesBps = uint16(BPS_DENOMINATOR);
         if (getAmountThreshold[_debridgeId] == 0) {
-            getAmountThreshold[
-            _debridgeId
-            ] = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+            getAmountThreshold[_debridgeId] = type(uint256).max;
         }
 
         TokenInfo storage tokenInfo = getNativeInfo[_tokenAddress];
@@ -680,7 +679,6 @@ IDeBridgeGate
         uint256 _chainIdTo,
         bool _useAssetFee
     ) internal returns (
-    // bool isNativeToken,
         uint256 amountAfterFee,
         bytes32 debridgeId,
         FeeParams memory feeParams
@@ -724,10 +722,12 @@ IDeBridgeGate
         DebridgeInfo storage debridge = getDebridge[debridgeId];
         if (!debridge.exist) {
             if (isNativeToken) {
+                // Use WETH as a token address for native tokens
+                address assetAddress = _tokenAddress == address(0) ? address(weth) : _tokenAddress;
                 _addAsset(
                     debridgeId,
-                    _tokenAddress == address(0) ? address(weth) : _tokenAddress,
-                    abi.encodePacked(_tokenAddress),
+                    assetAddress,
+                    abi.encodePacked(assetAddress),
                     getChainId()
                 );
             } else revert DebridgeNotFound();
@@ -735,23 +735,21 @@ IDeBridgeGate
 
         ChainSupportInfo memory chainFees = getChainToConfig[_chainIdTo];
         if (!chainFees.isSupported) revert WrongChainTo();
-        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         if (_tokenAddress == address(0)) {
-            if (msg.value < _amount) revert AmountMismatch();
-            else if (msg.value > _amount) {
-                // refund extra eth
-                payable(msg.sender).transfer(msg.value - _amount);
-            }
+            // use msg.value as amount for native tokens
+            _amount = msg.value;
             weth.deposit{value: _amount}();
             _useAssetFee = true;
         } else {
-            IERC20 token = IERC20(_tokenAddress);
+            IERC20Upgradeable token = IERC20Upgradeable(_tokenAddress);
             uint256 balanceBefore = token.balanceOf(address(this));
             token.safeTransferFrom(msg.sender, address(this), _amount);
             // Received real amount
             _amount = token.balanceOf(address(this)) - balanceBefore;
         }
+
+        if (_amount > debridge.maxAmount) revert TransferAmountTooHigh();
 
         //_processFeeForTransfer
         {
@@ -761,18 +759,25 @@ IDeBridgeGate
             // calculate fixed fee
             uint256 assetsFixedFee;
             if (_useAssetFee) {
-                assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
-                if (assetsFixedFee == 0) revert NotSupportedFixedFee();
+                if (_tokenAddress == address(0)) {
+                    // collect asset fixed fee (in weth) for native token transfers
+                    assetsFixedFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
+                } else {
+                    // collect asset fixed fee for non native token transfers
+                    assetsFixedFee = debridgeFee.getChainFee[_chainIdTo];
+                    if (assetsFixedFee == 0) revert NotSupportedFixedFee();
+                }
                 // Apply discount for a asset fixed fee
-                assetsFixedFee -= assetsFixedFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+                assetsFixedFee = _applyDiscount(assetsFixedFee, discountInfo.discountFixBps);
+                if (_amount < assetsFixedFee) revert TransferAmountNotCoverFees();
                 feeParams.fixFee = assetsFixedFee;
             } else {
-                // collect native fees
+                // collect fixed native fee for non native token transfers
 
                 // use globalFixedNativeFee if value for chain is not set
                 uint256 nativeFee = chainFees.fixedNativeFee == 0 ? globalFixedNativeFee : chainFees.fixedNativeFee;
-                // Apply discount for a fixed fee
-                nativeFee -= nativeFee * discountInfo.discountFixBps / BPS_DENOMINATOR;
+                // Apply discount for a native fixed fee
+                nativeFee = _applyDiscount(nativeFee, discountInfo.discountFixBps);
 
                 if (msg.value < nativeFee) revert TransferAmountNotCoverFees();
                 else if (msg.value > nativeFee) {
@@ -785,13 +790,12 @@ IDeBridgeGate
             }
 
             // Calculate transfer fee
-            if (chainFees.transferFeeBps == 0) {
-                // use globalTransferFeeBps if value for chain is not set
-                chainFees.transferFeeBps = globalTransferFeeBps;
-            }
-            uint256 transferFee = (_amount * chainFees.transferFeeBps) / BPS_DENOMINATOR;
+            // use globalTransferFeeBps if value for chain is not set
+            uint256 transferFee = (chainFees.transferFeeBps == 0
+                ? globalTransferFeeBps : chainFees.transferFeeBps)
+                * (_amount - assetsFixedFee) / BPS_DENOMINATOR;
             // apply discount for a transfer fee
-            transferFee -= transferFee * discountInfo.discountTransferBps / BPS_DENOMINATOR;
+            transferFee = _applyDiscount(transferFee, discountInfo.discountTransferBps);
 
             uint256 totalFee = transferFee + assetsFixedFee;
             if (_amount < totalFee) revert TransferAmountNotCoverFees();
@@ -799,14 +803,12 @@ IDeBridgeGate
             amountAfterFee = _amount - totalFee;
 
             // initialize feeParams
-            // feeParams.fixFee = _useAssetFee ? assetsFixedFee : msg.value;
             feeParams.transferFee = transferFee;
             feeParams.useAssetFee = _useAssetFee;
             feeParams.receivedAmount = _amount;
             feeParams.isNativeToken = isNativeToken;
         }
 
-        // Is native token
         if (isNativeToken) {
             debridge.balance += amountAfterFee;
         }
@@ -815,6 +817,13 @@ IDeBridgeGate
             IDeBridgeToken(debridge.tokenAddress).burn(amountAfterFee);
         }
         return (amountAfterFee, debridgeId, feeParams);
+    }
+
+    function _applyDiscount(
+        uint256 amount,
+        uint16 discountBps
+    ) internal pure returns (uint256) {
+        return amount - amount * discountBps / BPS_DENOMINATOR;
     }
 
     function _validateToken(address _token) internal {
@@ -857,7 +866,6 @@ IDeBridgeGate
     ) internal returns (bool isNativeToken) {
         DebridgeInfo storage debridge = getDebridge[_debridgeId];
         if (!debridge.exist) revert DebridgeNotFound();
-        // if (debridge.chainId != getChainId()) revert WrongChain();
         isNativeToken = debridge.chainId == getChainId();
 
         if (isNativeToken) {
@@ -919,7 +927,7 @@ IDeBridgeGate
         bool isNativeToken
     ) internal {
         if (isNativeToken) {
-            IERC20(_token).safeTransfer(_receiver, _amount);
+            IERC20Upgradeable(_token).safeTransfer(_receiver, _amount);
         } else {
             IDeBridgeToken(_token).mint(_receiver, _amount);
         }
@@ -943,7 +951,7 @@ IDeBridgeGate
             _safeTransferETH(_receiver, _amount);
         }
         else {
-            IERC20(address(weth)).safeTransfer(address(wethGate), _amount);
+            IERC20Upgradeable(address(weth)).safeTransfer(address(wethGate), _amount);
             wethGate.withdraw(_receiver, _amount);
         }
     }
@@ -1022,6 +1030,7 @@ IDeBridgeGate
         bool hasAutoParams
     ) public view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
             _debridgeId,
             _chainIdFrom,
             getChainId(),
@@ -1055,6 +1064,7 @@ IDeBridgeGate
         bool hasAutoParams
     ) private view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
             _debridgeId,
             getChainId(),
             _chainIdTo,
@@ -1079,12 +1089,26 @@ IDeBridgeGate
         return keccak256(packedSubmission);
     }
 
+    /// @dev Calculates asset identifier for deployment.
+    /// @param _debridgeId Id of an asset, see getDebridgeId.
+    /// @param _name Asset's name.
+    /// @param _symbol Asset's symbol.
+    /// @param _decimals Asset's decimals.
+    function getDeployId(
+        bytes32 _debridgeId,
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals
+    ) public pure returns (bytes32) {
+        return keccak256(abi.encodePacked(DEPLOY_PREFIX, _debridgeId, _name, _symbol, _decimals));
+    }
+
     /// @inheritdoc IDeBridgeGate
     function getNativeTokenInfo(address currentTokenAddress)
-    external
-    view
-    override
-    returns (uint256 nativeChainId, bytes memory nativeAddress)
+        external
+        view
+        override
+        returns (uint256 nativeChainId, bytes memory nativeAddress)
     {
         TokenInfo memory tokenInfo = getNativeInfo[currentTokenAddress];
         return (tokenInfo.nativeChainId, tokenInfo.nativeAddress);
@@ -1100,6 +1124,6 @@ IDeBridgeGate
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 121; // 1.2.1
+        return 201; // 2.0.1
     }
 }

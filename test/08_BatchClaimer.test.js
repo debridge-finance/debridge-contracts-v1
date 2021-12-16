@@ -8,6 +8,8 @@ const { toWei } = web3.utils;
 const { BigNumber } = require("ethers");
 const MAX = web3.utils.toTwosComplement(-1);
 const Tx = require("ethereumjs-tx");
+const { submissionSignatures } = require("./utils.spec");
+
 const bscWeb3 = new Web3(process.env.TEST_BSC_PROVIDER);
 const oracleKeys = JSON.parse(process.env.TEST_ORACLE_KEYS);
 const bobPrivKey = "0x79b2a2a43a1e9f325920f99a720605c9c563c61fb5ae3ebe483f83f1230512d3";
@@ -22,6 +24,16 @@ const minReservesBps = 3000;
 const BPS = toBN(10000);
 
 const referralCode = 555;
+
+const tokenAddresses = [
+  "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "0xdac17f958d2ee523a2206206994597c13d831ec7", "0x6b175474e89094c44da98b954eedeac495271d0f",
+];
+
+const nonExistBytes32 = [
+  "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "0x2222222222222222222222222222222222222222222222222222222222222222",
+  "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+]
 
 contract("DeBridgeGate light mode with batch claimer", function () {
   before(async function () {
@@ -61,9 +73,9 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
-    console.log("minConfirmations: " + this.minConfirmations);
-    console.log("confirmationThreshold: " + this.confirmationThreshold);
-    console.log("excessConfirmations: " + this.excessConfirmations);
+    // console.log("minConfirmations: " + this.minConfirmations);
+    // console.log("confirmationThreshold: " + this.confirmationThreshold);
+    // console.log("excessConfirmations: " + this.excessConfirmations);
 
     //   function initialize(
     //     uint256 _minConfirmations,
@@ -87,7 +99,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         address: this.signers[i].address,
       });
     }
-    console.log("initialOracles.length: " + this.initialOracles.length);
+    // console.log("initialOracles.length: " + this.initialOracles.length);
 
     await this.signatureVerifier.addOracles(
       this.initialOracles.map(o => o.address),
@@ -152,7 +164,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     this.claimer = await upgrades.deployProxy(
       ClaimerFactory,
       [
-        this.debridge.address
+        ZERO_ADDRESS
       ]);
 
     await this.debridge.updateChainSupport(
@@ -213,54 +225,62 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       const newAggregator = await this.debridge.signatureVerifier();
       assert.equal(this.signatureVerifier.address, newAggregator);
     });
+
+    it("should fail if setDeBridgeGate called by non admin", async function () {
+      await expectRevert(
+        this.claimer.connect(bobAccount).setDeBridgeGate(this.debridge.address),
+        "AdminBadRole()"
+      );
+    });
+
+    it("should success if setDeBridgeGate called by admin", async function () {
+      await this.claimer.setDeBridgeGate(this.debridge.address);
+
+      const debridgeAddress = await this.claimer.deBridgeGate();
+      assert(debridgeAddress, this.debridge.address);
+    });
   });
 
-  context("Test managing assets", () => {
-    const isSupported = true;
-    it("should deployNewAsset with signatures", async function () {
-      const tokenAddresses = ["0x1f9840a85d5af5bf1d1762f925bdaddc4201f984", "0xdac17f958d2ee523a2206206994597c13d831ec7", "0x6b175474e89094c44da98b954eedeac495271d0f"];
+  context("Test batch assets deploy", () => {
+    const chainId = 56;
+
+    it("should batch deployNewAsset with signatures", async function () {
+      const maxAmount = toWei("100000000000");
+      const amountThreshold = toWei("10000000000000");
+      const name = "MUSD";
+      const symbol = "Magic Dollar";
+      const decimals = 18;
+
+      const batchDeploys = [];
 
       for (let tokenAddress of tokenAddresses) {
-        const chainId = 56;
-        const maxAmount = toWei("100000000000");
-        const amountThreshold = toWei("10000000000000");
-        const name = "MUSD";
-        const symbol = "Magic Dollar";
-        const decimals = 18;
+        const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
+        const deployId = await this.debridge.getDeployId(debridgeId, name, symbol, decimals);
+        const signatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
+        batchDeploys.push({
+          nativeTokenAddress: tokenAddress,
+          nativeChainId: chainId,
+          name,
+          symbol,
+          decimals,
+          signatures,
+        })
+      }
 
-        //   function confirmNewAsset(
-        //     address _tokenAddress,
-        //     uint256 _chainId,
-        //     string memory _name,
-        //     string memory _symbol,
-        //     uint8 _decimals,
-        //     bytes[] memory _signatures
-        // )
-        const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
-        //console.log('debridgeId '+debridgeId);
-        const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+      // deploy first token
+      await expect(
+        this.claimer.batchAssetsDeploy([batchDeploys[0]], { from: alice })
+      ).to.not.emit(this.claimer, "BatchError");
 
-        let signatures = "0x";
-        for (let i = 0; i < oracleKeys.length; i++) {
-          const oracleKey = oracleKeys[i];
-          let currentSignature = (await bscWeb3.eth.accounts.sign(deployId, oracleKey)).signature;
-          // remove first 0x
-          signatures += currentSignature.substring(2, currentSignature.length);
-        }
-        // Deploy token
-        await this.debridge.deployNewAsset(tokenAddress, chainId, name, symbol, decimals, signatures);
+      // Should not fall if the token has already been deployed
+      await expect(
+        this.claimer.batchAssetsDeploy(batchDeploys, { from: alice })
+      )
+        .to.emit(this.claimer, "BatchError")
+        .withArgs(0);
 
-        ////   function getDeployId(
-        ////     bytes32 _debridgeId,
-        ////     string memory _name,
-        ////     string memory _symbol,
-        ////     uint8 _decimals
-        //// )
-        ////function deployAsset(bytes32 _deployId)
-        //await this.signatureVerifier.deployAsset(deployId, {
-        //  from: this.initialOracles[0].address,
-        //});
-
+      for (let tokenAddress of tokenAddresses) {
+        const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
         await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
         const debridge = await this.debridge.getDebridge(debridgeId);
         const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
@@ -272,15 +292,27 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         assert.equal(debridge.minReservesBps.toString(), minReservesBps);
       }
     });
-  });
 
+    it("isDebridgesExists() should return true for existed debridgeIds", async function () {
+      const debridgeIds = tokenAddresses.map(token => {
+        return this.debridge.getDebridgeId(chainId, token)
+      })
+      const results = await this.claimer.isDebridgesExists(debridgeIds);
+      assert.deepEqual(results, debridgeIds.map(i => true));
+    });
+
+    it("isDebridgesExists() should return false for nonexisted debridgeIds", async function () {
+      const results = await this.claimer.isDebridgesExists(nonExistBytes32);
+      assert.deepEqual(results, nonExistBytes32.map(i => false));
+    });
+  });
 
   context("Test batch claim", () => {
     let debridgeId;
     let receiver;
     const amount = toBN(toWei("100"));
     const nonce = 1;
-    const tokenAddress = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
+    const tokenAddress = tokenAddresses[0];
     const chainId = 56;
     let currentChainId;
 
@@ -294,7 +326,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       //Array of signatures
       this.signatures = [];
 
-      for (var i = 0; i < 10; i++) {
+      for (let i = 0; i < 10; i++) {
         var currentNonce = nonce + i;
         this.submissionForClaim.push(await this.debridge.getSubmissionId(
           debridgeId,
@@ -306,7 +338,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         ));
       }
 
-      for (var i = 0; i < this.submissionForClaim.length; i++) {
+      for (let i = 0; i < this.submissionForClaim.length; i++) {
         var signatures = "0x";
         var submission = this.submissionForClaim[i];
         for (let i = 0; i < oracleKeys.length; i++) {
@@ -323,7 +355,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       let balance = toBN("0");
       let batchClaims = [];
 
-      for (var i = 0; i < this.submissionForClaim.length; i++) {
+      for (let i = 0; i < this.submissionForClaim.length; i++) {
         var currentNonce = nonce + i;
 
         //   struct ClaimInfo {
@@ -343,29 +375,66 @@ contract("DeBridgeGate light mode with batch claimer", function () {
           receiver: receiver,
           nonce: currentNonce,
           signatures: this.signatures[i],
-          autoParams: []};
+          autoParams: [],
+        };
 
-          batchClaims.push(currentClaim);
+        batchClaims.push(currentClaim);
       }
 
       //claim first request
-      await this.claimer.batchClaim(
-        [batchClaims[0]],
-        {
-          from: alice,
-        });
+      await expect(
+        this.claimer.batchClaim([batchClaims[0]], { from: alice })
+      ).to.not.emit(this.claimer, "BatchError");
 
       // Should not fall if the submission has already been claimed
-      await this.claimer.batchClaim(
-        batchClaims,
-        {
-          from: alice,
-        });
+      await expect(
+        this.claimer.batchClaim(batchClaims, { from: alice })
+      )
+        .to.emit(this.claimer, "BatchError")
+        .withArgs(0);
+    });
 
-      const isSubmissionsUsed =  await this.claimer.isSubmissionsUsed(this.submissionForClaim);
-      for (var i = 0; i < this.submissionForClaim.length; i++) {
-        assert.equal(isSubmissionsUsed[i], true);
-      }
+    it("isSubmissionsUsed() should return true for claimed submissions", async function () {
+      const isSubmissionsUsed = await this.claimer.isSubmissionsUsed(this.submissionForClaim);
+      assert.deepEqual(isSubmissionsUsed, this.submissionForClaim.map(i => true));
+    });
+
+    it("isSubmissionsUsed() should return false for unclaimed submissions", async function () {
+      const isSubmissionsUsed = await this.claimer.isSubmissionsUsed(nonExistBytes32);
+      assert.deepEqual(isSubmissionsUsed, nonExistBytes32.map(i => false));
+    });
+  });
+
+
+
+  context("Test withdraw fee", () => {
+    const mintAmount = toBN(toWei("100"));
+
+    before(async function () {
+      await this.dbrToken.mint(this.claimer.address, mintAmount, {
+        from: alice,
+      });
+      await this.mockToken.mint(this.claimer.address, mintAmount, {
+        from: alice,
+      });
+    });
+
+    it("Should withdraw fee by admin", async function () {
+      const userBalanceBeforeDBR = toBN(await this.dbrToken.balanceOf(alice));
+      const userBalanceBeforeMock = toBN(await this.mockToken.balanceOf(alice));
+      const results = await this.claimer.withdrawFee([this.dbrToken.address, this.mockToken.address]);
+      const userBalanceAfterDBR = toBN(await this.dbrToken.balanceOf(alice));
+      const userBalanceAfterMock = toBN(await this.mockToken.balanceOf(alice));
+
+      console.log(userBalanceBeforeDBR.toString());
+      console.log(userBalanceAfterDBR.toString());
+      assert.equal(
+        userBalanceBeforeDBR.add(mintAmount).toString(),
+        userBalanceAfterDBR.toString());
+
+      assert.equal(
+        userBalanceBeforeMock.add(mintAmount).toString(),
+        userBalanceAfterMock.toString());
     });
   });
 });

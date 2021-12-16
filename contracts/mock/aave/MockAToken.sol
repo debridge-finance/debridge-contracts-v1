@@ -60,7 +60,7 @@ contract MockAToken is ERC20 {
     ) external {
         uint256 amountScaled = amount.rayDiv(index);
         require(amountScaled != 0, "CT_INVALID_BURN_AMOUNT");
-        
+
         _balances[user] -= amount;
         _burn(user, amount);
 
