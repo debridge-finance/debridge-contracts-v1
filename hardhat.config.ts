@@ -123,7 +123,7 @@ export default {
       // accounts:{mnemonic:process.env.MNEMONIC},
       url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      gasPrice: 95e9,
+      gasPrice: 54e9,
       // gas: 6.9e6,
       chainId: 1
     },
@@ -153,6 +153,7 @@ export default {
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       // gasPrice: 5e9,
       // gas: 6e6,
+      // gasPrice: 67e8,
       chainId: 42161
     },
   },

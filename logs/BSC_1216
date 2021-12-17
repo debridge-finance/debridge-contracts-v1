@@ -1,0 +1,47 @@
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network BSC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1-. Grand GOVMONITORING_ROLE for multisig 0xa52842cd43fa8c4b6660e443194769531d45b265
+Waiting 1 block confirmations for tx 0xf8f61785d70e01ce12baf4dbdc38d43ff0202b9060a1ddca3494742c737391c8 ...
+1. Upgrade DebrideGate
+
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network BSC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xB1A20D1c885fd775df97396397d6f8F07Abdd20D
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0x82af4f464530f95906402b93a15528db9c790bac47f49da14fb353619b435303 ...
+        Proxy successfully upgraded!
+        New implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        New implementation version: 201
+DeBridgeGate.lockedClaim = 0
+2. Deploy DeBridgeToken
+deploying "DeBridgeToken" (tx: 0x9f637339d9b3197eeb3f9cf89a05ae0345177d85251e6a036845ca4891a0a7cb)...: deployed at 0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b with 1723381 gas
+2.1 Set new implementation in DeBridgeTokenDeployer - Calling DeBridgeTokenDeployer.setTokenImplementation(0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b)
+Waiting 1 block confirmations for tx 0x661d86d6b556d001e7baa8f72a5d4e048b50734b930224a951b8ec5198bbd965 ...
+3. Upgrade SignatureVerifier
+
+*** Upgrading proxy for SignatureVerifier ***
+        Address:  0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x2a3e72eD893b5958690e16c3BBe1BD92137b6250
+        Current implementation version: 101
+Waiting 1 block confirmations for tx 0xf52786640b8790249f4af6f75b6f2c874d7082769aa5f2abe16ec0b4aeb43d38 ...
+        Proxy successfully upgraded!
+        New implementation address: 0xfE7De3c1e1BD252C67667B56347cABFC6df08dF4
+        New implementation version: 201
+PS D:\Projects\Debridge\debridge-contracts-v1>
