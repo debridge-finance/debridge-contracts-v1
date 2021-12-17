@@ -3584,6 +3584,79 @@ contract("DeBridgeGate real pipeline mode", function () {
     // });
   });
 
+  context("Test flashloans", function () {
+    let flash;
+    let flashFactory;
+    before(async function () {
+      flashFactory = await ethers.getContractFactory("MockFlashCallback", alice);
+    });
+    beforeEach(async function () {
+      flash = await flashFactory.deploy();
+      const amount = toBN(toWei("1000"));
+      await this.cakeToken.mint(alice, amount);
+
+      //flashFeeBps 0.1%
+      await this.cakeToken.mint(flash.address, toBN(toWei("10")));
+      const chainIdTo = bscChainId;
+      const supportedChainInfo = await this.debridgeETH.getChainToConfig(chainIdTo);
+
+      await this.cakeToken.approve(this.debridgeETH.address, amount, {
+        from: alice,
+      });
+      //We need to create debridge
+      await this.debridgeETH.send(
+        this.cakeToken.address,
+        amount,
+        chainIdTo,
+        alice,
+        [],
+        false,
+        0,
+        [],
+        {
+          value: supportedChainInfo.fixedNativeFee,
+          from: alice,
+        }
+      );
+    });
+
+    it("flash increases balances and counters of received funds", async function () {
+      const amount = toBN(1000);
+      await this.debridgeETH.updateFlashFee(10); //set 0.1%
+      const flashFeeBps = await this.debridgeETH.flashFeeBps();
+      const fee = amount.mul(flashFeeBps).div(BPS);
+      const chainId = await this.debridgeETH.getChainId();
+      const debridgeId = await this.debridgeETH.getDebridgeId(chainId, this.cakeToken.address);
+      const debridge = await this.debridgeETH.getDebridge(debridgeId);
+      const debridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+      const paidBefore = debridgeFeeInfo.collectedFees;
+      const balanceReceiverBefore = await this.cakeToken.balanceOf(alice);
+
+      await flash.flash(
+        this.debridgeETH.address,
+        this.cakeToken.address,
+        alice,
+        amount,
+        false
+      );
+
+      const newDebridge = await this.debridgeETH.getDebridge(debridgeId);
+      const newDebridgeFeeInfo = await this.debridgeETH.getDebridgeFeeInfo(debridgeId);
+      const paidAfter = newDebridgeFeeInfo.collectedFees;
+      const balanceReceiverAfter = await this.cakeToken.balanceOf(alice);
+
+      expect("10").to.equal(flashFeeBps.toString());
+      expect(toBN(paidBefore).add(fee)).to.equal(toBN(newDebridgeFeeInfo.collectedFees));
+      expect(toBN(balanceReceiverBefore).add(amount)).to.equal(toBN(balanceReceiverAfter));
+    });
+
+    it("flash reverts if not profitable", async function () {
+      await expect(
+        flash.flash(this.debridgeETH.address, this.cakeToken.address, alice, 1000, true)
+      ).to.be.revertedWith("FlashFeeNotPaid()");
+    });
+  });
+
   context("Test calculating ids", () => {
     it("should has same debridgeId", async function() {
       const chainId = 100;
