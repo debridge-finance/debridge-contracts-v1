@@ -1,0 +1,35 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/periphery/BatchBalance.sol": {
+      "content": "pragma solidity 0.8.7;\r\n\r\ninterface IERC20Metadata {\r\n    /**\r\n     * @dev Returns the amount of tokens owned by `account`.\r\n     */\r\n    function balanceOf(address account) external view returns (uint256);\r\n\r\n    /**\r\n     * @dev Returns the decimals places of the token.\r\n     */\r\n    function decimals() external view returns (uint8);\r\n}\r\n\r\ncontract BatchBalance {\r\n    function balanceFor(address[] memory _tokens, address _account)\r\n        external\r\n        view\r\n        returns (uint256[] memory balances, uint256[] memory decimals)\r\n    {\r\n        balances = new uint256[](_tokens.length);\r\n        decimals = new uint256[](_tokens.length);\r\n        for (uint256 i = 0; i < _tokens.length; i++) {\r\n            balances[i] = IERC20Metadata(_tokens[i]).balanceOf(_account);\r\n            decimals[i] = IERC20Metadata(_tokens[i]).decimals();\r\n        }\r\n        return (balances, decimals);\r\n    }\r\n}\r\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}
