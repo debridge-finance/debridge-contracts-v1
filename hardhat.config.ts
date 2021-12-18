@@ -12,6 +12,7 @@ import 'prettier-plugin-solidity';
 import 'solidity-coverage';
 import '@typechain/hardhat'
 import '@nomiclabs/hardhat-ethers'
+import "@nomiclabs/hardhat-etherscan";
 
 dotenvConfig();
 
