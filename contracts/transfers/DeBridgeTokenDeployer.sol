@@ -194,6 +194,6 @@ contract DeBridgeTokenDeployer is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 110; // 1.1.0
+        return 111; // 1.1.1
     }
 }
