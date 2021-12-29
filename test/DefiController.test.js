@@ -25,17 +25,17 @@ describe("DefiController", function () {
     ).toNumber();
   });
 
-  it("contract deployer became admin", async function () {
+  it.skip("contract deployer became admin", async function () {
     expect(await this.defiController.hasRole(DEFAULT_ADMIN_ROLE, admin.address)).to.be.equal(true);
   });
 
-  it("only admin can setDeBridgeGate", async function () {
+  it.skip("only admin can setDeBridgeGate", async function () {
     await expect(
       this.defiController.connect(other).setDeBridgeGate(other.address)
     ).to.be.revertedWith("AdminBadRole()");
   });
 
-  describe("with debridgeGate", function () {
+  describe.skip("with debridgeGate", function () {
     beforeEach(async function () {
       this.debridge = await this.DeBridgeFactory.deploy();
       await this.defiController.setDeBridgeGate(this.debridge.address);
