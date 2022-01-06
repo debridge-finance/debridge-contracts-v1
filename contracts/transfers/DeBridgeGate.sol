@@ -88,7 +88,7 @@ contract DeBridgeGate is
     /// @dev Returns proxy to convert the collected fees and transfer to Ethereum network to treasury
     address public feeProxy;
     /// @dev Returns address of the proxy to execute user's calls.
-    address public callProxy;
+    address public override callProxy;
     /// @dev Returns contract for wrapped native token.
     IWETH public weth;
 

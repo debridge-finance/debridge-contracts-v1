@@ -147,6 +147,9 @@ interface IDeBridgeGate {
         view
         returns (uint256 chainId, bytes memory nativeAddress);
 
+    /// @dev Returns address of the proxy to execute user's calls.
+    function callProxy() external view returns (address);
+
     /// @dev Returns asset fixed fee value for specified debridge and chainId.
     /// @param _debridgeId Asset identifier.
     /// @param _chainId Chain id.
