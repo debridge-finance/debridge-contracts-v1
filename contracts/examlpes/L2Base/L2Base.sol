@@ -83,7 +83,7 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
     ) external virtual payable;
 //    whenNotPaused
 //    {
-//     DeBridgeGate.SubmissionAutoParamsTo memory autoParams;
+//     IDeBridgeGate.SubmissionAutoParamsTo memory autoParams;
 //     autoParams.flags = 2**Flags.REVERT_IF_EXTERNAL_FAIL + 2**Flags.PROXY_WITH_SENDER;
 //     autoParams.executionFee = 1 ether;
 //     autoParams.fallbackAddress = abi.encodePacked(_fallback);
