@@ -7,13 +7,10 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../../interfaces/ICallProxy.sol";
 import "../../interfaces/IDeBridgeGate.sol";
+import "../../libraries/Flags.sol";
 
 abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using AddressUpgradeable for address payable;
-
-    //DeBridge autoparamsTo flags positions
-    uint256 constant public PROXY_WITH_SENDER = 2;
-    uint256 constant public REVERT_IF_EXTERNAL_FAIL = 1;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -87,7 +84,7 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
 //    whenNotPaused
 //    {
 //     DeBridgeGate.SubmissionAutoParamsTo memory autoParams;
-//     autoParams.flags = 2**REVERT_IF_EXTERNAL_FAIL + 2**PROXY_WITH_SENDER;
+//     autoParams.flags = 2**Flags.REVERT_IF_EXTERNAL_FAIL + 2**Flags.PROXY_WITH_SENDER;
 //     autoParams.executionFee = 1 ether;
 //     autoParams.fallbackAddress = abi.encodePacked(_fallback);
 //     autoParams.data = abi.encodeWithSignature(
