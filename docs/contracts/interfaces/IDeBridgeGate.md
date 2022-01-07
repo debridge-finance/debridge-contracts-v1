@@ -166,15 +166,6 @@ Get native chain id and native address of a token
 | :--- | :--- | :------------------------------------------------------------------- |
 |`currentTokenAddress` | address | address of a token on the current chain
 
-## callProxy
-```solidity
-  function callProxy(
-  ) external returns (address)
-```
-
-Returns address of the proxy to execute user's calls.
-
-
 ## getDebridgeChainAssetFixedFee
 ```solidity
   function getDebridgeChainAssetFixedFee(

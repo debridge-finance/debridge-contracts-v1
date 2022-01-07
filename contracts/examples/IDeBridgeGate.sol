@@ -1,3 +1,8 @@
+/**
+It's a fork of IDeBridgeGate.sol with callProxy getter added
+Changing original interface will change the bytecode which is not handled well by our deploy process
+Until a better solution is found this file will be used
+*/
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
@@ -143,9 +148,12 @@ interface IDeBridgeGate {
     /// @dev Get native chain id and native address of a token
     /// @param currentTokenAddress address of a token on the current chain
     function getNativeTokenInfo(address currentTokenAddress)
-        external
-        view
-        returns (uint256 chainId, bytes memory nativeAddress);
+    external
+    view
+    returns (uint256 chainId, bytes memory nativeAddress);
+
+    /// @dev Returns address of the proxy to execute user's calls.
+    function callProxy() external view returns (address);
 
     /// @dev Returns asset fixed fee value for specified debridge and chainId.
     /// @param _debridgeId Asset identifier.
@@ -170,7 +178,7 @@ interface IDeBridgeGate {
         FeeParams feeParams,
         bytes autoParams,
         address nativeSender
-        // bool isNativeToken //added to feeParams
+    // bool isNativeToken //added to feeParams
     );
 
     /// @dev Emitted once the tokens are transferred and withdrawn on a target chain

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../../interfaces/ICallProxy.sol";
-import "../../interfaces/IDeBridgeGate.sol";
+import "../IDeBridgeGate.sol";
 import "../../libraries/Flags.sol";
 
 abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpgradeable {
@@ -81,10 +81,11 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
     }
 
     /// @param _chainIdTo Receiving chain id
-    /// @param _dataToPassToOnBridgeMessage Data to send to onBridgedMessage method
     /// In this example it should be abi.encoded
     /// address that should be called + callData
     /// @param _fallback Address to call in case call to _receiver reverts
+    /// @param _executionFee Fee to pay (in native token)
+    /// @param _dataToPassToOnBridgeMessage Data to send to onBridgedMessage method
     function send(
         uint256 _chainIdTo,
         address _fallback,

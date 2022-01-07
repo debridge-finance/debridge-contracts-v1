@@ -2,7 +2,7 @@
 pragma solidity 0.8.7;
 
 import "../L2Base/L2Base.sol";
-import "../../interfaces/IDeBridgeGate.sol";
+import "../IDeBridgeGate.sol";
 
 contract Incrementor is L2Base {
     uint256 claimedTimes;
