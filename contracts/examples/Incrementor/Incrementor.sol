@@ -15,11 +15,12 @@ contract Incrementor is L2Base {
     function send(
         uint256 _chainIdTo,
         address _fallback,
+        uint256 _executionFee,
         bytes calldata
     ) external virtual payable override whenNotPaused {
         IDeBridgeGate.SubmissionAutoParamsTo memory autoParams;
         autoParams.flags = 2**Flags.REVERT_IF_EXTERNAL_FAIL + 2**Flags.PROXY_WITH_SENDER;
-        autoParams.executionFee = 1 ether;
+        autoParams.executionFee = _executionFee;
         autoParams.fallbackAddress = abi.encodePacked(_fallback);
         autoParams.data = abi.encodeWithSignature("onBridgedMessage(bytes calldata)", "");
 
