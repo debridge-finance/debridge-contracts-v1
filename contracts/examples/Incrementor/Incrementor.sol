@@ -13,23 +13,18 @@ contract Incrementor is L2Base {
     }
 
     function send(
-            uint256 _chainIdTo,
-            address _receiver,
-            bytes calldata _data,
-            address _fallback
+        uint256 _chainIdTo,
+        address _fallback,
+        bytes calldata
     ) external virtual payable override whenNotPaused {
         IDeBridgeGate.SubmissionAutoParamsTo memory autoParams;
         autoParams.flags = 2**Flags.REVERT_IF_EXTERNAL_FAIL + 2**Flags.PROXY_WITH_SENDER;
         autoParams.executionFee = 1 ether;
         autoParams.fallbackAddress = abi.encodePacked(_fallback);
-        autoParams.data = abi.encodeWithSignature(
-            "claim(address,bytes calldata)",
-            _receiver,
-            ""
-        );
+        autoParams.data = abi.encodeWithSignature("onBridgedMessage(bytes calldata)", "");
 
-        address bridgeAddressTo = chainIdToBridgeAddress[_chainIdTo];
-        if (bridgeAddressTo == address(0)) {
+        address contractAddressTo = chainIdToContractAddress[_chainIdTo];
+        if (contractAddressTo == address(0)) {
             revert ChainToIsNotSupported();
         }
 
@@ -37,7 +32,7 @@ contract Incrementor is L2Base {
             address(0),
             msg.value,
             _chainIdTo,
-            abi.encodePacked(bridgeAddressTo),
+            abi.encodePacked(contractAddressTo),
             "",
             false,
             0,
@@ -45,9 +40,7 @@ contract Incrementor is L2Base {
         );
     }
 
-    // TODO change name to increment?
-    function claim (
-        address,
+    function onBridgedMessage (
         bytes calldata
     ) external payable virtual onlyControllingAddress whenNotPaused override returns (bool){
         claimedTimes++;

@@ -18,9 +18,12 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
 
     // chainId => (address => isControlling)
     /// @dev Maps chainId and address on that chain to bool that defines if the address is controlling
+    /// Controlling address is the one that is allowed to call the contract
+    /// By default it should be this contract address on sending chain and may be another depending
+    /// on the contract logic
     mapping(uint256 => mapping(bytes => bool)) public isAddressFromChainIdControlling;
-    /// @dev Maps chainId to address on that chain
-    mapping(uint256 => address) public chainIdToBridgeAddress;
+    /// @dev Maps chainId to address of this contract on that chain
+    mapping(uint256 => address) public chainIdToContractAddress;
 
 
     /* ========== ERRORS ========== */
@@ -78,14 +81,14 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
     }
 
     /// @param _chainIdTo Receiving chain id
-    /// @param _receiver Address to call on receiving chain
-    /// @param _data Data to send to _receiver
+    /// @param _dataToPassToOnBridgeMessage Data to send to onBridgedMessage method
+    /// In this example it should be abi.encoded
+    /// address that should be called + callData
     /// @param _fallback Address to call in case call to _receiver reverts
     function send(
         uint256 _chainIdTo,
-        address _receiver,
-        bytes calldata _data,
-        address _fallback
+        address _fallback,
+        bytes calldata _dataToPassToOnBridgeMessage
     ) external virtual payable;
 //    whenNotPaused
 //    {
@@ -94,17 +97,16 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
 //     autoParams.executionFee = 1 ether;
 //     autoParams.fallbackAddress = abi.encodePacked(_fallback);
 //     autoParams.data = abi.encodeWithSignature(
-//         "claim(address,bytes calldata)",
-//         _receiver,
-//         _data
+//         "onBridgedMessage(bytes calldata)",
+//         _dataToPassToOnBridgeMessage
 //     );
-//
-//     address bridgeAddressTo = chainIdToBridgeAddress[_chainIdTo];
+
+//     address bridgeAddressTo = chainIdToContractAddress[_chainIdTo];
 //     if (bridgeAddressTo == address(0)) {
 //         revert ChainToIsNotSupported();
 //     }
-//
-//
+
+
 //     deBridgeGate.send{value: msg.value}(
 //         address(0),
 //         msg.value,
@@ -117,15 +119,19 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
 //     );
 //    }
 
-    /// @param _receiver Address to call
-    /// @param _data Data to send to _receiver
-    function claim (
-        address _receiver,
-        bytes calldata _data
-    ) external payable virtual returns (bool);
-//    onlyControllingAddress whenNotPaused
+    /// @param data Encoded receiver + dataToPassToReceiver
+    function onBridgedMessage (
+        bytes calldata data
+    ) external payable virtual
+    //    onlyControllingAddress whenNotPaused
+    returns (bool);
 //    {
-//         (bool result,) = _receiver.call{value: msg.value}(_data);
+//         (address receiver, bytes memory dataToPassToReceiver) = abi.decode(
+//             data,
+//             (address, bytes)
+//         );
+
+//         (bool result,) = receiver.call{value: msg.value}(dataToPassToReceiver);
 //         return result;
 //    }
 
