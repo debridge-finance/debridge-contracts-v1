@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BUSL-1.1
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -64,9 +64,15 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function initialize(
-        IDeBridgeGate _deBridgeGate
-    ) public initializer {
+    function __L2Base_init(IDeBridgeGate _deBridgeGate) internal initializer {
+        __Context_init_unchained();
+        __ERC165_init_unchained();
+        __AccessControl_init_unchained();
+        __Pausable_init_unchained();
+        __L2Base_init_unchained(_deBridgeGate);
+    }
+
+    function __L2Base_init_unchained(IDeBridgeGate _deBridgeGate) internal initializer {
         deBridgeGate = _deBridgeGate;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
