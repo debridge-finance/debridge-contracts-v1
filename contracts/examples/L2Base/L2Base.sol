@@ -39,11 +39,17 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
 
     /* ========== EVENTS ========== */
 
-    // emitted when controlling address updated
+    // emitted when controlling address is updated
     event ControllingAddressUpdated(
         bytes nativeSender,
         uint256 chainIdFrom,
         bool enabled
+    );
+
+    // emitted when chainIdToContractAddress address is updated
+    event ContractAddressOnChainIdUpdated(
+        address newAddress,
+        uint256 chainIdTo
     );
 
     /* ========== MODIFIERS ========== */
@@ -162,6 +168,14 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
         isAddressFromChainIdControlling[_chainIdFrom][_nativeSender] = false;
 
         emit ControllingAddressUpdated(_nativeSender, _chainIdFrom, false);
+    }
+
+    function setContractAddressOnChainId(
+        address _address,
+        uint256 _chainIdTo
+    ) external onlyAdmin {
+        chainIdToContractAddress[_chainIdTo] = _address;
+        emit ContractAddressOnChainIdUpdated(_address, _chainIdTo);
     }
 
 
