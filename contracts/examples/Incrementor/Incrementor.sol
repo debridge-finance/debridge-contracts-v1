@@ -5,7 +5,7 @@ import "../L2Base/L2Base.sol";
 import "../IDeBridgeGate.sol";
 
 contract Incrementor is L2Base {
-    uint256 claimedTimes;
+    uint256 public claimedTimes;
 
     function initialize(IDeBridgeGate _deBridgeGate) external initializer {
         __L2Base_init(_deBridgeGate);
