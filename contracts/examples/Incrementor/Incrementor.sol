@@ -22,7 +22,7 @@ contract Incrementor is L2Base {
         autoParams.flags = 2**Flags.REVERT_IF_EXTERNAL_FAIL + 2**Flags.PROXY_WITH_SENDER;
         autoParams.executionFee = _executionFee;
         autoParams.fallbackAddress = abi.encodePacked(_fallback);
-        autoParams.data = abi.encodeWithSignature("onBridgedMessage(bytes calldata)", "");
+        autoParams.data = abi.encodeWithSignature("onBridgedMessage(bytes)", "");
 
         address contractAddressTo = chainIdToContractAddress[_chainIdTo];
         if (contractAddressTo == address(0)) {
