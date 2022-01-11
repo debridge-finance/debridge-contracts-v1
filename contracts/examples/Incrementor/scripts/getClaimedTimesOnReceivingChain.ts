@@ -12,7 +12,8 @@ const main = async () => {
 
     const signer = new Wallet(process.env.DEPLOYER_PRIVATE_KEY as string, ethers.provider);
     const incrementorTo = new Contract(INCREMENTOR_ADDRESS_ON_TO, IncrementorAbi, signer) as Incrementor;
-    console.log(await incrementorTo.claimedTimes());
+    const claimedTimes = (await incrementorTo.claimedTimes()).toNumber();
+    console.log(`claimedTimes: ${claimedTimes}`);
 }
 
 main()
