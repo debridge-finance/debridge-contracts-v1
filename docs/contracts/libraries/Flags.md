@@ -37,6 +37,24 @@ Get flag
 |`_packedFlags` | uint256 | Flags packed to uint256
 |`_flag` | uint256 | Flag to check
 
+## setFlag
+```solidity
+  function setFlag(
+            uint256 _packedFlags,
+            uint256 _flag,
+            bool _value
+  ) internal returns (uint256)
+```
+
+Set flag
+
+### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_packedFlags` | uint256 | Flags packed to uint256
+|`_flag` | uint256 | Flag to set
+|`_value` | bool | Is set or not set
+
 
 
 

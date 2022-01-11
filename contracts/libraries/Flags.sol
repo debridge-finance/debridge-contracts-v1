@@ -23,14 +23,18 @@ library Flags {
         return flag == 1;
     }
 
-    // function setFlag(
-    //     uint256 _packedFlags,
-    //     uint256 _flag,
-    //     bool _value
-    // ) internal pure returns (uint256) {
-    //     if (_value)
-    //         return _packedFlags | uint256(1) << _flag;
-    //     else
-    //         return _packedFlags & ~(uint256(1) << _flag);
-    // }
+    /// @dev Set flag
+    /// @param _packedFlags Flags packed to uint256
+    /// @param _flag Flag to set
+    /// @param _value Is set or not set
+     function setFlag(
+         uint256 _packedFlags,
+         uint256 _flag,
+         bool _value
+     ) internal pure returns (uint256) {
+         if (_value)
+             return _packedFlags | uint256(1) << _flag;
+         else
+             return _packedFlags & ~(uint256(1) << _flag);
+     }
 }
