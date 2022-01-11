@@ -19,10 +19,10 @@ Sending a message using example scripts
 yarn hardhat run --network bsctest contracts/examples/Incrementor/scripts/deploy.ts
 yarn hardhat run --network kovan contracts/examples/Incrementor/scripts/deploy.ts
 ```
-3. Update addresses (INCREMENTOR_ADDRESS_ON_*) in constants.ts
+3. Update addresses (INCREMENTOR_ADDRESS_ON_*) in constants.ts to `Incrementor proxy` addresses (will be printed in console)
 4. Verify (optional)
 
-   Go to proxy admin and get implementation address of these proxies, then verify
+   IMPLEMENTATION_ADDRESS is `Incrementor implementation` printed in console
    ```shell
    ETHERSCAN_API_KEY=YOUR_KEY yarn hardhat verify --show-stack-traces --network bsctest IMPLEMENTATION_ADDRESS 
    ETHERSCAN_API_KEY=YOUR_KEY yarn hardhat verify --show-stack-traces --network kovan IMPLEMENTATION_ADDRESS
