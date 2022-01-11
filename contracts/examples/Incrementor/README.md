@@ -45,3 +45,28 @@ yarn hardhat run --network kovan contracts/examples/Incrementor/scripts/deploy.t
    ```shell
    yarn hardhat run --network kovan contracts/examples/Incrementor/scripts/getClaimedTimesOnReceivingChain.ts
    ```
+   
+# Sending a cross-chain Message using the example of an already deployed contract
+
+This example shows how to send a message between two chains using Incrementor.sol contract to increment a variable in this contract on a receiving chain
+
+[Here](https://testnet.bscscan.com/address/0x375675FD702DAeeD35AEBc4fe613D3b088571644#writeProxyContract) you can find an instance of the Incrementor smart contract deployed in BSC testnet.
+In order to see how cross-chain messaging is working in practice, `send` method of the smart contract can be called directly from Bscscan interface:
+![](https://i.imgur.com/OgEejAD.png)
+
+The source code of send method:
+![](https://i.imgur.com/IYT3xCJ.png)
+
+[Here is](https://testnet.bscscan.com/tx/0x0a9adff4ab95fe749668df61f9e124339aa36bd52344e17331f5402dd02de243) example of the `send` transaction in Bscscan.
+Same transaction can be found by txid in [deBridge explorer](
+https://testnet.debridge.finance/transaction?tx=0x0a9adff4ab95fe749668df61f9e124339aa36bd52344e17331f5402dd02de243&chainId=97)
+In case the execution fee was set, keepers will automatically claim your transaction in the destination chain:
+![](https://i.imgur.com/G3c55qO.png)
+
+The result of the state changed due to cross-chain interaction can be observed through [Tenderly](https://dashboard.tenderly.co/tx/kovan/0xe90638fe5d30693b6d3b0f2aa077424dc285619b852d6c844be0c08f18687458/state-diff). The one can see that claimedTimes variable was incremented as a result of the cross-chain call:
+![](https://i.imgur.com/Djl5kbh.png)
+
+The method of the smart contract that was executed as a result of cross-chain call:
+![](https://i.imgur.com/61uRSXD.png)
+
+Feel free to reach out to us in the #developer channel of [Discord](http://discord.gg/debridge) to ask any questions.
