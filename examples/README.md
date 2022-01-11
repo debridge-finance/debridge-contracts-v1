@@ -11,7 +11,7 @@
 
 ## Demo Scripts of Interaction with deBridge Protocol
 
-This repository demonstrates how to interact with deBridge infrastructure in order to send arbitrary data and liquidity between any blockchains supported by the protocol
+This repository demonstrates how to interact with deBridge infrastructure in order to send arbitrary data and liquidity between any blockchains supported by the protocol.
 
 In order to run scripts please configure your local environment first:
 
@@ -20,17 +20,18 @@ In order to run scripts please configure your local environment first:
 
 ### Sending of the Base Asset
 
-```yarn ts-node examples/src/sendScripts/sendETH.ts``` to send base asset of the blockchain where the transaction is initiated
+execute ```yarn ts-node examples/src/sendScripts/sendETH.ts``` to send the base asset of the blockchain where the transaction is initiated.
+
 You will see the following output:
 ![telegram-cloud-photo-size-2-5384605653412199381-y](https://user-images.githubusercontent.com/10200871/148461193-b7039b8f-99f9-4d61-8fd8-69d08a44a566.jpg)
 
-Please note  the resulted SubmissionID which will be needed during the claim step
+Please note  the resulted `SubmissionID` which will be needed during the claim step
 
 ### Sending of the ERC-20 token
 
-1. run ```yarn ts-node examples/src/sendScripts/sendETH.ts``` to send ERC-20 token
+execute ```yarn ts-node examples/src/sendScripts/sendETH.ts``` to send ERC-20 token
 
-Please note  the resulted SubmissionID which will be needed during the claim step
+Please note the resulted `SubmissionID` which will be needed during the claim step
 
 ### Track Status of the Cross-Chain Transactions
 deBridge provides an explorer that allows tracking the status of all cross-chain transactions that pass through the protocol. Just put in txId in the search bar in order to see your transaction details
@@ -43,14 +44,15 @@ deBridge provides an explorer that allows tracking the status of all cross-chain
 ### Claim transaction in the destination chain
 The protocol implements [locking and minting](https://docs.debridge.finance/the-core-protocol/protocol-overview#naming) mechanics and guarantees that all wrapped assets (deAssets) are 1:1 backed by the collateral locked in the native chain of each respective asset
 
-In order to have the transaction executed in the target chain, you should claim it by passing all parameters of the transaction alongside signatures of submissionId from all deBridge validators. 
+In order to have the transaction executed in the target chain, it should be claimed by passing all parameters of the transaction alongside signatures of submissionId from all deBridge validators. 
 
 In order to claim transaction execute
 ```yarn ts-node examples/src/sendScripts/calim.ts [submissionId]```
 
-## [BridgeAppBase.sol](contracts/examples/BridgeAppBase.sol): cross-chain application base contract called from other chains
 
-BridgeAppBase.sol is an abstract contract that allows setting chain_ids and addresses in other chains that can call its' methods.
+# [BridgeAppBase.sol](/contracts/examples/BridgeAppBase.sol) — cross-chain application base contract called from other chains
+
+BridgeAppBase.sol is an abstract contract that allows setting chain_ids and addresses in other chains that can call its' methods. This base contract allows the implementation of different cross-chain intercommunication scenarios
 
 ### How to use
 1. Copy ICallProxy from contracts/interfaces and IDeBridgeGate from contracts/examples
@@ -58,10 +60,10 @@ BridgeAppBase.sol is an abstract contract that allows setting chain_ids and addr
 3. Copy contracts/examples/BridgeAppBase/BridgeAppBase.sol
 4. Inherit BridgeAppBase.sol and create `send` and `onBridgedMessage` or similar functions you would like to use.
 
-**See [Incrementor.sol](contracts/examples/Incrementor.sol) smart contract as an example**
+**See `Incrementor.sol` smart contract below as an example**
 - `onBridgedMessage` must have `onlyControllingAddress` modifier because otherwise it may be called by anyone through callProxy
 
-In case you want to call another contract once cross-chain message is received, the following method can be used:
+In case it's needed to call another smart contract once cross-chain message is received, the following method can be used:
 ```solidity
     /// @param data Encoded receiver + dataToPassToReceiver
     function onBridgedMessage (
@@ -78,7 +80,7 @@ In case you want to call another contract once cross-chain message is received, 
     }
 ```
 
-## [Incrementor.sol](contracts/examples/Incrementor.sol): an example contract that extends BridgeAppBase
+## [Incrementor.sol](/contracts/examples/Incrementor.sol) — an example contract that extends BridgeAppBase
 
 ### Description
 This example shows how to send a message between two chains using Incrementor.sol contract to increment a variable in this contract on a receiving chain
