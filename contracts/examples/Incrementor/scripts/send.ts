@@ -17,8 +17,8 @@ const main = async () => {
     const executionFee = parseEther('0.01');
     const tx = await incrementorSender.send(TO_CHAIN_ID, signer.address, executionFee, {
         // executionFee + commissions + a little more
-        // 0.1 is much more than required
-        value: parseEther('0.1'),
+        // ~0,1% + 0.01
+        value: parseEther('0.021'),
     });
     const receipt = await tx.wait();
 
