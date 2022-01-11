@@ -2,15 +2,15 @@ import assert from "assert";
 import {ethers, getChainId} from "hardhat";
 import {FROM_CHAIN_ID, INCREMENTOR_ADDRESS_ON_FROM, TO_CHAIN_ID} from "./constants";
 import {Contract, ContractReceipt, utils, Wallet} from "ethers";
-import {Incrementor} from "../../../../typechain-types";
+import {Incrementor} from "../../../typechain-types";
 import {
     abi as IncrementorAbi
-} from "../../../../artifacts/contracts/examples/Incrementor/Incrementor.sol/Incrementor.json";
+} from "../../../artifacts/contracts/examples/Incrementor.sol/Incrementor.json";
 import {
     abi as DeBridgeGateAbi
-} from "../../../../artifacts/contracts/examples/ForkedInterfaces/IDeBridgeGate.sol/IDeBridgeGate.json";
+} from "../../../artifacts/contracts/examples/forkedInterfaces/IDeBridgeGate.sol/IDeBridgeGate.json";
 import {parseEther} from "ethers/lib/utils";
-import {IDeBridgeGateInterface} from "../../../../typechain-types/IDeBridgeGate";
+import {IDeBridgeGateInterface} from "../../../typechain-types/IDeBridgeGate";
 import {Log} from "hardhat-deploy/dist/types";
 import {LogDescription} from "@ethersproject/abi";
 

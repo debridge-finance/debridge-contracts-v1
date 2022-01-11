@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "../BridgeAppBase/BridgeAppBase.sol";
-import "../ForkedInterfaces/IDeBridgeGate.sol";
+import "./BridgeAppBase.sol";
+import "./forkedInterfaces/IDeBridgeGate.sol";
 
 /// @dev Example contract to show how to send a simple message to another chain using deBridgeGate
 contract Incrementor is BridgeAppBase {

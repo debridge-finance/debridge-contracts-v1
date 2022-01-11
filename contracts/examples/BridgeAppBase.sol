@@ -5,9 +5,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "../../interfaces/ICallProxy.sol";
-import "../ForkedInterfaces/IDeBridgeGate.sol";
-import "../../libraries/Flags.sol";
+import "../interfaces/ICallProxy.sol";
+import "./forkedInterfaces/IDeBridgeGate.sol";
+import "../libraries/Flags.sol";
 
 abstract contract BridgeAppBase is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using AddressUpgradeable for address payable;

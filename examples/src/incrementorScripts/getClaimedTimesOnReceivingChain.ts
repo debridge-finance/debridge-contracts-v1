@@ -1,10 +1,10 @@
 import {ethers, getChainId} from "hardhat";
 import {INCREMENTOR_ADDRESS_ON_TO, TO_CHAIN_ID} from "./constants";
 import {Contract, Wallet} from "ethers";
-import {Incrementor} from "../../../../typechain-types";
+import {Incrementor} from "../../../typechain-types";
 import {
     abi as IncrementorAbi
-} from "../../../../artifacts/contracts/examples/Incrementor/Incrementor.sol/Incrementor.json";
+} from "../../../artifacts/contracts/examples/Incrementor.sol/Incrementor.json";
 import assert from "assert";
 
 const main = async () => {

@@ -1,6 +1,6 @@
 // @ts-nocheck TODO remove and fix
 import {config} from "dotenv-flow";
-import DeBridgeGateJson from "../../../../../test-send-method/precompiles/DeBridgeGate.json";
+import DeBridgeGateJson from "../../../../test-send-method/precompiles/DeBridgeGate.json";
 import log4js from "log4js";
 import web3Utils from "web3-utils";
 import Web3 from "web3";

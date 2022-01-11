@@ -1,5 +1,5 @@
-import {Incrementor} from "../../../../typechain-types";
-import {abi as IncrementorAbi} from "../../../../artifacts/contracts/examples/Incrementor/Incrementor.sol/Incrementor.json";
+import {Incrementor} from "../../../typechain-types";
+import {abi as IncrementorAbi} from "../../../artifacts/contracts/examples/Incrementor.sol/Incrementor.json";
 import {Contract, Wallet} from "ethers";
 import {ethers, getChainId} from "hardhat";
 import assert from "assert";
