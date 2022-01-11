@@ -23,6 +23,10 @@ library Flags {
         return flag == 1;
     }
 
+    /// @dev Set flag
+    /// @param _packedFlags Flags packed to uint256
+    /// @param _flag Flag to set
+    /// @param _value Is set or not set
      function setFlag(
          uint256 _packedFlags,
          uint256 _flag,
