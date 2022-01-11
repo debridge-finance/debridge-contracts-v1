@@ -7,7 +7,6 @@ import {
     abi as IncrementorAbi
 } from "../../../../artifacts/contracts/examples/Incrementor/Incrementor.sol/Incrementor.json";
 import {parseEther} from "ethers/lib/utils";
-import {HashZero} from "@ethersproject/constants";
 
 const main = async () => {
     assert(await getChainId() === FROM_CHAIN_ID.toString(), `Must be called from chain 'from' (${FROM_CHAIN_ID}), got ${await getChainId()}`);
@@ -16,7 +15,7 @@ const main = async () => {
     const incrementorSender = new Contract(INCREMENTOR_ADDRESS_ON_FROM, IncrementorAbi, signer) as Incrementor;
 
     const executionFee = parseEther('0.01');
-    const tx = await incrementorSender.send(TO_CHAIN_ID, signer.address, executionFee, HashZero, {
+    const tx = await incrementorSender.send(TO_CHAIN_ID, signer.address, executionFee, {
         // executionFee + commissions + a little more
         // 0.1 is much more than required
         value: parseEther('0.1'),

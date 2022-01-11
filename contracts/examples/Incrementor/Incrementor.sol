@@ -4,25 +4,30 @@ pragma solidity 0.8.7;
 import "../L2Base/L2Base.sol";
 import "../IDeBridgeGate.sol";
 
+/// @dev Example contract to show how to send a simple message to another chain using deBridgeGate
 contract Incrementor is L2Base {
     uint256 public claimedTimes;
+    using Flags for uint256;
 
     function initialize(IDeBridgeGate _deBridgeGate) external initializer {
         __L2Base_init(_deBridgeGate);
         claimedTimes = 0;
     }
 
+    /// @param _chainIdTo Receiving chain id
+    /// @param _fallback Address to call in case call to _receiver reverts and to send deTokens
+    /// @param _executionFee Fee to pay (in native token)
     function send(
         uint256 _chainIdTo,
         address _fallback,
-        uint256 _executionFee,
-        bytes calldata
-    ) external virtual payable override whenNotPaused {
+        uint256 _executionFee
+    ) external virtual payable whenNotPaused {
         IDeBridgeGate.SubmissionAutoParamsTo memory autoParams;
-        autoParams.flags = 2**Flags.REVERT_IF_EXTERNAL_FAIL + 2**Flags.PROXY_WITH_SENDER;
+        autoParams.flags = autoParams.flags.setFlag(Flags.REVERT_IF_EXTERNAL_FAIL, true);
+        autoParams.flags = autoParams.flags.setFlag(Flags.PROXY_WITH_SENDER, true);
         autoParams.executionFee = _executionFee;
         autoParams.fallbackAddress = abi.encodePacked(_fallback);
-        autoParams.data = abi.encodeWithSignature("onBridgedMessage(bytes)", "");
+        autoParams.data = abi.encodeWithSignature("onBridgedMessage()");
 
         address contractAddressTo = chainIdToContractAddress[_chainIdTo];
         if (contractAddressTo == address(0)) {
@@ -41,9 +46,7 @@ contract Incrementor is L2Base {
         );
     }
 
-    function onBridgedMessage (
-        bytes calldata
-    ) external payable virtual onlyControllingAddress whenNotPaused override returns (bool){
+    function onBridgedMessage() external payable virtual onlyControllingAddress whenNotPaused returns (bool){
         claimedTimes++;
         return true;
     }

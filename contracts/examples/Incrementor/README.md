@@ -1,3 +1,7 @@
+## Description
+This example shows how to send a message between two chains using Incrementor.sol contract to increment a variable in this contract on a receiving chain 
+
+## General steps
 1. Copy L2Base using instruction in ../L2Base/README.md 
 2. Copy this contract, Incrementor.sol
 3. Deploy Incrementor on two chains
@@ -12,7 +16,7 @@
 7. Wait for the message to go through the bridge and for execution on https://testnet-explorer.debridge.finance/explorer
 8. Check that claimTimes is incremented
 
-Sending a message using example scripts
+## Sending a message using example scripts
 1. Add `networks` to your hardhat.config.ts, see hardhat.config.ts in this repo for reference
 2. Deploy
 ```shell

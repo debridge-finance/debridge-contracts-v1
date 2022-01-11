@@ -86,64 +86,6 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    /// @param _chainIdTo Receiving chain id
-    /// In this example it should be abi.encoded
-    /// address that should be called + callData
-    /// @param _fallback Address to call in case call to _receiver reverts
-    /// @param _executionFee Fee to pay (in native token)
-    /// @param _dataToPassToOnBridgeMessage Data to send to onBridgedMessage method
-    function send(
-        uint256 _chainIdTo,
-        address _fallback,
-        uint256 _executionFee,
-        bytes calldata _dataToPassToOnBridgeMessage
-    ) external virtual payable;
-//    whenNotPaused
-//    {
-//     IDeBridgeGate.SubmissionAutoParamsTo memory autoParams;
-//     autoParams.flags = 2**Flags.REVERT_IF_EXTERNAL_FAIL + 2**Flags.PROXY_WITH_SENDER;
-//     autoParams.executionFee = _executionFee;
-//     autoParams.fallbackAddress = abi.encodePacked(_fallback);
-//     autoParams.data = abi.encodeWithSignature(
-//         "onBridgedMessage(bytes calldata)",
-//         _dataToPassToOnBridgeMessage
-//     );
-
-//     address bridgeAddressTo = chainIdToContractAddress[_chainIdTo];
-//     if (bridgeAddressTo == address(0)) {
-//         revert ChainToIsNotSupported();
-//     }
-
-
-//     deBridgeGate.send{value: msg.value}(
-//         address(0),
-//         msg.value,
-//         _chainIdTo,
-//         abi.encodePacked(bridgeAddressTo),
-//         "",
-//         false,
-//         0,
-//         abi.encode(autoParams)
-//     );
-//    }
-
-    /// @param data Encoded receiver + dataToPassToReceiver
-    function onBridgedMessage (
-        bytes calldata data
-    ) external payable virtual
-    //    onlyControllingAddress whenNotPaused
-    returns (bool);
-//    {
-//         (address receiver, bytes memory dataToPassToReceiver) = abi.decode(
-//             data,
-//             (address, bytes)
-//         );
-
-//         (bool result,) = receiver.call{value: msg.value}(dataToPassToReceiver);
-//         return result;
-//    }
-
-
     function addControllingAddress(
         bytes memory _nativeSender,
         uint256 _chainIdFrom
