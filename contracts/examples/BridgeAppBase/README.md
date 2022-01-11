@@ -1,6 +1,6 @@
 # Cross-Chain Application Base Contract Called from Other Chains
 
-L2Base.sol is an abstract contract that allows setting chain_ids and addresses in other chains that can call its' methods.
+BridgeAppBase.sol is an abstract contract that allows setting chain_ids and addresses in other chains that can call its' methods.
 
 # How to use BridgeAppBase
 

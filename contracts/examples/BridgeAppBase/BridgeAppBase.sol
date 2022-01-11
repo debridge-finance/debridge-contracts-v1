@@ -9,7 +9,7 @@ import "../../interfaces/ICallProxy.sol";
 import "../ForkedInterfaces/IDeBridgeGate.sol";
 import "../../libraries/Flags.sol";
 
-abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpgradeable {
+abstract contract BridgeAppBase is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     using AddressUpgradeable for address payable;
 
     /* ========== STATE VARIABLES ========== */
@@ -73,15 +73,15 @@ abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpg
 
     /* ========== CONSTRUCTOR  ========== */
 
-    function __L2Base_init(IDeBridgeGate _deBridgeGate) internal initializer {
+    function __BridgeAppBase_init(IDeBridgeGate _deBridgeGate) internal initializer {
         __Context_init_unchained();
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
         __Pausable_init_unchained();
-        __L2Base_init_unchained(_deBridgeGate);
+        __BridgeAppBase_init_unchained(_deBridgeGate);
     }
 
-    function __L2Base_init_unchained(IDeBridgeGate _deBridgeGate) internal initializer {
+    function __BridgeAppBase_init_unchained(IDeBridgeGate _deBridgeGate) internal initializer {
         deBridgeGate = _deBridgeGate;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }

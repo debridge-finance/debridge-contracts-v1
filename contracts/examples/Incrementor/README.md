@@ -2,7 +2,7 @@
 This example shows how to send a message between two chains using Incrementor.sol contract to increment a variable in this contract on a receiving chain 
 
 ## General steps
-1. Copy L2Base using instruction in ../L2Base/README.md 
+1. Copy BridgeAppBase using instruction in ../BridgeAppBase/README.md 
 2. Copy this contract, Incrementor.sol
 3. Deploy Incrementor on two chains
 4. Call setContractAddressOnChainId on sending chain with

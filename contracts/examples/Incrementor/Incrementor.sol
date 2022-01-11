@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "../L2Base/L2Base.sol";
+import "../BridgeAppBase/BridgeAppBase.sol";
 import "../ForkedInterfaces/IDeBridgeGate.sol";
 
 /// @dev Example contract to show how to send a simple message to another chain using deBridgeGate
-contract Incrementor is L2Base {
+contract Incrementor is BridgeAppBase {
     uint256 public claimedTimes;
     using Flags for uint256;
 
     function initialize(IDeBridgeGate _deBridgeGate) external initializer {
-        __L2Base_init(_deBridgeGate);
+        __BridgeAppBase_init(_deBridgeGate);
         claimedTimes = 0;
     }
 
