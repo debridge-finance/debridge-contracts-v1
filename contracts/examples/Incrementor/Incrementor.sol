@@ -2,7 +2,7 @@
 pragma solidity 0.8.7;
 
 import "../L2Base/L2Base.sol";
-import "../IDeBridgeGate.sol";
+import "../ForkedInterfaces/IDeBridgeGate.sol";
 
 /// @dev Example contract to show how to send a simple message to another chain using deBridgeGate
 contract Incrementor is L2Base {

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../../interfaces/ICallProxy.sol";
-import "../IDeBridgeGate.sol";
+import "../ForkedInterfaces/IDeBridgeGate.sol";
 import "../../libraries/Flags.sol";
 
 abstract contract L2Base is Initializable, AccessControlUpgradeable, PausableUpgradeable {
