@@ -25,8 +25,8 @@ yarn hardhat run --network kovan contracts/examples/Incrementor/scripts/deploy.t
 ```
 3. Update addresses (INCREMENTOR_ADDRESS_ON_*) in constants.ts to `Incrementor proxy` addresses (will be printed in console)
 4. Verify (optional)
-
-   IMPLEMENTATION_ADDRESS is `Incrementor implementation` printed in console
+   - Add `import "@nomiclabs/hardhat-etherscan";` to your hardhat.config.ts, install it if it's not installed
+   - IMPLEMENTATION_ADDRESS is `Incrementor implementation` printed in console
    ```shell
    ETHERSCAN_API_KEY=YOUR_KEY yarn hardhat verify --show-stack-traces --network bsctest IMPLEMENTATION_ADDRESS 
    ETHERSCAN_API_KEY=YOUR_KEY yarn hardhat verify --show-stack-traces --network kovan IMPLEMENTATION_ADDRESS
