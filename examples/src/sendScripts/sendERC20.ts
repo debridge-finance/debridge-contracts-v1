@@ -1,6 +1,6 @@
 // @ts-nocheck TODO remove and fix
 import Web3 from "web3";
-import DeBridgeGateJson from "../../../../test-send-method/precompiles/DeBridgeGate.json";
+import DeBridgeGateJson from "../../../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json";
 import IERC20Json from "@openzeppelin/contracts/build/contracts/IERC20.json"
 import log4js from "log4js";
 import {toWei} from "web3-utils";
