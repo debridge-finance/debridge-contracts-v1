@@ -5,7 +5,7 @@ import log4js from "log4js";
 import {AbiItem, toWei} from "web3-utils";
 import {log4jsConfig, Web3RpcUrl} from "./constants";
 import "./parseDotEnvs";
-import send, {GateSendArguments} from "./genericSend";
+import send, {GateSendArguments, TsSendArguments} from "./genericSend";
 import {IERC20} from "../../../typechain-types-web3/IERC20";
 import BN from "bn.js";
 import {MaxUint256} from "@ethersproject/constants";
@@ -18,7 +18,7 @@ const logger = log4js.getLogger('sendERC20');
 
 
 const tokenAddress = process.env.TOKEN_ADDRESS as string;
-const chainIdFrom = process.env.CHAIN_ID_FROM;
+const chainIdFrom = parseInt(process.env.CHAIN_ID_FROM || '');
 const chainIdTo = parseInt(process.env.CHAIN_ID_TO || '');
 const amount = process.env.AMOUNT as string;
 const rpc = Web3RpcUrl[chainIdFrom as unknown as keyof typeof Web3RpcUrl];
@@ -37,40 +37,38 @@ logger.info(`Amount: ${amount}`);
 logger.info(`RPC : ${rpc}`);
 logger.info(`senderAddress : ${senderAddress}`);
 
-const main = async () => {
-    const allowance = new BN(await getAllowance());
-    const amountBn = new BN(toWei(amount));
+const gateSendArguments: GateSendArguments = {
+    tokenAddress,
+    amount: toWei(amount),
+    chainIdTo,
+    receiver: senderAddress,
+}
+const fixNativeFee = toWei("0.01");
+const tsSendArguments = {
+    logger,
+    web3,
+    senderPrivateKey,
+    debridgeGateInstance,
+    debridgeGateAddress,
+    fixNativeFee,
+    gateSendArguments,
+};
+
+export async function sendERC20(args: TsSendArguments) {
+    const allowance = await getAllowance();
+    const amountBn = new BN(args.gateSendArguments.amount);
     if (allowance.lt(amountBn)){
         logger.info(`Insufficient allowance ${allowance.toString()} for token ${tokenAddress}, calling approve`);
         await approve(UINT_MAX_VALUE);
     }
-    const gateSendArguments: GateSendArguments = {
-        tokenAddress,
-        amount: toWei(amount),
-        chainIdTo,
-        receiver: senderAddress,
-        permit: "0x",
-        useAssetFee: false,
-        referralCode: 0,
-        autoParams: "0x",
-    }
-    const fixNativeFee = toWei("0.01");
-    await send({
-        logger,
-        web3,
-        senderPrivateKey,
-        debridgeGateInstance,
-        debridgeGateAddress,
-        fixNativeFee,
-        gateSendArguments,
-    });
+    await send(args);
 }
 
-main().catch(e => logger.error(e));
+sendERC20(tsSendArguments).catch(e => logger.error(e));
 
-async function getAllowance() {
+async function getAllowance(): Promise<BN> {
     const allowanceString = await tokenInstance.methods.allowance(senderAddress, debridgeGateAddress).call();
-    return parseInt(allowanceString);
+    return new BN(allowanceString);
 }
 
 async function approve(newAllowance: string) {

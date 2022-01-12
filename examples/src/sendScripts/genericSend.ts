@@ -7,10 +7,10 @@ export type GateSendArguments = {
     amount: string, // uint256 _amount,
     chainIdTo: number, //uint256 _chainIdTo,
     receiver: string, // bytes memory _receiver,
-    permit: string, //bytes memory _permit,
-    useAssetFee: boolean, //bool _useAssetFee,
-    referralCode: number, //uint32 _referralCode,
-    autoParams: string,// bytes calldata _autoParams
+    permit?: string, //bytes memory _permit,
+    useAssetFee?: boolean, //bool _useAssetFee,
+    referralCode?: number, //uint32 _referralCode,
+    autoParams?: string,// bytes calldata _autoParams
 }
 
 export type TsSendArguments = {
@@ -22,6 +22,13 @@ export type TsSendArguments = {
     fixNativeFee: string, // fix fee for transfer
     gateSendArguments: GateSendArguments,
 };
+
+const gateSendDefaultNotRequiredValue = {
+    permit: '0x',
+    useAssetFee: false,
+    referralCode: 0,
+    autoParams: '0x',
+}
 
 export default async function send({
     logger,
@@ -42,7 +49,10 @@ export default async function send({
     const gasPrice = await web3.eth.getGasPrice();
     logger.info("gasPrice", gasPrice.toString());
 
-    const gateSendArgValues = Object.values(gateSendArguments) as Parameters<DeBridgeGate["methods"]["send"]>;
+    const gateSendArgValues = Object.values({
+        ...gateSendDefaultNotRequiredValue,
+        ...gateSendArguments
+    }) as Parameters<DeBridgeGate["methods"]["send"]>;
     const sendMethod = debridgeGateInstance.methods.send(...gateSendArgValues);
 
     const estimatedGas = await sendMethod.estimateGas({from: senderAddress, value: fixNativeFee});
