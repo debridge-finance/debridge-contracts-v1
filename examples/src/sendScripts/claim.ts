@@ -10,7 +10,7 @@ log4js.configure(log4jsConfig);
 
 const logger = log4js.getLogger('claim');
 
-const privKey = process.env.PRIVATE_KEY;
+const privKey = process.env.SENDER_PRIVATE_KEY;
 const account = new Web3().eth.accounts.privateKeyToAccount(privKey);
 const senderAddress =  account.address;
 logger.info(`senderAddress : ${senderAddress}`);
