@@ -1,4 +1,4 @@
-export const Web3RpcUrl = {
+export const Web3RpcUrl = Object.freeze({
     1: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161', // //ETH Mainnet
     42: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161', // //Kovan
     56: 'https://bsc-dataseed.binance.org/', // //BSC
@@ -9,7 +9,7 @@ export const Web3RpcUrl = {
     80001: 'https://rpc-mumbai.maticvigil.com', // //polygon Testnet
     42161: 'https://arb1.arbitrum.io/rpc', // //arbitrum
     421611: 'https://rinkeby.arbitrum.io/rpc', // //arbitrum Testnet
-} as const;
+});
 
 export const log4jsConfig = {
     appenders: {out: {type: 'stdout'}},
