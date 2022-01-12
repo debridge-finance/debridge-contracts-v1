@@ -1,5 +1,4 @@
 // @ts-nocheck TODO remove and fix
-import {config} from "dotenv-flow";
 import DeBridgeGateJson from "../../../../test-send-method/precompiles/DeBridgeGate.json";
 import log4js from "log4js";
 import web3Utils from "web3-utils";
@@ -7,8 +6,6 @@ import Web3 from "web3";
 import {log4jsConfig, Web3RpcUrl} from "./constants";
 const {toWei} = web3Utils;
 import "./parseDotEnvs";
-
-config();
 
 log4js.configure(log4jsConfig);
 
