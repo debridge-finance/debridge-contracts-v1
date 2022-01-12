@@ -15,8 +15,8 @@ This repository demonstrates how to interact with deBridge infrastructure in ord
 
 In order to run scripts please configure your local environment first:
 
-1. ```yarn install``` <br />
-2. Configure .env file — copy values from .env.testnet or .env.mainnet for the testnet and mainnet environments respectively. You may copy them to .env either in top-level or inside this dir
+1. `yarn install && yarn hardhat compile && yarn typechain --target web3-v1 --out-dir typechain-types-web3 "{artifacts/{contracts,@openzeppelin}/**/*[!dbg].json,./node_modules/@uniswap/v2-periphery/build/[!Combined]*.json}"`
+3. Configure .env file — copy values from .env.testnet or .env.mainnet for the testnet and mainnet environments respectively. You may copy them to .env either in top-level or inside this dir
 
 ### Sending of the Base Asset
 
