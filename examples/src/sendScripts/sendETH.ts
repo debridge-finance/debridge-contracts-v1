@@ -18,7 +18,7 @@ const web3 = new Web3(rpc);
 const debridgeGateAddress = process.env.DEBRIDGEGATE_ADDRESS;
 const debridgeGateInstance = new web3.eth.Contract(DeBridgeGateJson.abi, debridgeGateAddress);
 
-const privKey = process.env.PRIVATE_KEY;
+const privKey = process.env.SENDER_PRIVATE_KEY;
 const account = web3.eth.accounts.privateKeyToAccount(privKey);
 const senderAddress = account.address;
 
