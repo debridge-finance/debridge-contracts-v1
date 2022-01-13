@@ -12,6 +12,8 @@ import logger from "./logger";
 import {GENERIC_ERROR_CODE} from "./constants";
 import UniswapV2Router02Json from "@uniswap/v2-periphery/build/UniswapV2Router02.json";
 import {UniswapV2Router02} from "../../../../typechain-types-web3/UniswapV2Router02";
+import send, {GateSendArguments} from "../genericSend";
+import {ethers} from "ethers";
 
 const {
     CHAIN_ID_FROM,
@@ -64,7 +66,7 @@ async function getUniswapTokenInstanceFromAddress(chainId: number, address: stri
     return new Token(chainId, address, tokenDecimals);
 }
 
-async function getUniswapPairToUseForSwapInfoOnToChain() {
+async function getCallToUniswapRouterEncoded(): Promise<string> {
     const deTokenOfFromTokenOnToChainAddress = await getDebridgeTokenAddressOnToChain(
         CHAIN_ID_FROM,
         TOKEN_ADDRESS_FROM
@@ -88,7 +90,7 @@ async function getUniswapPairToUseForSwapInfoOnToChain() {
         ROUTER_ADDRESS
     ) as unknown as UniswapV2Router02;
 
-    const encoded = router.methods.swapExactTokensForTokens(
+    return router.methods.swapExactTokensForTokens(
         toWei(trade.inputAmount.toExact()),
         toWei(trade.minimumAmountOut(slippageTolerance).toExact()),
         [deTokenOfFromTokenOnToChainAddress, TOKEN_ADDRESS_TO],
@@ -97,4 +99,40 @@ async function getUniswapPairToUseForSwapInfoOnToChain() {
     ).encodeABI();
 }
 
-getUniswapPairToUseForSwapInfoOnToChain();
+async function main() {
+    const autoParamsTo = ['uint256 executionFee', 'uint256 flags', 'bytes fallbackAddress', 'bytes data',];
+    const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [
+        toWei('0.01'),
+        parseInt('110', 2), // REVERT_IF_EXTERNAL_FAIL && PROXY_WITH_SENDER, see Flags.sol,
+        web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
+        await getCallToUniswapRouterEncoded(),
+    ]);
+
+    const gateSendArguments: GateSendArguments = {
+        tokenAddress: TOKEN_ADDRESS_FROM,
+        amount: toWei(AMOUNT),
+        chainIdTo: CHAIN_ID_TO,
+        receiver: ROUTER_ADDRESS,
+        useAssetFee: true,
+        autoParams,
+    }
+    const tsSendArguments = {
+        logger,
+        web3: web3From,
+        senderPrivateKey: SENDER_PRIVATE_KEY,
+        debridgeGateInstance: deBridgeGateFrom,
+        debridgeGateAddress: DEBRIDGEGATE_ADDRESS,
+        fixNativeFee: toWei("0.01"),
+        gateSendArguments,
+    };
+
+    console.log(tsSendArguments);
+}
+
+main()
+    .catch(e => {
+        logger.error('Fail with error:');
+        console.error(e);
+        process.exit(GENERIC_ERROR_CODE);
+    })
+
