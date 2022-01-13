@@ -100,33 +100,41 @@ async function getCallToUniswapRouterEncoded(): Promise<string> {
 }
 
 async function main() {
-    const autoParamsTo = ['uint256 executionFee', 'uint256 flags', 'bytes fallbackAddress', 'bytes data',];
-    const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [
-        toWei('0.01'),
+    if (TOKEN_ADDRESS_FROM === AddressZero) {
+        logger.info('TOKEN_ADDRESS_FROM is set to address zero, native token will be used, value will be set to AMOUNT');
+    }
+
+    const fixNativeFee = await deBridgeGateFrom.methods.globalFixedNativeFee().call();
+    logger.info('fixNativeFee', fixNativeFee);
+
+    const autoParamsTo = ['tuple(uint256 executionFee, uint256 flags, bytes fallbackAddress, bytes data)'];
+    const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [[
+        fixNativeFee,
         parseInt('110', 2), // REVERT_IF_EXTERNAL_FAIL && PROXY_WITH_SENDER, see Flags.sol,
         web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         await getCallToUniswapRouterEncoded(),
-    ]);
+    ]]);
+    logger.info('autoParams', autoParams);
 
+    const amount = toWei(AMOUNT);
     const gateSendArguments: GateSendArguments = {
         tokenAddress: TOKEN_ADDRESS_FROM,
-        amount: toWei(AMOUNT),
+        amount,
         chainIdTo: CHAIN_ID_TO,
         receiver: ROUTER_ADDRESS,
         useAssetFee: true,
         autoParams,
     }
-    const tsSendArguments = {
+
+    await send({
         logger,
         web3: web3From,
         senderPrivateKey: SENDER_PRIVATE_KEY,
         debridgeGateInstance: deBridgeGateFrom,
         debridgeGateAddress: DEBRIDGEGATE_ADDRESS,
-        fixNativeFee: toWei("0.01"),
+        value: amount,
         gateSendArguments,
-    };
-
-    console.log(tsSendArguments);
+    });
 }
 
 main()
