@@ -49,14 +49,14 @@ export default async function send({
     const gasPrice = await web3.eth.getGasPrice();
     logger.info("gasPrice", gasPrice.toString());
 
-    const gateSendArgValues = Object.values({
+    const gateSendArgValues = getSortedSendValues({
         ...gateSendDefaultNotRequiredValue,
         ...gateSendArguments
-    }) as Parameters<DeBridgeGate["methods"]["send"]>;
+    });
     const sendMethod = debridgeGateInstance.methods.send(...gateSendArgValues);
 
     const estimatedGas = await sendMethod.estimateGas({from: senderAddress, value: fixNativeFee});
-    logger.info("Send estimateGas", estimatedGas.toString());
+    logger.info("Estimated gas", estimatedGas.toString());
 
     const tx = {
             from: senderAddress,
@@ -79,4 +79,19 @@ export default async function send({
     const submissionId = logs?.data.substring(0, 66);
     logger.info(`SUBMISSION ID ${submissionId}`);
     logger.info("Success");
+}
+
+function getSortedSendValues({
+    tokenAddress, amount, chainIdTo, receiver, permit, useAssetFee, referralCode, autoParams,
+}: Required<GateSendArguments>): Parameters<DeBridgeGate["methods"]["send"]> {
+    return [
+        tokenAddress,
+        amount,
+        chainIdTo,
+        receiver,
+        permit,
+        useAssetFee,
+        referralCode,
+        autoParams
+    ];
 }

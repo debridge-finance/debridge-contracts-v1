@@ -26,6 +26,7 @@ const ExpectedEnvVars = t.exact(t.type({
 
 const processEnv = {
     ...process.env,
+    // helps to parse CHAIN_ID_TO as ChainId.KOVAN, not generic number if IntFromString is used
     CHAIN_ID_TO: parseInt(process.env.CHAIN_ID_TO)
 }
 
