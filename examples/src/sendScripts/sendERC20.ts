@@ -43,14 +43,14 @@ const gateSendArguments: GateSendArguments = {
     chainIdTo,
     receiver: senderAddress,
 }
-const fixNativeFee = toWei("0.01");
-const tsSendArguments = {
+const value = toWei("0.01");
+const tsSendArguments: TsSendArguments = {
     logger,
     web3,
     senderPrivateKey,
     debridgeGateInstance,
     debridgeGateAddress,
-    fixNativeFee,
+    value,
     gateSendArguments,
 };
 

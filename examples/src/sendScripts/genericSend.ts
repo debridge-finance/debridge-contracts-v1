@@ -19,7 +19,7 @@ export type TsSendArguments = {
     senderPrivateKey: string,
     debridgeGateInstance: DeBridgeGate,
     debridgeGateAddress: string,
-    fixNativeFee: string, // fix fee for transfer
+    value: string,
     gateSendArguments: GateSendArguments,
 };
 
@@ -34,7 +34,7 @@ export default async function send({
     logger,
     web3,
     senderPrivateKey,
-    fixNativeFee,
+    value,
     debridgeGateInstance,
     debridgeGateAddress,
     gateSendArguments
@@ -54,30 +54,32 @@ export default async function send({
         ...gateSendArguments
     });
     const sendMethod = debridgeGateInstance.methods.send(...gateSendArgValues);
+    logger.info("Send method encodedABI", sendMethod.encodeABI());
 
-    const estimatedGas = await sendMethod.estimateGas({from: senderAddress, value: fixNativeFee});
+    const estimatedGas = await sendMethod.estimateGas({from: senderAddress, value});
     logger.info("Estimated gas", estimatedGas.toString());
 
     const tx = {
             from: senderAddress,
             to: debridgeGateAddress,
             gas: estimatedGas,
-            value: fixNativeFee,
+            value,
             gasPrice: gasPrice,
             nonce,
             data: sendMethod.encodeABI(),
     };
 
-    logger.info("Send tx", tx);
+    logger.info("Tx", tx);
     const signedTx = await web3.eth.accounts.signTransaction(tx, senderPrivateKey);
-    logger.info("Send signed tx", signedTx);
+    logger.info("Signed tx", signedTx);
 
     let result = await web3.eth.sendSignedTransaction(signedTx.rawTransaction as string);
-    logger.info("Send result", result);
+    logger.info("Result", result);
 
     const logs = result.logs.find(l=>l.address===debridgeGateAddress);
     const submissionId = logs?.data.substring(0, 66);
     logger.info(`SUBMISSION ID ${submissionId}`);
+    logger.info(`Url: https://testnet.debridge.finance/transaction?tx=${result.transactionHash}&chainId=${await web3.eth.getChainId()}`);
     logger.info("Success");
 }
 
