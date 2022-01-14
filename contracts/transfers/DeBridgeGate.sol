@@ -1048,7 +1048,9 @@ contract DeBridgeGate is
                     autoParams.executionFee,
                     autoParams.flags,
                     autoParams.fallbackAddress,
+                    uint32(autoParams.data.length),
                     autoParams.data,
+                    uint32(autoParams.nativeSender.length),
                     autoParams.nativeSender
                 )
             );
@@ -1082,7 +1084,9 @@ contract DeBridgeGate is
                     autoParams.executionFee,
                     autoParams.flags,
                     autoParams.fallbackAddress,
+                    uint32(autoParams.data.length),
                     autoParams.data,
+                    uint32(20), // address has 20 bytes length
                     msg.sender
                 )
             );
