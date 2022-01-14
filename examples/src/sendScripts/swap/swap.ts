@@ -107,7 +107,7 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
         toWei(trade.inputAmount.toExact()),
         toWei(trade.minimumAmountOut(slippageTolerance).toExact()),
         [deTokenOfFromTokenOnToChainAddress, TOKEN_ADDRESS_TO],
-        TOKEN_ADDRESS_TO,
+        web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         deadline
     ).encodeABI();
 }
