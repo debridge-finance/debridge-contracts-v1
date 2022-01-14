@@ -215,7 +215,7 @@ contract DeBridgeGate is
             _useAssetFee
         );
 
-        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, amountAfterFee);
+        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _tokenAddress, amountAfterFee);
         amountAfterFee -= autoParams.executionFee;
 
         // round down amount in order not to bridge dust
@@ -843,10 +843,12 @@ contract DeBridgeGate is
 
     function _validateAutoParams(
         bytes calldata _autoParams,
+        address _tokenAddress,
         uint256 _amount
-    ) internal pure returns (SubmissionAutoParamsTo memory autoParams) {
+    ) internal view returns (SubmissionAutoParamsTo memory autoParams) {
         if (_autoParams.length > 0) {
             autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
+            autoParams.executionFee = _normalizeTokenAmount(_tokenAddress, autoParams.executionFee);
             if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
             if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
         }
