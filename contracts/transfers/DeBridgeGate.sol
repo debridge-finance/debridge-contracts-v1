@@ -926,10 +926,12 @@ contract DeBridgeGate is
         uint256 _amount,
         bool isNativeToken
     ) internal {
-        if (isNativeToken) {
-            IERC20Upgradeable(_token).safeTransfer(_receiver, _amount);
-        } else {
-            IDeBridgeToken(_token).mint(_receiver, _amount);
+        if (_amount > 0) {
+            if (isNativeToken) {
+                IERC20Upgradeable(_token).safeTransfer(_receiver, _amount);
+            } else {
+                IDeBridgeToken(_token).mint(_receiver, _amount);
+            }
         }
     }
 
