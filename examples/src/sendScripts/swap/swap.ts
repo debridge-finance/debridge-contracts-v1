@@ -16,7 +16,7 @@ import send, {GateSendArguments} from "../genericSend";
 import {ethers} from "ethers";
 import BN from "bn.js";
 
-const DEFAULT_EXECUTION_FEE_BN = new BN(toWei('0.01'));
+const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
 
 const {
     CHAIN_ID_FROM,
@@ -113,18 +113,18 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
 }
 
 async function calculateTotalFeesWithoutExecutionFees(amountWholeBN: BN): Promise<BN> {
-    const BPS_DENOMINATOR_BN = new BN(await deBridgeGateFrom.methods.BPS_DENOMINATOR().call());
+    const BPS_DENOMINATOR = new BN(await deBridgeGateFrom.methods.BPS_DENOMINATOR().call());
 
     const toChainConfig = await deBridgeGateFrom.methods.getChainToConfig(CHAIN_ID_TO).call();
-    const globalTransferFeeBpsBN = new BN( await deBridgeGateFrom.methods.globalTransferFeeBps().call() );
-    const transferFeeBpsBN = toChainConfig.transferFeeBps === '0' ? globalTransferFeeBpsBN : new BN('0');
-    const transferFeeBN = amountWholeBN.mul(transferFeeBpsBN).div(BPS_DENOMINATOR_BN);
+    const globalTransferFeeBps = new BN( await deBridgeGateFrom.methods.globalTransferFeeBps().call() );
+    const transferFeeBps = toChainConfig.transferFeeBps === '0' ? globalTransferFeeBps : new BN('0');
+    const transferFee = amountWholeBN.mul(transferFeeBps).div(BPS_DENOMINATOR);
 
     const deBridgeId = await getDebridgeId(CHAIN_ID_FROM, TOKEN_ADDRESS_FROM);
-    const debridgeChainAssetFixedFeeBN = new BN(
+    const debridgeChainAssetFixedFee = new BN(
         await deBridgeGateFrom.methods.getDebridgeChainAssetFixedFee(deBridgeId, CHAIN_ID_TO).call()
     );
-    return  transferFeeBN.add(debridgeChainAssetFixedFeeBN);
+    return  transferFee.add(debridgeChainAssetFixedFee);
 }
 
 async function main() {
@@ -134,22 +134,22 @@ async function main() {
         logger.error('TOKEN_ADDRESS_FROM is NOT set to address zero, non-native tokens are not supported yet, set TOKEN_ADDRESS_FROM to address zero to use this example');
     }
 
-    const amountWholeBN = new BN(toWei(AMOUNT));
-    const totalFeeWithoutExecutionBN = await calculateTotalFeesWithoutExecutionFees(amountWholeBN);
-    const executionFeeBN = DEFAULT_EXECUTION_FEE_BN;
-    const totalFees = totalFeeWithoutExecutionBN.add(executionFeeBN);
-    const amountAfterFeeBN = amountWholeBN.sub(totalFees);
+    const amountWhole = new BN(toWei(AMOUNT));
+    const totalFeeWithoutExecution = await calculateTotalFeesWithoutExecutionFees(amountWhole);
+    const executionFee = DEFAULT_EXECUTION_FEE;
+    const totalFees = totalFeeWithoutExecution.add(executionFee);
+    const amountAfterFee = amountWhole.sub(totalFees);
 
-    logger.info('amount whole', fromWei(amountWholeBN));
-    logger.info('total fee without execution', fromWei(totalFeeWithoutExecutionBN));
-    logger.info('execution fee ', fromWei(executionFeeBN));
+    logger.info('amount whole', fromWei(amountWhole));
+    logger.info('total fee without execution', fromWei(totalFeeWithoutExecution));
+    logger.info('execution fee ', fromWei(executionFee));
     logger.info('total fee ', fromWei(totalFees));
-    logger.info('left after fees', fromWei(amountAfterFeeBN));
+    logger.info('left after fees', fromWei(amountAfterFee));
 
     const autoParamsTo = ['tuple(uint256 executionFee, uint256 flags, bytes fallbackAddress, bytes data)'];
-    const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(amountAfterFeeBN.toString());
+    const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(amountAfterFee.toString());
     const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [[
-        executionFeeBN.toString(),
+        executionFee.toString(),
         parseInt('110', 2), // REVERT_IF_EXTERNAL_FAIL && PROXY_WITH_SENDER, see Flags.sol,
         web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         callToUniswapRouterEncoded,
@@ -159,7 +159,7 @@ async function main() {
 
     const gateSendArguments: GateSendArguments = {
         tokenAddress: TOKEN_ADDRESS_FROM,
-        amount: amountWholeBN.toString(),
+        amount: amountWhole.toString(),
         chainIdTo: CHAIN_ID_TO,
         receiver: ROUTER_ADDRESS,
         useAssetFee: true,
@@ -172,7 +172,7 @@ async function main() {
         senderPrivateKey: SENDER_PRIVATE_KEY,
         debridgeGateInstance: deBridgeGateFrom,
         debridgeGateAddress: DEBRIDGEGATE_ADDRESS,
-        value: amountWholeBN.toString(),
+        value: amountWhole.toString(),
         gateSendArguments,
     });
 }
