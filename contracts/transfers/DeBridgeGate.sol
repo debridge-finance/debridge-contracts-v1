@@ -1033,8 +1033,11 @@ contract DeBridgeGate is
                     packedSubmission,
                     autoParams.executionFee,
                     autoParams.flags,
+                    uint32(20), // fallbackAddress has 20 bytes length
                     autoParams.fallbackAddress,
+                    uint32(autoParams.data.length),
                     autoParams.data,
+                    uint32(autoParams.nativeSender.length),
                     autoParams.nativeSender
                 )
             );
@@ -1067,8 +1070,11 @@ contract DeBridgeGate is
                     packedSubmission,
                     autoParams.executionFee,
                     autoParams.flags,
+                    uint32(autoParams.fallbackAddress.length),
                     autoParams.fallbackAddress,
+                    uint32(autoParams.data.length),
                     autoParams.data,
+                    uint32(20), // address has 20 bytes length
                     msg.sender
                 )
             );
@@ -1112,6 +1118,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 201; // 2.0.1
+        return 301; // 3.0.1
     }
 }
