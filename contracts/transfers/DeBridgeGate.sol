@@ -40,10 +40,6 @@ contract DeBridgeGate is
     uint256 public constant BPS_DENOMINATOR = 10000;
     /// @dev Role allowed to stop transfers
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
-    /// @dev Value for lockedClaim variable when claim function is not entered
-    uint256 private constant _CLAIM_NOT_LOCKED = 1;
-    /// @dev Value for lockedClaim variable when claim function is entered
-    uint256 private constant _CLAIM_LOCKED = 2;
 
     /// @dev prefix to calculation submissionId
     uint256 public constant SUBMISSION_PREFIX = 1;
@@ -136,7 +132,6 @@ contract DeBridgeGate is
 
     error NotEnoughReserves();
     error EthTransferFailed();
-    error ClaimLocked();
 
     /* ========== MODIFIERS ========== */
 
@@ -165,14 +160,6 @@ contract DeBridgeGate is
         _;
     }
 
-    /// @dev lock for claim method
-    modifier lockClaim() {
-        if (lockedClaim == _CLAIM_LOCKED) revert ClaimLocked();
-        lockedClaim = _CLAIM_LOCKED;
-        _;
-        lockedClaim = _CLAIM_NOT_LOCKED;
-    }
-
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -187,7 +174,6 @@ contract DeBridgeGate is
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         __ReentrancyGuard_init();
-        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== send, claim ========== */
@@ -254,7 +240,7 @@ contract DeBridgeGate is
         uint256 _nonce,
         bytes calldata _signatures,
         bytes calldata _autoParams
-    ) external override lockClaim whenNotPaused {
+    ) external override whenNotPaused {
         if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
 
         SubmissionAutoParamsFrom memory autoParams;

@@ -17,10 +17,18 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== STATE VARIABLES ========== */
     /// @dev Role allowed to withdraw fee
     bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE");
+
+    /// @dev Value for lock variable when function is not entered
+    uint256 private constant _NOT_LOCKED = 1;
+    /// @dev Value for lock variable when function is entered
+    uint256 private constant _LOCKED = 2;
+
     /// @dev Chain from which the current submission is received
     uint256 public override submissionChainIdFrom;
     /// @dev Native sender of the current submission
     bytes public override submissionNativeSender;
+
+    uint256 private _lock;
 
     /* ========== ERRORS ========== */
 
@@ -28,12 +36,21 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     error ExternalCallFailed();
     error CallFailed();
+    error Locked();
 
     /* ========== MODIFIERS ========== */
 
     modifier onlyGateRole() {
         if (!hasRole(DEBRIDGE_GATE_ROLE, msg.sender)) revert DeBridgeGateBadRole();
         _;
+    }
+
+    /// @dev lock
+    modifier lock() {
+        if (_lock == _LOCKED) revert Locked();
+        _lock = _LOCKED;
+        _;
+        _lock = _NOT_LOCKED;
     }
 
     /* ========== CONSTRUCTOR  ========== */
@@ -50,7 +67,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _flags,
         bytes memory _nativeSender,
         uint256 _chainIdFrom
-    ) external payable override onlyGateRole returns (bool _result) {
+    ) external payable override onlyGateRole lock returns (bool _result) {
         uint256 amount = address(this).balance;
 
         _result = externalCall(
@@ -80,7 +97,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _flags,
         bytes memory _nativeSender,
         uint256 _chainIdFrom
-    ) external override onlyGateRole returns (bool _result) {
+    ) external override onlyGateRole lock returns (bool _result) {
         uint256 amount = IERC20Upgradeable(_token).balanceOf(address(this));
         IERC20Upgradeable(_token).safeApprove(_receiver, 0);
         IERC20Upgradeable(_token).safeApprove(_receiver, amount);
