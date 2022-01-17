@@ -158,3 +158,19 @@ The method of the smart contract that was executed as a result of cross-chain ca
 ![](https://i.imgur.com/61uRSXD.png)
 
 Feel free to reach out to us in the #developer channel of [Discord](http://discord.gg/debridge) to ask any questions.
+
+## Cross-chain swap
+Set DEBRIDGEGATE_ADDRESS, SENDER_PRIVATE_KEY, ROUTER_ADDRESS in .env file
+
+Call swap with arguments, e.g.
+```shell
+yarn ts-node examples/src/sendScripts/swap/swap.ts \
+--chain-id-from 97 \
+--chain-id-to 42 \
+--token-address-from 0x0000000000000000000000000000000000000000 \
+--token-address-to 0x0000000000000000000000000000000000000000 \
+--amount 0.1
+```
+Set token-address-from to zero address to send native tokens (BNB on BSC, ETH on Kovan, etc.)
+
+Set token-address-to to zero address to receive native tokens

@@ -4,6 +4,7 @@ import ERC20Json from "@openzeppelin/contracts/build/contracts/ERC20.json"
 import {AbiItem, toWei, fromWei} from "web3-utils";
 import {Web3RpcUrl} from "../constants";
 import envVars from './getTypedEnvVariables';
+import consoleOptions from './getTypedConsoleArguments';
 import {Fetcher, Percent, Route, Token, TokenAmount, Trade, TradeType, WETH} from "@uniswap/sdk";
 import {ERC20} from "../../../../typechain-types-web3/ERC20";
 import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
@@ -20,15 +21,12 @@ const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
 
 // Just for validation and type parsing, you can use `= process.env`
 const {
-    CHAIN_ID_FROM,
-    CHAIN_ID_TO,
-    TOKEN_ADDRESS_FROM,
-    TOKEN_ADDRESS_TO,
-    AMOUNT,
     DEBRIDGEGATE_ADDRESS,
     SENDER_PRIVATE_KEY,
     ROUTER_ADDRESS
 } = envVars;
+
+const {CHAIN_ID_FROM, CHAIN_ID_TO, TOKEN_ADDRESS_FROM, TOKEN_ADDRESS_TO, AMOUNT} = consoleOptions;
 
 const rpcFrom = Web3RpcUrl[CHAIN_ID_FROM]
 const web3From = new Web3(rpcFrom);
@@ -143,13 +141,13 @@ async function calculateTotalFeesWithoutExecutionFees(amountWholeBN: BN): Promis
 
 async function main() {
     if (TOKEN_ADDRESS_FROM === AddressZero) {
-        logger.info('TOKEN_ADDRESS_FROM is set to address zero, native token will be used, value will be set to AMOUNT');
+        logger.info('"Token address from" is set to address zero, native token will be used, value will be set to AMOUNT');
     } else {
-        logger.error('TOKEN_ADDRESS_FROM is NOT set to address zero, non-native tokens are not supported yet, set TOKEN_ADDRESS_FROM to address zero to use this example');
+        logger.error('"Token address from" is NOT set to address zero, non-native tokens are not supported yet, set TOKEN_ADDRESS_FROM to address zero to use this example');
     }
 
     if (TOKEN_ADDRESS_TO === AddressZero) {
-        logger.info(`TOKEN_ADDRESS_TO is set to address zero, you will get native token of the receiving chain (id ${CHAIN_ID_TO})`);
+        logger.info(`"Token address to" is set to address zero, you will get native token of the receiving chain (id ${CHAIN_ID_TO})`);
     }
 
     const amountWhole = new BN(toWei(AMOUNT));
