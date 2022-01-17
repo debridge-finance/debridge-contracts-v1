@@ -153,7 +153,7 @@ async function main() {
     const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(amountAfterFee.toString());
     const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [[
         executionFee.toString(),
-        parseInt('110', 2), // REVERT_IF_EXTERNAL_FAIL && PROXY_WITH_SENDER, see Flags.sol,
+        parseInt('100', 2), // set only PROXY_WITH_SENDER flag, see Flags.sol and CallProxy.sol
         web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         callToUniswapRouterEncoded,
     ]]);
