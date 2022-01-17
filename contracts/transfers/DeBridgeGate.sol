@@ -1047,6 +1047,7 @@ contract DeBridgeGate is
                     packedSubmission,
                     autoParams.executionFee,
                     autoParams.flags,
+                    uint32(20), // fallbackAddress has 20 bytes length
                     autoParams.fallbackAddress,
                     uint32(autoParams.data.length),
                     autoParams.data,
@@ -1083,6 +1084,7 @@ contract DeBridgeGate is
                     packedSubmission,
                     autoParams.executionFee,
                     autoParams.flags,
+                    uint32(autoParams.fallbackAddress.length),
                     autoParams.fallbackAddress,
                     uint32(autoParams.data.length),
                     autoParams.data,
