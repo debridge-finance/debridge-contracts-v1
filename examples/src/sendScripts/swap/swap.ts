@@ -118,7 +118,9 @@ async function calculateTotalFeesWithoutExecutionFees(amountWholeBN: BN): Promis
 
     const toChainConfig = await deBridgeGateFrom.methods.getChainToConfig(CHAIN_ID_TO).call();
     const globalTransferFeeBps = new BN( await deBridgeGateFrom.methods.globalTransferFeeBps().call() );
-    const transferFeeBps = toChainConfig.transferFeeBps === '0' ? globalTransferFeeBps : new BN('0');
+    const transferFeeBps = toChainConfig.transferFeeBps === '0'
+        ? globalTransferFeeBps
+        : new BN(toChainConfig.transferFeeBps);
     const transferFee = amountWholeBN.mul(transferFeeBps).div(BPS_DENOMINATOR);
 
     const deBridgeId = await getDebridgeId(CHAIN_ID_FROM, TOKEN_ADDRESS_FROM);
