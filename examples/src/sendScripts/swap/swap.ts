@@ -4,7 +4,7 @@ import ERC20Json from "@openzeppelin/contracts/build/contracts/ERC20.json"
 import {AbiItem, toWei, fromWei} from "web3-utils";
 import {Web3RpcUrl} from "../constants";
 import envVars from './getTypedEnvVariables';
-import {Fetcher, Percent, Route, Token, TokenAmount, Trade, TradeType} from "@uniswap/sdk";
+import {Fetcher, Percent, Route, Token, TokenAmount, Trade, TradeType, WETH} from "@uniswap/sdk";
 import {ERC20} from "../../../../typechain-types-web3/ERC20";
 import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
 import {AddressZero} from "@ethersproject/constants";
@@ -87,7 +87,12 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
         deTokenOfFromTokenOnToChainAddress
     );
 
-    const toTokenUniswap = await getUniswapTokenInstanceFromAddress(CHAIN_ID_TO, TOKEN_ADDRESS_TO);
+    const shouldReceiveNativeToken = TOKEN_ADDRESS_TO === AddressZero;
+
+    const toTokenUniswap =  shouldReceiveNativeToken
+        ? WETH[CHAIN_ID_TO]
+        : await getUniswapTokenInstanceFromAddress(CHAIN_ID_TO, TOKEN_ADDRESS_TO)
+    ;
 
     const pair = await Fetcher.fetchPairData(deTokenOfFromTokenOnToChainUniswap, toTokenUniswap);
     const route = new Route([pair], deTokenOfFromTokenOnToChainUniswap);
@@ -104,13 +109,19 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
     logger.info('Will sell deTokens', trade.inputAmount.toExact());
     logger.info('Will get at least', trade.minimumAmountOut(slippageTolerance).toExact());
 
-    return router.methods.swapExactTokensForTokens(
+
+    // Same for *forETH and *forTokens
+    const swapExactTokensArguments: Parameters<UniswapV2Router02['methods']['swapExactTokensForETH']> = [
         toWei(trade.inputAmount.toExact()),
         toWei(trade.minimumAmountOut(slippageTolerance).toExact()),
-        [deTokenOfFromTokenOnToChainAddress, TOKEN_ADDRESS_TO],
+        [deTokenOfFromTokenOnToChainAddress, toTokenUniswap.address],
         web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         deadline
-    ).encodeABI();
+    ];
+
+    return shouldReceiveNativeToken
+        ?  router.methods.swapExactTokensForETH(...swapExactTokensArguments).encodeABI()
+        :  router.methods.swapExactTokensForTokens(...swapExactTokensArguments).encodeABI()
 }
 
 async function calculateTotalFeesWithoutExecutionFees(amountWholeBN: BN): Promise<BN> {
@@ -135,6 +146,10 @@ async function main() {
         logger.info('TOKEN_ADDRESS_FROM is set to address zero, native token will be used, value will be set to AMOUNT');
     } else {
         logger.error('TOKEN_ADDRESS_FROM is NOT set to address zero, non-native tokens are not supported yet, set TOKEN_ADDRESS_FROM to address zero to use this example');
+    }
+
+    if (TOKEN_ADDRESS_TO === AddressZero) {
+        logger.info(`TOKEN_ADDRESS_TO is set to address zero, you will get native token of the receiving chain (id ${CHAIN_ID_TO})`);
     }
 
     const amountWhole = new BN(toWei(AMOUNT));
