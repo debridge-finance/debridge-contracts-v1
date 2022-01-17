@@ -132,6 +132,7 @@ contract DeBridgeGate is
     error ZeroAddress();
 
     error ProposedFeeTooHigh();
+    error NeedRoundAmount();
     error FlashFeeNotPaid();
 
     error NotEnoughReserves();
@@ -848,7 +849,8 @@ contract DeBridgeGate is
     ) internal view returns (SubmissionAutoParamsTo memory autoParams) {
         if (_autoParams.length > 0) {
             autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
-            autoParams.executionFee = _normalizeTokenAmount(_tokenAddress, autoParams.executionFee);
+            if (autoParams.executionFee != _normalizeTokenAmount(_tokenAddress, autoParams.executionFee))
+                revert NeedRoundAmount();
             if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
             if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
         }
