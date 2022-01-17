@@ -674,6 +674,7 @@ Locks asset on the chain and enables minting on the other chain.
 ```solidity
   function _validateAutoParams(
             bytes _autoParams,
+            address _tokenAddress,
             uint256 _amount
   ) internal returns (struct IDeBridgeGate.SubmissionAutoParamsTo autoParams)
 ```
