@@ -18,6 +18,7 @@ import BN from "bn.js";
 
 const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
 
+// Just for validation and type parsing, you can use `= process.env`
 const {
     CHAIN_ID_FROM,
     CHAIN_ID_TO,
