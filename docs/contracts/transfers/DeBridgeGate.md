@@ -670,18 +670,6 @@ Locks asset on the chain and enables minting on the other chain.
 
 
 
-## _validateAutoParams
-```solidity
-  function _validateAutoParams(
-            bytes _autoParams,
-            address _tokenAddress,
-            uint256 _amount
-  ) internal returns (struct IDeBridgeGate.SubmissionAutoParamsTo autoParams)
-```
-
-
-
-
 ## _claim
 ```solidity
   function _claim(
@@ -833,6 +821,23 @@ Calculate submission id for auto claimable transfer.
 |`_nonce` | uint256 | Submission id.
 |`autoParams` | struct IDeBridgeGate.SubmissionAutoParamsFrom | Auto params for external call
 |`hasAutoParams` | bool | True if auto params are provided
+
+## publishSubmission
+```solidity
+  function publishSubmission(
+            bytes32 _debridgeId,
+            uint256 _chainIdTo,
+            uint256 _amount,
+            bytes _receiver,
+            struct IDeBridgeGate.FeeParams feeParams,
+            uint32 _referralCode,
+            struct IDeBridgeGate.SubmissionAutoParamsTo autoParams,
+            bool hasAutoParams
+  ) internal
+```
+
+
+
 
 ## getDeployId
 ```solidity
