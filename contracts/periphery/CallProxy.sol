@@ -169,6 +169,6 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 120; // 1.2.0
+        return 130; // 1.3.0
     }
 }
