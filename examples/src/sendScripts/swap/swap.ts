@@ -21,6 +21,7 @@ import {IUniswapV2Factory} from "../../../../typechain-types-web3/IUniswapV2Fact
 import sendERC20 from "../genericSendERC20";
 
 const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
+const ether = new BN(toWei('1'));
 
 // Just for validation and type parsing, you can use `= process.env`
 const {
@@ -45,29 +46,59 @@ const deBridgeGateTo = new web3To.eth.Contract(
     DEBRIDGEGATE_ADDRESS
 ) as unknown as DeBridgeGate;
 
+async function getDecimalsMultiplierForSentToken() {
+    if (TOKEN_ADDRESS_FROM === AddressZero){
+        return ether;
+    }
+
+    const tokenInstance = new web3From.eth.Contract(ERC20Json.abi as AbiItem[], TOKEN_ADDRESS_FROM) as unknown as ERC20;
+    const decimals = new BN(await tokenInstance.methods.decimals().call());
+    const ten = new BN('10');
+
+    return ten.pow(decimals);
+}
+
+function normalizeToDecimals(bnInWei: BN, decimalsMultiplierForSentToken: BN): BN {
+    return bnInWei.mul(decimalsMultiplierForSentToken).div(ether);
+}
+
 async function getDebridgeId(
-    tokenNativeChainId: keyof typeof Web3RpcUrl,
+    tokenNativeChainId: number,
     tokenAddressOnNativeChain: string
 ): Promise<string> {
-    const isNativeTokenRequested = tokenAddressOnNativeChain === AddressZero;
-    const addressToUseForDebridgeId = isNativeTokenRequested
+    const isMainTokenRequested = tokenAddressOnNativeChain === AddressZero;
+    const addressToUseForDebridgeId = isMainTokenRequested
         ? await deBridgeGateFrom.methods.weth().call()
         : tokenAddressOnNativeChain;
+
+    logger.info(`Address to use for debridge id`, addressToUseForDebridgeId);
 
     return deBridgeGateTo.methods.getDebridgeId(tokenNativeChainId, addressToUseForDebridgeId).call();
 }
 
-async function getDebridgeTokenAddressOnToChain(
-    tokenNativeChainId: keyof typeof Web3RpcUrl,
-    tokenAddressOnNativeChain: string
+async function getTokenAddressOnToChain(
+    fromChainId: keyof typeof Web3RpcUrl,
+    tokenAddressOnFromChain: string
 ) {
-    const deBridgeId = await getDebridgeId(tokenNativeChainId, tokenAddressOnNativeChain);
+    const nativeTokenInfo = await deBridgeGateFrom.methods.getNativeInfo(tokenAddressOnFromChain).call();
+    const isNativeToken = TOKEN_ADDRESS_FROM === AddressZero || nativeTokenInfo.nativeChainId === fromChainId.toString();
+
+    const deBridgeId = isNativeToken
+        ?  await getDebridgeId(fromChainId, tokenAddressOnFromChain)
+        :  await getDebridgeId(parseInt(nativeTokenInfo.nativeChainId), nativeTokenInfo.nativeAddress)
+
     const deBridgeInfo = await deBridgeGateTo.methods.getDebridge(deBridgeId).call();
+
+    logger.info(`Sending ${isNativeToken ? '' : 'not '}native token`);
+    logger.info(`nativeTokenInfo`, nativeTokenInfo);
+    logger.info('deBridgeId of sending token', deBridgeId);
+    logger.info('deBridgeInfo',deBridgeInfo);
+
     if (!deBridgeInfo.exist) {
-        logger.error(`Token with address ${tokenAddressOnNativeChain} does not have debridgeInfo on receiving chain`);
+        logger.error(`Token with address ${tokenAddressOnFromChain} does not have debridgeInfo on receiving chain`);
         process.exit(GENERIC_ERROR_CODE);
     }
-    return deBridgeInfo.tokenAddress;
+    return isNativeToken ? deBridgeInfo.tokenAddress : nativeTokenInfo.nativeAddress;
 }
 
 async function getUniswapTokenInstanceFromAddress(chainId: number, address: string): Promise<Token> {
@@ -78,16 +109,15 @@ async function getUniswapTokenInstanceFromAddress(chainId: number, address: stri
     return new Token(chainId, address, tokenDecimals);
 }
 
-async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<string> {
-    const deTokenOfFromTokenOnToChainAddress = await getDebridgeTokenAddressOnToChain(
+async function getCallToUniswapRouterEncoded(amountToSell: BN, decimalsMultiplierForSentToken: BN): Promise<string> {
+    const addressOfFromTokenOnToChain = await getTokenAddressOnToChain(
         CHAIN_ID_FROM,
         TOKEN_ADDRESS_FROM
     );
-    const deTokenOfFromTokenOnToChainUniswap = await getUniswapTokenInstanceFromAddress(
+    const fromTokenOnToChainUniswap = await getUniswapTokenInstanceFromAddress(
         CHAIN_ID_TO,
-        deTokenOfFromTokenOnToChainAddress
+        addressOfFromTokenOnToChain
     );
-
     const shouldReceiveNativeToken = TOKEN_ADDRESS_TO === AddressZero;
 
     const toTokenUniswap =  shouldReceiveNativeToken
@@ -99,16 +129,17 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
         IUniswapV2FactoryJson.abi as AbiItem[],
         FACTORY_ADDRESS
     ) as unknown as IUniswapV2Factory;
-    const pairAddress  = await factory.methods.getPair(deTokenOfFromTokenOnToChainAddress, toTokenUniswap.address).call();
+    const pairAddress  = await factory.methods.getPair(addressOfFromTokenOnToChain, toTokenUniswap.address).call();
     const isPairMissing = pairAddress === AddressZero;
     if (isPairMissing){
         logger.error('Pair does not exist on receiving chain, please create it first');
         process.exit(GENERIC_ERROR_CODE);
     }
 
-    const pair = await Fetcher.fetchPairData(deTokenOfFromTokenOnToChainUniswap, toTokenUniswap);
-    const route = new Route([pair], deTokenOfFromTokenOnToChainUniswap);
-    const amount = new TokenAmount(deTokenOfFromTokenOnToChainUniswap, amountToSell);
+    const pair = await Fetcher.fetchPairData(fromTokenOnToChainUniswap, toTokenUniswap);
+    const route = new Route([pair], fromTokenOnToChainUniswap);
+    const amountToSellNormalized = normalizeToDecimals(amountToSell, decimalsMultiplierForSentToken);
+    const amount = new TokenAmount(fromTokenOnToChainUniswap, amountToSellNormalized.toString());
     const trade = new Trade(route, amount, TradeType.EXACT_INPUT);
     const slippageTolerance = new Percent("300", "10000"); // 300 bips, or 3%
     const deadline = Math.floor(Date.now() / 1000) + 60 * 30; // 30 minutes from the current Unix time
@@ -121,12 +152,11 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
     logger.info('Will sell deTokens', trade.inputAmount.toExact());
     logger.info('Will get at least', trade.minimumAmountOut(slippageTolerance).toExact());
 
-
     // Same for *forETH and *forTokens
     const swapExactTokensArguments: Parameters<UniswapV2Router02['methods']['swapExactTokensForETH']> = [
-        toWei(trade.inputAmount.toExact()),
-        toWei(trade.minimumAmountOut(slippageTolerance).toExact()),
-        [deTokenOfFromTokenOnToChainAddress, toTokenUniswap.address],
+        trade.inputAmount.raw.toString(),
+        trade.minimumAmountOut(slippageTolerance).raw.toString(),
+        [addressOfFromTokenOnToChain, toTokenUniswap.address],
         web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         deadline
     ];
@@ -174,6 +204,7 @@ async function main() {
         logger.info(`"Token address to" is set to address zero, you will get native token of the receiving chain (id ${CHAIN_ID_TO})`);
     }
 
+    const decimalsMultiplierForSentToken = await getDecimalsMultiplierForSentToken();
     const amountWhole = new BN(toWei(AMOUNT));
     const transferFee = await calculateTransferFee(amountWhole);
     const executionFee = DEFAULT_EXECUTION_FEE;
@@ -200,9 +231,9 @@ async function main() {
     logger.info('sent token left after fees', fromWei(amountAfterFee));
 
     const autoParamsTo = ['tuple(uint256 executionFee, uint256 flags, bytes fallbackAddress, bytes data)'];
-    const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(amountAfterFee.toString());
+    const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(amountAfterFee, decimalsMultiplierForSentToken);
     const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [[
-        executionFee.toString(),
+        normalizeToDecimals(executionFee, decimalsMultiplierForSentToken).toString(),
         parseInt('100', 2), // set only PROXY_WITH_SENDER flag, see Flags.sol and CallProxy.sol
         web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         callToUniswapRouterEncoded,
@@ -212,7 +243,7 @@ async function main() {
 
     const gateSendArguments: GateSendArguments = {
         tokenAddress: TOKEN_ADDRESS_FROM,
-        amount: amountWhole.toString(),
+        amount: normalizeToDecimals(amountWhole, decimalsMultiplierForSentToken).toString(),
         chainIdTo: CHAIN_ID_TO,
         receiver: ROUTER_ADDRESS,
         useAssetFee: isSendingNativeToken,
