@@ -22,6 +22,7 @@ import sendERC20 from "../genericSendERC20";
 
 const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
 const ether = new BN(toWei('1'));
+const zero = new BN('0');
 
 // Just for validation and type parsing, you can use `= process.env`
 const {
@@ -160,6 +161,7 @@ async function getCallToUniswapRouterEncoded(amountToSell: BN, decimalsMultiplie
         web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
         deadline
     ];
+    logger.info('Uniswap router call arguments', swapExactTokensArguments);
 
     return shouldReceiveNativeToken
         ?  router.methods.swapExactTokensForETH(...swapExactTokensArguments).encodeABI()
@@ -220,6 +222,11 @@ async function main() {
         : executionFee.add(transferFee)
     ;
     const amountAfterFee = amountWhole.sub(feesToPayInSentToken);
+
+    if (amountAfterFee.lt(zero)){
+        logger.error(`amount (${fromWei(amountWhole)}) is less than fees (${fromWei(feesToPayInSentToken)})`);
+        process.exit(GENERIC_ERROR_CODE);
+    }
 
     logger.info('amount whole in sending token', fromWei(amountWhole));
     if (isSendingNativeToken) {
