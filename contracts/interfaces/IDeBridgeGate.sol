@@ -143,9 +143,9 @@ interface IDeBridgeGate {
     /// @dev Get native chain id and native address of a token
     /// @param currentTokenAddress address of a token on the current chain
     function getNativeTokenInfo(address currentTokenAddress)
-        external
-        view
-        returns (uint256 chainId, bytes memory nativeAddress);
+    external
+    view
+    returns (uint256 chainId, bytes memory nativeAddress);
 
     /// @dev Returns asset fixed fee value for specified debridge and chainId.
     /// @param _debridgeId Asset identifier.

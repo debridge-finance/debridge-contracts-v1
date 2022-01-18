@@ -120,7 +120,7 @@ contract DeBridgeTokenDeployer is
         bytes memory bytecode = abi.encodePacked(type(DeBridgeTokenProxy).creationCode, constructorArgs);
 
         assembly {
-            // debridgeId is a salt
+        // debridgeId is a salt
             deBridgeTokenAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
 
             if iszero(extcodesize(deBridgeTokenAddress)) {

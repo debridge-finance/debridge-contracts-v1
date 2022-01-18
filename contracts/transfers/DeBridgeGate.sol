@@ -288,7 +288,7 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         bytes memory _data
-    ) external override nonReentrant whenNotPaused // noDelegateCall
+    ) external override nonReentrant whenNotPaused
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         if (!getDebridge[debridgeId].exist) revert DebridgeNotFound();

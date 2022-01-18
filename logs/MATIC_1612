@@ -1,0 +1,143 @@
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network MATIC
+Compiling 122 files with 0.8.7
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:121:9:
+    |
+121 |         return true;
+    |         ^^^^^^^^^^^
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:163:9:
+    |
+163 |         uint256 currentAllowance = _allowances[sender][_msgSender()];
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:164:9:
+    |
+164 |         require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:165:9:
+    |
+165 |         unchecked {
+    |         ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:169:9:
+    |
+169 |         return true;
+    |         ^^^^^^^^^^^
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:237:9:
+    |
+237 |         uint256 senderBalance = _balances[sender];
+    |         ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:239:9:
+    |
+239 |         unchecked {
+    |         ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:263:9:
+    |
+263 |         _totalSupply += amount;
+    |         ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:286:9:
+    |
+286 |         uint256 accountBalance = _balances[account];
+    |         ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Warning: Unreachable code.
+   --> @openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol:288:9:
+    |
+288 |         unchecked {
+    |         ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Generating typings for: 122 artifacts in dir: typechain-types for target: ethers-v5
+Successfully generated 210 typings!
+Compilation finished successfully
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xB1A20D1c885fd775df97396397d6f8F07Abdd20D
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0x8dbb704d0732ee861f7d57572af9a57cb4d4c30cd24ac02d0cc3af42c1d02f57 ...
+        Proxy successfully upgraded!
+        New implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        New implementation version: 201
+DeBridgeGate.lockedClaim = 0
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network MATIC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+2. Deploy DeBridgeToken
+deploying "DeBridgeToken" (tx: 0x0fe7bd84bbaeecde13aff78489ec8249400889f536fb83e457b6041be8d5e16f)...: deployed at 0
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network MATIC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+2. Deploy DeBridgeToken
+reusing "DeBridgeToken" at 0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b
+2.1 Set new implementation in DeBridgeTokenDeployer - Calling DeBridgeTokenDeployer.setTokenImplementation(0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b)
+Waiting 1 block confirmations for tx 0x574a29028ebfe2c0e26b1add6a9034189941a8bf60af3027d7e47689145c433b ...
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network MATIC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+3. Upgrade SignatureVerifier
+
+*** Upgrading proxy for SignatureVerifier ***
+        Address:  0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x2a3e72eD893b5958690e16c3BBe1BD92137b6250
+        Current implementation version: 101
+Waiting 1 block confirmations for tx 0xce8f3ffdd259b76050fc5d76b92006e574d7bffa8d666ad8d015f44c288457df ...
+        Proxy successfully upgraded!
+        New implementation address: 0xfE7De3c1e1BD252C67667B56347cABFC6df08dF4
+        New implementation version: 201
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network MATIC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1-. Grand GOVMONITORING_ROLE for multisig 0xa52842cd43fa8c4b6660e443194769531d45b265
+Waiting 1 block confirmations for tx 0x7cab4ce339ae169f9a4a3f70bc39dd3b82be70d98711680c2fef6f906fc223f4 ...

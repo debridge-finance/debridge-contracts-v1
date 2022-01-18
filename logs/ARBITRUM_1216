@@ -1,0 +1,65 @@
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network ARBITRUM
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1-. Grand GOVMONITORING_ROLE for multisig 0xa52842cd43fa8c4b6660e443194769531d45b265
+Waiting 1 block confirmations for tx 0xfb1c52d21fa0a8fdb99630ba25903f8b1bf8b0d43368572ba023f721db560680 ...
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network ARBITRUM
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1-. Grand GOVMONITORING_ROLE for deployer 0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+Waiting 1 block confirmations for tx 0x672c096ae3792885cc47175d786a23e8cdb23a45782567df4f11c541bc3a0964 ...
+PAUSE deBridgeGateInstance
+Waiting 1 block confirmations for tx 0x6cf0f5c083c910112c696afce89de1e37efde196c5ffb4691dc115fa04c82c63 ...
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network ARBITRUM
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xB1A20D1c885fd775df97396397d6f8F07Abdd20D
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0x22488637da1791cff0bc474c800df722bf15d7e3681a582b0110859c60bdae9c ...
+        Proxy successfully upgraded!
+        New implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        New implementation version: 201
+DeBridgeGate.lockedClaim = 0
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network ARBITRUM
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+2. Deploy DeBridgeToken
+deploying "DeBridgeToken" (tx: 0x1cc511d0a695b78c7e537f79ddd944cd6cd69492c7df27bb14e4872a00dbe803)...: deployed at 0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b with 63339443 gas
+2.1 Set new implementation in DeBridgeTokenDeployer - Calling DeBridgeTokenDeployer.setTokenImplementation(0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b)
+Waiting 1 block confirmations for tx 0x19eda20c0443630106b4117b2990fd6750d2227780dad8835d74a66883da5192 ...
+3. Upgrade SignatureVerifier
+
+*** Upgrading proxy for SignatureVerifier ***
+        Address:  0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x2a3e72eD893b5958690e16c3BBe1BD92137b6250
+        Current implementation version: 101
+Waiting 1 block confirmations for tx 0x2cebd00715fed0582343661b3c6e1a5347c299e486383566cf74ce4a4e9382de ...
+        Proxy successfully upgraded!
+        New implementation address: 0xfE7De3c1e1BD252C67667B56347cABFC6df08dF4
+        New implementation version: 201
+PS D:\Projects\Debridge\debridge-contracts-v1>

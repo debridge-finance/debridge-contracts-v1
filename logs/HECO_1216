@@ -1,0 +1,35 @@
+PS D:\Projects\Debridge\debridge-contracts-v1> npx hardhat deploy --tags m01_upgrade_mainnet_16_12 --network HECO
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m01_upgrade_mainnet_16.12
+********************************************************************************
+1-. Grand GOVMONITORING_ROLE for multisig 0xa52842cd43fa8c4b6660e443194769531d45b265
+Waiting 1 block confirmations for tx 0x56ec00963d23e5b27442c08dd610e3ff0ff263195bf24bb80c654b5c51ccf00a ...
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xB1A20D1c885fd775df97396397d6f8F07Abdd20D
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0xc271ff0f5b39ca003aced171e64155e1d590fbe441c5c327983f99913052f66c ...
+        Proxy successfully upgraded!
+        New implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        New implementation version: 201
+DeBridgeGate.lockedClaim = 0
+2. Deploy DeBridgeToken
+deploying "DeBridgeToken" (tx: 0xa6498a6c93607cb4aa291633fa7dc532bb8280ead839f26195f0c8d90d1e397c)...: deployed at 0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b with 1723381 gas
+2.1 Set new implementation in DeBridgeTokenDeployer - Calling DeBridgeTokenDeployer.setTokenImplementation(0xf8A2902c0a5f817F5e22C82f453538d3f0734C2b)
+Waiting 1 block confirmations for tx 0xc51d9882d608abc4121df247960a7e07758b387203e22057c435e3cbb1a14cb4 ...
+3. Upgrade SignatureVerifier
+
+*** Upgrading proxy for SignatureVerifier ***
+        Address:  0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x2a3e72eD893b5958690e16c3BBe1BD92137b6250
+        Current implementation version: 101
+Waiting 1 block confirmations for tx 0x6720865d3e807e481d0e2da78da81d36f190ddf1ae6ad5c8b0eea3c84a8b09c9 ...
+        Proxy successfully upgraded!
+        New implementation address: 0xfE7De3c1e1BD252C67667B56347cABFC6df08dF4
+        New implementation version: 201
