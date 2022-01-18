@@ -649,6 +649,23 @@ Locks asset on the chain and enables minting on the other chain.
 |`_chainIdTo` | address | Chain id of the target chain.
 |`_permit` | uint256 | deadline + signature for approving the spender by signature.
 
+## _publishSubmission
+```solidity
+  function _publishSubmission(
+            bytes32 _debridgeId,
+            uint256 _chainIdTo,
+            uint256 _amount,
+            bytes _receiver,
+            struct IDeBridgeGate.FeeParams feeParams,
+            uint32 _referralCode,
+            struct IDeBridgeGate.SubmissionAutoParamsTo autoParams,
+            bool hasAutoParams
+  ) internal
+```
+
+
+
+
 ## _applyDiscount
 ```solidity
   function _applyDiscount(
@@ -665,17 +682,6 @@ Locks asset on the chain and enables minting on the other chain.
   function _validateToken(
             address _token
   ) internal
-```
-
-
-
-
-## _validateAutoParams
-```solidity
-  function _validateAutoParams(
-            bytes _autoParams,
-            uint256 _amount
-  ) internal returns (struct IDeBridgeGate.SubmissionAutoParamsTo autoParams)
 ```
 
 
