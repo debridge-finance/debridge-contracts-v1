@@ -49,11 +49,11 @@ export default async function send({
     const gasPrice = await web3.eth.getGasPrice();
     logger.info("gasPrice", gasPrice.toString());
 
-    const gateSendArgValues = getSortedSendValues({
-        ...gateSendDefaultNotRequiredValue,
-        ...gateSendArguments
-    });
+    const gateSendArgumentsWithDefaults = {...gateSendDefaultNotRequiredValue, ...gateSendArguments};
+    const gateSendArgValues = getSortedSendValues(gateSendArgumentsWithDefaults);
     const sendMethod = debridgeGateInstance.methods.send(...gateSendArgValues);
+
+    logger.info("Send method arguments", gateSendArgumentsWithDefaults);
     logger.info("Send method encodedABI", sendMethod.encodeABI());
 
     const estimatedGas = await sendMethod.estimateGas({from: senderAddress, value});
