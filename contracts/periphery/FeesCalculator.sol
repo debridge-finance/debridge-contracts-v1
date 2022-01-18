@@ -75,10 +75,13 @@ contract FeesCalculator is
             feeInfo.amountAfterFee -= feeInfo.fixFee;
         }
 
-        // 2. execution fee
+        // 2. normalization execution fee - round down amount in order not to bridge dust
+        _executionFee = _normalizeTokenAmount(_tokenAddress, _executionFee);
+
+        // 3. execution fee
         feeInfo.amountAfterFee -= _executionFee;
 
-        // 3. normalization - round down amount in order not to bridge dust
+        // 4. normalization - round down amount in order not to bridge dust
         feeInfo.amountAfterFee = _normalizeTokenAmount(_tokenAddress, feeInfo.amountAfterFee);
 
         return feeInfo;
