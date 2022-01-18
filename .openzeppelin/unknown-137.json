@@ -794,13 +794,13 @@
             "contract": "CallProxy",
             "label": "submissionChainIdFrom",
             "type": "t_uint256",
-            "src": "contracts\\periphery\\CallProxy.sol:18"
+            "src": "contracts\\periphery\\CallProxy.sol:21"
           },
           {
             "contract": "CallProxy",
             "label": "submissionNativeSender",
             "type": "t_bytes_storage",
-            "src": "contracts\\periphery\\CallProxy.sol:19"
+            "src": "contracts\\periphery\\CallProxy.sol:23"
           }
         ],
         "types": {
@@ -966,61 +966,61 @@
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:37"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:21"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:42"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:26"
           },
           {
             "contract": "ContextUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:30"
           },
           {
             "contract": "ERC165Upgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)50_storage",
-            "src": "@openzeppelin\\contracts-upgradeable\\utils\\introspection\\ERC165Upgradeable.sol:36"
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\introspection\\ERC165Upgradeable.sol:35"
           },
           {
             "contract": "AccessControlUpgradeable",
             "label": "_roles",
             "type": "t_mapping(t_bytes32,t_struct(RoleData)43_storage)",
-            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:64"
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:63"
           },
           {
             "contract": "AccessControlUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:232"
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:219"
           },
           {
             "contract": "PausableUpgradeable",
             "label": "_paused",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:28"
           },
           {
             "contract": "PausableUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:96"
           },
           {
             "contract": "ReentrancyGuardUpgradeable",
             "label": "_status",
             "type": "t_uint256",
-            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:38"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:37"
           },
           {
             "contract": "ReentrancyGuardUpgradeable",
             "label": "__gap",
             "type": "t_array(t_uint256)49_storage",
-            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:68"
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:67"
           },
           {
             "contract": "DeBridgeGate",
@@ -1055,13 +1055,13 @@
           {
             "contract": "DeBridgeGate",
             "label": "getDebridge",
-            "type": "t_mapping(t_bytes32,t_struct(DebridgeInfo)5513_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(DebridgeInfo)5469_storage)",
             "src": "contracts\\transfers\\DeBridgeGate.sol:65"
           },
           {
             "contract": "DeBridgeGate",
             "label": "getDebridgeFeeInfo",
-            "type": "t_mapping(t_bytes32,t_struct(DebridgeFeeInfo)5522_storage)",
+            "type": "t_mapping(t_bytes32,t_struct(DebridgeFeeInfo)5478_storage)",
             "src": "contracts\\transfers\\DeBridgeGate.sol:67"
           },
           {
@@ -1085,25 +1085,25 @@
           {
             "contract": "DeBridgeGate",
             "label": "getChainToConfig",
-            "type": "t_mapping(t_uint256,t_struct(ChainSupportInfo)5529_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ChainSupportInfo)5485_storage)",
             "src": "contracts\\transfers\\DeBridgeGate.sol:78"
           },
           {
             "contract": "DeBridgeGate",
             "label": "getChainFromConfig",
-            "type": "t_mapping(t_uint256,t_struct(ChainSupportInfo)5529_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ChainSupportInfo)5485_storage)",
             "src": "contracts\\transfers\\DeBridgeGate.sol:80"
           },
           {
             "contract": "DeBridgeGate",
             "label": "feeDiscount",
-            "type": "t_mapping(t_address,t_struct(DiscountInfo)5534_storage)",
+            "type": "t_mapping(t_address,t_struct(DiscountInfo)5490_storage)",
             "src": "contracts\\transfers\\DeBridgeGate.sol:82"
           },
           {
             "contract": "DeBridgeGate",
             "label": "getNativeInfo",
-            "type": "t_mapping(t_address,t_struct(TokenInfo)5498_storage)",
+            "type": "t_mapping(t_address,t_struct(TokenInfo)5454_storage)",
             "src": "contracts\\transfers\\DeBridgeGate.sol:84"
           },
           {
@@ -1127,7 +1127,7 @@
           {
             "contract": "DeBridgeGate",
             "label": "weth",
-            "type": "t_contract(IWETH)6563",
+            "type": "t_contract(IWETH)6519",
             "src": "contracts\\transfers\\DeBridgeGate.sol:93"
           },
           {
@@ -1151,7 +1151,7 @@
           {
             "contract": "DeBridgeGate",
             "label": "wethGate",
-            "type": "t_contract(IWethGate)6574",
+            "type": "t_contract(IWethGate)6530",
             "src": "contracts\\transfers\\DeBridgeGate.sol:104"
           },
           {
@@ -1171,13 +1171,13 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_mapping(t_bytes32,t_struct(DebridgeInfo)5513_storage)": {
+          "t_mapping(t_bytes32,t_struct(DebridgeInfo)5469_storage)": {
             "label": "mapping(bytes32 => struct IDeBridgeGate.DebridgeInfo)"
           },
           "t_bytes32": {
             "label": "bytes32"
           },
-          "t_struct(DebridgeInfo)5513_storage": {
+          "t_struct(DebridgeInfo)5469_storage": {
             "label": "struct IDeBridgeGate.DebridgeInfo",
             "members": [
               {
@@ -1216,10 +1216,10 @@
           "t_bool": {
             "label": "bool"
           },
-          "t_mapping(t_bytes32,t_struct(DebridgeFeeInfo)5522_storage)": {
+          "t_mapping(t_bytes32,t_struct(DebridgeFeeInfo)5478_storage)": {
             "label": "mapping(bytes32 => struct IDeBridgeGate.DebridgeFeeInfo)"
           },
-          "t_struct(DebridgeFeeInfo)5522_storage": {
+          "t_struct(DebridgeFeeInfo)5478_storage": {
             "label": "struct IDeBridgeGate.DebridgeFeeInfo",
             "members": [
               {
@@ -1245,10 +1245,10 @@
           "t_mapping(t_bytes32,t_uint256)": {
             "label": "mapping(bytes32 => uint256)"
           },
-          "t_mapping(t_uint256,t_struct(ChainSupportInfo)5529_storage)": {
+          "t_mapping(t_uint256,t_struct(ChainSupportInfo)5485_storage)": {
             "label": "mapping(uint256 => struct IDeBridgeGate.ChainSupportInfo)"
           },
-          "t_struct(ChainSupportInfo)5529_storage": {
+          "t_struct(ChainSupportInfo)5485_storage": {
             "label": "struct IDeBridgeGate.ChainSupportInfo",
             "members": [
               {
@@ -1265,10 +1265,10 @@
               }
             ]
           },
-          "t_mapping(t_address,t_struct(DiscountInfo)5534_storage)": {
+          "t_mapping(t_address,t_struct(DiscountInfo)5490_storage)": {
             "label": "mapping(address => struct IDeBridgeGate.DiscountInfo)"
           },
-          "t_struct(DiscountInfo)5534_storage": {
+          "t_struct(DiscountInfo)5490_storage": {
             "label": "struct IDeBridgeGate.DiscountInfo",
             "members": [
               {
@@ -1281,10 +1281,10 @@
               }
             ]
           },
-          "t_mapping(t_address,t_struct(TokenInfo)5498_storage)": {
+          "t_mapping(t_address,t_struct(TokenInfo)5454_storage)": {
             "label": "mapping(address => struct IDeBridgeGate.TokenInfo)"
           },
-          "t_struct(TokenInfo)5498_storage": {
+          "t_struct(TokenInfo)5454_storage": {
             "label": "struct IDeBridgeGate.TokenInfo",
             "members": [
               {
@@ -1300,10 +1300,10 @@
           "t_bytes_storage": {
             "label": "bytes"
           },
-          "t_contract(IWETH)6563": {
+          "t_contract(IWETH)6519": {
             "label": "contract IWETH"
           },
-          "t_contract(IWethGate)6574": {
+          "t_contract(IWethGate)6530": {
             "label": "contract IWethGate"
           },
           "t_array(t_uint256)49_storage": {
@@ -1585,6 +1585,487 @@
           },
           "t_uint256": {
             "label": "uint256"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "497261df9fc0106848b4dba62551fedc59c8ec0d77e1673559cfbb1378fa6987": {
+      "address": "0x51bFD427D06B2a5FC3588f9d023994A9f70e0Ce0",
+      "txHash": "0x8a74772699bda076a19344c8ae74d9bf24e6a422bae58dc15fd19b121f412728",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:37"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:42"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\introspection\\ERC165Upgradeable.sol:36"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "_roles",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)43_storage)",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:64"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:232"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "_status",
+            "type": "t_uint256",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "contract": "ReentrancyGuardUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:68"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "deBridgeTokenDeployer",
+            "type": "t_address",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:50"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "signatureVerifier",
+            "type": "t_address",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:52"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "excessConfirmations",
+            "type": "t_uint8",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:54"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "flashFeeBps",
+            "type": "t_uint256",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:56"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "nonce",
+            "type": "t_uint256",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:58"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "getDebridge",
+            "type": "t_mapping(t_bytes32,t_struct(DebridgeInfo)6322_storage)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:61"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "getDebridgeFeeInfo",
+            "type": "t_mapping(t_bytes32,t_struct(DebridgeFeeInfo)6331_storage)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:63"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "isSubmissionUsed",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:66"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "isBlockedSubmission",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:68"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "getAmountThreshold",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:72"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "getChainToConfig",
+            "type": "t_mapping(t_uint256,t_struct(ChainSupportInfo)6338_storage)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:74"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "getChainFromConfig",
+            "type": "t_mapping(t_uint256,t_struct(ChainSupportInfo)6338_storage)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:76"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "feeDiscount",
+            "type": "t_mapping(t_address,t_struct(DiscountInfo)6343_storage)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:78"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "getNativeInfo",
+            "type": "t_mapping(t_address,t_struct(TokenInfo)6307_storage)",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:80"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "defiController",
+            "type": "t_address",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:83"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "feeProxy",
+            "type": "t_address",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:85"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "callProxy",
+            "type": "t_address",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:87"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "weth",
+            "type": "t_contract(IWETH)7372",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:89"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "feeContractUpdater",
+            "type": "t_address",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:92"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "globalFixedNativeFee",
+            "type": "t_uint256",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:95"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "globalTransferFeeBps",
+            "type": "t_uint16",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:97"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "wethGate",
+            "type": "t_contract(IWethGate)7383",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:100"
+          },
+          {
+            "contract": "DeBridgeGate",
+            "label": "lockedClaim",
+            "type": "t_uint256",
+            "src": "contracts\\transfers\\DeBridgeGate.sol:102"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint8": {
+            "label": "uint8"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_struct(DebridgeInfo)6322_storage)": {
+            "label": "mapping(bytes32 => struct IDeBridgeGate.DebridgeInfo)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(DebridgeInfo)6322_storage": {
+            "label": "struct IDeBridgeGate.DebridgeInfo",
+            "members": [
+              {
+                "label": "chainId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "maxAmount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "balance",
+                "type": "t_uint256"
+              },
+              {
+                "label": "lockedInStrategies",
+                "type": "t_uint256"
+              },
+              {
+                "label": "tokenAddress",
+                "type": "t_address"
+              },
+              {
+                "label": "minReservesBps",
+                "type": "t_uint16"
+              },
+              {
+                "label": "exist",
+                "type": "t_bool"
+              }
+            ]
+          },
+          "t_uint16": {
+            "label": "uint16"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_mapping(t_bytes32,t_struct(DebridgeFeeInfo)6331_storage)": {
+            "label": "mapping(bytes32 => struct IDeBridgeGate.DebridgeFeeInfo)"
+          },
+          "t_struct(DebridgeFeeInfo)6331_storage": {
+            "label": "struct IDeBridgeGate.DebridgeFeeInfo",
+            "members": [
+              {
+                "label": "collectedFees",
+                "type": "t_uint256"
+              },
+              {
+                "label": "withdrawnFees",
+                "type": "t_uint256"
+              },
+              {
+                "label": "getChainFee",
+                "type": "t_mapping(t_uint256,t_uint256)"
+              }
+            ]
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_mapping(t_uint256,t_struct(ChainSupportInfo)6338_storage)": {
+            "label": "mapping(uint256 => struct IDeBridgeGate.ChainSupportInfo)"
+          },
+          "t_struct(ChainSupportInfo)6338_storage": {
+            "label": "struct IDeBridgeGate.ChainSupportInfo",
+            "members": [
+              {
+                "label": "fixedNativeFee",
+                "type": "t_uint256"
+              },
+              {
+                "label": "isSupported",
+                "type": "t_bool"
+              },
+              {
+                "label": "transferFeeBps",
+                "type": "t_uint16"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(DiscountInfo)6343_storage)": {
+            "label": "mapping(address => struct IDeBridgeGate.DiscountInfo)"
+          },
+          "t_struct(DiscountInfo)6343_storage": {
+            "label": "struct IDeBridgeGate.DiscountInfo",
+            "members": [
+              {
+                "label": "discountFixBps",
+                "type": "t_uint16"
+              },
+              {
+                "label": "discountTransferBps",
+                "type": "t_uint16"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(TokenInfo)6307_storage)": {
+            "label": "mapping(address => struct IDeBridgeGate.TokenInfo)"
+          },
+          "t_struct(TokenInfo)6307_storage": {
+            "label": "struct IDeBridgeGate.TokenInfo",
+            "members": [
+              {
+                "label": "nativeChainId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "nativeAddress",
+                "type": "t_bytes_storage"
+              }
+            ]
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
+          },
+          "t_contract(IWETH)7372": {
+            "label": "contract IWETH"
+          },
+          "t_contract(IWethGate)7383": {
+            "label": "contract IWethGate"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)43_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_struct(RoleData)43_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
+    },
+    "78dddd39ab05f778eaa8db0029daa244681af0f7082624f04d102378d009eda9": {
+      "address": "0xd5317E82BFEFf70b4773f0fcab5e2ABFA3c7D63b",
+      "txHash": "0xaa8d974a0c6ee026233dbc6fb8652a662331770567201120fce3bf71784edb0d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:37"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:42"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "ERC165Upgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\introspection\\ERC165Upgradeable.sol:36"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "_roles",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)43_storage)",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:64"
+          },
+          {
+            "contract": "AccessControlUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:232"
+          },
+          {
+            "contract": "CallProxy",
+            "label": "submissionChainIdFrom",
+            "type": "t_uint256",
+            "src": "contracts\\periphery\\CallProxy.sol:27"
+          },
+          {
+            "contract": "CallProxy",
+            "label": "submissionNativeSender",
+            "type": "t_bytes_storage",
+            "src": "contracts\\periphery\\CallProxy.sol:29"
+          },
+          {
+            "contract": "CallProxy",
+            "label": "_lock",
+            "type": "t_uint256",
+            "src": "contracts\\periphery\\CallProxy.sol:31"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bytes_storage": {
+            "label": "bytes"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)43_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(RoleData)43_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
           },
           "t_array(t_uint256)50_storage": {
             "label": "uint256[50]"
