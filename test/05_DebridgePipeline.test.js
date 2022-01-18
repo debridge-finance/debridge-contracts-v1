@@ -2409,7 +2409,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       const amount = toBN(toWei("150"));
       const sender = aliceAccount;
       const receiver = bobAccount;
-      const executionFee = toBN(toWei("25"));
+      const executionFee = toBN(toWei("25")); //toBN("25000000001111111111");
       const flags = 20;
       //      const data = [];
       const data = "0xd547741f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000003b38786685c4fd6bc3e685086fc7f086bc254864";

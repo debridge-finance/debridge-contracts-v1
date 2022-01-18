@@ -40,10 +40,6 @@ contract DeBridgeGate is
     uint256 public constant BPS_DENOMINATOR = 10000;
     /// @dev Role allowed to stop transfers
     bytes32 public constant GOVMONITORING_ROLE = keccak256("GOVMONITORING_ROLE");
-    /// @dev Value for lockedClaim variable when claim function is not entered
-    uint256 private constant _CLAIM_NOT_LOCKED = 1;
-    /// @dev Value for lockedClaim variable when claim function is entered
-    uint256 private constant _CLAIM_LOCKED = 2;
 
     /// @dev prefix to calculation submissionId
     uint256 public constant SUBMISSION_PREFIX = 1;
@@ -136,7 +132,6 @@ contract DeBridgeGate is
 
     error NotEnoughReserves();
     error EthTransferFailed();
-    error ClaimLocked();
 
     /* ========== MODIFIERS ========== */
 
@@ -165,14 +160,6 @@ contract DeBridgeGate is
         _;
     }
 
-    /// @dev lock for claim method
-    modifier lockClaim() {
-        if (lockedClaim == _CLAIM_LOCKED) revert ClaimLocked();
-        lockedClaim = _CLAIM_LOCKED;
-        _;
-        lockedClaim = _CLAIM_NOT_LOCKED;
-    }
-
     /* ========== CONSTRUCTOR  ========== */
 
     /// @dev Constructor that initializes the most important configurations.
@@ -187,7 +174,6 @@ contract DeBridgeGate is
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         __ReentrancyGuard_init();
-        lockedClaim = _CLAIM_NOT_LOCKED;
     }
 
     /* ========== send, claim ========== */
@@ -215,34 +201,31 @@ contract DeBridgeGate is
             _useAssetFee
         );
 
-        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, amountAfterFee);
+        SubmissionAutoParamsTo memory autoParams;
+
+        // Validate Auto Params
+        if (_autoParams.length > 0) {
+            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
+            autoParams.executionFee = _normalizeTokenAmount(_tokenAddress, autoParams.executionFee);
+            if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
+            if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
+        }
+
         amountAfterFee -= autoParams.executionFee;
 
         // round down amount in order not to bridge dust
         amountAfterFee = _normalizeTokenAmount(_tokenAddress, amountAfterFee);
 
-        bytes32 submissionId = getSubmissionIdTo(
+        _publishSubmission(
             debridgeId,
             _chainIdTo,
             amountAfterFee,
             _receiver,
+            feeParams,
+            _referralCode,
             autoParams,
             _autoParams.length > 0
         );
-
-        emit Sent(
-            submissionId,
-            debridgeId,
-            amountAfterFee,
-            _receiver,
-            nonce,
-            _chainIdTo,
-            _referralCode,
-            feeParams,
-            _autoParams,
-            msg.sender
-        );
-        nonce++;
     }
 
     /// @inheritdoc IDeBridgeGate
@@ -254,7 +237,7 @@ contract DeBridgeGate is
         uint256 _nonce,
         bytes calldata _signatures,
         bytes calldata _autoParams
-    ) external override lockClaim whenNotPaused {
+    ) external override whenNotPaused {
         if (!getChainFromConfig[_chainIdFrom].isSupported) revert WrongChainFrom();
 
         SubmissionAutoParamsFrom memory autoParams;
@@ -819,6 +802,62 @@ contract DeBridgeGate is
         return (amountAfterFee, debridgeId, feeParams);
     }
 
+    function _publishSubmission(
+        bytes32 _debridgeId,
+        uint256 _chainIdTo,
+        uint256 _amount,
+        bytes memory _receiver,
+        FeeParams memory feeParams,
+        uint32 _referralCode,
+        SubmissionAutoParamsTo memory autoParams,
+        bool hasAutoParams
+    ) internal {
+        bytes32 submissionId;
+        bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
+            _debridgeId,
+            getChainId(),
+            _chainIdTo,
+            _amount,
+            _receiver,
+            nonce
+        );
+        if (hasAutoParams) {
+            // auto submission
+            submissionId = keccak256(
+                abi.encodePacked(
+                    packedSubmission,
+                    autoParams.executionFee,
+                    autoParams.flags,
+                    uint32(autoParams.fallbackAddress.length),
+                    autoParams.fallbackAddress,
+                    uint32(autoParams.data.length),
+                    autoParams.data,
+                    uint32(20), // address has 20 bytes length
+                    msg.sender
+                )
+            );
+        }
+        // regular submission
+        else {
+            submissionId = keccak256(packedSubmission);
+        }
+
+        emit Sent(
+            submissionId,
+            _debridgeId,
+            _amount,
+            _receiver,
+            nonce,
+            _chainIdTo,
+            _referralCode,
+            feeParams,
+            hasAutoParams ? abi.encode(autoParams): bytes(""),
+            msg.sender
+        );
+        nonce++;
+    }
+
     function _applyDiscount(
         uint256 amount,
         uint16 discountBps
@@ -841,16 +880,6 @@ contract DeBridgeGate is
         if (!success) revert InvalidTokenToSend();
     }
 
-    function _validateAutoParams(
-        bytes calldata _autoParams,
-        uint256 _amount
-    ) internal pure returns (SubmissionAutoParamsTo memory autoParams) {
-        if (_autoParams.length > 0) {
-            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
-            if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
-            if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
-        }
-    }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
@@ -926,10 +955,12 @@ contract DeBridgeGate is
         uint256 _amount,
         bool isNativeToken
     ) internal {
-        if (isNativeToken) {
-            IERC20Upgradeable(_token).safeTransfer(_receiver, _amount);
-        } else {
-            IDeBridgeToken(_token).mint(_receiver, _amount);
+        if (_amount > 0) {
+            if (isNativeToken) {
+                IERC20Upgradeable(_token).safeTransfer(_receiver, _amount);
+            } else {
+                IDeBridgeToken(_token).mint(_receiver, _amount);
+            }
         }
     }
 
@@ -1045,8 +1076,11 @@ contract DeBridgeGate is
                     packedSubmission,
                     autoParams.executionFee,
                     autoParams.flags,
+                    uint32(20), // fallbackAddress has 20 bytes length
                     autoParams.fallbackAddress,
+                    uint32(autoParams.data.length),
                     autoParams.data,
+                    uint32(autoParams.nativeSender.length),
                     autoParams.nativeSender
                 )
             );
@@ -1055,39 +1089,7 @@ contract DeBridgeGate is
         return keccak256(packedSubmission);
     }
 
-    function getSubmissionIdTo(
-        bytes32 _debridgeId,
-        uint256 _chainIdTo,
-        uint256 _amount,
-        bytes memory _receiver,
-        SubmissionAutoParamsTo memory autoParams,
-        bool hasAutoParams
-    ) private view returns (bytes32) {
-        bytes memory packedSubmission = abi.encodePacked(
-            SUBMISSION_PREFIX,
-            _debridgeId,
-            getChainId(),
-            _chainIdTo,
-            _amount,
-            _receiver,
-            nonce
-        );
-        if (hasAutoParams) {
-            // auto submission
-            return keccak256(
-                abi.encodePacked(
-                    packedSubmission,
-                    autoParams.executionFee,
-                    autoParams.flags,
-                    autoParams.fallbackAddress,
-                    autoParams.data,
-                    msg.sender
-                )
-            );
-        }
-        // regular submission
-        return keccak256(packedSubmission);
-    }
+
 
     /// @dev Calculates asset identifier for deployment.
     /// @param _debridgeId Id of an asset, see getDebridgeId.
@@ -1124,6 +1126,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 201; // 2.0.1
+        return 301; // 3.0.1
     }
 }
