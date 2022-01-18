@@ -202,34 +202,31 @@ contract DeBridgeGate is
             _useAssetFee
         );
 
-        SubmissionAutoParamsTo memory autoParams = _validateAutoParams(_autoParams, _tokenAddress, amountAfterFee);
+        SubmissionAutoParamsTo memory autoParams;
+
+        // Validate Auto Params
+        if (_autoParams.length > 0) {
+            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
+            autoParams.executionFee = _normalizeTokenAmount(_tokenAddress, autoParams.executionFee);
+            if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
+            if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
+        }
+
         amountAfterFee -= autoParams.executionFee;
 
         // round down amount in order not to bridge dust
         amountAfterFee = _normalizeTokenAmount(_tokenAddress, amountAfterFee);
 
-        bytes32 submissionId = getSubmissionIdTo(
+        publishSubmission(
             debridgeId,
             _chainIdTo,
             amountAfterFee,
             _receiver,
+            feeParams,
+            _referralCode,
             autoParams,
             _autoParams.length > 0
         );
-
-        emit Sent(
-            submissionId,
-            debridgeId,
-            amountAfterFee,
-            _receiver,
-            nonce,
-            _chainIdTo,
-            _referralCode,
-            feeParams,
-            _autoParams,
-            msg.sender
-        );
-        nonce++;
     }
 
     /// @inheritdoc IDeBridgeGate
@@ -828,19 +825,6 @@ contract DeBridgeGate is
         if (!success) revert InvalidTokenToSend();
     }
 
-    function _validateAutoParams(
-        bytes calldata _autoParams,
-        address _tokenAddress,
-        uint256 _amount
-    ) internal view returns (SubmissionAutoParamsTo memory autoParams) {
-        if (_autoParams.length > 0) {
-            autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
-            if (autoParams.executionFee != _normalizeTokenAmount(_tokenAddress, autoParams.executionFee))
-                revert NeedRoundAmount();
-            if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
-            if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
-        }
-    }
 
     /// @dev Unlock the asset on the current chain and transfer to receiver.
     /// @param _debridgeId Asset identifier.
@@ -1050,14 +1034,17 @@ contract DeBridgeGate is
         return keccak256(packedSubmission);
     }
 
-    function getSubmissionIdTo(
+    function publishSubmission(
         bytes32 _debridgeId,
         uint256 _chainIdTo,
         uint256 _amount,
         bytes memory _receiver,
+        FeeParams memory feeParams,
+        uint32 _referralCode,
         SubmissionAutoParamsTo memory autoParams,
         bool hasAutoParams
-    ) private view returns (bytes32) {
+    ) internal {
+        bytes32 submissionId;
         bytes memory packedSubmission = abi.encodePacked(
             SUBMISSION_PREFIX,
             _debridgeId,
@@ -1069,7 +1056,7 @@ contract DeBridgeGate is
         );
         if (hasAutoParams) {
             // auto submission
-            return keccak256(
+            submissionId = keccak256(
                 abi.encodePacked(
                     packedSubmission,
                     autoParams.executionFee,
@@ -1084,7 +1071,23 @@ contract DeBridgeGate is
             );
         }
         // regular submission
-        return keccak256(packedSubmission);
+        else {
+            submissionId = keccak256(packedSubmission);
+        }
+
+        emit Sent(
+            submissionId,
+            _debridgeId,
+            _amount,
+            _receiver,
+            nonce,
+            _chainIdTo,
+            _referralCode,
+            feeParams,
+            hasAutoParams ? abi.encode(autoParams): bytes(""),
+            msg.sender
+        );
+        nonce++;
     }
 
     /// @dev Calculates asset identifier for deployment.
