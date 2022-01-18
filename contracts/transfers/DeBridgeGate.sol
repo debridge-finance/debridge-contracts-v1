@@ -128,7 +128,6 @@ contract DeBridgeGate is
     error ZeroAddress();
 
     error ProposedFeeTooHigh();
-    error NeedRoundAmount();
     error FlashFeeNotPaid();
 
     error NotEnoughReserves();
