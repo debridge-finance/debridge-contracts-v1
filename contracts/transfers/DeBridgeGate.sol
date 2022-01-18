@@ -217,7 +217,7 @@ contract DeBridgeGate is
         // round down amount in order not to bridge dust
         amountAfterFee = _normalizeTokenAmount(_tokenAddress, amountAfterFee);
 
-        publishSubmission(
+        _publishSubmission(
             debridgeId,
             _chainIdTo,
             amountAfterFee,
@@ -803,6 +803,62 @@ contract DeBridgeGate is
         return (amountAfterFee, debridgeId, feeParams);
     }
 
+    function _publishSubmission(
+        bytes32 _debridgeId,
+        uint256 _chainIdTo,
+        uint256 _amount,
+        bytes memory _receiver,
+        FeeParams memory feeParams,
+        uint32 _referralCode,
+        SubmissionAutoParamsTo memory autoParams,
+        bool hasAutoParams
+    ) internal {
+        bytes32 submissionId;
+        bytes memory packedSubmission = abi.encodePacked(
+            SUBMISSION_PREFIX,
+            _debridgeId,
+            getChainId(),
+            _chainIdTo,
+            _amount,
+            _receiver,
+            nonce
+        );
+        if (hasAutoParams) {
+            // auto submission
+            submissionId = keccak256(
+                abi.encodePacked(
+                    packedSubmission,
+                    autoParams.executionFee,
+                    autoParams.flags,
+                    uint32(autoParams.fallbackAddress.length),
+                    autoParams.fallbackAddress,
+                    uint32(autoParams.data.length),
+                    autoParams.data,
+                    uint32(20), // address has 20 bytes length
+                    msg.sender
+                )
+            );
+        }
+        // regular submission
+        else {
+            submissionId = keccak256(packedSubmission);
+        }
+
+        emit Sent(
+            submissionId,
+            _debridgeId,
+            _amount,
+            _receiver,
+            nonce,
+            _chainIdTo,
+            _referralCode,
+            feeParams,
+            hasAutoParams ? abi.encode(autoParams): bytes(""),
+            msg.sender
+        );
+        nonce++;
+    }
+
     function _applyDiscount(
         uint256 amount,
         uint16 discountBps
@@ -1034,61 +1090,7 @@ contract DeBridgeGate is
         return keccak256(packedSubmission);
     }
 
-    function publishSubmission(
-        bytes32 _debridgeId,
-        uint256 _chainIdTo,
-        uint256 _amount,
-        bytes memory _receiver,
-        FeeParams memory feeParams,
-        uint32 _referralCode,
-        SubmissionAutoParamsTo memory autoParams,
-        bool hasAutoParams
-    ) internal {
-        bytes32 submissionId;
-        bytes memory packedSubmission = abi.encodePacked(
-            SUBMISSION_PREFIX,
-            _debridgeId,
-            getChainId(),
-            _chainIdTo,
-            _amount,
-            _receiver,
-            nonce
-        );
-        if (hasAutoParams) {
-            // auto submission
-            submissionId = keccak256(
-                abi.encodePacked(
-                    packedSubmission,
-                    autoParams.executionFee,
-                    autoParams.flags,
-                    uint32(autoParams.fallbackAddress.length),
-                    autoParams.fallbackAddress,
-                    uint32(autoParams.data.length),
-                    autoParams.data,
-                    uint32(20), // address has 20 bytes length
-                    msg.sender
-                )
-            );
-        }
-        // regular submission
-        else {
-            submissionId = keccak256(packedSubmission);
-        }
 
-        emit Sent(
-            submissionId,
-            _debridgeId,
-            _amount,
-            _receiver,
-            nonce,
-            _chainIdTo,
-            _referralCode,
-            feeParams,
-            hasAutoParams ? abi.encode(autoParams): bytes(""),
-            msg.sender
-        );
-        nonce++;
-    }
 
     /// @dev Calculates asset identifier for deployment.
     /// @param _debridgeId Id of an asset, see getDebridgeId.
