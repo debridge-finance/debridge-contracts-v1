@@ -5,17 +5,20 @@ import {AbiItem, toWei, fromWei} from "web3-utils";
 import {Web3RpcUrl} from "../constants";
 import envVars from './getTypedEnvVariables';
 import consoleOptions from './getTypedConsoleArguments';
-import {Fetcher, Percent, Route, Token, TokenAmount, Trade, TradeType, WETH} from "@uniswap/sdk";
+import {FACTORY_ADDRESS, Fetcher, Percent, Route, Token, TokenAmount, Trade, TradeType, WETH} from "@uniswap/sdk";
 import {ERC20} from "../../../../typechain-types-web3/ERC20";
 import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
 import {AddressZero} from "@ethersproject/constants";
 import logger from "./logger";
 import {GENERIC_ERROR_CODE} from "./constants";
 import UniswapV2Router02Json from "@uniswap/v2-periphery/build/UniswapV2Router02.json";
+import IUniswapV2FactoryJson from "@uniswap/v2-periphery/build/IUniswapV2Factory.json";
 import {UniswapV2Router02} from "../../../../typechain-types-web3/UniswapV2Router02";
-import send, {GateSendArguments} from "../genericSend";
+import send, {GateSendArguments, TsSendArguments} from "../genericSend";
 import {ethers} from "ethers";
 import BN from "bn.js";
+import {IUniswapV2Factory} from "../../../../typechain-types-web3/IUniswapV2Factory";
+import sendERC20 from "../genericSendERC20";
 
 const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
 
@@ -92,6 +95,17 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
         : await getUniswapTokenInstanceFromAddress(CHAIN_ID_TO, TOKEN_ADDRESS_TO)
     ;
 
+    const factory =  new web3To.eth.Contract(
+        IUniswapV2FactoryJson.abi as AbiItem[],
+        FACTORY_ADDRESS
+    ) as unknown as IUniswapV2Factory;
+    const pairAddress  = await factory.methods.getPair(deTokenOfFromTokenOnToChainAddress, toTokenUniswap.address).call();
+    const isPairMissing = pairAddress === AddressZero;
+    if (isPairMissing){
+        logger.error('Pair does not exist on receiving chain, please create it first');
+        process.exit(GENERIC_ERROR_CODE);
+    }
+
     const pair = await Fetcher.fetchPairData(deTokenOfFromTokenOnToChainUniswap, toTokenUniswap);
     const route = new Route([pair], deTokenOfFromTokenOnToChainUniswap);
     const amount = new TokenAmount(deTokenOfFromTokenOnToChainUniswap, amountToSell);
@@ -122,7 +136,14 @@ async function getCallToUniswapRouterEncoded(amountToSell: string): Promise<stri
         :  router.methods.swapExactTokensForTokens(...swapExactTokensArguments).encodeABI()
 }
 
-async function calculateTotalFeesWithoutExecutionFees(amountWholeBN: BN): Promise<BN> {
+async function getChainFeeForDebridgeId(): Promise<BN> {
+    const deBridgeId = await getDebridgeId(CHAIN_ID_FROM, TOKEN_ADDRESS_FROM);
+    return new BN(
+        await deBridgeGateFrom.methods.getDebridgeChainAssetFixedFee(deBridgeId, CHAIN_ID_TO).call()
+    );
+}
+
+async function calculateTransferFee(amountWholeBN: BN): Promise<BN> {
     const BPS_DENOMINATOR = new BN(await deBridgeGateFrom.methods.BPS_DENOMINATOR().call());
 
     const toChainConfig = await deBridgeGateFrom.methods.getChainToConfig(CHAIN_ID_TO).call();
@@ -130,20 +151,23 @@ async function calculateTotalFeesWithoutExecutionFees(amountWholeBN: BN): Promis
     const transferFeeBps = toChainConfig.transferFeeBps === '0'
         ? globalTransferFeeBps
         : new BN(toChainConfig.transferFeeBps);
-    const transferFee = amountWholeBN.mul(transferFeeBps).div(BPS_DENOMINATOR);
 
-    const deBridgeId = await getDebridgeId(CHAIN_ID_FROM, TOKEN_ADDRESS_FROM);
-    const debridgeChainAssetFixedFee = new BN(
-        await deBridgeGateFrom.methods.getDebridgeChainAssetFixedFee(deBridgeId, CHAIN_ID_TO).call()
-    );
-    return  transferFee.add(debridgeChainAssetFixedFee);
+    return amountWholeBN.mul(transferFeeBps).div(BPS_DENOMINATOR);
+}
+
+async function calculateNativeFee(): Promise<BN> {
+    const toChainConfig = await deBridgeGateFrom.methods.getChainToConfig(CHAIN_ID_TO).call();
+    const globalFixedNativeFee = new BN( await deBridgeGateFrom.methods.globalFixedNativeFee().call() );
+    return toChainConfig.transferFeeBps === '0'
+        ? globalFixedNativeFee
+        : new BN(toChainConfig.transferFeeBps);
 }
 
 async function main() {
-    if (TOKEN_ADDRESS_FROM === AddressZero) {
+    const isSendingNativeToken = TOKEN_ADDRESS_FROM === AddressZero;
+
+    if (isSendingNativeToken){
         logger.info('"Token address from" is set to address zero, native token will be used, value will be set to AMOUNT');
-    } else {
-        logger.error('"Token address from" is NOT set to address zero, non-native tokens are not supported yet, set TOKEN_ADDRESS_FROM to address zero to use this example');
     }
 
     if (TOKEN_ADDRESS_TO === AddressZero) {
@@ -151,16 +175,29 @@ async function main() {
     }
 
     const amountWhole = new BN(toWei(AMOUNT));
-    const totalFeeWithoutExecution = await calculateTotalFeesWithoutExecutionFees(amountWhole);
+    const transferFee = await calculateTransferFee(amountWhole);
     const executionFee = DEFAULT_EXECUTION_FEE;
-    const totalFees = totalFeeWithoutExecution.add(executionFee);
-    const amountAfterFee = amountWhole.sub(totalFees);
+    const nativeFee = await calculateNativeFee();
+    const chainFee = await getChainFeeForDebridgeId();
 
-    logger.info('amount whole', fromWei(amountWhole));
-    logger.info('total fee without execution', fromWei(totalFeeWithoutExecution));
-    logger.info('execution fee ', fromWei(executionFee));
-    logger.info('total fee ', fromWei(totalFees));
-    logger.info('left after fees', fromWei(amountAfterFee));
+    const feesToPayInNativeToken = isSendingNativeToken
+        ? transferFee.add(executionFee).add(chainFee)
+        : nativeFee
+    ;
+    const feesToPayInSentToken = isSendingNativeToken
+        ? feesToPayInNativeToken
+        : executionFee.add(transferFee)
+    ;
+    const amountAfterFee = amountWhole.sub(feesToPayInSentToken);
+
+    logger.info('amount whole in sending token', fromWei(amountWhole));
+    if (isSendingNativeToken) {
+        logger.info('sending token is native token, fees to pay', fromWei(feesToPayInSentToken));
+    } else {
+        logger.info('fees to pay in native token', fromWei(feesToPayInNativeToken));
+        logger.info('fees to pay in sent token', fromWei(feesToPayInSentToken));
+    }
+    logger.info('sent token left after fees', fromWei(amountAfterFee));
 
     const autoParamsTo = ['tuple(uint256 executionFee, uint256 flags, bytes fallbackAddress, bytes data)'];
     const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(amountAfterFee.toString());
@@ -178,19 +215,25 @@ async function main() {
         amount: amountWhole.toString(),
         chainIdTo: CHAIN_ID_TO,
         receiver: ROUTER_ADDRESS,
-        useAssetFee: true,
+        useAssetFee: isSendingNativeToken,
         autoParams,
     }
 
-    await send({
+    const tsSendArguments: TsSendArguments = {
         logger,
         web3: web3From,
         senderPrivateKey: SENDER_PRIVATE_KEY,
         debridgeGateInstance: deBridgeGateFrom,
         debridgeGateAddress: DEBRIDGEGATE_ADDRESS,
-        value: amountWhole.toString(),
+        value: isSendingNativeToken ? amountWhole.toString() : feesToPayInNativeToken.toString(),
         gateSendArguments,
-    });
+    }
+
+    if (isSendingNativeToken) {
+        await send(tsSendArguments);
+    } else {
+        await sendERC20(tsSendArguments);
+    }
 }
 
 main()
