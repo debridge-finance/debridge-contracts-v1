@@ -1,25 +1,29 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "./AggregatorBase.sol";
+import "./OraclesManager.sol";
 import "../interfaces/ISignatureVerifier.sol";
 import "../libraries/SignatureUtil.sol";
 
-contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
+/// @dev It's used to verify that a transfer is signed by oracles.
+contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     using SignatureUtil for bytes;
     using SignatureUtil for bytes32;
 
     /* ========== STATE VARIABLES ========== */
+    /// @dev Number of required confirmations per block after the extra check is enabled
+    uint8 public confirmationThreshold;
+    /// @dev submissions count in current block
+    uint40 public submissionsInBlock;
+    /// @dev Current block
+    uint40 public currentBlock;
 
-    uint8 public confirmationThreshold; // required confirmations per block after extra check enabled
-
-    uint40 public submissionsInBlock; //submissions count in current block
-    uint40 public currentBlock; //Current block
-
-    address public debridgeAddress; // Debridge gate address
+    /// @dev Debridge gate address
+    address public debridgeAddress;
 
     /* ========== ERRORS ========== */
 
+    error DeBridgeGateBadRole();
     error NotConfirmedByRequiredOracles();
     error NotConfirmedThreshold();
     error SubmissionNotConfirmed();
@@ -36,7 +40,7 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _confirmationThreshold Confirmations per block after extra check enabled.
+    /// @param _confirmationThreshold Confirmations per block after the extra check is enabled.
     /// @param _excessConfirmations Confirmations count in case of excess activity.
     function initialize(
         uint8 _minConfirmations,
@@ -44,16 +48,13 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
         uint8 _excessConfirmations,
         address _debridgeAddress
     ) public initializer {
-        AggregatorBase.initializeBase(_minConfirmations, _excessConfirmations);
+        OraclesManager.initialize(_minConfirmations, _excessConfirmations);
         confirmationThreshold = _confirmationThreshold;
         debridgeAddress = _debridgeAddress;
     }
 
 
-    /// @dev Check is valid signatures.
-    /// @param _submissionId Submission identifier.
-    /// @param _signatures Array of signatures by oracles.
-    /// @param _excessConfirmations override min confirmations count
+    /// @inheritdoc ISignatureVerifier
     function submit(
         bytes32 _submissionId,
         bytes memory _signatures,
@@ -149,7 +150,8 @@ contract SignatureVerifier is AggregatorBase, ISignatureVerifier {
     }
 
     // ============ Version Control ============
+    /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 101; // 1.0.1
+        return 201; // 2.0.1
     }
 }

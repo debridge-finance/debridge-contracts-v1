@@ -3,20 +3,32 @@ pragma solidity 0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "../interfaces/ICallProxy.sol";
 import "../libraries/Flags.sol";
 
+/// @dev Proxy to execute the other contract calls.
+/// This contract is used when a user requests transfer with specific call of other contract.
 contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
     using Flags for uint256;
 
     /* ========== STATE VARIABLES ========== */
+    /// @dev Role allowed to withdraw fee
+    bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE");
 
-    bytes32 public constant DEBRIDGE_GATE_ROLE = keccak256("DEBRIDGE_GATE_ROLE"); // role allowed to withdraw fee
+    /// @dev Value for lock variable when function is not entered
+    uint256 private constant _NOT_LOCKED = 1;
+    /// @dev Value for lock variable when function is entered
+    uint256 private constant _LOCKED = 2;
+
+    /// @dev Chain from which the current submission is received
     uint256 public override submissionChainIdFrom;
+    /// @dev Native sender of the current submission
     bytes public override submissionNativeSender;
+
+    uint256 private _lock;
 
     /* ========== ERRORS ========== */
 
@@ -24,6 +36,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
 
     error ExternalCallFailed();
     error CallFailed();
+    error Locked();
 
     /* ========== MODIFIERS ========== */
 
@@ -32,12 +45,21 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         _;
     }
 
+    /// @dev lock
+    modifier lock() {
+        if (_lock == _LOCKED) revert Locked();
+        _lock = _LOCKED;
+        _;
+        _lock = _NOT_LOCKED;
+    }
+
     /* ========== CONSTRUCTOR  ========== */
 
     function initialize() public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /// @inheritdoc ICallProxy
     function call(
         address _reserveAddress,
         address _receiver,
@@ -45,7 +67,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _flags,
         bytes memory _nativeSender,
         uint256 _chainIdFrom
-    ) external payable override onlyGateRole returns (bool _result) {
+    ) external payable override onlyGateRole lock returns (bool _result) {
         uint256 amount = address(this).balance;
 
         _result = externalCall(
@@ -66,6 +88,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         }
     }
 
+    /// @inheritdoc ICallProxy
     function callERC20(
         address _token,
         address _reserveAddress,
@@ -74,10 +97,10 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _flags,
         bytes memory _nativeSender,
         uint256 _chainIdFrom
-    ) external override onlyGateRole returns (bool _result) {
-        uint256 amount = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).safeApprove(_receiver, 0);
-        IERC20(_token).safeApprove(_receiver, amount);
+    ) external override onlyGateRole lock returns (bool _result) {
+        uint256 amount = IERC20Upgradeable(_token).balanceOf(address(this));
+        IERC20Upgradeable(_token).safeApprove(_receiver, 0);
+        IERC20Upgradeable(_token).safeApprove(_receiver, amount);
 
         _result = externalCall(
             _receiver,
@@ -88,13 +111,13 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             _flags.getFlag(Flags.PROXY_WITH_SENDER)
         );
 
-        amount = IERC20(_token).balanceOf(address(this));
+        amount = IERC20Upgradeable(_token).balanceOf(address(this));
 
         if (!_result &&_flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
         if (!_result || amount > 0) {
-            IERC20(_token).safeTransfer(_reserveAddress, amount);
+            IERC20Upgradeable(_token).safeTransfer(_reserveAddress, amount);
         }
     }
 
@@ -144,7 +167,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     }
 
     // ============ Version Control ============
+    /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 120; // 1.2.0
+        return 130; // 1.3.0
     }
 }

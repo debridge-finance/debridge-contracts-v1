@@ -13,7 +13,6 @@ contract MockDeBridgeGate is DeBridgeGate {
     function initializeMock(
         uint8 _excessConfirmations,
         address _signatureVerifier,
-        // address _confirmationAggregator,
         address _callProxy,
         IWETH _weth,
         address _feeProxy,
@@ -21,24 +20,9 @@ contract MockDeBridgeGate is DeBridgeGate {
         address _defiController,
         uint256 overrideChainId
     ) public initializer {
-        // DeBridgeGate.initialize(_excessConfirmations,
-        // _signatureVerifier,
-        // _confirmationAggregator,
-        // _callProxy,
-        // _weth,
-        // _feeProxy,
-        // _defiController);
-
         chainId = overrideChainId;
-        _addAsset(
-            getDebridgeId(chainId, address(_weth)),
-            address(_weth),
-            abi.encodePacked(address(_weth)),
-            chainId
-        );
 
         signatureVerifier = _signatureVerifier;
-        // confirmationAggregator = _confirmationAggregator;
 
         callProxy = _callProxy;
         defiController = _defiController;
@@ -74,7 +58,7 @@ contract MockDeBridgeGate is DeBridgeGate {
     ) public pure returns (bytes32) {
         return
             keccak256(
-                abi.encodePacked(_debridgeId, _chainIdFrom, _chainIdTo, _amount, _receiver, _nonce)
+                abi.encodePacked(SUBMISSION_PREFIX, _debridgeId, _chainIdFrom, _chainIdTo, _amount, _receiver, _nonce)
             );
     }
 

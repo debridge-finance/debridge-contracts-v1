@@ -5,9 +5,10 @@
       "strict": true,
       "esModuleInterop": true,
       "outDir": "dist",
-      "resolveJsonModule": true
+      "resolveJsonModule": true,
+      "lib": ["es2019"]
       // "allowJs": true
     },
-    "include": ["./scripts", "./test", "./migrations"],
+    "include": ["./scripts", "./test", "./docs", "./examples/src"],
     "files": ["./hardhat.config.ts"]
   }

@@ -5,13 +5,16 @@ library Flags {
 
     /* ========== FLAGS ========== */
 
-    // Flag to unwrap ETH
+    /// @dev Flag to unwrap ETH
     uint256 public constant UNWRAP_ETH = 0;
-    // Flag to revert if external call fails
+    /// @dev Flag to revert if external call fails
     uint256 public constant REVERT_IF_EXTERNAL_FAIL = 1;
-    // Flag to call proxy with a sender contract
+    /// @dev Flag to call proxy with a sender contract
     uint256 public constant PROXY_WITH_SENDER = 2;
 
+    /// @dev Get flag
+    /// @param _packedFlags Flags packed to uint256
+    /// @param _flag Flag to check
     function getFlag(
         uint256 _packedFlags,
         uint256 _flag
@@ -20,14 +23,18 @@ library Flags {
         return flag == 1;
     }
 
-    // function setFlag(
-    //     uint256 _packedFlags,
-    //     uint256 _flag,
-    //     bool _value
-    // ) internal pure returns (uint256) {
-    //     if (_value)
-    //         return _packedFlags | uint256(1) << _flag;
-    //     else
-    //         return _packedFlags & ~(uint256(1) << _flag);
-    // }
+    /// @dev Set flag
+    /// @param _packedFlags Flags packed to uint256
+    /// @param _flag Flag to set
+    /// @param _value Is set or not set
+     function setFlag(
+         uint256 _packedFlags,
+         uint256 _flag,
+         bool _value
+     ) internal pure returns (uint256) {
+         if (_value)
+             return _packedFlags | uint256(1) << _flag;
+         else
+             return _packedFlags & ~(uint256(1) << _flag);
+     }
 }

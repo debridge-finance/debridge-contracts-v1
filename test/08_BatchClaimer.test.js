@@ -254,8 +254,8 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       const batchDeploys = [];
 
       for (let tokenAddress of tokenAddresses) {
-        const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
-        const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+        const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
+        const deployId = await this.debridge.getDeployId(debridgeId, name, symbol, decimals);
         const signatures = await submissionSignatures(bscWeb3, oracleKeys, deployId);
         batchDeploys.push({
           nativeTokenAddress: tokenAddress,
@@ -280,7 +280,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
         .withArgs(0);
 
       for (let tokenAddress of tokenAddresses) {
-        const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+        const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
         await this.debridge.updateAsset(debridgeId, maxAmount, minReservesBps, amountThreshold);
         const debridge = await this.debridge.getDebridge(debridgeId);
         const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeId);
