@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { deployProxy, getLastDeployedProxy } = require("../deploy-utils");
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {

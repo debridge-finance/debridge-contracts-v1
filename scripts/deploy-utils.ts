@@ -1,3 +1,4 @@
+// @ts-nocheck
 const fs = require("fs");
 const hre = require("hardhat");
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');

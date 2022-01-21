@@ -1,3 +1,4 @@
+// @ts-nocheck
 const { ethers, upgrades } = require("hardhat");
 const { upgradeProxy } = require("../deploy-utils");
 

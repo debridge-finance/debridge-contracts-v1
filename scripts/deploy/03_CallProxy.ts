@@ -1,4 +1,5 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+// @ts-nocheck
+const debridgeInitParams = require("../../assets/debridgeInitParams").default;
 const { deployProxy } = require("../deploy-utils");
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {

@@ -1,4 +1,5 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+// @ts-nocheck
+const debridgeInitParams = require("../../assets/debridgeInitParams").default;
 const { ethers } = require("hardhat");
 const { FLAGS, getLastDeployedProxy, waitTx } = require("../deploy-utils");
 

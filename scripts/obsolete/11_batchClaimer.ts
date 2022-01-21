@@ -1,5 +1,6 @@
+// @ts-nocheck
 const { FLAGS, deployProxy, getLastDeployedProxy, waitTx } = require("../deploy-utils");
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+const debridgeInitParams = require("../../assets/debridgeInitParams").default;
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();

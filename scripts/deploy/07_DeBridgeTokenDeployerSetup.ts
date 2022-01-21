@@ -1,4 +1,5 @@
-const debridgeInitParams = require("../../assets/debridgeInitParams");
+// @ts-nocheck
+const debridgeInitParams = require("../../assets/debridgeInitParams").default;
 const { getLastDeployedProxy, waitTx } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
@@ -35,7 +36,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     debridgeIds.push(debridgeId);
   }
 
-  tx = await deBridgeTokenDeployer.setOverridedTokenInfo(
+  const tx = await deBridgeTokenDeployer.setOverridedTokenInfo(
     debridgeIds,
     overridedTokensInfo
   );

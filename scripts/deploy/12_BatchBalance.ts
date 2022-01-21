@@ -1,3 +1,4 @@
+// @ts-nocheck
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
