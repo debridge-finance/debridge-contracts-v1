@@ -45,7 +45,7 @@ deBridge allows building a new generation of cross-chain protocols and applicati
 
 ## Cross-chain transfer of assets
 
-![](<../.gitbook/assets/27 (1).jpg>)
+![](<../.gitbook/assets/27 (1).png>)
 
 ### Naming
 
@@ -84,5 +84,5 @@ The wrapped (deAsset) is deployed in the target chain automatically together wit
 
 One of the features of deBridge protocol is that it tends to effectively utilize liquidity locked as collateral for deAssets. Any token locked in collateral can be taken by users in a form of flash loans. Upon governance decision, part of the specific asset liquidity can be supplied into reliable DeFi protocols like AAVE, Compound which should be approved by deBridge governance. Normally that should be strategies without impermanent loss with the ability to retrieve liquidity at any given moment. Most probably governance will whitelist strategies only after receiving decentralized insurance from protocols like Nexus Mutual or Unslashed.
 
-![](<../.gitbook/assets/Bg1 (3).png>)
+![](../.gitbook/assets/64.png)
 
