@@ -1,6 +1,6 @@
 // @ts-nocheck
 const { ethers, upgrades } = require("hardhat");
-const { waitTx } = require("../deploy-utils");
+const { waitTx, getLastDeployedProxy} = require("../deploy-utils");
 const debridgeInitParams = require("../../assets/debridgeInitParams").default;
 
 module.exports = async function ({ getNamedAccounts, deployments, network }) {
@@ -16,7 +16,9 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
 
   console.log(`new validators  ${allValidators.length}: ${allValidators}`);
   const signatureVerifierFactory = await ethers.getContractFactory("SignatureVerifier", deployer);
-  const signatureVerifierInstance = await signatureVerifierFactory.attach("0xe867E7269C733795445388cadD08cDcFe7FAe91a", deployer);
+  const signatureVerifierInstance = network.live
+    ? await signatureVerifierFactory.attach("0xe867E7269C733795445388cadD08cDcFe7FAe91a", deployer)
+    : await getLastDeployedProxy("SignatureVerifier", deployer)
 
   const DEFAULT_ADMIN_ROLE = await signatureVerifierInstance.DEFAULT_ADMIN_ROLE();
   const hasRole = await signatureVerifierInstance.hasRole(DEFAULT_ADMIN_ROLE, deployer);

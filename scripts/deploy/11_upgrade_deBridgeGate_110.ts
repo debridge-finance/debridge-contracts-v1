@@ -3,6 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 const { upgradeProxy } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
+  if (!network.live) return;
   const { deployer } = await getNamedAccounts();
 
   console.log('*'.repeat(80));

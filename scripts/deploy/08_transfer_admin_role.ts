@@ -4,6 +4,8 @@ const { ethers } = require("hardhat");
 const { FLAGS, getLastDeployedProxy, waitTx } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
+  if (!network.live) return;
+
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;

@@ -15,7 +15,11 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   if (!deployInitParams) return;
 
   const deBridgeGateFactory = await ethers.getContractFactory("DeBridgeGate", deployer);
-  const deBridgeGateInstance = await deBridgeGateFactory.attach("0x68d936cb4723bdd38c488fd50514803f96789d2d");
+  const deBridgeGateInstance = network.live
+      ? await deBridgeGateFactory.attach('0x68d936cb4723bdd38c488fd50514803f96789d2d')
+      : await getLastDeployedProxy("DeBridgeGate", deployer)
+  ;
+  console.log(await deBridgeGateInstance.hasRole(await deBridgeGateInstance.DEFAULT_ADMIN_ROLE(), deployer));
 
   console.log("deployInitParams.globalFixedNativeFee: ", deployInitParams.globalFixedNativeFee);
   console.log("deployInitParams.globalTransferFeeBps: ", deployInitParams.globalTransferFeeBps);

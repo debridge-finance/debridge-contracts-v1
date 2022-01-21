@@ -1,6 +1,6 @@
 // @ts-nocheck
 const { ethers, upgrades } = require("hardhat");
-const { deployProxy, upgradeProxy, waitTx } = require("../deploy-utils");
+const { deployProxy, upgradeProxy, waitTx, getLastDeployedProxy} = require("../deploy-utils");
 
 const debridgeInitParams = require("../../assets/debridgeInitParams").default;
 
@@ -25,11 +25,20 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log('*'.repeat(80));
 
 
-  const DEBRIDGE_GATE_ADDRESS = '0x68D936Cb4723BdD38C488FD50514803f96789d2D';
-  const CALL_PROXY_ADDRESS = '0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669';
+  const DEBRIDGE_GATE_ADDRESS = network.live
+      ? '0x68D936Cb4723BdD38C488FD50514803f96789d2D'
+      : (await getLastDeployedProxy("DeBridgeGate", deployer)).address
+  ;
+  const CALL_PROXY_ADDRESS = network.live
+      ? '0xEF3B092e84a2Dbdbaf507DeCF388f7f02eb43669'
+      : (await getLastDeployedProxy("CallProxy", deployer)).address
+  ;
 
   const DebrideGateFactory = await hre.ethers.getContractFactory("DeBridgeGate", deployer);
-  const deBridgeGateInstance = await DebrideGateFactory.attach(DEBRIDGE_GATE_ADDRESS);
+  const deBridgeGateInstance = network.live
+      ? await DebrideGateFactory.attach('0x68d936cb4723bdd38c488fd50514803f96789d2d')
+      : await getLastDeployedProxy("DeBridgeGate", deployer)
+  ;
   let tx;
 
 
@@ -50,6 +59,8 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
     tx = await deBridgeGateInstance.setFeeProxy(simpleFeeProxy.address);
     await waitTx(tx);
   }
+
+  if (!network.live) return;
 
   // 2. Upgrade DebrideGate
   console.log('2. Upgrade DebrideGate');

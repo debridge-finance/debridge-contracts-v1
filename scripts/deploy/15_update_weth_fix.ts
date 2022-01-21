@@ -16,7 +16,10 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const wethAddress = deployInitParams.external.WETH;
 
   const deBridgeGateFactory = await ethers.getContractFactory("DeBridgeGate", deployer);
-  const deBridgeGateInstance = await deBridgeGateFactory.attach("0x68d936cb4723bdd38c488fd50514803f96789d2d");
+  const deBridgeGateInstance = network.live
+      ? await deBridgeGateFactory.attach('0x68d936cb4723bdd38c488fd50514803f96789d2d')
+      : await getLastDeployedProxy("DeBridgeGate", deployer)
+  ;
 
   const weth = await deBridgeGateInstance.weth();
   console.log(`weth: ${weth}`);

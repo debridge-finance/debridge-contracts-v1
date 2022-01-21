@@ -5,6 +5,7 @@ const { deployProxy, upgradeProxy, waitTx } = require("../deploy-utils");
 const debridgeInitParams = require("../../assets/debridgeInitParams").default;
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
+  if (!network.live) return;
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
