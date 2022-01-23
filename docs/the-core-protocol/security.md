@@ -6,20 +6,20 @@ description: Information about deBridge security audit processes and bug bounty 
 
 ### Has deBridge been audited?
 
-Yes, deBridge smart contracts were audited by Halborn, Zokyo and Ackee Blockchain.
+Yes, deBridge smart contracts have been audited by Halborn, Zokyo and Ackee Blockchain.
 
-Security will always be deBridge main priority and it’s vital to have a reliable and secure protocol from day one as it’s one of the main components that will determine the future progression of cross-chain interoperability. That’s why deBridge team has that as one of the main focus areas both before and after the protocol launch.&#x20;
+Security will always be deBridge's main priority and it’s vital to have a reliable and secure protocol from day one. It’s one of the main components that will determine the future progression of cross-chain interoperability. That’s why the deBridge team will have that as one of the main focus areas both before and after the protocol launch.&#x20;
 
 ### Third-party security audits
 
-All the reports are stored in deBridge GitHub repository
+All the reports are stored in the deBridge GitHub repository:
 
 * Halborn Security Audit can be found [here](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_Halborn\_v1\_1.pdf)
 * Zokyo Security Audit can be found [here](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_ZOKYO.pdf)
 
-### Immunefi bug bounty program
+### ImmuneFi bug bounty program
 
-deBridge has presented $200,000 Bug Bounty Program on Immunefi.&#x20;
+deBridge has presented a $200,000 Bug Bounty Program on ImmuneFi.&#x20;
 
 This bug bounty program is focused on preventing:
 
