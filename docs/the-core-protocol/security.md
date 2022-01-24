@@ -17,9 +17,9 @@ All the reports are stored in the deBridge GitHub repository:
 * Halborn Security Audit can be found [here](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_Halborn\_v1\_1.pdf)
 * Zokyo Security Audit can be found [here](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_ZOKYO.pdf)
 
-### ImmuneFi bug bounty program
+### Immunefi bug bounty program
 
-deBridge has presented a $200,000 Bug Bounty Program on ImmuneFi.&#x20;
+deBridge has presented a $200,000 Bug Bounty Program on Immunefi.&#x20;
 
 This bug bounty program is focused on preventing:
 
