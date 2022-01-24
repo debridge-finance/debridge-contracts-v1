@@ -648,6 +648,8 @@ export const networks = {
     },
 }
 
+export const isKnownNetwork = (key: string): key is keyof typeof networks => Object.keys(networks).includes(key);
+
 const overridedTokens = [
     {
         "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
