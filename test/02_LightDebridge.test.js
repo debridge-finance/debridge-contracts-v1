@@ -41,7 +41,6 @@ contract("DeBridgeGate light mode", function () {
     devid = devidAccount.address;
 
     const Debridge = await ethers.getContractFactory("MockDeBridgeGate", alice);
-    const ConfirmationAggregator = await ethers.getContractFactory("ConfirmationAggregator", alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
     const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
     const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
@@ -66,18 +65,6 @@ contract("DeBridgeGate light mode", function () {
     console.log("confirmationThreshold: " + this.confirmationThreshold);
     console.log("excessConfirmations: " + this.excessConfirmations);
 
-    //   function initialize(
-    //     uint256 _minConfirmations,
-    //     uint256 _confirmationThreshold,
-    //     uint256 _excessConfirmations,
-    // )
-    this.confirmationAggregator = await upgrades.deployProxy(ConfirmationAggregator, [
-      this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
-    ]);
-
-    await this.confirmationAggregator.deployed();
     //   function initialize(
     //     uint256 _minConfirmations,
     //     uint256 _confirmationThreshold,
@@ -121,16 +108,6 @@ contract("DeBridgeGate light mode", function () {
     const isSupported = true;
     const supportedChainIds = [42, 56];
     this.weth = await WETH9Factory.deploy();
-
-    //   function initialize(
-    //     uint256 _excessConfirmations,
-    //     address _signatureVerifier,
-    //     address _confirmationAggregator,
-    //     address _callProxy,
-    //     IWETH _weth,
-    //     IFeeProxy _feeProxy,
-    //     IDefiController _defiController,
-    // )
 
     const DeBridgeTokenFactory = await ethers.getContractFactory("DeBridgeToken", alice);
     const deBridgeToken = await DeBridgeTokenFactory.deploy();
@@ -259,17 +236,9 @@ contract("DeBridgeGate light mode", function () {
         const symbol = "Magic Dollar";
         const decimals = 18;
 
-        //   function confirmNewAsset(
-        //     address _tokenAddress,
-        //     uint256 _chainId,
-        //     string memory _name,
-        //     string memory _symbol,
-        //     uint8 _decimals,
-        //     bytes[] memory _signatures
-        // )
-        const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+        const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
         //console.log('debridgeId '+debridgeId);
-        const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+        const deployId = await this.debridge.getDeployId(debridgeId, name, symbol, decimals);
 
         let signatures = "0x";
         for (let i = 0; i < oracleKeys.length; i++) {
@@ -311,9 +280,9 @@ contract("DeBridgeGate light mode", function () {
       const symbol = "SPARK Dollar";
       const decimals = 18;
 
-      const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+      const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       //console.log('debridgeId '+debridgeId);
-      const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+      const deployId = await this.debridge.getDeployId(debridgeId, name, symbol, decimals);
 
       let signatures = "0x";
       //start from 1 (skipped alice)
@@ -344,9 +313,9 @@ contract("DeBridgeGate light mode", function () {
       const symbol = "Magic Dollar";
       const decimals = 18;
 
-      const debridgeId = await this.signatureVerifier.getDebridgeId(chainId, tokenAddress);
+      const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
       //console.log('debridgeId '+debridgeId);
-      const deployId = await this.signatureVerifier.getDeployId(debridgeId, name, symbol, decimals);
+      const deployId = await this.debridge.getDeployId(debridgeId, name, symbol, decimals);
 
       let signatures = "0x";
       // count of oracles = this.minConfirmations - 1
@@ -382,10 +351,15 @@ contract("DeBridgeGate light mode", function () {
       const balance = toBN(await this.weth.balanceOf(this.debridge.address));
       const debridgeFeeInfo = await this.debridge.getDebridgeFeeInfo(debridgeWethId);
       const supportedChainInfo = await this.debridge.getChainToConfig(chainIdTo);
-      const feesWithFix = toBN(supportedChainInfo.transferFeeBps)
-        .mul(amount)
-        .div(BPS)
-        .add(toBN(supportedChainInfo.fixedNativeFee));
+
+      const discount = 0;
+      const fixedNativeFeeAfterDiscount = toBN(supportedChainInfo.fixedNativeFee).mul(BPS-discount).div(BPS);
+      let feesWithFix = toBN(supportedChainInfo.transferFeeBps)
+        .mul(toBN(amount).sub(fixedNativeFeeAfterDiscount))
+        .div(BPS);
+      feesWithFix = toBN(feesWithFix).sub(toBN(feesWithFix).mul(discount).div(BPS));
+      feesWithFix = feesWithFix.add(fixedNativeFeeAfterDiscount);
+
       await this.debridge.send(
         tokenAddress,
         amount,
@@ -452,31 +426,6 @@ contract("DeBridgeGate light mode", function () {
       assert.equal(
         nativeDebridgeFeeInfo.collectedFees.add(toBN(supportedChainInfo.fixedNativeFee)).toString(),
         newNativeDebridgeFeeInfo.collectedFees.toString()
-      );
-    });
-
-    it("should reject sending too mismatched amount of native tokens", async function () {
-      const tokenAddress = ZERO_ADDRESS;
-      const receiver = bob;
-      const chainId = await this.debridge.getChainId();
-      const amount = toBN(toWei("1"));
-      const chainIdTo = 42;
-      const debridgeId = await this.debridge.getDebridgeId(chainId, tokenAddress);
-      await expectRevert(
-        this.debridge.send(
-          tokenAddress,
-          amount,
-          chainIdTo,
-          receiver,
-          [],
-          false,
-          referralCode,
-          [],
-          {
-            value: toWei("0.1"),
-            from: alice,
-          }),
-        "AmountMismatch()"
       );
     });
 
@@ -619,7 +568,6 @@ contract("DeBridgeGate light mode", function () {
           [],
           [],
           {
-            //will call IConfirmationAggregator
             from: alice,
           }),
         "NotConfirmedByRequiredOracles()"

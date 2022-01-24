@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -10,10 +10,9 @@ import "../interfaces/IUniswapV2Pair.sol";
 import "../interfaces/IUniswapV2Factory.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/IStrategy.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgradeable {
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     struct Strategy {
         bool exists;
@@ -110,8 +109,8 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
         deBridgeGate.requestReserves(strategy.stakeToken, _amount);
 
         // Deposit tokens to strategy
-        IERC20(strategy.stakeToken).safeApprove(address(strategyController), 0);
-        IERC20(strategy.stakeToken).safeApprove(address(strategyController), _amount);
+        IERC20Upgradeable(strategy.stakeToken).safeApprove(address(strategyController), 0);
+        IERC20Upgradeable(strategy.stakeToken).safeApprove(address(strategyController), _amount);
         strategyController.deposit(strategy.stakeToken, _amount);
 
         emit DepositToStrategy(_strategy, _amount);
@@ -125,8 +124,8 @@ contract DefiController is Initializable, AccessControlUpgradeable, PausableUpgr
 
         // Withdraw tokens from strategy
         strategyController.withdraw(strategy.strategyToken, _amount);
-        IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
-        IERC20(strategy.stakeToken).safeApprove(address(deBridgeGate), _amount);
+        IERC20Upgradeable(strategy.stakeToken).safeApprove(address(deBridgeGate), 0);
+        IERC20Upgradeable(strategy.stakeToken).safeApprove(address(deBridgeGate), _amount);
 
         // TODO: get rewards from strategy
 

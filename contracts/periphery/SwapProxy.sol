@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.7;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
@@ -13,7 +13,7 @@ import "../interfaces/ISwapProxy.sol";
 import "hardhat/console.sol";
 
 contract SwapProxy  is Initializable, AccessControlUpgradeable, PausableUpgradeable, ISwapProxy{
-    using SafeERC20 for IERC20;
+    using SafeERC20Upgradeable for IERC20Upgradeable;
 
     /* ========== STATE VARIABLES ========== */
 
@@ -67,7 +67,7 @@ contract SwapProxy  is Initializable, AccessControlUpgradeable, PausableUpgradea
         address _receiver
     ) external override onlySystem whenNotPaused returns(uint256 amountOut) {
         console.log("swap _fromToken %s _toToken %s",  _fromToken,_toToken);
-        uint256 amount = IERC20(_fromToken).balanceOf(address(this));
+        uint256 amount = IERC20Upgradeable(_fromToken).balanceOf(address(this));
         console.log("_receiver %s _amount %s", _receiver,  amount);
         amountOut = _swapExact(_fromToken, _toToken, _receiver, amount);
         return amountOut;
@@ -81,7 +81,7 @@ contract SwapProxy  is Initializable, AccessControlUpgradeable, PausableUpgradea
         address _receiver,
         uint256 _amount
     ) private returns(uint256 amountOut) {
-        IERC20 erc20 = IERC20(_fromToken);
+        IERC20Upgradeable erc20 = IERC20Upgradeable(_fromToken);
         IUniswapV2Pair uniswapPair = IUniswapV2Pair(uniswapFactory.getPair(_toToken, _fromToken));
         erc20.safeTransfer(address(uniswapPair), _amount);
 

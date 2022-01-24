@@ -1,0 +1,1 @@
+export const toLink = (name: string, path: string): string => `* [${name}](${path})`;
