@@ -50,12 +50,21 @@ contract ReferralSystem is BridgeAppBase {
         );
     }
 
-    function onBridgedMessage(bytes calldata _agent) external payable virtual onlyControllingAddress whenNotPaused returns (bool){
-        code ++;
-        if (getCodeByAccount[_agent] == 0) {
-            getAccountByCode[code] = _agent;
-            getCodeByAccount[_agent] = code;
+    function onBridgedMessage(bytes calldata _agent) external payable virtual onlyControllingAddress whenNotPaused returns (bool) {
+        return _setCode(_agent);
+    }
+
+    function registrate() external whenNotPaused returns (bool) {
+        return _setCode(abi.encodePacked(msg.sender));
+    }
+
+    function _setCode(bytes memory _customer) internal returns (bool) {
+        if (getCodeByAccount[_customer] == 0) {
+            code ++;
+            getAccountByCode[code] = _customer;
+            getCodeByAccount[_customer] = code;
+            return true;
         }
-        return true;
+        return false;
     }
 }
