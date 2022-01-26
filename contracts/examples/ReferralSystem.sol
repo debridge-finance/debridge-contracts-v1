@@ -17,41 +17,15 @@ contract ReferralSystem is BridgeAppBase {
         code = 0;
     }
 
-    /// @param _chainIdTo Receiving chain id
-    /// @param _fallback Address to call in case call to _receiver reverts and to send deTokens
-    /// @param _executionFee Fee to pay (in native token)
-    function send(
-        uint256 _chainIdTo,
-        address _fallback,
-        uint256 _executionFee,
-        bytes calldata agent
-    ) external virtual payable whenNotPaused {
-        IDeBridgeGate.SubmissionAutoParamsTo memory autoParams;
-        autoParams.flags = autoParams.flags.setFlag(Flags.REVERT_IF_EXTERNAL_FAIL, true);
-        autoParams.flags = autoParams.flags.setFlag(Flags.PROXY_WITH_SENDER, true);
-        autoParams.executionFee = _executionFee;
-        autoParams.fallbackAddress = abi.encodePacked(_fallback);
-        autoParams.data = abi.encodeWithSignature("onBridgedMessage(bytes)", agent);
-
-        address contractAddressTo = chainIdToContractAddress[_chainIdTo];
-        if (contractAddressTo == address(0)) {
-            revert ChainToIsNotSupported();
-        }
-
-        deBridgeGate.send{value: msg.value}(
-            address(0),
-            msg.value,
-            _chainIdTo,
-            abi.encodePacked(contractAddressTo),
-            "",
-            false,
-            0,
-            abi.encode(autoParams)
-        );
+    modifier onlyCallProxy() {
+        if (deBridgeGate.callProxy() != msg.sender) revert CallProxyBadRole();
+        _;
     }
 
-    function onBridgedMessage(bytes calldata _agent) external payable virtual onlyControllingAddress whenNotPaused returns (bool) {
-        return _setCode(_agent);
+    function onBridgedMessage(bytes calldata _agent) external payable virtual onlyCallProxy whenNotPaused returns (bool) {
+        ICallProxy callProxy = ICallProxy(deBridgeGate.callProxy());
+        bytes memory nativeSender = callProxy.submissionNativeSender();
+        return _setCode(nativeSender);
     }
 
     function registrate() external whenNotPaused returns (bool) {
