@@ -48,7 +48,7 @@ beforeEach(async () => {
 });
 
 
-describe('initializer', async () => {
+describe('initializer', () => {
     test('can be called only once', async () => {
         await expect(initializeControlWalletProxy()).to.be.revertedWith("Initializable: contract is already initialized");
     })
@@ -151,7 +151,7 @@ const testOnlyCallProxyFromControllingAddressModifier = (
 }
 
 describe('`call` method', () => {
-    let mockArgsForCall: [string, BigNumberish, string, BytesLike];
+    let mockArgsForCall: [string, BigNumberish, string, BytesLike, BigNumberish];
     let callWithMockArgsCallData: string;
 
     beforeEach(async () => {
@@ -165,7 +165,7 @@ describe('`call` method', () => {
             .encodeFunctionData('someFunction');
 
         mockArgsForCall = [
-            erc20Mock.address, 0, mockAcceptAnyCall.address, callDataForMockAcceptAnyCall
+            erc20Mock.address, 0, mockAcceptAnyCall.address, callDataForMockAcceptAnyCall, 0
         ];
         callWithMockArgsCallData = controlWalletProxy.interface.encodeFunctionData('call', mockArgsForCall);
     })
@@ -180,6 +180,27 @@ describe('`call` method', () => {
             .encodeFunctionData('unknownFunction');
         await expectCallThroughCallProxyFail(callDataThatWillBeRejectedByWallet);
     })
+
+    test('reverts on wrong nonce', async () => {
+        await expectCallThroughCallProxySuccess(callWithMockArgsCallData);
+        await expectCallThroughCallProxyFail(callWithMockArgsCallData);
+        // replace last element (nonce) with new nonce
+        mockArgsForCall[4] = 1;
+        await expectCallThroughCallProxySuccess(
+            controlWalletProxy.interface.encodeFunctionData('call', mockArgsForCall)
+        );
+
+        // nonce is bigger, should be 2
+        mockArgsForCall[4] = 3;
+        await expectCallThroughCallProxyFail(
+            controlWalletProxy.interface.encodeFunctionData('call', mockArgsForCall)
+        );
+
+        mockArgsForCall[4] = 2;
+        await expectCallThroughCallProxySuccess(
+            controlWalletProxy.interface.encodeFunctionData('call', mockArgsForCall)
+        );
+    });
 })
 
 describe('add/remove calling address', () => {

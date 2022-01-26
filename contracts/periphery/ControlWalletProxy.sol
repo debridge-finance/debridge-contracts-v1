@@ -18,6 +18,8 @@ contract ControlWalletProxy is Initializable {
     // chainIdFrom => list of addresses that can control this contract
     mapping(uint256 => mapping(bytes => bool)) public controlParams;
 
+    uint256 public nonce;
+
     /* ========== ERRORS ========== */
 
     error CallProxyBadRole();
@@ -27,6 +29,8 @@ contract ControlWalletProxy is Initializable {
     error AddressAlreadyAdded();
     error RemovingMissingAddress();
     error RemovingLastAddress();
+
+    error WrongNonce();
 
     /* ========== EVENTS ========== */
 
@@ -67,8 +71,13 @@ contract ControlWalletProxy is Initializable {
         address token,
         uint256 amount,
         address destination,
-        bytes memory data
+        bytes memory data,
+        uint256 _nonce
     ) external payable onlyCallProxyFromControllingAddress returns (bool _result) {
+        if (_nonce != nonce){
+            revert WrongNonce();
+        }
+
         if (token != address(0)) {
             IERC20Upgradeable(token).safeApprove(destination, 0);
             IERC20Upgradeable(token).safeApprove(destination, amount);
@@ -83,6 +92,8 @@ contract ControlWalletProxy is Initializable {
         if (!_result) {
             revert ExternalCallFailed();
         }
+
+        nonce++;
     }
 
     function addControllingAddress(
