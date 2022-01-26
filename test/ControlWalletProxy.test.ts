@@ -281,7 +281,7 @@ describe('add/remove calling address', () => {
         expect(await controlWalletProxy.isControllingAddress(...firstAddressTuple)).to.be.false;
     })
 
-    test.only('ControllingAddressUpdated is emitted on add and remove', async () => {
+    test('ControllingAddressUpdated is emitted on add and remove', async () => {
         await expect(callWalletThroughCallProxy(addressTupleCallData.addFirst))
             .to.emit(controlWalletProxy, 'ControllingAddressUpdated')
             .withArgs(firstAddressTuple[0].toLowerCase(), firstAddressTuple[1], true)
