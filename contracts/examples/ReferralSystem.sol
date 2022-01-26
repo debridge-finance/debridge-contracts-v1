@@ -9,6 +9,8 @@ contract ReferralSystem is BridgeAppBase {
     uint256 public code;
     mapping(uint256 => bytes) public getAccountByCode;
     mapping(bytes => uint256) public getCodeByAccount;
+    
+    event ReferralAdded(bytes account, uint256 code);
 
     using Flags for uint256;
 
@@ -22,9 +24,10 @@ contract ReferralSystem is BridgeAppBase {
         _;
     }
 
-    function onBridgedMessage(bytes calldata _agent) external payable virtual onlyCallProxy whenNotPaused returns (bool) {
+    function onBridgedMessage() external payable virtual onlyCallProxy whenNotPaused returns (bool) {
         ICallProxy callProxy = ICallProxy(deBridgeGate.callProxy());
         bytes memory nativeSender = callProxy.submissionNativeSender();
+        require(nativeSender.length != 0, "nativeSender is zero");
         return _setCode(nativeSender);
     }
 
@@ -37,6 +40,7 @@ contract ReferralSystem is BridgeAppBase {
             code ++;
             getAccountByCode[code] = _customer;
             getCodeByAccount[_customer] = code;
+            emit ReferralAdded(_customer, code);
             return true;
         }
         return false;
