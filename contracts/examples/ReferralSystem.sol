@@ -11,6 +11,7 @@ contract ReferralSystem is BridgeAppBase {
     mapping(bytes => uint256) public getCodeByAccount;
     
     event ReferralAdded(bytes account, uint256 code);
+    error ZeroSender();
 
     using Flags for uint256;
 
@@ -27,7 +28,7 @@ contract ReferralSystem is BridgeAppBase {
     function onBridgedMessage() external payable virtual onlyCallProxy whenNotPaused returns (bool) {
         ICallProxy callProxy = ICallProxy(deBridgeGate.callProxy());
         bytes memory nativeSender = callProxy.submissionNativeSender();
-        require(nativeSender.length != 0, "nativeSender is zero");
+        if (nativeSender.length == 0) revert ZeroSender();
         return _setCode(nativeSender);
     }
 
