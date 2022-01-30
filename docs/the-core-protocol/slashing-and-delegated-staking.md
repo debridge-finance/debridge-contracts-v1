@@ -37,6 +37,6 @@ Delegators receive payout proportional to USD equivalent of their stake in the v
 
 ### Additional APY for Delegators
 
-In addition to deBridge protocol payouts, users can receive additional yield by supplying their liquidity locked in the delegated staking contract into strategies white-listed by the governance. Whitelisted strategies normally belong to well-known and reliable DeFi protocols such as AAVE, Compound, or Yearn.Finance. In this case, APYs of the deBridge protocol and of the strategy is summed up but in addition to the risk of validators' failure delegator will also bear a risk of the strategy where he desired to supply a locked stake.
+In addition to deBridge protocol payouts, users can receive additional yield by supplying their liquidity locked in the delegated staking contract into strategies white-listed by the governance. Whitelisted strategies normally belong to well-known and reliable DeFi protocols such as AAVE, Compound, or Yearn.Finance. In this case, APYs of the deBridge protocol and of the strategy are summed up but in addition to the risk of validators' failure delegator will also bear a risk of the strategy where he desired to supply a locked stake.
 
 All protocol payouts and strategy rewards top up the collateral of validators and should also pass cooldown period in order to become realized gain
