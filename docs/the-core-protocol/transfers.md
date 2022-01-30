@@ -53,7 +53,7 @@ deBridge protocol supports **multi-chain routing** when users can transfer deAss
 
 The described approach works well for transfers between any blockchain networks where the target chain has cheap transaction fees. But what if the transfer is performed into Ethereum, especially at the moment of high gas prices? Each validator would have to bear the transaction costs of submitting validation transactions for each performed transfer. In this case, transaction validation costs may even exceed the amount of asset being transferred, especially taking into account that deBridge DON will consist of more than 10 validators. In order to solve this problem, the protocol design also provides a **Light Validation** method, when deBridge validators can submit validating transactions into the `LightAggregator` contract of another cheap blockchain or L2 ([Arbitrum](https://offchainlabs.com)) which is used as storage of validators signatures.
 
-When user claims asset in the `deBridgeGate` smart contract in the native chain or mints deAsset in the secondary chain, he passes minimal required number of oracles signatures for this transfer (SubmissionId) from the `LightAggregator` contract in Arbitrum.
+When a user claims asset in the `deBridgeGate` smart contract in the native chain or mints deAsset in the secondary chain, he passes minimal required number of oracles signatures for this transfer (SubmissionId) from the `LightAggregator` contract in Arbitrum.
 
 ```
 function claim(
@@ -66,7 +66,7 @@ function claim(
     )
 ```
 
-`deBridgeGate` smart-contract cross-validates validators signatures for this `submissionId` to make sure that those signatures belong to white-listed validators. If the minimum required amount of signatures is valid, the user receives a designated amount of asset into his wallet. Since all claims are performed asynchronously through the smart contract, there is no nonce dependency and all actions are performed in a fast manner
+`deBridgeGate` smart-contract cross-validates validators signatures for this `submissionId` to make sure that those signatures belong to white-listed validators. If the minimum required amount of signatures is valid, the user receives a designated amount of assets into his wallet. Since all claims are performed asynchronously through the smart contract, there is no nonce dependency and all actions are performed in a fast manner
 
 ## Cross-Chain Transfers Execution Time
 
