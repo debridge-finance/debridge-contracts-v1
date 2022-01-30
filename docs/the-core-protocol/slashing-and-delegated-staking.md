@@ -16,7 +16,7 @@ There are two ways of how validators can attract liquidity into collateral:
 
 ### Delegated Staking
 
-Any user/wallet can increase the collateral of any validator if he believes that this validator is reliable, knows how to manage infrastructure and there won't be any breakdowns and delays in the transactions validation process performed by this validator.
+Any user/wallet can increase the collateral of any validator if he believes that this validator is reliable, knows how to manage infrastructure and there won't be any breakdowns and delays in the transaction's validation process performed by this validator.
 
 The whitelist of assets that can be staked is managed by governance. Initially, only`ETH, USDT, USDC` assets will be available for staking. Stablecoins allow hedging collateral during periods of market volatility to avoid shrinking of total collateral USD value during the bear market stages.
 
