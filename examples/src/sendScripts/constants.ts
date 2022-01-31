@@ -23,3 +23,4 @@ export const log4jsConfig = {
 
 export const ether = new BN(toWei('1'));
 export const zero = new BN('0');
+export const GENERIC_ERROR_CODE = 1;

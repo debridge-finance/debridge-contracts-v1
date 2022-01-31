@@ -1,7 +1,7 @@
 import {Command} from 'commander';
 import {ChainId} from "@uniswap/sdk";
 import logger from "./logger";
-import {GENERIC_ERROR_CODE} from "./constants";
+import {GENERIC_ERROR_CODE} from "../constants";
 import {Web3RpcUrl} from "../constants";
 import {isAddress} from "ethers/lib/utils";
 
