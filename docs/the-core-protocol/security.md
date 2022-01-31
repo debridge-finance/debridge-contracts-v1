@@ -14,8 +14,8 @@ Security will always be deBridge's main priority and it’s vital to have a reli
 
 All the reports are stored in the deBridge GitHub repository:
 
-* Halborn Security Audit can be found [here](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_Halborn\_v1\_1.pdf)
-* Zokyo Security Audit can be found [here](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_ZOKYO.pdf)
+* [Halborn Security Audit on GitHub](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_Halborn\_v1\_1.pdf)
+* [Zokyo Security Audit on GitHub](https://github.com/debridge-finance/debridge-security/blob/master/deBridge\_Main\_Smart\_Contract\_Security\_Audit\_Report\_ZOKYO.pdf)
 
 ### Immunefi bug bounty program
 
@@ -30,5 +30,5 @@ This bug bounty program is focused on preventing:
 * Smart contract fails to deliver promised returns
 * Unauthorized minting of wrapped assets that will lead them to loosing peg
 
-More detailed description can be found [here](https://immunefi.com/bounty/debridge/).
+More detailed description can be found on the [Immunefi website](https://immunefi.com/bounty/debridge/).
 
