@@ -1,3 +1,6 @@
+import BN from "bn.js";
+import {toWei} from "web3-utils";
+
 export const Web3RpcUrl = Object.freeze({
     1: 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161', // //ETH Mainnet
     42: 'https://kovan.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161', // //Kovan
@@ -17,3 +20,6 @@ export const log4jsConfig = {
         default: { appenders: ['out'], level: 'debug' }
     }
 }
+
+export const ether = new BN(toWei('1'));
+export const zero = new BN('0');

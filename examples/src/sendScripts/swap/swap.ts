@@ -2,27 +2,23 @@ import Web3 from "web3";
 import DeBridgeGateJson from "../../../../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json";
 import ERC20Json from "@openzeppelin/contracts/build/contracts/ERC20.json"
 import {AbiItem, toWei, fromWei} from "web3-utils";
-import {Web3RpcUrl} from "../constants";
+import {ether, Web3RpcUrl, zero} from "../constants";
 import envVars from './getTypedEnvVariables';
 import consoleOptions from './getTypedConsoleArguments';
-import {FACTORY_ADDRESS, Fetcher, Percent, Route, Token, TokenAmount, Trade, TradeType, WETH} from "@uniswap/sdk";
 import {ERC20} from "../../../../typechain-types-web3/ERC20";
 import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
 import {AddressZero} from "@ethersproject/constants";
 import logger from "./logger";
 import {GENERIC_ERROR_CODE} from "./constants";
-import UniswapV2Router02Json from "@uniswap/v2-periphery/build/UniswapV2Router02.json";
-import IUniswapV2FactoryJson from "@uniswap/v2-periphery/build/IUniswapV2Factory.json";
-import {UniswapV2Router02} from "../../../../typechain-types-web3/UniswapV2Router02";
 import send, {GateSendArguments, TsSendArguments} from "../genericSend";
 import {ethers} from "ethers";
 import BN from "bn.js";
-import {IUniswapV2Factory} from "../../../../typechain-types-web3/IUniswapV2Factory";
 import sendERC20 from "../genericSendERC20";
+import getDebridgeId from "./getDebridgeId";
+import normalizeToDecimals from "./normalizeToDecimals";
+import getCallToUniswapRouterEncoded from "./getCallToUniswapRouterEncoded";
 
 const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
-const ether = new BN(toWei('1'));
-const zero = new BN('0');
 
 // Just for validation and type parsing, you can use `= process.env`
 const {
@@ -59,117 +55,8 @@ async function getDecimalsMultiplierForSentToken() {
     return ten.pow(decimals);
 }
 
-function normalizeToDecimals(bnInWei: BN, decimalsMultiplierForSentToken: BN): BN {
-    return bnInWei.mul(decimalsMultiplierForSentToken).div(ether);
-}
-
-async function getDebridgeId(
-    tokenNativeChainId: number,
-    tokenAddressOnNativeChain: string
-): Promise<string> {
-    const isMainTokenRequested = tokenAddressOnNativeChain === AddressZero;
-    const addressToUseForDebridgeId = isMainTokenRequested
-        ? await deBridgeGateFrom.methods.weth().call()
-        : tokenAddressOnNativeChain;
-
-    logger.info(`Address to use for debridge id`, addressToUseForDebridgeId);
-
-    return deBridgeGateTo.methods.getDebridgeId(tokenNativeChainId, addressToUseForDebridgeId).call();
-}
-
-async function getTokenAddressOnToChain(
-    fromChainId: keyof typeof Web3RpcUrl,
-    tokenAddressOnFromChain: string
-) {
-    const nativeTokenInfo = await deBridgeGateFrom.methods.getNativeInfo(tokenAddressOnFromChain).call();
-    const isNativeToken = TOKEN_ADDRESS_FROM === AddressZero || nativeTokenInfo.nativeChainId === fromChainId.toString();
-
-    const deBridgeId = isNativeToken
-        ?  await getDebridgeId(fromChainId, tokenAddressOnFromChain)
-        :  await getDebridgeId(parseInt(nativeTokenInfo.nativeChainId), nativeTokenInfo.nativeAddress)
-
-    const deBridgeInfo = await deBridgeGateTo.methods.getDebridge(deBridgeId).call();
-
-    logger.info(`Sending ${isNativeToken ? '' : 'not '}native token`);
-    logger.info(`nativeTokenInfo`, nativeTokenInfo);
-    logger.info('deBridgeId of sending token', deBridgeId);
-    logger.info('deBridgeInfo',deBridgeInfo);
-
-    if (!deBridgeInfo.exist) {
-        logger.error(`Token with address ${tokenAddressOnFromChain} does not have debridgeInfo on receiving chain`);
-        process.exit(GENERIC_ERROR_CODE);
-    }
-    return isNativeToken ? deBridgeInfo.tokenAddress : nativeTokenInfo.nativeAddress;
-}
-
-async function getUniswapTokenInstanceFromAddress(chainId: number, address: string): Promise<Token> {
-    const tokenInstance = new web3To.eth.Contract(ERC20Json.abi as AbiItem[], address) as unknown as ERC20;
-    const tokenDecimals = parseInt(
-        await tokenInstance.methods.decimals().call()
-    );
-    return new Token(chainId, address, tokenDecimals);
-}
-
-async function getCallToUniswapRouterEncoded(amountToSell: BN, decimalsMultiplierForSentToken: BN): Promise<string> {
-    const addressOfFromTokenOnToChain = await getTokenAddressOnToChain(
-        CHAIN_ID_FROM,
-        TOKEN_ADDRESS_FROM
-    );
-    const fromTokenOnToChainUniswap = await getUniswapTokenInstanceFromAddress(
-        CHAIN_ID_TO,
-        addressOfFromTokenOnToChain
-    );
-    const shouldReceiveNativeToken = TOKEN_ADDRESS_TO === AddressZero;
-
-    const toTokenUniswap =  shouldReceiveNativeToken
-        ? WETH[CHAIN_ID_TO]
-        : await getUniswapTokenInstanceFromAddress(CHAIN_ID_TO, TOKEN_ADDRESS_TO)
-    ;
-
-    const factory =  new web3To.eth.Contract(
-        IUniswapV2FactoryJson.abi as AbiItem[],
-        FACTORY_ADDRESS
-    ) as unknown as IUniswapV2Factory;
-    const pairAddress  = await factory.methods.getPair(addressOfFromTokenOnToChain, toTokenUniswap.address).call();
-    const isPairMissing = pairAddress === AddressZero;
-    if (isPairMissing){
-        logger.error('Pair does not exist on receiving chain, please create it first');
-        process.exit(GENERIC_ERROR_CODE);
-    }
-
-    const pair = await Fetcher.fetchPairData(fromTokenOnToChainUniswap, toTokenUniswap);
-    const route = new Route([pair], fromTokenOnToChainUniswap);
-    const amountToSellNormalized = normalizeToDecimals(amountToSell, decimalsMultiplierForSentToken);
-    const amount = new TokenAmount(fromTokenOnToChainUniswap, amountToSellNormalized.toString());
-    const trade = new Trade(route, amount, TradeType.EXACT_INPUT);
-    const slippageTolerance = new Percent("300", "10000"); // 300 bips, or 3%
-    const deadline = Math.floor(Date.now() / 1000) + 60 * 30; // 30 minutes from the current Unix time
-
-    const router = new web3To.eth.Contract(
-        UniswapV2Router02Json.abi as AbiItem[],
-        ROUTER_ADDRESS
-    ) as unknown as UniswapV2Router02;
-
-    logger.info('Will sell deTokens', trade.inputAmount.toExact());
-    logger.info('Will get at least', trade.minimumAmountOut(slippageTolerance).toExact());
-
-    // Same for *forETH and *forTokens
-    const swapExactTokensArguments: Parameters<UniswapV2Router02['methods']['swapExactTokensForETH']> = [
-        trade.inputAmount.raw.toString(),
-        trade.minimumAmountOut(slippageTolerance).raw.toString(),
-        [addressOfFromTokenOnToChain, toTokenUniswap.address],
-        web3To.eth.accounts.privateKeyToAccount(SENDER_PRIVATE_KEY).address,
-        deadline
-    ];
-    logger.info('Uniswap router call arguments', swapExactTokensArguments);
-
-    return shouldReceiveNativeToken
-        ?  router.methods.swapExactTokensForETH(...swapExactTokensArguments).encodeABI()
-        :  router.methods.swapExactTokensForTokens(...swapExactTokensArguments).encodeABI()
-}
-
 async function getChainFeeForDebridgeId(): Promise<BN> {
-    const deBridgeId = await getDebridgeId(CHAIN_ID_FROM, TOKEN_ADDRESS_FROM);
+    const deBridgeId = await getDebridgeId(deBridgeGateFrom, deBridgeGateTo, CHAIN_ID_FROM, TOKEN_ADDRESS_FROM);
     return new BN(
         await deBridgeGateFrom.methods.getDebridgeChainAssetFixedFee(deBridgeId, CHAIN_ID_TO).call()
     );
@@ -238,7 +125,19 @@ async function main() {
     logger.info('sent token left after fees', fromWei(amountAfterFee));
 
     const autoParamsTo = ['tuple(uint256 executionFee, uint256 flags, bytes fallbackAddress, bytes data)'];
-    const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(amountAfterFee, decimalsMultiplierForSentToken);
+    const callToUniswapRouterEncoded = await getCallToUniswapRouterEncoded(
+        web3To,
+        deBridgeGateFrom,
+        deBridgeGateTo,
+        TOKEN_ADDRESS_FROM,
+        TOKEN_ADDRESS_TO,
+        CHAIN_ID_FROM,
+        CHAIN_ID_TO,
+        ROUTER_ADDRESS,
+        SENDER_PRIVATE_KEY,
+        amountAfterFee,
+        decimalsMultiplierForSentToken
+    );
     const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [[
         normalizeToDecimals(executionFee, decimalsMultiplierForSentToken).toString(),
         parseInt('100', 2), // set only PROXY_WITH_SENDER flag, see Flags.sol and CallProxy.sol
