@@ -14,11 +14,9 @@ import send, {GateSendArguments, TsSendArguments} from "../genericSend";
 import {ethers} from "ethers";
 import BN from "bn.js";
 import sendERC20 from "../genericSendERC20";
-import getDebridgeId from "./getDebridgeId";
 import normalizeToDecimals from "./normalizeToDecimals";
 import getCallToUniswapRouterEncoded from "./getCallToUniswapRouterEncoded";
-
-const DEFAULT_EXECUTION_FEE = new BN(toWei('0.01'));
+import FeesCalculator from "./FeesCalculator";
 
 // Just for validation and type parsing, you can use `= process.env`
 const {
@@ -55,33 +53,6 @@ async function getDecimalsMultiplierForSentToken() {
     return ten.pow(decimals);
 }
 
-async function getChainFeeForDebridgeId(): Promise<BN> {
-    const deBridgeId = await getDebridgeId(deBridgeGateFrom, deBridgeGateTo, CHAIN_ID_FROM, TOKEN_ADDRESS_FROM);
-    return new BN(
-        await deBridgeGateFrom.methods.getDebridgeChainAssetFixedFee(deBridgeId, CHAIN_ID_TO).call()
-    );
-}
-
-async function calculateTransferFee(amountWholeBN: BN): Promise<BN> {
-    const BPS_DENOMINATOR = new BN(await deBridgeGateFrom.methods.BPS_DENOMINATOR().call());
-
-    const toChainConfig = await deBridgeGateFrom.methods.getChainToConfig(CHAIN_ID_TO).call();
-    const globalTransferFeeBps = new BN( await deBridgeGateFrom.methods.globalTransferFeeBps().call() );
-    const transferFeeBps = toChainConfig.transferFeeBps === '0'
-        ? globalTransferFeeBps
-        : new BN(toChainConfig.transferFeeBps);
-
-    return amountWholeBN.mul(transferFeeBps).div(BPS_DENOMINATOR);
-}
-
-async function calculateNativeFee(): Promise<BN> {
-    const toChainConfig = await deBridgeGateFrom.methods.getChainToConfig(CHAIN_ID_TO).call();
-    const globalFixedNativeFee = new BN( await deBridgeGateFrom.methods.globalFixedNativeFee().call() );
-    return toChainConfig.transferFeeBps === '0'
-        ? globalFixedNativeFee
-        : new BN(toChainConfig.transferFeeBps);
-}
-
 async function main() {
     const isSendingNativeToken = TOKEN_ADDRESS_FROM === AddressZero;
 
@@ -95,20 +66,18 @@ async function main() {
 
     const decimalsMultiplierForSentToken = await getDecimalsMultiplierForSentToken();
     const amountWhole = new BN(toWei(AMOUNT));
-    const transferFee = await calculateTransferFee(amountWhole);
-    const executionFee = DEFAULT_EXECUTION_FEE;
-    const nativeFee = await calculateNativeFee();
-    const chainFee = await getChainFeeForDebridgeId();
+    const feesCalculator = new FeesCalculator(
+        amountWhole,
+        TOKEN_ADDRESS_FROM,
+        deBridgeGateTo,
+        deBridgeGateFrom,
+        CHAIN_ID_TO,
+        CHAIN_ID_FROM,
+    );
 
-    const feesToPayInNativeToken = isSendingNativeToken
-        ? transferFee.add(executionFee).add(chainFee)
-        : nativeFee
-    ;
-    const feesToPayInSentToken = isSendingNativeToken
-        ? feesToPayInNativeToken
-        : executionFee.add(transferFee)
-    ;
-    const amountAfterFee = amountWhole.sub(feesToPayInSentToken);
+    const amountAfterFee = await feesCalculator.getAmountAfterFee();
+    const feesToPayInSentToken = await feesCalculator.getFeesToPayInSentToken();
+    const feesToPayInNativeToken = await feesCalculator.getFeesToPayInNativeToken();
 
     if (amountAfterFee.lt(zero)){
         logger.error(`amount (${fromWei(amountWhole)}) is less than fees (${fromWei(feesToPayInSentToken)})`);
@@ -138,6 +107,8 @@ async function main() {
         amountAfterFee,
         decimalsMultiplierForSentToken
     );
+
+    const executionFee = await feesCalculator.getExecutionFee();
     const autoParams = ethers.utils.defaultAbiCoder.encode(autoParamsTo, [[
         normalizeToDecimals(executionFee, decimalsMultiplierForSentToken).toString(),
         parseInt('100', 2), // set only PROXY_WITH_SENDER flag, see Flags.sol and CallProxy.sol
