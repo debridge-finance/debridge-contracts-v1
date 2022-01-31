@@ -4,7 +4,7 @@ import reporter from "io-ts-reporters";
 import "../parseDotEnvs";
 import {isLeft} from "fp-ts/Either";
 import logger from "./logger";
-import {GENERIC_ERROR_CODE} from "./constants";
+import {GENERIC_ERROR_CODE} from "../constants";
 
 const ExpectedEnvVars = t.exact(t.type({
     DEBRIDGEGATE_ADDRESS: t.string,

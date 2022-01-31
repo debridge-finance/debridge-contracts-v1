@@ -9,7 +9,7 @@ import {ERC20} from "../../../../typechain-types-web3/ERC20";
 import {DeBridgeGate} from "../../../../typechain-types-web3/DeBridgeGate";
 import {AddressZero} from "@ethersproject/constants";
 import logger from "./logger";
-import {GENERIC_ERROR_CODE} from "./constants";
+import {GENERIC_ERROR_CODE} from "../constants";
 import send, {GateSendArguments, TsSendArguments} from "../genericSend";
 import {ethers} from "ethers";
 import BN from "bn.js";
