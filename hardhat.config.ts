@@ -12,6 +12,7 @@ import 'prettier-plugin-solidity';
 import 'solidity-coverage';
 import '@typechain/hardhat'
 import '@nomiclabs/hardhat-ethers'
+import "@nomiclabs/hardhat-etherscan";
 
 dotenvConfig();
 
@@ -161,10 +162,8 @@ export default {
     timeout: 100000
   },
   etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
-    apiKey: ""
-  },
+    apiKey: process.env.ETHERSCAN_API_KEY
+  }
 }
 
 task("upgrade", "Upgrade smart contract")
