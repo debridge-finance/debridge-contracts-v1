@@ -1,21 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.7;
 
-import "./BridgeAppBase.sol";
 import "./forkedInterfaces/IDeBridgeGate.sol";
+import "../interfaces/ICallProxy.sol";
 
-contract InvitationContract is BridgeAppBase {
+contract InvitationContract {
+
     uint256 public code;
+    IDeBridgeGate public deBridgeGate;
 
     mapping(uint256 => bytes) public getAccountByCode;
     mapping(bytes => uint256) public getCodeByAccount;
 
     event Registered(bytes account, uint256 code);
 
+    error CallProxyBadRole();
     error ZeroSender();
 
-    function initialize(IDeBridgeGate _deBridgeGate) external initializer {
-        __BridgeAppBase_init(_deBridgeGate);
+    constructor(IDeBridgeGate _deBridgeGate) {
+        deBridgeGate = _deBridgeGate;
         code = 0;
     }
 
@@ -24,14 +27,14 @@ contract InvitationContract is BridgeAppBase {
         _;
     }
 
-    function onBridgedMessage() external virtual onlyCallProxy whenNotPaused returns (bool) {
+    function onBridgedMessage() external virtual onlyCallProxy returns (bool) {
         ICallProxy callProxy = ICallProxy(deBridgeGate.callProxy());
         bytes memory nativeSender = callProxy.submissionNativeSender();
         if (nativeSender.length == 0) revert ZeroSender();
         return _setCode(nativeSender);
     }
 
-    function register() external whenNotPaused returns (bool) {
+    function register() external returns (bool) {
         return _setCode(abi.encodePacked(msg.sender));
     }
 
