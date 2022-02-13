@@ -9,7 +9,7 @@ contract ReferralSystem is BridgeAppBase {
     uint256 public code;
     mapping(uint256 => bytes) public getAccountByCode;
     mapping(bytes => uint256) public getCodeByAccount;
-    
+
     event ReferralAdded(bytes account, uint256 code);
     error ZeroSender();
 
@@ -25,7 +25,7 @@ contract ReferralSystem is BridgeAppBase {
         _;
     }
 
-    function onBridgedMessage() external payable virtual onlyCallProxy whenNotPaused returns (bool) {
+    function onBridgedMessage() external virtual onlyCallProxy whenNotPaused returns (bool) {
         ICallProxy callProxy = ICallProxy(deBridgeGate.callProxy());
         bytes memory nativeSender = callProxy.submissionNativeSender();
         if (nativeSender.length == 0) revert ZeroSender();
