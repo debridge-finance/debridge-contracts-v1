@@ -4,16 +4,15 @@ pragma solidity 0.8.7;
 import "./BridgeAppBase.sol";
 import "./forkedInterfaces/IDeBridgeGate.sol";
 
-/// @dev Example contract to show how to send a simple message to another chain using deBridgeGate
-contract ReferralSystem is BridgeAppBase {
+contract InvitationContract is BridgeAppBase {
     uint256 public code;
+
     mapping(uint256 => bytes) public getAccountByCode;
     mapping(bytes => uint256) public getCodeByAccount;
 
-    event ReferralAdded(bytes account, uint256 code);
-    error ZeroSender();
+    event Registered(bytes account, uint256 code);
 
-    using Flags for uint256;
+    error ZeroSender();
 
     function initialize(IDeBridgeGate _deBridgeGate) external initializer {
         __BridgeAppBase_init(_deBridgeGate);
@@ -32,7 +31,7 @@ contract ReferralSystem is BridgeAppBase {
         return _setCode(nativeSender);
     }
 
-    function registrate() external whenNotPaused returns (bool) {
+    function register() external whenNotPaused returns (bool) {
         return _setCode(abi.encodePacked(msg.sender));
     }
 
@@ -41,7 +40,7 @@ contract ReferralSystem is BridgeAppBase {
             code ++;
             getAccountByCode[code] = _customer;
             getCodeByAccount[_customer] = code;
-            emit ReferralAdded(_customer, code);
+            emit Registered(_customer, code);
             return true;
         }
         return false;
