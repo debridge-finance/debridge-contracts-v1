@@ -12,8 +12,8 @@ contract OraclesManager is Initializable, AccessControlUpgradeable, IOraclesMana
 
     /// @dev Minimal required confirmations
     uint8 public minConfirmations;
-    /// @dev Minimal required confirmations in case of too many confirmations
-    uint8 public excessConfirmations;
+    /// @dev Obsolete. Minimal required confirmations in case of too many confirmations
+    uint8 public excessConfirmationsObsolete;
     /// @dev Count of required oracles
     uint8 public requiredOraclesCount;
     /// @dev Oracle addresses
@@ -48,11 +48,9 @@ contract OraclesManager is Initializable, AccessControlUpgradeable, IOraclesMana
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Minimal required confirmations.
-    /// @param _excessConfirmations Minimal required confirmations in case of too many confirmations.
-    function initialize(uint8 _minConfirmations, uint8 _excessConfirmations) internal {
-        if (_minConfirmations == 0 || _excessConfirmations < _minConfirmations) revert LowMinConfirmations();
+    function initialize(uint8 _minConfirmations) internal {
+        if (_minConfirmations == 0) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
-        excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
@@ -63,13 +61,6 @@ contract OraclesManager is Initializable, AccessControlUpgradeable, IOraclesMana
     function setMinConfirmations(uint8 _minConfirmations) external onlyAdmin {
         if (_minConfirmations < oracleAddresses.length / 2 + 1) revert LowMinConfirmations();
         minConfirmations = _minConfirmations;
-    }
-
-    /// @dev Sets minimal required confirmations in case of too many confirmations.
-    /// @param _excessConfirmations Minimal required confirmations in case of too many confirmations.
-    function setExcessConfirmations(uint8 _excessConfirmations) external onlyAdmin {
-        if (_excessConfirmations < minConfirmations) revert LowMinConfirmations();
-        excessConfirmations = _excessConfirmations;
     }
 
     /// @dev Add oracles.

@@ -85,8 +85,8 @@ contract("DeBridgeGate light mode with batch claimer", function () {
     // )
     this.signatureVerifier = await upgrades.deployProxy(SignatureVerifier, [
       this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
+      // this.confirmationThreshold,
+      // this.excessConfirmations,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifier.deployed();

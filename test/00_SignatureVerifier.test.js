@@ -19,8 +19,8 @@ contract("SignatureVerifier", function () {
     devid = devidAccount.address;
 
     this.minConfirmations = 2;
-    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
-    this.excessConfirmations = 3; //Confirmations count in case of excess activity.
+    // this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    // this.excessConfirmations = 3; //Confirmations count in case of excess activity.
 
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
 
@@ -33,8 +33,8 @@ contract("SignatureVerifier", function () {
 
     this.aggregator = await upgrades.deployProxy(SignatureVerifier, [
       this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
+      // this.confirmationThreshold,
+      // this.excessConfirmations,
       ZERO_ADDRESS
     ]);
     this.initialOracles = [alice, bob, eve];
@@ -46,11 +46,11 @@ contract("SignatureVerifier", function () {
 
   it("should have correct initial values", async function () {
     const minConfirmations = await this.aggregator.minConfirmations();
-    const confirmationThreshold = await this.aggregator.confirmationThreshold();
-    const excessConfirmations = await this.aggregator.excessConfirmations();
+    // const confirmationThreshold = await this.aggregator.confirmationThreshold();
+    // const excessConfirmations = await this.aggregator.excessConfirmations();
     assert.equal(minConfirmations, this.minConfirmations);
-    assert.equal(confirmationThreshold, this.confirmationThreshold);
-    assert.equal(excessConfirmations, this.excessConfirmations);
+    // assert.equal(confirmationThreshold, this.confirmationThreshold);
+    // assert.equal(excessConfirmations, this.excessConfirmations);
   });
 
   context("Test setting configurations by different users", () => {
@@ -61,19 +61,19 @@ contract("SignatureVerifier", function () {
       assert.equal(minConfirmations, newConfirmations);
     });
 
-    it("should set excessConfirmations if called by the admin", async function () {
-      const newExcessConfirmations = 5;
-      await this.aggregator.connect(aliceAccount).setExcessConfirmations(newExcessConfirmations);
-      const excessConfirmations = await this.aggregator.excessConfirmations();
-      assert.equal(excessConfirmations, newExcessConfirmations);
-    });
+    // it("should set excessConfirmations if called by the admin", async function () {
+    //   const newExcessConfirmations = 5;
+    //   await this.aggregator.connect(aliceAccount).setExcessConfirmations(newExcessConfirmations);
+    //   const excessConfirmations = await this.aggregator.excessConfirmations();
+    //   assert.equal(excessConfirmations, newExcessConfirmations);
+    // });
 
-    it("should set confirmationThreshold if called by the admin", async function () {
-      const newThreshold = 5;
-      await this.aggregator.connect(aliceAccount).setThreshold(newThreshold);
-      const confirmationThreshold = await this.aggregator.confirmationThreshold();
-      assert.equal(confirmationThreshold, newThreshold);
-    });
+    // it("should set confirmationThreshold if called by the admin", async function () {
+    //   const newThreshold = 5;
+    //   await this.aggregator.connect(aliceAccount).setThreshold(newThreshold);
+    //   const confirmationThreshold = await this.aggregator.confirmationThreshold();
+    //   assert.equal(confirmationThreshold, newThreshold);
+    // });
 
     it("should revert adding new oracle if minConfirmations will be too low", async function () {
       await expectRevert(
@@ -177,21 +177,21 @@ contract("SignatureVerifier", function () {
       );
     });
 
-    it("should reject setting excessConfirmations if called by the non-admin", async function () {
-      const newConfirmations = 2;
-      await expectRevert(
-        this.aggregator.connect(bobAccount).setExcessConfirmations(newConfirmations),
-        "AdminBadRole()"
-      );
-    });
+    // it("should reject setting excessConfirmations if called by the non-admin", async function () {
+    //   const newConfirmations = 2;
+    //   await expectRevert(
+    //     this.aggregator.connect(bobAccount).setExcessConfirmations(newConfirmations),
+    //     "AdminBadRole()"
+    //   );
+    // });
 
-    it("should reject setting confirmationThreshold if called by the non-admin", async function () {
-      const newConfirmations = 2;
-      await expectRevert(
-        this.aggregator.connect(bobAccount).setThreshold(newConfirmations),
-        "AdminBadRole()"
-      );
-    });
+    // it("should reject setting confirmationThreshold if called by the non-admin", async function () {
+    //   const newConfirmations = 2;
+    //   await expectRevert(
+    //     this.aggregator.connect(bobAccount).setThreshold(newConfirmations),
+    //     "AdminBadRole()"
+    //   );
+    // });
 
     it("should reject adding the new oracle if called by the non-admin", async function () {
       await expectRevert(

@@ -58,12 +58,12 @@ contract("DeBridgeGate light mode", function () {
     this.amountThreshold = toWei("1000");
 
     this.minConfirmations = Math.floor(oracleKeys.length/2) + 2;
-    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    // this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
     console.log("minConfirmations: " + this.minConfirmations);
-    console.log("confirmationThreshold: " + this.confirmationThreshold);
-    console.log("excessConfirmations: " + this.excessConfirmations);
+    // console.log("confirmationThreshold: " + this.confirmationThreshold);
+    // console.log("excessConfirmations: " + this.excessConfirmations);
 
     //   function initialize(
     //     uint256 _minConfirmations,
@@ -73,8 +73,8 @@ contract("DeBridgeGate light mode", function () {
     // )
     this.signatureVerifier = await upgrades.deployProxy(SignatureVerifier, [
       this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
+      // this.confirmationThreshold,
+      // this.excessConfirmations,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifier.deployed();

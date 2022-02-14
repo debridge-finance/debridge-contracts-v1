@@ -10,11 +10,11 @@ managing the minimal required amount of confirmations.
   uint8 public minConfirmations;
 ```
 Minimal required confirmations
-## excessConfirmations
+## excessConfirmationsObsolete
 ```solidity
-  uint8 public excessConfirmations;
+  uint8 public excessConfirmationsObsolete;
 ```
-Minimal required confirmations in case of too many confirmations
+Obsolete. Minimal required confirmations in case of too many confirmations
 ## requiredOraclesCount
 ```solidity
   uint8 public requiredOraclesCount;
@@ -35,8 +35,7 @@ Maps an oracle address to the oracle details
 ## initialize
 ```solidity
   function initialize(
-            uint8 _minConfirmations,
-            uint8 _excessConfirmations
+            uint8 _minConfirmations
   ) internal
 ```
 
@@ -46,7 +45,6 @@ Constructor that initializes the most important configurations.
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_minConfirmations` | uint8 | Minimal required confirmations.
-|`_excessConfirmations` | uint8 | Minimal required confirmations in case of too many confirmations.
 
 ## setMinConfirmations
 ```solidity
@@ -61,20 +59,6 @@ Sets minimal required confirmations.
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_minConfirmations` | uint8 | Minimal required confirmations.
-
-## setExcessConfirmations
-```solidity
-  function setExcessConfirmations(
-            uint8 _excessConfirmations
-  ) external
-```
-
-Sets minimal required confirmations in case of too many confirmations.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_excessConfirmations` | uint8 | Minimal required confirmations in case of too many confirmations.
 
 ## addOracles
 ```solidity

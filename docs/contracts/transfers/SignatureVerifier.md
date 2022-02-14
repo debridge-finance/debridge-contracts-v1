@@ -4,21 +4,21 @@ It's used to verify that a transfer is signed by oracles.
 
 # Variables
 
-## confirmationThreshold
+## confirmationThresholdObsolete
 ```solidity
-  uint8 public confirmationThreshold;
+  uint8 public confirmationThresholdObsolete;
 ```
-Number of required confirmations per block after the extra check is enabled
-## submissionsInBlock
+Obsolete. Number of required confirmations per block after the extra check is enabled
+## submissionsInBlockObsolete
 ```solidity
-  uint40 public submissionsInBlock;
+  uint40 public submissionsInBlockObsolete;
 ```
-submissions count in current block
-## currentBlock
+Obsolete. submissions count in current block
+## currentBlockObsolete
 ```solidity
-  uint40 public currentBlock;
+  uint40 public currentBlockObsolete;
 ```
-Current block
+Obsolete. Current block
 ## debridgeAddress
 ```solidity
   address public debridgeAddress;
@@ -30,8 +30,7 @@ Debridge gate address
 ```solidity
   function initialize(
             uint8 _minConfirmations,
-            uint8 _confirmationThreshold,
-            uint8 _excessConfirmations
+            address _debridgeAddress
   ) public
 ```
 
@@ -41,8 +40,7 @@ Constructor that initializes the most important configurations.
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_minConfirmations` | uint8 | Common confirmations count.
-|`_confirmationThreshold` | uint8 | Confirmations per block after the extra check is enabled.
-|`_excessConfirmations` | uint8 | Confirmations count in case of excess activity.
+|`_debridgeAddress` | address | Debridge gate address.
 
 ## submit
 ```solidity
@@ -61,20 +59,6 @@ Check confirmation (validate signatures) for the transfer request.
 |`_submissionId` | bytes32 | Submission identifier.
 |`_signatures` | bytes | Array of signatures by oracles.
 |`_excessConfirmations` | uint8 | override min confirmations count
-
-## setThreshold
-```solidity
-  function setThreshold(
-            uint8 _confirmationThreshold
-  ) external
-```
-
-Sets minimal required confirmations.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_confirmationThreshold` | uint8 | Confirmation info.
 
 ## setDebridgeAddress
 ```solidity

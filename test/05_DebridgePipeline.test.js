@@ -117,7 +117,7 @@ contract("DeBridgeGate real pipeline mode", function () {
     }
 
     this.minConfirmations = Math.floor(this.initialOracles.length/2) + 1;
-    this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
+    // this.confirmationThreshold = 5; //Confirmations per block before extra check enabled.
     this.excessConfirmations = 7; //Confirmations count in case of excess activity.
 
 
@@ -211,24 +211,24 @@ contract("DeBridgeGate real pipeline mode", function () {
 
     this.signatureVerifierETH = await upgrades.deployProxy(SignatureVerifierFactory, [
       this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
+      // this.confirmationThreshold,
+      // this.excessConfirmations,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifierETH.deployed();
 
     this.signatureVerifierBSC = await upgrades.deployProxy(SignatureVerifierFactory, [
       this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
+      // this.confirmationThreshold,
+      // this.excessConfirmations,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifierBSC.deployed();
 
     this.signatureVerifierHECO = await upgrades.deployProxy(SignatureVerifierFactory, [
       this.minConfirmations,
-      this.confirmationThreshold,
-      this.excessConfirmations,
+      // this.confirmationThreshold,
+      // this.excessConfirmations,
       ZERO_ADDRESS,
     ]);
     await this.signatureVerifierHECO.deployed();

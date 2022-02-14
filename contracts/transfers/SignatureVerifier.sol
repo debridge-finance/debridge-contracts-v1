@@ -11,12 +11,13 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     using SignatureUtil for bytes32;
 
     /* ========== STATE VARIABLES ========== */
-    /// @dev Number of required confirmations per block after the extra check is enabled
-    uint8 public confirmationThreshold;
-    /// @dev submissions count in current block
-    uint40 public submissionsInBlock;
-    /// @dev Current block
-    uint40 public currentBlock;
+
+    /// @dev Obsolete. Number of required confirmations per block after the extra check is enabled
+    uint8 public confirmationThresholdObsolete;
+    /// @dev Obsolete. submissions count in current block
+    uint40 public submissionsInBlockObsolete;
+    /// @dev Obsolete. Current block
+    uint40 public currentBlockObsolete;
 
     /// @dev Debridge gate address
     address public debridgeAddress;
@@ -25,7 +26,6 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
 
     error DeBridgeGateBadRole();
     error NotConfirmedByRequiredOracles();
-    error NotConfirmedThreshold();
     error SubmissionNotConfirmed();
     error DuplicateSignatures();
 
@@ -40,16 +40,12 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
 
     /// @dev Constructor that initializes the most important configurations.
     /// @param _minConfirmations Common confirmations count.
-    /// @param _confirmationThreshold Confirmations per block after the extra check is enabled.
-    /// @param _excessConfirmations Confirmations count in case of excess activity.
+    /// @param _debridgeAddress Debridge gate address.
     function initialize(
         uint8 _minConfirmations,
-        uint8 _confirmationThreshold,
-        uint8 _excessConfirmations,
         address _debridgeAddress
     ) public initializer {
-        OraclesManager.initialize(_minConfirmations, _excessConfirmations);
-        confirmationThreshold = _confirmationThreshold;
+        OraclesManager.initialize(_minConfirmations);
         debridgeAddress = _debridgeAddress;
     }
 
@@ -97,30 +93,13 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
             revert NotConfirmedByRequiredOracles();
 
         if (confirmations >= minConfirmations) {
-            if (currentBlock == uint40(block.number)) {
-                submissionsInBlock += 1;
-            } else {
-                currentBlock = uint40(block.number);
-                submissionsInBlock = 1;
-            }
             emit SubmissionApproved(_submissionId);
-        }
-
-        if (submissionsInBlock > confirmationThreshold) {
-            if (confirmations < excessConfirmations) revert NotConfirmedThreshold();
         }
 
         if (confirmations < needConfirmations) revert SubmissionNotConfirmed();
     }
 
     /* ========== ADMIN ========== */
-
-    /// @dev Sets minimal required confirmations.
-    /// @param _confirmationThreshold Confirmation info.
-    function setThreshold(uint8 _confirmationThreshold) external onlyAdmin {
-        if (_confirmationThreshold == 0) revert WrongArgument();
-        confirmationThreshold = _confirmationThreshold;
-    }
 
     /// @dev Sets core debridge conrtact address.
     /// @param _debridgeAddress Debridge address.
