@@ -765,7 +765,7 @@ contract DeBridgeGate is
                 if (msg.value < nativeFee) revert TransferAmountNotCoverFees();
                 else if (msg.value > nativeFee) {
                     // refund extra fee eth
-                    payable(msg.sender).transfer(msg.value - nativeFee);
+                     _safeTransferETH(msg.sender, msg.value - nativeFee);
                 }
                 bytes32 nativeDebridgeId = getDebridgeId(getChainId(), address(0));
                 getDebridgeFeeInfo[nativeDebridgeId].collectedFees += nativeFee;
