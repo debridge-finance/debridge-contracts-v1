@@ -3,7 +3,7 @@ const { upgradeProxy } = require("../deploy-utils");
 
 module.exports = async function({getNamedAccounts, deployments, network}) {
   const { deployer } = await getNamedAccounts();
-
+  return;
   console.log('*'.repeat(100));
   console.log(`\tStart bulk contracts upgrading`);
   console.log(`\tfrom DEPLOYER ${deployer}`);

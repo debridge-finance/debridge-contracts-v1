@@ -1,0 +1,270 @@
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy  --network kovan
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for DeBridgeGate ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [ 1, '0xd0a1e359811322d97991e03f863a0c30c2cf029c' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x351372870aae3afd82c6e791784d5e8af936ab9872e0537fe54a5f36cdb61986 ...
+        Implementation address: 0x1736123f5dB1291797feC5354132d2Fd8A478efA
+        New proxy deployed:  0x91C1Cf4032203D7905fE40FB573782F99D30E326
+        New proxy version: 130
+deploying "DeBridgeToken" (tx: 0x07750f12109838d3f1d3aebec2b019a2355179925693c592b4b28dc1630e17ab)...: deployed at 0xAeE2BB1d9eD29290FeF53f9B898b6b8b8727066D with 1615853 gas
+
+*** Deploying proxy for DeBridgeTokenDeployer ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [
+  '0xAeE2BB1d9eD29290FeF53f9B898b6b8b8727066D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23',
+  '0x91C1Cf4032203D7905fE40FB573782F99D30E326'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xa66dbc9884f874685c8d91ccff9045e4901f09045094760d35c7e0520ad7d6ba ...
+        Implementation address: 0xFfD847c9E3bf14f2B05648fBf10c38b29254CB91
+        New proxy deployed:  0xC5A29580fc0018829416f9b0C00D3Bd0956F888E
+        New proxy version: 110
+
+*** Deploying proxy for SignatureVerifier ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [ 1, 1, 1, '0x91C1Cf4032203D7905fE40FB573782F99D30E326' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xfeab2ee84df793bddde21cf53812caa8d2cb3ff7bedf7c1e07f8821631844075 ...
+        Implementation address: 0x84ff50D20f2FBcdA2CD81d28d9B1320D84d641D8
+        New proxy deployed:  0xDa05C84Ac1c1c62E6d81ba4EB786Fe5F49A801a9
+        New proxy version: 101
+
+*** Deploying proxy for CallProxy ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  []
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x759f815c1f2008d7d55c26f7f5c93401c942e69428df77c1cce8c1a039570070 ...
+        Implementation address: 0xe648D911eDba34Ca9DEBD621171f687635eD2Cf3
+        New proxy deployed:  0xfb887A725caF316fD1D285C9bc13682E98aAe4Fb
+        New proxy version: 120
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [
+  '0x91C1Cf4032203D7905fE40FB573782F99D30E326',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x865ca684c02dd172e3770b89a0e3cf2c0a8d6d22f75f8d407b6249c5d60ea796 ...
+        Implementation address: 0xe57CE647A9bBBf4C0AF0c5C08fBaf7a89CE8Bddd
+        New proxy deployed:  0xA5061b148298231e5CBA993c723AC83Bee2730d3
+        New proxy version: 102
+deploying "WethGate" (tx: 0x9b0044789d6ca852a1bca7f2947141451a06db3544cddbb135a9466a7616d890)...: deployed at 0x7af55F77Eb75f68C627c0E934F88E084f2DC69Ce with 224916 gas
+Start 06_DeBridgeGateSetup
+deBridge setSignatureVerifier 0xDa05C84Ac1c1c62E6d81ba4EB786Fe5F49A801a9
+Waiting 1 block confirmations for tx 0x50985c03668ee9ddb01785b305db1e0dde8debee32fc73df9f7a1d25835de8bd ...
+deBridge setCallProxy 0xfb887A725caF316fD1D285C9bc13682E98aAe4Fb
+Waiting 1 block confirmations for tx 0xfa94680eeaa63f682286165277ee2374bd4f69680e06c3e1ab1fa2618f138381 ...
+callProxy 0xfb887A725caF316fD1D285C9bc13682E98aAe4Fb get DEBRIDGE_GATE_ROLE
+callProxy grantRole DEBRIDGE_GATE_ROLE "0xd5a6101e940ba33e226d2395b16238ab3063d7ee83d7b3ff59cb92988b395437" for deBridgeGate "0x91C1Cf4032203D7905fE40FB573782F99D30E326"
+Waiting 1 block confirmations for tx 0xad00c7cf9a36e09083e2e71c093d536197c0652ce0c8fd7b010eb9a13ce923e8 ...
+deBridge setFeeProxy 0xA5061b148298231e5CBA993c723AC83Bee2730d3
+Waiting 1 block confirmations for tx 0x58a4a0ca5e36a2f567daff00bbdb374fff2d0ae62e188d7f8667c5be41c2401e ...
+deBridge setWethGate 0x7af55F77Eb75f68C627c0E934F88E084f2DC69Ce
+Waiting 1 block confirmations for tx 0xc5eca44914eb9184678aa9859b6aef29255fe3b42c982ce3c4031bd2547c4508 ...
+deBridge setDeBridgeTokenDeployer 0xC5A29580fc0018829416f9b0C00D3Bd0956F888E
+Waiting 1 block confirmations for tx 0x31f3b839967fa7f729bb53b93439e3fd8f4ee9a114e093d0dcc3443a2d385976 ...
+updateChainSupport
+[ 97, 256, 421611, 80001, 7565164 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+An unexpected error occurred:
+
+Error: ERROR processing D:\Projects\Debridge\debridge-contracts-v1\scripts\deploy\06_DeBridgeGateSetup.js:
+ProviderError: The execution failed due to an exception.
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 06_DeBridgeGateSetup --network kovan
+Nothing to compile
+No need to generate any newer typings.
+Start 06_DeBridgeGateSetup
+callProxy 0xfb887A725caF316fD1D285C9bc13682E98aAe4Fb get DEBRIDGE_GATE_ROLE
+deBridge setDeBridgeTokenDeployer 0xC5A29580fc0018829416f9b0C00D3Bd0956F888E
+updateChainSupport
+[ 97, 256, 421611, 80001, 7565164 ]
+[
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+Waiting 1 block confirmations for tx 0xb1f2091f45609934e00eb91e941b5a66b121d307e9b4c9600c7ec91408302a58 ...
+Waiting 1 block confirmations for tx 0x344b6386149c731b2587fa7e9f8b949da081613d0c4b93d74ae5b68d05efed97 ...
+deployInitParams.supportedChains:  [ 97, 256, 421611, 80001, 7565164 ]
+deployInitParams.fixedNativeFee:  [
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000',
+  '10000000000000000'
+]
+deBridgeGate updateGlobalFee
+Waiting 1 block confirmations for tx 0x5a633af2c1346c3b5e116c577b22e4dd5020b62c8f1bd6f614a1ac5e2935b505 ...
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags 07_DeBridgeTokenDeployerSetup --network kovan
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for DeBridgeGate ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [ 1, '0xd0a1e359811322d97991e03f863a0c30c2cf029c' ]
+        reuseProxy:  true
+        Found deployed proxies:  1
+        Implementation address: 0x1736123f5dB1291797feC5354132d2Fd8A478efA
+        Reuse Proxy with address: 0x91C1Cf4032203D7905fE40FB573782F99D30E326
+reusing "DeBridgeToken" at 0xAeE2BB1d9eD29290FeF53f9B898b6b8b8727066D
+
+*** Deploying proxy for DeBridgeTokenDeployer ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [
+  '0xAeE2BB1d9eD29290FeF53f9B898b6b8b8727066D',
+  '0x24b8d26962641ea81cb7570c1b59d955c9193f23',
+  '0x91C1Cf4032203D7905fE40FB573782F99D30E326'
+]
+        reuseProxy:  true
+        Found deployed proxies:  1
+        Implementation address: 0xFfD847c9E3bf14f2B05648fBf10c38b29254CB91
+        Reuse Proxy with address: 0xC5A29580fc0018829416f9b0C00D3Bd0956F888E
+Start 07_DeBridgeTokenDeployerSetup
+deBridgeGateInstance  0x91C1Cf4032203D7905fE40FB573782F99D30E326
+overridedTokens  [
+  { address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', chainId: 1 },
+  {
+    address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    chainId: 56
+  },
+  {
+    address: '0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f',
+    chainId: 128
+  },
+  {
+    address: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+    chainId: 137
+  },
+  {
+    address: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    chainId: 42161
+  }
+]
+overridedTokensInfo  [
+  { accept: true, name: 'Ether', symbol: 'ETH' },
+  { accept: true, name: 'BNB', symbol: 'BNB' },
+  { accept: true, name: 'HT', symbol: 'HT' },
+  { accept: true, name: 'Matic', symbol: 'MATIC' },
+  { accept: true, name: 'Arbitrum Ether', symbol: 'AETH' }
+Calculating debridgeId
+chainId: 1 tokenAddress: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 debrigeId: 0x7a4f5988eb2e00ce51697c543e0163ef96f4ec0dfd6729d29b0a1dd88626f055
+chainId: 56 tokenAddress: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c debrigeId: 0xf93982a76d8e8739fd39d418ca95d6d90f344b45e05ad231c2069a6a0eef7ea1
+chainId: 128 tokenAddress: 0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f debrigeId: 0x776a8db547cd3c2243c6b815a5c37d226cf3df57249b22bd152b97ed18aecc8b
+chainId: 137 tokenAddress: 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270 debrigeId: 0xa64f418a067d562d9c177be545e9f12ab864534625b002205b154a71ddd08be3
+chainId: 42161 tokenAddress: 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1 debrigeId: 0x78c8d09f83f806c7b5a679f99831e432763a4ffbc6a8fa68734ca7d3ef5108b0
+Waiting 1 block confirmations for tx 0x45782564ba9aade21ec40e606b7f174353c86acae89bff2c15863f0bdd5cac40 ...
+Checks
+debridgeId: 0x7a4f5988eb2e00ce51697c543e0163ef96f4ec0dfd6729d29b0a1dd88626f055  [ true, 'Ether', 'ETH', accept: true, name: 'Ether', symbol: 'ETH' ]
+debridgeId: 0xf93982a76d8e8739fd39d418ca95d6d90f344b45e05ad231c2069a6a0eef7ea1  [ true, 'BNB', 'BNB', accept: true, name: 'BNB', symbol: 'BNB' ]
+debridgeId: 0x776a8db547cd3c2243c6b815a5c37d226cf3df57249b22bd152b97ed18aecc8b  [ true, 'HT', 'HT', accept: true, name: 'HT', symbol: 'HT' ]
+debridgeId: 0xa64f418a067d562d9c177be545e9f12ab864534625b002205b154a71ddd08be3  [
+  true,
+  'Matic',
+  'MATIC',
+  accept: true,
+  name: 'Matic',
+  symbol: 'MATIC'
+]
+debridgeId: 0x78c8d09f83f806c7b5a679f99831e432763a4ffbc6a8fa68734ca7d3ef5108b0  [
+  true,
+  'Arbitrum Ether',
+  'AETH',
+  accept: true,
+  name: 'Arbitrum Ether',
+  symbol: 'AETH'
+]
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags FeesCalculator --network kovan
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for DeBridgeGate ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [ 1, '0xd0a1e359811322d97991e03f863a0c30c2cf029c' ]
+        reuseProxy:  true
+        Found deployed proxies:  1
+        Implementation address: 0x1736123f5dB1291797feC5354132d2Fd8A478efA
+        Reuse Proxy with address: 0x91C1Cf4032203D7905fE40FB573782F99D30E326
+
+*** Deploying proxy for FeesCalculator ***
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Args:  [ '0x91C1Cf4032203D7905fE40FB573782F99D30E326' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xf4dc2663ac02be98df6aaab59be7e043ebd477a05b45e9b19ea7774e4a98bc21 ...
+        Implementation address: 0x5b3A71e35eDF6b7F2740C9C678E9F2698c7692a7
+        New proxy deployed:  0xF879390221c961F2Eb6a2c426eDeb1eaFe9f293B
+        New proxy version: 101
+PS D:\Projects\Debridge\debridge-contracts-v1>
+
+
+
+
+------------------------------------------------------------------------------------------
+Upgrade to fix contracts (add assets weth)
+------------------------------------------------------------------------------------------
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags FixDeBridgeGate --network kovan
+Compiling 124 files with 0.8.7
+Generating typings for: 124 artifacts in dir: typechain-types for target: ethers-v5
+Successfully generated 214 typings!
+Compilation finished successfully
+********************************************************************************
+        Start upgrade deBridgeGate to fix 1.3.0.1 version
+        from DEPLOYER 0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+********************************************************************************
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x91C1Cf4032203D7905fE40FB573782F99D30E326
+        Signer:  0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+        Current implementation address: 0x1736123f5dB1291797feC5354132d2Fd8A478efA
+        Current implementation version: 130
+Waiting 1 block confirmations for tx 0xf91d0e47dd507fddf31a395669223f6d3af7c9812a70e1cb759964f02290fe23 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x0baE2E3c24Afc4f61bCd6e856D50862d85623dcD
+        New implementation version: 1301
+end upgradeProxy
+newVersion: 1301
+Start Fix Weth
+
+
+
+
+
+PS D:\Projects\Debridge\debridge-contracts-v1>  npx hardhat deploy --tags AddOracles --network kovan
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        Add oracles
+        from DEPLOYER 0xb61Db1Cb9ED0f767ea0ab09c3CeECf5C9d1551bc
+********************************************************************************
+add non required oracles:
+[ '0x397021103ece90052b685170ad9476ad1a29cc27' ]
+Waiting 1 block confirmations for tx 0x5cce786edca90c51801926604b84f68370d332e4f6a5cea73886780b9f9c35b5 ...
+PS D:\Projects\Debridge\debridge-contracts-v1>

@@ -484,6 +484,13 @@ contract DeBridgeGate is
         _unpause();
     }
 
+    function fixWeth() external onlyAdmin {
+        address wethAddress =  address(weth);
+        TokenInfo storage tokenInfo = getNativeInfo[wethAddress];
+        tokenInfo.nativeChainId = getChainId();
+        tokenInfo.nativeAddress = abi.encodePacked(wethAddress);
+    }
+
     /// @inheritdoc IDeBridgeGate
     function withdrawFee(bytes32 _debridgeId) external override nonReentrant onlyFeeProxy {
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
