@@ -82,7 +82,7 @@ contract OraclesManager is Initializable, AccessControlUpgradeable, IOraclesMana
         if (_oracles.length != _required.length) revert WrongArgument();
         if (minConfirmations < (oracleAddresses.length +  _oracles.length) / 2 + 1) revert LowMinConfirmations();
 
-        for (uint256 i = 0; i < _oracles.length; i++) {
+        for (uint256 i; i < _oracles.length; i++) {
             OracleInfo storage oracleInfo = getOracleInfo[_oracles[i]];
             if (oracleInfo.exist) revert OracleAlreadyExist();
 
@@ -122,7 +122,7 @@ contract OraclesManager is Initializable, AccessControlUpgradeable, IOraclesMana
         }
         if (oracleInfo.isValid && !_isValid) {
             // remove oracle from oracleAddresses array without keeping an order
-            for (uint256 i = 0; i < oracleAddresses.length; i++) {
+            for (uint256 i; i < oracleAddresses.length; i++) {
                 if (oracleAddresses[i] == _oracle) {
                     oracleAddresses[i] = oracleAddresses[oracleAddresses.length - 1];
                     oracleAddresses.pop();

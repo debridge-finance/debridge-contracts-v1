@@ -70,11 +70,11 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
         uint8 confirmations;
         uint256 signaturesCount = _countSignatures(_signatures);
         address[] memory validators = new address[](signaturesCount);
-        for (uint256 i = 0; i < signaturesCount; i++) {
+        for (uint256 i; i < signaturesCount; i++) {
             (bytes32 r, bytes32 s, uint8 v) = _signatures.parseSignature(i * 65);
             address oracle = ecrecover(_submissionId.getUnsignedMsg(), v, r, s);
             if (getOracleInfo[oracle].isValid) {
-                for (uint256 k = 0; k < i; k++) {
+                for (uint256 k; k < i; k++) {
                     if (validators[k] == oracle) revert DuplicateSignatures();
                 }
                 validators[i] = oracle;
@@ -152,6 +152,6 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 201; // 2.0.1
+        return 202; // 2.0.2
     }
 }

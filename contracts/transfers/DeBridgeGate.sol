@@ -357,7 +357,7 @@ contract DeBridgeGate is
         bool _isChainFrom
     ) external onlyAdmin {
         if (_chainIds.length != _chainSupportInfo.length) revert WrongArgument();
-        for (uint256 i = 0; i < _chainIds.length; i++) {
+        for (uint256 i; i < _chainIds.length; i++) {
             if(_isChainFrom){
                 getChainFromConfig[_chainIds[i]] = _chainSupportInfo[i];
             }
@@ -391,7 +391,7 @@ contract DeBridgeGate is
     ) external onlyAdmin {
         if (_supportedChainIds.length != _assetFeesInfo.length) revert WrongArgument();
         DebridgeFeeInfo storage debridgeFee = getDebridgeFeeInfo[_debridgeId];
-        for (uint256 i = 0; i < _supportedChainIds.length; i++) {
+        for (uint256 i; i < _supportedChainIds.length; i++) {
             debridgeFee.getChainFee[_supportedChainIds[i]] = _assetFeesInfo[i];
         }
     }
@@ -551,7 +551,7 @@ contract DeBridgeGate is
     /// @param _submissionIds Ids of submissions to block/unblock
     /// @param isBlocked True to block, false to unblock
     function blockSubmission(bytes32[] memory _submissionIds, bool isBlocked) external onlyAdmin {
-        for (uint256 i = 0; i < _submissionIds.length; i++) {
+        for (uint256 i; i < _submissionIds.length; i++) {
             isBlockedSubmission[_submissionIds[i]] = isBlocked;
             if (isBlocked) {
                 emit Blocked(_submissionIds[i]);
@@ -1126,6 +1126,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 302; // 3.0.2
+        return 303; // 3.0.3
     }
 }
