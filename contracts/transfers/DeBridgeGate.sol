@@ -855,6 +855,16 @@ contract DeBridgeGate is
             hasAutoParams ? abi.encode(autoParams): bytes(""),
             msg.sender
         );
+
+        {
+            emit MonitoringSendEvent(
+                submissionId,
+                nonce,
+                getDebridge[_debridgeId].balance,
+                IERC20Upgradeable(getDebridge[_debridgeId].tokenAddress).totalSupply()
+            );
+        }
+
         nonce++;
     }
 
@@ -947,6 +957,12 @@ contract DeBridgeGate is
         } else {
             _mintOrTransfer(_token, _receiver, _amount, isNativeToken);
         }
+
+        emit MonitoringClaimEvent(
+            _submissionId,
+            debridge.balance,
+            IERC20Upgradeable(debridge.tokenAddress).totalSupply()
+        );
     }
 
     function _mintOrTransfer(
