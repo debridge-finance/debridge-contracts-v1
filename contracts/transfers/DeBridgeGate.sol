@@ -252,7 +252,8 @@ contract DeBridgeGate is
             _receiver,
             _nonce,
             autoParams,
-            _autoParams.length > 0
+            _autoParams.length > 0,
+            msg.sender
         );
 
         // check if submission already claimed
@@ -1048,16 +1049,18 @@ contract DeBridgeGate is
     /// @param _amount Amount of the transferred asset (note: the fee can be applied).
     /// @param _receiver Receiver address.
     /// @param _nonce Submission id.
-    /// @param autoParams Auto params for external call
-    /// @param hasAutoParams True if auto params are provided
+    /// @param _autoParams Auto params for external call
+    /// @param _hasAutoParams True if auto params are provided
+    /// @param _sender Address that will call claim
     function getSubmissionIdFrom(
         bytes32 _debridgeId,
         uint256 _chainIdFrom,
         uint256 _amount,
         address _receiver,
         uint256 _nonce,
-        SubmissionAutoParamsFrom memory autoParams,
-        bool hasAutoParams
+        SubmissionAutoParamsFrom memory _autoParams,
+        bool _hasAutoParams,
+        address _sender
     ) public view returns (bytes32) {
         bytes memory packedSubmission = abi.encodePacked(
             SUBMISSION_PREFIX,
@@ -1068,16 +1071,21 @@ contract DeBridgeGate is
             _receiver,
             _nonce
         );
-        if (hasAutoParams) {
+        if (_hasAutoParams) {
+            // Needed to let fallback address claim tokens in case user lost call data and can't restore its' hash
+            bool isHashedData = _autoParams.flags.getFlag(Flags.SEND_HASHED_DATA)
+                             && _sender == _autoParams.fallbackAddress
+                             && _autoParams.data.length == 32;
+
             // auto submission
             return keccak256(
                 abi.encodePacked(
                     packedSubmission,
-                    autoParams.executionFee,
-                    autoParams.flags,
-                    keccak256(abi.encodePacked(autoParams.fallbackAddress)),
-                    keccak256(autoParams.data),
-                    keccak256(autoParams.nativeSender)
+                    _autoParams.executionFee,
+                    _autoParams.flags,
+                    keccak256(abi.encodePacked(_autoParams.fallbackAddress)),
+                    isHashedData ? _autoParams.data : abi.encodePacked(keccak256(_autoParams.data)),
+                    keccak256(_autoParams.nativeSender)
                 )
             );
         }

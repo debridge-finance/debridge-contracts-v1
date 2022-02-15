@@ -2480,6 +2480,7 @@ contract("DeBridgeGate real pipeline mode", function () {
           nativeSender: sender.address,
         },
         true,
+        ZERO_ADDRESS
       );
 
       assert.equal(mypack, ethersPack);
@@ -3280,12 +3281,100 @@ contract("DeBridgeGate real pipeline mode", function () {
         // worker should receive executionFee in weth
         const workerBalanceWETHAfter = toBN(await this.wethETH.balanceOf(workerAccount.address));
         assert.equal(workerBalanceWETHAfter.toString(), workerBalanceWETHBefore.add(executionFee).toString());
-        // check native sender
-        assert.equal(bscAccount.address.toString().toLowerCase(), await receiverContract.submissionNativeSender());
-        assert.equal("0x", await this.callProxy.submissionNativeSender());
-        // check chainIdfrom
-        assert.equal((await this.debridgeBSC.chainId()).toString(), (await receiverContract.submissionChainIdFrom()).toString());
-        assert.equal("0", (await this.callProxy.submissionChainIdFrom()).toString());
+      });
+
+      it("Fallback address can claim without knowledge about data", async function() {
+        const receiverAmount = toBN(toWei("10"));
+
+        const autoData = receiverContract.interface.encodeFunctionData(
+          "pullTokenAndSetNativeSender", [this.wethETH.address, receiverAmount, 1]);
+
+        const autoDataHash = ethers.utils.solidityKeccak256(['bytes'], [autoData]);
+
+        const flags = 2 ** PROXY_WITH_SENDER + 2 ** SEND_HASHED_DATA;
+        const _fallbackAddress = workerAccount.address;
+
+        // call autoburn on BSC
+        const burnTx = await this.debridgeBSC
+          .connect(bscAccount)
+          .send(
+            deETHToken.address,
+            sentEvent.args.amount,
+            ethChainId,
+            receiverContract.address,
+            [],
+            false,
+            referralCode,
+            packSubmissionAutoParamsTo(
+              executionFee,
+              flags,
+              _fallbackAddress,
+              autoDataHash),
+            {
+              // pay fee in native token
+              value: toWei('1000'),
+            }
+          );
+
+        // console.log('burnTx', burnTx);
+        const balanceDeETHAfterBurn = toBN(await deETHToken.balanceOf(bscAccount.address));
+        assert.equal(balanceDeETHAfterBurn.toString(), balanceDeETHBeforeMint.toString());
+
+        const receiverBalanceBefore = toBN(await web3.eth.getBalance(receiverContract.address));
+        const receiverBalanceWETHBefore = toBN(await this.wethETH.balanceOf(receiverContract.address));
+        const fallbackBalanceWETHBefore = toBN(await this.wethETH.balanceOf(_fallbackAddress));
+        const workerBalanceWETHBefore = toBN(await this.wethETH.balanceOf(workerAccount.address));
+
+        // get Burnt event
+        const burnReceipt = await burnTx.wait();
+        const burnEvent = burnReceipt.events.find(i => i.event == "Sent");
+        // console.log(burnEvent)
+
+        await testSubmissionFees(
+          feesCalculatorBSC,
+          burnEvent,
+          deETHToken.address,
+          sentEvent.args.amount,
+          ethChainId,
+          bscAccount.address,
+          false,
+          executionFee,
+        )
+
+        // In this test worker is a Fallback address claim without knowledge about data, passed only the hash of data.
+        // Fallback address need to receive all tokens
+        await expect(
+          this.debridgeETH
+            .connect(workerAccount)
+            .claim(
+              burnEvent.args.debridgeId,
+              burnEvent.args.amount,
+              bscChainId,
+              receiverContract.address,
+              burnEvent.args.nonce,
+              await submissionSignatures(bscWeb3, oracleKeys, burnEvent.args.submissionId),
+              packSubmissionAutoParamsFrom(
+                executionFee,
+                flags,
+                _fallbackAddress,
+                autoDataHash,
+                bscAccount.address))
+        )
+          .to.emit(this.debridgeETH, "AutoRequestExecuted")
+          //External call return result = true even if there is no such method in the contract
+          .withArgs(burnEvent.args.submissionId, true, this.callProxy.address);
+
+        // weth balance of receiver should the same
+        const receiverBalanceWETHAfter = toBN(await this.wethETH.balanceOf(receiverContract.address));
+        assert.equal(receiverBalanceWETHAfter.toString(), receiverBalanceWETHBefore.toString());
+
+        // fallback weth balance should increase by amount + executionFee
+        const fallbackBalanceWETHAfter = toBN(await this.wethETH.balanceOf(_fallbackAddress));
+        assert.equal(fallbackBalanceWETHAfter.toString(), fallbackBalanceWETHBefore.add(burnEvent.args.amount).add(executionFee).toString());
+
+        // eth balance of receiver shouldn't change
+        const receiverBalanceAfter = toBN(await web3.eth.getBalance(receiverContract.address));
+        assert.equal(receiverBalanceBefore.toString(), receiverBalanceAfter.toString());
       });
     });
   });
