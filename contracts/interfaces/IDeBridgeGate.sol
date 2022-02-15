@@ -195,7 +195,7 @@ interface IDeBridgeGate {
         uint16 minReservesBps
     );
 
-	event MonitoringSendEvent(
+    event MonitoringSendEvent(
         bytes32 submissionId,
         uint256 nonce,
         uint256 lockedOrMintedAmount,
