@@ -195,6 +195,19 @@ interface IDeBridgeGate {
         uint16 minReservesBps
     );
 
+    event MonitoringSendEvent(
+        bytes32 submissionId,
+        uint256 nonce,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
+    );
+
+    event MonitoringClaimEvent(
+        bytes32 submissionId,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
+    );
+
     /// @dev Emitted when the asset is allowed/disallowed to be transferred to the chain.
     event ChainSupportUpdated(uint256 chainId, bool isSupported, bool isChainFrom);
     /// @dev Emitted when the supported chains are updated.

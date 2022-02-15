@@ -236,6 +236,31 @@ Emitted once the tokens are transferred and withdrawn on a target chain
 Emitted when new asset support is added.
 
 
+## MonitoringSendEvent
+```solidity
+  event MonitoringSendEvent(
+        bytes32 submissionId,
+        uint256 nonce,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
+  )
+```
+
+
+
+
+## MonitoringClaimEvent
+```solidity
+  event MonitoringClaimEvent(
+        bytes32 submissionId,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
+  )
+```
+
+
+
+
 ## ChainSupportUpdated
 ```solidity
   event ChainSupportUpdated(
