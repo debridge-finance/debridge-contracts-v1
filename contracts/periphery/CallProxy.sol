@@ -82,7 +82,9 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
-        if (!_result) {
+
+        amount = address(this).balance;
+        if (amount > 0) {
             (bool success, ) = _reserveAddress.call{value: amount}(new bytes(0));
             if (!success) revert CallFailed();
         }
@@ -116,7 +118,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         if (!_result &&_flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
-        if (!_result || amount > 0) {
+        if (amount > 0) {
             IERC20Upgradeable(_token).safeTransfer(_reserveAddress, amount);
         }
     }
