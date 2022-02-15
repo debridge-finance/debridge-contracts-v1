@@ -823,6 +823,8 @@ contract DeBridgeGate is
             nonce
         );
         if (hasAutoParams) {
+            bool isHashedData = autoParams.flags.getFlag(Flags.SEND_HASHED_DATA);
+            if (isHashedData && autoParams.data.length != 32) revert WrongAutoArgument();
             // auto submission
             submissionId = keccak256(
                 abi.encodePacked(
@@ -830,7 +832,7 @@ contract DeBridgeGate is
                     autoParams.executionFee,
                     autoParams.flags,
                     keccak256(autoParams.fallbackAddress),
-                    keccak256(autoParams.data),
+                    isHashedData ? autoParams.data : abi.encodePacked(keccak256(autoParams.data)),
                     keccak256(abi.encodePacked(msg.sender))
                 )
             );
