@@ -861,20 +861,6 @@ Calculates asset identifier for deployment.
 |`_symbol` | string | Asset's symbol.
 |`_decimals` | uint8 | Asset's decimals.
 
-## getNativeTokenInfo
-```solidity
-  function getNativeTokenInfo(
-            address currentTokenAddress
-  ) external returns (uint256 nativeChainId, bytes nativeAddress)
-```
-
-Get native chain id and native address of a token
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`currentTokenAddress` | address | address of a token on the current chain
-
 ## getChainId
 ```solidity
   function getChainId(
