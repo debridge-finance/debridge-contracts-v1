@@ -19,6 +19,11 @@ Flag to revert if external call fails
   uint256 public constant PROXY_WITH_SENDER;
 ```
 Flag to call proxy with a sender contract
+## SEND_HASHED_DATA
+```solidity
+  uint256 public constant SEND_HASHED_DATA;
+```
+Data is hash in DeBridgeGate send method
 
 # Functions
 ## getFlag

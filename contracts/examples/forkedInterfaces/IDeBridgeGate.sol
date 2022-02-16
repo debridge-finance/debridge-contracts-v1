@@ -145,12 +145,6 @@ interface IDeBridgeGate {
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external;
 
-    /// @dev Get native chain id and native address of a token
-    /// @param currentTokenAddress address of a token on the current chain
-    function getNativeTokenInfo(address currentTokenAddress)
-    external
-    view
-    returns (uint256 chainId, bytes memory nativeAddress);
 
     /// @dev Returns address of the proxy to execute user's calls.
     function callProxy() external view returns (address);

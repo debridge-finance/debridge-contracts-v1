@@ -46,7 +46,7 @@ contract Incrementor is BridgeAppBase {
         );
     }
 
-    function onBridgedMessage() external payable virtual onlyControllingAddress whenNotPaused returns (bool){
+    function onBridgedMessage() external virtual onlyControllingAddress whenNotPaused returns (bool){
         claimedTimes++;
         return true;
     }

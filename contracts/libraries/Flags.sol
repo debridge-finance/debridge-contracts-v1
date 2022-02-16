@@ -11,6 +11,8 @@ library Flags {
     uint256 public constant REVERT_IF_EXTERNAL_FAIL = 1;
     /// @dev Flag to call proxy with a sender contract
     uint256 public constant PROXY_WITH_SENDER = 2;
+    /// @dev Data is hash in DeBridgeGate send method
+    uint256 public constant SEND_HASHED_DATA = 3;
 
     /// @dev Get flag
     /// @param _packedFlags Flags packed to uint256

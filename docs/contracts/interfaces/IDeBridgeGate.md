@@ -16,6 +16,16 @@ Returns whether the transfer with the submissionId was claimed.
 submissionId is generated in getSubmissionIdFrom
 
 
+## getNativeInfo
+```solidity
+  function getNativeInfo(
+            address token
+  ) external returns (uint256 nativeChainId, bytes nativeAddress)
+```
+
+Returns native token info by wrapped token address
+
+
 ## send
 ```solidity
   function send(
@@ -152,20 +162,6 @@ Withdraw collected fees to feeProxy
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_debridgeId` | bytes32 | Asset identifier.
 
-## getNativeTokenInfo
-```solidity
-  function getNativeTokenInfo(
-            address currentTokenAddress
-  ) external returns (uint256 chainId, bytes nativeAddress)
-```
-
-Get native chain id and native address of a token
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`currentTokenAddress` | address | address of a token on the current chain
-
 ## getDebridgeChainAssetFixedFee
 ```solidity
   function getDebridgeChainAssetFixedFee(
@@ -234,6 +230,31 @@ Emitted once the tokens are transferred and withdrawn on a target chain
 ```
 
 Emitted when new asset support is added.
+
+
+## MonitoringSendEvent
+```solidity
+  event MonitoringSendEvent(
+        bytes32 submissionId,
+        uint256 nonce,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
+  )
+```
+
+
+
+
+## MonitoringClaimEvent
+```solidity
+  event MonitoringClaimEvent(
+        bytes32 submissionId,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
+  )
+```
+
+
 
 
 ## ChainSupportUpdated
