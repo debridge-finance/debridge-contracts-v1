@@ -101,8 +101,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _chainIdFrom
     ) external override onlyGateRole lock returns (bool _result) {
         uint256 amount = IERC20Upgradeable(_token).balanceOf(address(this));
-        IERC20Upgradeable(_token).safeApprove(_receiver, 0);
-        IERC20Upgradeable(_token).safeApprove(_receiver, amount);
+        IERC20Upgradeable(_token).approve(_receiver, amount);
 
         _result = externalCall(
             _receiver,
@@ -121,6 +120,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         if (amount > 0) {
             IERC20Upgradeable(_token).safeTransfer(_reserveAddress, amount);
         }
+        IERC20Upgradeable(_token).approve(_receiver, 0);
     }
 
     //gnosis
@@ -157,8 +157,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     }
 
     // ============ Version Control ============
-    /// @dev Get this contract's version
+     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 140; // 1.4.0
+        return 400; // 4.0.0
     }
 }
