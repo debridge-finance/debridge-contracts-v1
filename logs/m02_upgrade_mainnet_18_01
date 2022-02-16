@@ -1,0 +1,239 @@
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network MATIC
+Generating typings for: 90 artifacts in dir: typechain-types for target: ethers-v5
+Successfully generated 151 typings!
+Compilation finished successfully
+********************************************************************************
+        m02_upgrade_mainnet_18.01
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        Current implementation version: 201
+An unexpected error occurred:
+
+Error: ERROR processing  \scripts\deploy\m02_upgrade_mainnet_18_01.js:
+Error: No contract at address 0xBf3739A13421E4638F028Fd9A169fef7b91183fD (Removed from manifest)
+    at waitAndValidateDeployment ( \node_modules\@openzeppelin\upgrades-core\src\deployment.ts:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async fetchOrDeployGeneric ( \node_modules\@openzeppelin\upgrades-core\src\impl-store.ts:43:5)
+    at async deployImpl ( \node_modules\@openzeppelin\hardhat-upgrades\src\utils\deploy-impl.ts:60:16)
+    at async Proxy.upgradeProxy ( \node_modules\@openzeppelin\hardhat-upgrades\src\upgrade-proxy.ts:26:32)
+    at async upgradeProxy ( \scripts\deploy-utils.js:117:17)
+    at async Object.module.exports [as func] ( \scripts\deploy\m02_upgrade_mainnet_18_01.js:24:3)
+    at async DeploymentsManager.executeDeployScripts ( \node_modules\hardhat-deploy\src\DeploymentsManager.ts:1205:22)
+    at async DeploymentsManager.runDeploy ( \node_modules\hardhat-deploy\src\DeploymentsManager.ts:1038:5)
+    at async Environment._runTaskDefinition ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at DeploymentsManager.executeDeployScripts ( \node_modules\hardhat-deploy\src\DeploymentsManager.ts:1208:19)
+    at async DeploymentsManager.runDeploy ( \node_modules\hardhat-deploy\src\DeploymentsManager.ts:1038:5)
+    at async Environment._runTaskDefinition ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at async Environment.run ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at async SimpleTaskDefinition.action ( \node_modules\hardhat-deploy\src\index.ts:546:32)
+    at async Environment._runTaskDefinition ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at async SimpleTaskDefinition.action ( \node_modules\hardhat-deploy\src\index.ts:630:5)   129:14)
+    at async Environment._runTaskDefinition ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)                                                                                                                 environment
+    at async Environment.run ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network ETH
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m02_upgrade_mainnet_18.01
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        Current implementation version: 201
+Waiting 1 block confirmations for tx 0x7a4bc7d90aada3516e4fc057714f46e5b25dcaf4c2524e49148f5c317a04b149 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x51bFD427D06B2a5FC3588f9d023994A9f70e0Ce0
+        New implementation version: 301
+2. Upgrade callProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0xc3bf11577e383e1292663bd254b218f4c4f4d9dd682a6d51f2a7149eb0991420 ...
+        Proxy successfully upgraded!
+        New implementation address: 0xd5317E82BFEFf70b4773f0fcab5e2ABFA3c7D63b
+        New implementation version: 130
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network BSC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        Current implementation version: 201
+Waiting 1 block confirmations for tx 0x5f21e766b043e9713acca80a7e751bb3cd2ceb3d5660e0cf950a68cbbc9ca7e4 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x51bFD427D06B2a5FC3588f9d023994A9f70e0Ce0
+        New implementation version: 301
+2. Upgrade callProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0x45f81086cf55190d4b15b2c954ee754d5f5e82467c0528bfee5f4e2f46dc122b ...
+        Proxy successfully upgraded!
+        New implementation address: 0xd5317E82BFEFf70b4773f0fcab5e2ABFA3c7D63b
+        New implementation version: 130
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network HECO
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        Current implementation version: 201
+Waiting 1 block confirmations for tx 0x28eb26c903ecf45f61941ec950deffbf791c4236108d384d2f0ae71616da81e0 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x51bFD427D06B2a5FC3588f9d023994A9f70e0Ce0
+        New implementation version: 301
+2. Upgrade callProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0xf88e288b724c739c962709fd963d4012875403d36ae8884356e5f33d7879a09d ...
+        Proxy successfully upgraded!
+        New implementation address: 0xd5317E82BFEFf70b4773f0fcab5e2ABFA3c7D63b
+        New implementation version: 130
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network ARBITRUM
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m02_upgrade_mainnet_18.01
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        Current implementation version: 201
+Waiting 1 block confirmations for tx 0xce437b0eb0c8a3e01923edefb9d6d36aeaffde135e434aee687229ff6fc87389 ...
+        Proxy successfully upgraded!
+        New implementation address: 0x51bFD427D06B2a5FC3588f9d023994A9f70e0Ce0
+        New implementation version: 301
+2. Upgrade callProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        Current implementation version: 120
+An unexpected error occurred:
+
+Error: ERROR processing  \scripts\deploy\m02_upgrade_mainnet_18_01.js:
+Error: cannot estimate gas; transaction may fail or may require manual gas limit (error={"name":"ProviderError","code":3,"_isProviderError":true,"data":"0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002d455243313936373a206e657720696d706c656d656e746174696f6e206973206e6f74206120636f6e747261637400000000000000000000000000000000000000"}, method="estimateGas", transaction={"from":"0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844","to":"0xE4427af3555CD9303D728C491364FAdFDD7494Fe","data":"0x99a88ec40000000000000000000000008a0c79f5532f3b2a16ad1e4282a5daf81928a824000000000000000000000000d5317e82bfeff70b4773f0fcab5e2abfa3c7d63b","accessList":null}, code=UNPREDICTABLE_GAS_LIMIT, version=providers/5.5.0)
+    at Logger.makeError ( \node_modules\@ethersproject\logger\src.ts\index.ts:225:28)
+    at Logger.throwError ( \node_modules\@ethersproject\logger\src.ts\index.ts:237:20)
+    at checkError ( \node_modules\@ethersproject\providers\src.ts\json-rpc-provider.ts:80:16)
+    at EthersProviderWrapper.<anonymous> ( \node_modules\@ethersproject\providers\src.ts\json-rpc-provider.ts:562:20)
+    at step ( \node_modules\@ethersproject\providers\lib\json-rpc-provider.js:48:23)
+    at Object.throw ( \node_modules\@ethersproject\providers\lib\json-rpc-provider.js:29:53)
+    at rejected ( \node_modules\@ethersproject\providers\lib\json-rpc-provider.js:21:65)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at DeploymentsManager.executeDeployScripts ( \node_modules\hardhat-deploy\src\DeploymentsManager.ts:1208:19)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async DeploymentsManager.runDeploy ( \node_modules\hardhat-deploy\src\DeploymentsManager.ts:1038:5)
+    at async Environment._runTaskDefinition ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at async Environment.run ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at async SimpleTaskDefinition.action ( \node_modules\hardhat-deploy\src\index.ts:546:32)
+    at async Environment._runTaskDefinition ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+    at async Environment.run ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:129:14)
+    at async SimpleTaskDefinition.action ( \node_modules\hardhat-deploy\src\index.ts:630:5)
+    at async Environment._runTaskDefinition ( \node_modules\hardhat\src\internal\core\runtime-environment.ts:217:14)
+PS  >
+
+
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network ARBITRUM
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m02_upgrade_mainnet_18.01
+********************************************************************************
+2. Upgrade callProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0x79d08aeea23c0080df95164485eee89b93410f65d26ebb50bbd83afa07c8cadd ...
+        Proxy successfully upgraded!
+        New implementation address: 0xd5317E82BFEFf70b4773f0fcab5e2ABFA3c7D63b
+        New implementation version: 130
+PS
+
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network MATIC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m02_upgrade_mainnet_18.01
+********************************************************************************
+1. Upgrade DebrideGate
+
+*** Upgrading proxy for DeBridgeGate ***
+        Address:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0xFCe0502293dCacbFc2d663f7814b2771dEcfd576
+        Current implementation version: 201
+Waiting 1 block confirmations for tx 0xd02a71911029d3aa2870030a68b9990a8b99dd70b3d49e8c610ada1035e5f44d ...
+        Proxy successfully upgraded!
+        New implementation address: 0x51bFD427D06B2a5FC3588f9d023994A9f70e0Ce0
+        New implementation version: 301
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network MATIC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m02_upgrade_mainnet_18.01
+********************************************************************************
+2. Upgrade callProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        Current implementation version: 120
+An unexpected error occurred:
+
+Error: ERROR processing  \scripts\deploy\m02_upgrade_mainnet_18_01.js:
+Error: No contract at address 0x298Fc8290a1e3e645f6F66e387e4178a62943a30 (Removed from manifest)
+PS  npx hardhat deploy --tags m02_upgrade_mainnet_18_01 --network MATIC
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        m02_upgrade_mainnet_18.01
+********************************************************************************
+2. Upgrade callProxy
+
+*** Upgrading proxy for CallProxy ***
+        Address:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Current implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        Current implementation version: 120
+Waiting 1 block confirmations for tx 0x94007980e564b0e0fe2046367277511b158dbc3fdd0e04c548f973c75de936bb ...
+        Proxy successfully upgraded!
+        New implementation address: 0xd5317E82BFEFf70b4773f0fcab5e2ABFA3c7D63b
+        New implementation version: 130
+PS

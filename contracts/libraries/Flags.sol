@@ -24,7 +24,7 @@ library Flags {
         uint256 flag = (_packedFlags >> _flag) & uint256(1);
         return flag == 1;
     }
-
+    
     /// @dev Set flag
     /// @param _packedFlags Flags packed to uint256
     /// @param _flag Flag to set
