@@ -126,6 +126,6 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 103; // 1.0.3
+        return 400; // 4.0.0
     }
 }
