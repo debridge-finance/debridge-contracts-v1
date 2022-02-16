@@ -102,7 +102,7 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
         uint256 chainId = getChainId();
         if (treasuryAddresses[chainId].length == 0) revert EmptyTreasuryAddress(chainId);
 
-        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(
+        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeInfo(
             _tokenAddress
         );
         if (feeProxyAddresses[nativeChainId].length == 0) revert EmptyFeeProxyAddress(nativeChainId);
@@ -291,6 +291,6 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 102; // 1.0.2
+        return 103; // 1.0.3
     }
 }

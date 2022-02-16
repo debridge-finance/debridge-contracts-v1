@@ -77,7 +77,7 @@ contract DeBridgeGate is
     /// @dev Fee discount for address
     mapping(address => DiscountInfo) public feeDiscount;
     /// @dev Returns native token info by wrapped token address
-    mapping(address => TokenInfo) public getNativeInfo;
+    mapping(address => TokenInfo) public override getNativeInfo;
 
     /// @dev Return DefiController that can supply liquidity to staking strategies (AAVE, Compound, etc.)
     address public defiController;
@@ -289,7 +289,7 @@ contract DeBridgeGate is
         address _receiver,
         uint256 _amount,
         bytes memory _data
-    ) external override nonReentrant whenNotPaused // noDelegateCall
+    ) external override nonReentrant whenNotPaused
     {
         bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
         if (!getDebridge[debridgeId].exist) revert DebridgeNotFound();
@@ -1123,17 +1123,6 @@ contract DeBridgeGate is
         uint8 _decimals
     ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(DEPLOY_PREFIX, _debridgeId, _name, _symbol, _decimals));
-    }
-
-    /// @inheritdoc IDeBridgeGate
-    function getNativeTokenInfo(address currentTokenAddress)
-        external
-        view
-        override
-        returns (uint256 nativeChainId, bytes memory nativeAddress)
-    {
-        TokenInfo memory tokenInfo = getNativeInfo[currentTokenAddress];
-        return (tokenInfo.nativeChainId, tokenInfo.nativeAddress);
     }
 
     /// @dev Get current chain id

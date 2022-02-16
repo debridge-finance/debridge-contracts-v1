@@ -46,7 +46,7 @@ beforeEach(async () => {
     await erc20Mock.mock.transfer.returns(true as any);
 
     deBridgeGateMock = await deployMockContract(deployer, DeBridgeGateJson.abi) as DeBridgeGateMock;
-    await deBridgeGateMock.mock.getNativeTokenInfo
+    await deBridgeGateMock.mock.getNativeInfo
         .withArgs(erc20Mock.address)
         .returns(CHAIN_ID, NATIVE_ADDRESS);
     await deBridgeGateMock.mock.withdrawFee.returns();
@@ -87,7 +87,7 @@ describe('withdrawFee', () => {
             deBridgeGateMock.mock.withdrawFee,
             [correctId],
             async () => simpleFeeProxy.withdrawFee(erc20Mock.address),
-        )        
+        )
     })
 
     it('transfers correct amount to treasury', async () => {
@@ -125,7 +125,7 @@ describe('withdrawNativeFee', () => {
             deBridgeGateMock.mock.withdrawFee,
             [correctId],
             async () => simpleFeeProxy.withdrawNativeFee(),
-        )        
+        )
     })
 
     describe('transfer to treasury', () => {
@@ -213,7 +213,7 @@ test('pausable functions are not callable after a pause', async () => {
     await expect(
         simpleFeeProxy.withdrawNativeFee()
     ).not.to.be.revertedWith(PAUSED_REVERT_MESSAGE);
-    
+
     await simpleFeeProxy.pause();
 
     await expect(

@@ -62,7 +62,7 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     function withdrawFee(address _tokenAddress) external whenNotPaused {
         if (treasury == address(0)) revert EmptyTreasuryAddress();
 
-        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeTokenInfo(
+        (uint256 nativeChainId, bytes memory nativeAddress) = debridgeGate.getNativeInfo(
             _tokenAddress
         );
         bytes32 debridgeId = getbDebridgeId(nativeChainId, nativeAddress);
@@ -126,6 +126,6 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 102; // 1.0.2
+        return 103; // 1.0.3
     }
 }
