@@ -47,32 +47,13 @@ The transfer of the wrapped asset (deAsset) from the secondary chain back to the
 
 ### Transfer Between Secondary Chains
 
-deBridge protocol supports **multi-chain routing** when users can transfer deAssets between secondary chains directly, without the need to route them through the native chain. These transfers work in the same way, but deAsset is burnt in the chain where the transfer is originated and the corresponding amount of deAsset is minted in the target chain.
-
-## Light Validation
-
-The described approach works well for transfers between any blockchain networks where the target chain has cheap transaction fees. But what if the transfer is performed into Ethereum, especially at the moment of high gas prices? Each validator would have to bear the transaction costs of submitting validation transactions for each performed transfer. In this case, transaction validation costs may even exceed the amount of asset being transferred, especially taking into account that deBridge DON will consist of more than 10 validators. In order to solve this problem, the protocol design also provides a **Light Validation** method, when deBridge validators can submit validating transactions into the `LightAggregator` contract of another cheap blockchain or L2 ([Arbitrum](https://offchainlabs.com)) which is used as storage of validators signatures.
-
-When a user claims asset in the `deBridgeGate` smart contract in the native chain or mints deAsset in the secondary chain, he passes minimal required number of oracles signatures for this transfer (SubmissionId) from the `LightAggregator` contract in Arbitrum.
-
-```
-function claim(
-        bytes32 _debridgeId,
-        uint256 _chainIdFrom,
-        address _receiver,
-        uint256 _amount,
-        uint256 _nonce,
-        bytes[] calldata _signatures
-    )
-```
-
-`deBridgeGate` smart-contract cross-validates validators signatures for this `submissionId` to make sure that those signatures belong to white-listed validators. If the minimum required amount of signatures is valid, the user receives a designated amount of assets into his wallet. Since all claims are performed asynchronously through the smart contract, there is no nonce dependency and all actions are performed in a fast manner
+deBridge protocol supports **multi-chain routing** when users can transfer deAssets between secondary chains directly, without the need to route them through the native chain. These transfers work in the same way, but deAsset is burnt in the chain where the transfer is originated and the corresponding amount of deAsset is minted in the target chain
 
 ## Cross-Chain Transfers Execution Time
 
-Cross-chain transfer through deBridge normally takes less than 1 minute and the delay is caused by two factors:
+Cross-chain transfer through deBridge normally takes a few minutes and the delay is caused by two factors:
 
 1. The finality of transaction in the blockchain where the transfer is originated
-2. Time required for validators to send confirmation transaction of the transfer
+2. Time required for claim transaction to get into the block in the destination chain
 
-Each blockchain has a different block generation time and requires a different number of block confirmations to treat the transaction as final, thus before validating the transaction validators have to wait for its finality. The longest delay (\~2 minutes) is for transfers from Ethereum as 10 block confirmations are needed before each validator starts submitting a validating transaction for the transfer. Even though the execution of transfers is not instant, user experience with deBridge is better than with most existing bridging solutions
+Each blockchain has a different block generation time and requires a different number of block confirmations to treat the transaction as final, thus before validating the transaction validators have to wait for its finality
