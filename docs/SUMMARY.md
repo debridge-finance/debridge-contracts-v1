@@ -7,7 +7,7 @@
 * [Protocol Overview](the-core-protocol/protocol-overview.md)
 * [Transfers Flow](the-core-protocol/transfers.md)
 * [Slashing and Delegated Staking](the-core-protocol/slashing-and-delegated-staking.md)
-* [Liquidity Provision](the-core-protocol/liquidity-provision.md)
+* [Cross-Chain Swaps Liquidity](the-core-protocol/cross-chain-swaps-liquidity.md)
 * [Security](the-core-protocol/security.md)
 
 ## Contracts
