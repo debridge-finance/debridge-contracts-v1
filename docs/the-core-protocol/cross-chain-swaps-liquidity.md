@@ -8,6 +8,15 @@ Cross-chain swaps is one of the applications built on top of deBridge infrastruc
 
 Here are the instructions on how to deposit liquidity into the pool for each blockchain/L2.
 
+
+
+| Blockchain/L2     | Link                                                                         | Pool address                                                                                                             |
+| ----------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Arbitrum (deUSDC) | [https://arbitrum.curve.fi/factory/17](https://arbitrum.curve.fi/factory/17) |  [0x76b44e0cf9bd024dbed09e1785df295d59770138](https://arbiscan.io/address/0x76b44e0cf9bd024dbed09e1785df295d59770138)    |
+| Arbitrum (deETH)  | [https://arbitrum.curve.fi/factory/15](https://arbitrum.curve.fi/factory/15) | [0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0](https://arbiscan.io/address/0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0)     |
+| Polygon (deUSDC)  | [https://polygon.curve.fi/factory/111](https://polygon.curve.fi/factory/111) | [0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2](https://polygonscan.com/address/0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2) |
+| BSC (deUSDC)      | [https://ellipsis.finance/pool/4](https://ellipsis.finance/pool/4)           | [0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c](https://bscscan.com/address/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c)     |
+
 ### **Arbitrum deUSDC/2CRV pool**
 
 This is a stablecoin pool at Curve that contains deUSDC (USDC bridged through deBridge) paired with 2CRV - Curve token that represents the basket of two stable coins (USDT+USDC)
