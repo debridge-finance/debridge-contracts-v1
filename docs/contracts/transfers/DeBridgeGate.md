@@ -821,8 +821,9 @@ Returns asset fixed fee value for specified debridge and chainId.
             uint256 _amount,
             address _receiver,
             uint256 _nonce,
-            struct IDeBridgeGate.SubmissionAutoParamsFrom autoParams,
-            bool hasAutoParams
+            struct IDeBridgeGate.SubmissionAutoParamsFrom _autoParams,
+            bool _hasAutoParams,
+            address _sender
   ) public returns (bytes32)
 ```
 
@@ -836,8 +837,9 @@ Calculate submission id for auto claimable transfer.
 |`_amount` | uint256 | Amount of the transferred asset (note: the fee can be applied).
 |`_receiver` | address | Receiver address.
 |`_nonce` | uint256 | Submission id.
-|`autoParams` | struct IDeBridgeGate.SubmissionAutoParamsFrom | Auto params for external call
-|`hasAutoParams` | bool | True if auto params are provided
+|`_autoParams` | struct IDeBridgeGate.SubmissionAutoParamsFrom | Auto params for external call
+|`_hasAutoParams` | bool | True if auto params are provided
+|`_sender` | address | Address that will call claim
 
 ## getDeployId
 ```solidity
@@ -858,20 +860,6 @@ Calculates asset identifier for deployment.
 |`_name` | string | Asset's name.
 |`_symbol` | string | Asset's symbol.
 |`_decimals` | uint8 | Asset's decimals.
-
-## getNativeTokenInfo
-```solidity
-  function getNativeTokenInfo(
-            address currentTokenAddress
-  ) external returns (uint256 nativeChainId, bytes nativeAddress)
-```
-
-Get native chain id and native address of a token
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`currentTokenAddress` | address | address of a token on the current chain
 
 ## getChainId
 ```solidity

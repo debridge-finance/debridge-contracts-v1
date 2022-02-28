@@ -64,9 +64,15 @@ interface IDeBridgeGate {
     }
 
     /* ========== PUBLIC VARS GETTERS ========== */
+
     /// @dev Returns whether the transfer with the submissionId was claimed.
     /// submissionId is generated in getSubmissionIdFrom
     function isSubmissionUsed(bytes32 submissionId) external returns (bool);
+
+    /// @dev Returns native token info by wrapped token address
+    function getNativeInfo(address token) external returns (
+        uint256 nativeChainId,
+        bytes memory nativeAddress);
 
     /* ========== FUNCTIONS ========== */
 
@@ -140,13 +146,6 @@ interface IDeBridgeGate {
     /// @param _debridgeId Asset identifier.
     function withdrawFee(bytes32 _debridgeId) external;
 
-    /// @dev Get native chain id and native address of a token
-    /// @param currentTokenAddress address of a token on the current chain
-    function getNativeTokenInfo(address currentTokenAddress)
-        external
-        view
-        returns (uint256 chainId, bytes memory nativeAddress);
-
     /// @dev Returns asset fixed fee value for specified debridge and chainId.
     /// @param _debridgeId Asset identifier.
     /// @param _chainId Chain id.
@@ -193,6 +192,19 @@ interface IDeBridgeGate {
         uint256 indexed nativeChainId,
         uint256 maxAmount,
         uint16 minReservesBps
+    );
+
+    event MonitoringSendEvent(
+        bytes32 submissionId,
+        uint256 nonce,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
+    );
+
+    event MonitoringClaimEvent(
+        bytes32 submissionId,
+        uint256 lockedOrMintedAmount,
+        uint256 totalSupply
     );
 
     /// @dev Emitted when the asset is allowed/disallowed to be transferred to the chain.

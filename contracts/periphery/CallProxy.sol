@@ -82,7 +82,9 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
-        if (!_result) {
+
+        amount = address(this).balance;
+        if (amount > 0) {
             (bool success, ) = _reserveAddress.call{value: amount}(new bytes(0));
             if (!success) revert CallFailed();
         }
@@ -99,8 +101,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _chainIdFrom
     ) external override onlyGateRole lock returns (bool _result) {
         uint256 amount = IERC20Upgradeable(_token).balanceOf(address(this));
-        IERC20Upgradeable(_token).safeApprove(_receiver, 0);
-        IERC20Upgradeable(_token).safeApprove(_receiver, amount);
+        IERC20Upgradeable(_token).approve(_receiver, amount);
 
         _result = externalCall(
             _receiver,
@@ -116,9 +117,10 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         if (!_result &&_flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
             revert ExternalCallFailed();
         }
-        if (!_result || amount > 0) {
+        if (amount > 0) {
             IERC20Upgradeable(_token).safeTransfer(_reserveAddress, amount);
         }
+        IERC20Upgradeable(_token).approve(_receiver, 0);
     }
 
     //gnosis
@@ -138,21 +140,9 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             submissionChainIdFrom = _chainIdFrom;
             submissionNativeSender = _nativeSender;
         }
-        uint256 dataLength = data.length;
+
         assembly {
-            let x := mload(0x40) // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
-            let d := add(data, 32) // First 32 bytes are the padded length of data, so exclude that
-            result := call(
-                sub(gas(), 34710), // 34710 is the value that solidity is currently emitting
-                // It includes callGas (700) + callVeryLow (3, to pay for SUB) + callValueTransferGas (9000) +
-                // callNewAccountGas (25000, in case the destination address does not exist and needs creating)
-                destination,
-                value,
-                d,
-                dataLength, // Size of the input (in bytes) - this is what fixes the padding problem
-                x,
-                0 // Output is ignored, therefore the output size is zero
-            )
+            result := call(gas(), destination, value, add(data, 0x20), mload(data), 0, 0)
         }
 
         // clear storage variables to get gas refund
@@ -167,8 +157,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     }
 
     // ============ Version Control ============
-    /// @dev Get this contract's version
+     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 130; // 1.3.0
+        return 400; // 4.0.0
     }
 }
