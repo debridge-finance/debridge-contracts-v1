@@ -1,14 +1,11 @@
 // @ts-nocheck TODO remove and fix
-import {config} from "dotenv-flow";
-import DeBridgeGateJson from "../../../../test-send-method/precompiles/DeBridgeGate.json";
+import DeBridgeGateJson from "../../../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json";
 import log4js from "log4js";
 import web3Utils from "web3-utils";
 import Web3 from "web3";
 import {log4jsConfig, Web3RpcUrl} from "./constants";
 const {toWei} = web3Utils;
 import "./parseDotEnvs";
-
-config();
 
 log4js.configure(log4jsConfig);
 
@@ -21,7 +18,7 @@ const web3 = new Web3(rpc);
 const debridgeGateAddress = process.env.DEBRIDGEGATE_ADDRESS;
 const debridgeGateInstance = new web3.eth.Contract(DeBridgeGateJson.abi, debridgeGateAddress);
 
-const privKey = process.env.PRIVATE_KEY;
+const privKey = process.env.SENDER_PRIVATE_KEY;
 const account = web3.eth.accounts.privateKeyToAccount(privKey);
 const senderAddress = account.address;
 

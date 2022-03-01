@@ -1,6 +1,6 @@
 // @ts-nocheck TODO remove and fix
 import Web3 from "web3";
-import DeBridgeGateJson from "../../../../test-send-method/precompiles/DeBridgeGate.json";
+import DeBridgeGateJson from "../../../artifacts/contracts/transfers/DeBridgeGate.sol/DeBridgeGate.json";
 import log4js from "log4js";
 import {getSubmission, getSubmissionConfirmations} from "./apiService";
 import {log4jsConfig, Web3RpcUrl} from "./constants";
@@ -10,7 +10,7 @@ log4js.configure(log4jsConfig);
 
 const logger = log4js.getLogger('claim');
 
-const privKey = process.env.PRIVATE_KEY;
+const privKey = process.env.SENDER_PRIVATE_KEY;
 const account = new Web3().eth.accounts.privateKeyToAccount(privKey);
 const senderAddress =  account.address;
 logger.info(`senderAddress : ${senderAddress}`);
