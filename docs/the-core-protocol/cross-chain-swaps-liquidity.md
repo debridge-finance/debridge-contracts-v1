@@ -10,12 +10,12 @@ Here are the instructions on how to deposit liquidity into the pool for each blo
 
 
 
-| Blockchain/L2     | Link                                                                         | Pool address                                                                                                             |
-| ----------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Arbitrum (deUSDC) | [https://arbitrum.curve.fi/factory/17](https://arbitrum.curve.fi/factory/17) |  [0x76b44e0cf9bd024dbed09e1785df295d59770138](https://arbiscan.io/address/0x76b44e0cf9bd024dbed09e1785df295d59770138)    |
-| Arbitrum (deETH)  | [https://arbitrum.curve.fi/factory/15](https://arbitrum.curve.fi/factory/15) | [0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0](https://arbiscan.io/address/0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0)     |
-| Polygon (deUSDC)  | [https://polygon.curve.fi/factory/111](https://polygon.curve.fi/factory/111) | [0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2](https://polygonscan.com/address/0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2) |
-| BSC (deUSDC)      | [https://ellipsis.finance/pool/4](https://ellipsis.finance/pool/4)           | [0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c](https://bscscan.com/address/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c)     |
+| Blockchain/L2      | Link                                                                         | Pool address                                                                                                             |
+| ------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Arbitrum (deUSDC)  | [https://arbitrum.curve.fi/factory/17](https://arbitrum.curve.fi/factory/17) |  [0x76b44e0cf9bd024dbed09e1785df295d59770138](https://arbiscan.io/address/0x76b44e0cf9bd024dbed09e1785df295d59770138)    |
+| Arbitrum (deETH)   | [https://arbitrum.curve.fi/factory/15](https://arbitrum.curve.fi/factory/15) | [0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0](https://arbiscan.io/address/0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0)     |
+| Polygon (deUSDC)   | [https://polygon.curve.fi/factory/111](https://polygon.curve.fi/factory/111) | [0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2](https://polygonscan.com/address/0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2) |
+| BNB Chain (deUSDC) | [https://ellipsis.finance/pool/4](https://ellipsis.finance/pool/4)           | [0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c](https://bscscan.com/address/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c)     |
 
 ### **Arbitrum deUSDC/2CRV pool**
 
@@ -70,15 +70,15 @@ Once you have deUSDC and USDC/USDT/DAI in your wallet balance on Polygon (you ca
 
 4\. Confirm the transaction in your wallet.
 
-### Binance Smart Chain (BSC) deUSDC/3EPS pool:
+### BNB Chain deUSDC/3EPS pool:
 
-This is a stablecoin pool at [Ellipsis Finance](https://ellipsis.finance) — a fork of Curve in BSC that is endorsed by the Curve core team. The pool contains deUSDC (USDC bridged through deBridge) paired with 3EPS – a meta token that represents the basket of three stable coins (USDT+USDC+BUSD)
+This is a stablecoin pool at [Ellipsis Finance](https://ellipsis.finance) — a fork of Curve on BNB Chain that is endorsed by the Curve core team. The pool contains deUSDC (USDC bridged through deBridge) paired with 3EPS – a meta token that represents the basket of three stable coins (USDT+USDC+BUSD)
 
-In case you want to deposit $X amount of liquidity into this pool, please bridge half ($X/2) amount of USDC from Ethereum to deUSDC in BSC through deBridge at [https://app.beta.debridge.finance/](https://app.beta.debridge.finance). The other half should be bridged to BSC through other bridges or centralized exchanges (e.g. Binance or FTX) in the form of [USDT](https://bscscan.com/token/0x55d398326f99059ff775485246999027b3197955), [USDC](https://bscscan.com/token/0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d), or [BUSD](https://bscscan.com/token/0xe9e7cea3dedca5984780bafc599bd69add087d56).
+In case you want to deposit $X amount of liquidity into this pool, please bridge half ($X/2) amount of USDC from Ethereum to deUSDC on BNB Chain through deBridge at [https://app.beta.debridge.finance/](https://app.beta.debridge.finance). The other half should be bridged to BNB Chain through other bridges or centralized exchanges (e.g. Binance or FTX) in the form of [USDT](https://bscscan.com/token/0x55d398326f99059ff775485246999027b3197955), [USDC](https://bscscan.com/token/0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d), or [BUSD](https://bscscan.com/token/0xe9e7cea3dedca5984780bafc599bd69add087d56).
 
-_Be aware that you will need to have some BNB on your wallet in BSC in order to cover gas costs to broadcast the transaction._
+_Be aware that you will need to have some BNB on your wallet in BNB Chain in order to cover gas costs to broadcast the transaction._
 
-Once you have deUSDC and USDC/USDT/BUSD in your wallet balance on BSC (you can check through [https://bscscan.com/](https://bscscan.com)), you can deposit the liquidity at EPS:
+Once you have deUSDC and USDC/USDT/BUSD in your wallet balance on BNB Chain (you can check through [https://bscscan.com/](https://bscscan.com)), you can deposit the liquidity at EPS:
 
 * Go to the EPS website of the pool: [https://ellipsis.finance/pool/4](https://ellipsis.finance/pool/4)&#x20;
 * Click “Add liquidity” and connect your wallet
