@@ -55,7 +55,7 @@ Once you have deETH and ETH in your wallet balance on Arbitrum (you can check th
 
 This is a stablecoin pool at Curve that contains deUSDC (USDC bridged through deBridge) paired with am3CRV - Curve token that represents the basket of two stable coins (USDT+USDC+DAI)
 
-In case you’d like to deposit $X amount of liquidity into this pool, please bridge half ($X/2) amount of USDC from Ethereum to deUSDC on Polygon through deBridge at [https://app.debridge.finance/](https://app.debridge.finance). The other half should be bridged through Arbitrum’s default bridge [https://wallet.polygon.technology/bridge/](https://wallet.polygon.technology/bridge/) ) in the form of USDT or USDC or DAI.
+In case you’d like to deposit $X amount of liquidity into this pool, please bridge half ($X/2) amount of USDC from Ethereum to deUSDC on Polygon through deBridge at [https://app.debridge.finance/](https://app.debridge.finance). The other half should be bridged through Polygon's default bridge [https://wallet.polygon.technology/bridge/](https://wallet.polygon.technology/bridge/) ) in the form of USDT or USDC or DAI.
 
 _Be aware that you will need to have some Matic in your wallet on Polygon in order to cover gas costs to broadcast the transaction._
 
