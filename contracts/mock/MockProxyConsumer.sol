@@ -22,6 +22,7 @@ contract MockProxyConsumer {
         address _token,
         address _receiver,
         address _fallbackAddress,
+        uint256 _flags,
         bytes memory _data
     ) external payable {
         bool status;
@@ -41,7 +42,7 @@ contract MockProxyConsumer {
                 _fallbackAddress,
                 _receiver,
                 _data,
-                0,
+                _flags,
                 "",
                 CHAIN_ID_FROM
             );

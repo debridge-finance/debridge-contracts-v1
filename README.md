@@ -15,7 +15,7 @@
 
 More information about the project can be also found in the [documentation portal](https://docs.debridge.finance/)
 <br/>
-Testnet UI deployed on [testnet.debridge.finance](https://testnet.debridge.finance/)
+UI deployed on [app.debridge.finance](https://app.debridge.finance/)
 
 # Debridge Smart Contracts
 
@@ -89,3 +89,8 @@ then run `yarn test`
 >> https://github.com/dethcrypto/TypeChain/tree/master/packages/hardhat#installation
 > 
 >Warning: before running it for the first time you need to do hardhat clean, otherwise TypeChain will think that there is no need to generate any typings. This is because this plugin will attempt to do incremental generation and generate typings only for changed contracts. You should also do hardhat clean if you change any TypeChain related config option.
+
+
+## Verify contract
+
+Add ETHERSCAN_API_KEY variable to your .env file before running `npx hardhat verify ...`

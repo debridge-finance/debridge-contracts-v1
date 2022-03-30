@@ -1122,7 +1122,12 @@ contract DeBridgeGate is
         string memory _symbol,
         uint8 _decimals
     ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(DEPLOY_PREFIX, _debridgeId, _name, _symbol, _decimals));
+        return keccak256(abi.encodePacked(
+            DEPLOY_PREFIX,
+            _debridgeId,
+            keccak256(abi.encodePacked(_name)),
+            keccak256(abi.encodePacked(_symbol)),
+            _decimals));
     }
 
     /// @dev Get current chain id
@@ -1135,6 +1140,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 400; // 4.0.0
+        return 410; // 4.1.0
     }
 }

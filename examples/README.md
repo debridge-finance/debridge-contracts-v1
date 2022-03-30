@@ -15,8 +15,8 @@ This repository demonstrates how to interact with deBridge infrastructure in ord
 
 In order to run scripts please configure your local environment first:
 
-1. ```yarn install``` <br />
-2. Configure .env file — copy values from .env.testnet or .env.mainnet for the testnet and mainnet environments respectively. You may copy them to .env either in top-level or inside this dir
+1. `yarn install && yarn hardhat compile && yarn typechain --target web3-v1 --out-dir typechain-types-web3 "{artifacts/{contracts,@openzeppelin}/**/*[!dbg].json,./node_modules/@uniswap/v2-periphery/build/[!Combined]*.json}"`
+3. Configure .env file — copy values from .env.testnet or .env.mainnet for the testnet and mainnet environments respectively. You may copy them to .env either in top-level or inside this dir
 
 ### Sending of the Base Asset
 
@@ -158,3 +158,19 @@ The method of the smart contract that was executed as a result of cross-chain ca
 ![](https://i.imgur.com/61uRSXD.png)
 
 Feel free to reach out to us in the #developer channel of [Discord](http://discord.gg/debridge) to ask any questions.
+
+## Cross-chain swap
+Set DEBRIDGEGATE_ADDRESS, SENDER_PRIVATE_KEY, ROUTER_ADDRESS in .env file
+
+Call swap with arguments, e.g.
+```shell
+yarn ts-node examples/src/sendScripts/swap/swap.ts \
+--chain-id-from 97 \
+--chain-id-to 42 \
+--token-address-from 0x0000000000000000000000000000000000000000 \
+--token-address-to 0x0000000000000000000000000000000000000000 \
+--amount 0.1
+```
+Set token-address-from to zero address to send native tokens (BNB on BSC, ETH on Kovan, etc.)
+
+Set token-address-to to zero address to receive native tokens

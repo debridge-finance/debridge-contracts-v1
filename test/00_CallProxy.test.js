@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const { expectRevert } = require("@openzeppelin/test-helpers");
 
 const flags = 0;
 const nativeSender = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
@@ -705,6 +706,7 @@ describe("CallProxy", function () {
           receiver.address,
           reserve.address,
           0,
+          0,
           {
             value: 1234876,
           }
@@ -729,6 +731,7 @@ describe("CallProxy", function () {
           receiverContract.address,
           reserve.address,
           0,
+          0,
           {
             value: 1234876,
           }
@@ -752,6 +755,7 @@ describe("CallProxy", function () {
             ethers.constants.AddressZero,
             receiverContract.address,
             reserve.address,
+            0,
             callData,
             { value: 12348767 }
           );
@@ -779,6 +783,7 @@ describe("CallProxy", function () {
             ethers.constants.AddressZero,
             receiverContract.address,
             reserve.address,
+            0,
             callData,
             { value: 12348767 }
           );
@@ -874,6 +879,7 @@ describe("CallProxy", function () {
               ethers.constants.AddressZero,
               this.router.address,
               reserve.address,
+              0,
               callData,
               { value: 1234534567 }
             );
@@ -894,6 +900,7 @@ describe("CallProxy", function () {
               ethers.constants.AddressZero,
               this.router.address,
               reserve.address,
+              0,
               callData,
               { value: 1234534567 }
             );
@@ -921,6 +928,7 @@ describe("CallProxy", function () {
               ethers.constants.AddressZero,
               this.router.address,
               reserve.address,
+              0,
               callData,
               { value: amountOut[0] }
             );
@@ -944,6 +952,7 @@ describe("CallProxy", function () {
               ethers.constants.AddressZero,
               this.router.address,
               reserve.address,
+              0,
               callData,
               { value: amountOut[0] }
             );
@@ -968,6 +977,7 @@ describe("CallProxy", function () {
             brokenToken.address,
             receiver.address,
             reserve.address,
+            0,
             [],
             {
               value: 1111,
@@ -979,6 +989,7 @@ describe("CallProxy", function () {
             brokenToken.address,
             receiver.address,
             reserve.address,
+            0,
             "0xdeadbeef",
             {
               value: 1111,
@@ -1004,6 +1015,7 @@ describe("CallProxy", function () {
           this.token.address,
           nonPullingReceiver.address,
           reserve.address,
+          0,
           callData,
           { value: 1111 }
         );
@@ -1023,6 +1035,7 @@ describe("CallProxy", function () {
           this.token.address,
           receiver.address,
           reserve.address,
+          0,
           [],
           {
             value: 1111,
@@ -1032,6 +1045,7 @@ describe("CallProxy", function () {
           this.token.address,
           receiver.address,
           reserve.address,
+          0,
           "0xdeadbeef",
           {
             value: 1111,
@@ -1071,6 +1085,7 @@ describe("CallProxy", function () {
           this.token.address,
           nonPullingReceiver.address,
           reserve.address,
+          0,
           callData,
           { value: 1111 }
         );
@@ -1098,6 +1113,7 @@ describe("CallProxy", function () {
             this.token.address,
             receiverContract.address,
             reserve.address,
+            0,
             callData,
             {
               value: 1111,
@@ -1127,6 +1143,7 @@ describe("CallProxy", function () {
             this.token.address,
             receiverContract.address,
             reserve.address,
+            0,
             callData,
             {
               value: 1111,
@@ -1233,6 +1250,7 @@ describe("CallProxy", function () {
             this.weth.address,
             this.router.address,
             reserve.address,
+            0,
             callData,
             {
               value: amountOut[0],
@@ -1263,6 +1281,7 @@ describe("CallProxy", function () {
             this.token.address,
             this.router.address,
             reserve.address,
+            0,
             callData,
             {
               value: parseInt(amountOut[0]) + 500,
@@ -1275,6 +1294,83 @@ describe("CallProxy", function () {
           expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(400);
         });
 
+        describe("with SEND_EXTERNAL_CALL_GAS_LIMIT flag", function () {
+          it("swapTokensForExactETH with safeTxGas 1mln", async function () {
+            const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
+            await this.token.transfer(this.ProxyConsumer.address, 1000);
+            const amountOut = await this.router.getAmountsOut(100, [
+              this.token.address,
+              this.weth.address,
+            ]);
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+            const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
+              amountOut[1],
+              parseInt(amountOut[0]) + 500,
+              [this.token.address, this.weth.address],
+              tokenHolder.address,
+              9999999999,
+            ]);
+            // console.log("callData", callData);
+            const hexGasLimit = "0x000F4240";// first 4 bytes 1mln gas limit
+            // (new Web3()).eth.abi.encodeParameter('uint32', '1000000');  encoded to full slot we need only first 4 bytes
+            const callDataWithGasLimit = hexGasLimit + callData.substring(2);
+
+            const transferResult = await this.ProxyConsumer.transferToken(
+              this.token.address,
+              this.router.address,
+              reserve.address,
+              2 ** 4, // flag SEND_EXTERNAL_CALL_GAS_LIMIT
+              callDataWithGasLimit,
+              {
+                value: parseInt(amountOut[0]) + 500,
+                gasLimit: 1400000
+              }
+            );
+            const receipt = await transferResult.wait();
+            console.log("gasUsed", receipt.gasUsed.toString());
+            // const gasUsed = receipt.getTransactionReceipt().gasUsed;
+            // console.log("gasUsed", gasUsed.toString());
+            const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
+            expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
+            expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
+            expect(await this.token.balanceOf(reserve.address)).to.be.equal(500);
+            expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(400);
+          });
+
+          it("Should reject if gasleft for external call less than safeTxGas", async function () {
+            const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
+            await this.token.transfer(this.ProxyConsumer.address, 1000);
+            const amountOut = await this.router.getAmountsOut(100, [
+              this.token.address,
+              this.weth.address,
+            ]);
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+            const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
+              amountOut[1],
+              parseInt(amountOut[0]) + 500,
+              [this.token.address, this.weth.address],
+              tokenHolder.address,
+              9999999999,
+            ]);
+            const hexGasLimit = "0x000F4240";// first 4 bytes 1mln gas limit
+            const callDataWithGasLimit = hexGasLimit + callData.substring(2);
+
+            await expectRevert(
+              this.ProxyConsumer.transferToken(
+                this.token.address,
+                this.router.address,
+                reserve.address,
+                2 ** 4, // flag SEND_EXTERNAL_CALL_GAS_LIMIT
+                callDataWithGasLimit,
+                {
+                  value: parseInt(amountOut[0]) + 500,
+                  gasLimit: 400000
+                }
+              ),
+              "NotEnoughSafeTxGas()"
+            );
+          });
+        });
         it("swapExactTokensForETH", async function () {
           const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
           await this.token.transfer(this.ProxyConsumer.address, 1000);
@@ -1294,6 +1390,7 @@ describe("CallProxy", function () {
             this.token.address,
             this.router.address,
             reserve.address,
+            0,
             callData,
             {
               value: amountOut[0],
