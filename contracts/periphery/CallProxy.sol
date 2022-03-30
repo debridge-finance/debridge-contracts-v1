@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "../interfaces/ICallProxy.sol";
 import "../libraries/Flags.sol";
+import "../libraries/BytesLib.sol";
 
 /// @dev Proxy to execute the other contract calls.
 /// This contract is used when a user requests transfer with specific call of other contract.
@@ -35,6 +36,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     error DeBridgeGateBadRole();
 
     error ExternalCallFailed();
+    error NotEnoughSafeTxGas();
     error CallFailed();
     error Locked();
 
@@ -76,7 +78,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             _data,
             _nativeSender,
             _chainIdFrom,
-            _flags.getFlag(Flags.PROXY_WITH_SENDER)
+            _flags
         );
 
         if (!_result && _flags.getFlag(Flags.REVERT_IF_EXTERNAL_FAIL)) {
@@ -109,7 +111,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             _data,
             _nativeSender,
             _chainIdFrom,
-            _flags.getFlag(Flags.PROXY_WITH_SENDER)
+            _flags
         );
 
         amount = IERC20Upgradeable(_token).balanceOf(address(this));
@@ -123,17 +125,16 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         IERC20Upgradeable(_token).approve(_receiver, 0);
     }
 
-    //gnosis
-    //https://github.com/gnosis/MultiSigWallet/blob/ca981359cf5acd6a1f9db18e44777e45027df5e0/contracts/MultiSigWallet.sol#L244-L261
-
     function externalCall(
-        address destination,
-        uint256 value,
-        bytes memory data,
+        address _destination,
+        uint256 _value,
+        bytes memory _data,
         bytes memory _nativeSender,
         uint256 _chainIdFrom,
-        bool storeSender
+        uint256 _flags
     ) internal returns (bool result) {
+        bool storeSender = _flags.getFlag(Flags.PROXY_WITH_SENDER);
+        bool checkGasLimit = _flags.getFlag(Flags.SEND_EXTERNAL_CALL_GAS_LIMIT);
         // Temporary write to a storage nativeSender and chainIdFrom variables.
         // External contract can read them during a call if needed
         if (storeSender) {
@@ -141,8 +142,21 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
             submissionNativeSender = _nativeSender;
         }
 
+        uint256 safeTxGas;
+        if (checkGasLimit && _data.length > 4) {
+            safeTxGas = BytesLib.toUint32(_data, 0);
+
+            // Remove first 4 bytes from data
+            _data = BytesLib.slice(_data, 4, _data.length - 4);
+        }
+
+        // We require some gas to finish transaction emit the events, approve(0) etc (at least 15000) after the execution and some to perform code until the execution (500)
+        // We also include the 1/64 in the check that is not send along with a call to counteract potential shortings because of EIP-150
+        if (gasleft() < safeTxGas * 64 / 63 + 15500) revert NotEnoughSafeTxGas();
+        // if safeTxGas is zero set gasleft
+        safeTxGas = safeTxGas == 0 ? gasleft() : uint256(safeTxGas);
         assembly {
-            result := call(gas(), destination, value, add(data, 0x20), mload(data), 0, 0)
+            result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
         }
 
         // clear storage variables to get gas refund
@@ -159,6 +173,6 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     // ============ Version Control ============
      /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 400; // 4.0.0
+        return 410; // 4.1.0
     }
 }

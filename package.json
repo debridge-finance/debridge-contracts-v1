@@ -1,6 +1,6 @@
 {
   "name": "debridge-contracts",
-  "version": "1.0.0",
+  "version": "4.1.0",
   "description": "",
   "scripts": {
     "format:check": "prettier -c 'contracts/**/*.sol' 'test/*.js'",
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/debridge-finance/debridge-contracts-v1#readme",
   "dependencies": {
-    "@chainlink/contracts": "^0.2.1",
+    "@nomiclabs/hardhat-etherscan": "^2.1.8",
     "@openzeppelin/contracts": "^4.3.2",
     "@openzeppelin/contracts-upgradeable": "^4.3.2",
     "@openzeppelin/test-helpers": "^0.5.13",
