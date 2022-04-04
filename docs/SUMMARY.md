@@ -10,9 +10,9 @@
 * [Cross-Chain Swaps Liquidity](the-core-protocol/cross-chain-swaps-liquidity.md)
 * [Security](the-core-protocol/security.md)
 
-## deSwap API
+## deSwap 🔁
 
-* [Quick Start Guide](deswap-api/quick-start-guide.md)
+* [API Quick Start Guide](deswap/api-quick-start-guide.md)
 
 ## Contracts
 
