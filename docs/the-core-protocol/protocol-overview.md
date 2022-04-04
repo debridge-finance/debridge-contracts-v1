@@ -13,7 +13,7 @@ The protocol consists of 2 key layers:
 * Protocol layer — on-chain smart contracts deployed in every blockchain supported by deBridge
 * Infrastructure layer — off-chain validation nodes operated by validators who are elected by deBridge governance
 
-![](../../.gitbook/assets/C.png)
+![](../.gitbook/assets/C.png)
 
 **The protocol layer** is a set of on-chain smart contracts that are used for asset management, routing of cross-chain transactions, cross-validation of validators signatures, and to reach consensus among validators as the transaction is treated as valid only if the minimum required threshold of validators signatures is achieved. The governance manages the parameters of the smart contracts, such as fees, supported chains, the whitelist of elected validators, validators payout ratio, and more.
 
@@ -41,7 +41,7 @@ Validators play a crucial role in interoperability protocols since in addition t
 
 **deBridge is more than a bridge** — it's a generalized insured interoperability protocol that allows users and protocols to transport not only assets but also arbitrary messages or call\_data cross-chain.
 
-![Types of cross-chain interactions](<../../.gitbook/assets/image (7).png>)
+![Types of cross-chain interactions](<../.gitbook/assets/image (7) (1).png>)
 
 The ability to pass arbitrary data opens up opportunities for true cross-chain composability of smart contracts and protocols that now can interact with each other despite they live in different blockchain ecosystems. An example would be an algorithmic stablecoin protocol in Ethereum that opens positions in perpetual markets protocol on Solana or Arbitrum in order to maintain the peg of its asset.
 

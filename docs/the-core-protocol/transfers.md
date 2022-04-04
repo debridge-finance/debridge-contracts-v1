@@ -1,6 +1,6 @@
 # Transfers Flow
 
-![](../../.gitbook/assets/B.png)
+![](../.gitbook/assets/B.png)
 
 ## Transfers From Native Chain
 

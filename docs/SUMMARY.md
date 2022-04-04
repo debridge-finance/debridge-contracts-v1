@@ -10,6 +10,10 @@
 * [Cross-Chain Swaps Liquidity](the-core-protocol/cross-chain-swaps-liquidity.md)
 * [Security](the-core-protocol/security.md)
 
+## deSwap API
+
+* [Quick Start Guide](deswap-api/quick-start-guide.md)
+
 ## Contracts
 
 * [Interfaces](contracts/interfaces/README.md)
