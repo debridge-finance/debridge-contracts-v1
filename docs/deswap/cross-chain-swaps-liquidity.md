@@ -2,7 +2,7 @@
 
 ## **Provision of liquidity for cross-chain pools at Curve**
 
-deBridge is a decentralized infrastructure that is fully composable with the existing DeFi ecosystem. That’s why we don’t need to do our own AMM or DEX, but just create different liquidity pools for deAssets in existing DEXes. In every blockchain supported by deBridge, there will be a liquidity pool for deUSDC at Curve or protocols that support the concept of the stable swap.
+deBridge is a decentralized infrastructure that is fully composable with the existing DeFi ecosystem. That’s why we don’t need to invent our own AMM or DEX, but just create liquidity pools for deAssets in existing DEXs. In every blockchain supported by deBridge, there will be a liquidity pool for deUSDC at Curve or protocols that support the concept of the stable swap.
 
 Cross-chain swaps is one of the applications built on top of deBridge infrastructure that enables users to perform swaps from any asset on one chain to any asset on another.
 

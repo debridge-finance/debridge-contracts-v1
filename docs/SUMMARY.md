@@ -7,12 +7,12 @@
 * [Protocol Overview](the-core-protocol/protocol-overview.md)
 * [Transfers Flow](the-core-protocol/transfers.md)
 * [Slashing and Delegated Staking](the-core-protocol/slashing-and-delegated-staking.md)
-* [Cross-Chain Swaps Liquidity](the-core-protocol/cross-chain-swaps-liquidity.md)
 * [Security](the-core-protocol/security.md)
 
 ## deSwap 🔁
 
 * [API Quick Start Guide](deswap/api-quick-start-guide.md)
+* [Cross-Chain Swaps Liquidity](deswap/cross-chain-swaps-liquidity.md)
 
 ## Contracts
 
