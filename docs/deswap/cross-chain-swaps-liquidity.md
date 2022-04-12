@@ -16,6 +16,7 @@ Here are the instructions on how to deposit liquidity into the pool for each blo
 | Arbitrum (deETH)   | [https://arbitrum.curve.fi/factory/15](https://arbitrum.curve.fi/factory/15) | [0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0](https://arbiscan.io/address/0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0)     |
 | Polygon (deUSDC)   | [https://polygon.curve.fi/factory/111](https://polygon.curve.fi/factory/111) | [0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2](https://polygonscan.com/address/0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2) |
 | BNB Chain (deUSDC) | [https://ellipsis.finance/pool/4](https://ellipsis.finance/pool/4)           | [0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c](https://bscscan.com/address/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c)     |
+| Avalanche (deUSDC) | [https://avax.curve.fi/factory/61](https://avax.curve.fi/factory/61)         | [0xd39016475200ab8957e9c772c949ef54bda69111](https://snowtrace.io/address/0xd39016475200ab8957e9c772c949ef54bda69111)    |
 
 ### **Arbitrum deUSDC/2CRV pool**
 
@@ -87,6 +88,21 @@ Once you have deUSDC and USDC/USDT/BUSD in your wallet balance on BNB Chain (you
 
 * Deposit deUSDC and stable coin in a 1:1 ratio
 * Confirm transaction in your wallet
+
+### **Avalanche deUSDC/av3CRV pool**
+
+This is a stablecoin pool at Curve that contains deUSDC (USDC bridged through deBridge) paired with av3CRV - Curve token that represents the basket of three stable coins (USDT+USDC+DAI)
+
+In case you’d like to deposit $X amount of liquidity into this pool, please bridge half ($X/2) amount of USDC from Ethereum to deUSDC on Avalanche through deBridge at [https://app.debridge.finance/](https://app.debridge.finance). The other half should be bridged through Avalanche's default bridge [https://bridge.avax.network/](https://bridge.avax.network)) in the form of USDT or USDC or DAI.
+
+_Be aware that you will need to have some AVAX in your wallet on Avalanche in order to cover gas costs to broadcast the transaction._
+
+Once you have deUSDC and USDC/USDT/DAI in your wallet balance on Avalanche (you can check through [https://snowtrace.io/](https://snowtrace.io)), you can deposit the liquidity at Curve.
+
+1. Go to the Curve website of the pool: [https://avax.curve.fi/factory/61](https://avax.curve.fi/factory/61)&#x20;
+2. Connect your wallet
+
+![](<../.gitbook/assets/Screen Shot 2022-04-12 at 14.12.56.png>)
 
 **Now all is done and liquidity will be used for all the cross-chain swaps 🚀**
 
