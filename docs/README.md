@@ -2,7 +2,7 @@
 
 ![](<.gitbook/assets/21 (1).png>)
 
-**deBridge is** **a cross-chain interoperability and liquidity transfer protocol** that allows the decentralized transfer of arbitrary data and assets between various blockchains. Validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for deBridge governance. Validators maintain the blockchain infrastructure and run the deBridge node to sign all transactions that pass through deBridge smart contracts in different blockchains.&#x20;
+**deBridge is** **a** **generic messaging and** **cross-chain interoperability protocol** that allows the decentralized transfer of arbitrary data and assets between various blockchains. Validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for deBridge governance. Validators maintain the blockchain infrastructure and run the deBridge node to sign all transactions that pass through deBridge smart contracts in different blockchains.&#x20;
 
 Delegated staking and slashing mechanics act as a backbone for the protocol security and prevent economical incentives for validators to get into collusion.
 

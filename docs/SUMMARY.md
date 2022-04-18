@@ -1,6 +1,7 @@
 # Table of contents
 
 * [Introduction](README.md)
+* [Build with deBridge 🛠](build-with-debridge.md)
 
 ## The Core Protocol
 

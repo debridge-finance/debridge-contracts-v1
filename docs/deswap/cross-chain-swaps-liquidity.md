@@ -84,7 +84,7 @@ Once you have deUSDC and USDC/USDT/BUSD in your wallet balance on BNB Chain (you
 * Go to the EPS website of the pool: [https://ellipsis.finance/pool/4](https://ellipsis.finance/pool/4)&#x20;
 * Click “Add liquidity” and connect your wallet
 
-![](https://lh5.googleusercontent.com/TUXyBGZjooX1bFVmA\_RAWq4ygvpiNDOl7BEQgqGzLISgQ-aE6eQVsyJMxQyxrxP23ar6S\_gfGgaevE8WtRlHgHh1m19m1wDE7Pa-HG0XGIgyg-v\_\_vuqU-zpTpWqfVzKfWEYEh\_w)
+<img src="https://lh5.googleusercontent.com/TUXyBGZjooX1bFVmA_RAWq4ygvpiNDOl7BEQgqGzLISgQ-aE6eQVsyJMxQyxrxP23ar6S_gfGgaevE8WtRlHgHh1m19m1wDE7Pa-HG0XGIgyg-v__vuqU-zpTpWqfVzKfWEYEh_w" alt="" data-size="original">
 
 * Deposit deUSDC and stable coin in a 1:1 ratio
 * Confirm transaction in your wallet
