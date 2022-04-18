@@ -98,6 +98,6 @@ Receiving smart contract should retrieve the address of callProxy from debridgeG
 ### Cross-Chain Smart Contracts Examples
 
 * [Incrementor](https://github.com/debridge-finance/debridge-contracts-v1/tree/main/examples)
-* Referral code (Cross-chain referral link generator at [deSwap APP](https://app.debridge.finance))
+* [Referral code](https://github.com/debridge-finance/debridge-contracts-v1/blob/main/contracts/examples/InvitationContract.sol) (Cross-chain referral link generator at [deSwap APP](https://app.debridge.finance))
 * NFT bridge
 
