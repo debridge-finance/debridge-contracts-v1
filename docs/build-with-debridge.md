@@ -8,7 +8,7 @@ description: Get started building cross-chain applications
 
 ### Interact with deBridge Infrastructure
 
-![Cross-chain smart contract calls through deBridge](<.gitbook/assets/CHAIN FROM.png>)
+![Cross-chain smart contract calls through deBridge](<.gitbook/assets/scheme 1.1.png>)
 
 Interaction with deBridge infrastructure is as simple as calling the `send` method of `debridgeGate` smart-contract deployed in all supported blockchains. The method can be called by any arbitrary address — either EOA or smart contracts
 
@@ -91,7 +91,7 @@ library Flags {
 
 `PROXY_WITH_SENDER` should be set whenever the receiving smart contract should check whether the message sender is trusted or not. If the flag was set, during the claim transaction in the destination chain, deBridge protocol will automatically store the submissionNativeSender address and submissionChainIdFrom, so that receiving smart contract can read the properties and validate if the sender is trusted.
 
-![](.gitbook/assets/image.png)
+![](<.gitbook/assets/Scheme 2.png>)
 
 Receiving smart contract should retrieve the address of callProxy from debridgeGate smart contract. You can use [onlyControllingAddress](https://github.com/debridge-finance/debridge-contracts-v1/blob/main/contracts/examples/BridgeAppBase.sol#L62) modifier or inherit from [BridgeAppBase.sol ](https://github.com/debridge-finance/debridge-contracts-v1/blob/main/contracts/examples/BridgeAppBase.sol)to properly implement this validation logic
 
