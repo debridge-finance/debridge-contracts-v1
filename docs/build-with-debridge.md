@@ -64,7 +64,7 @@ struct SubmissionAutoParamsTo {
 | fallbackAddress | bytes   | In case execution of call data fails, all tokens will be transferred to the fallback address               |
 | data            | bytes   | Message/Call data to be passed to the receiver on the destination chain during the external call execution |
 
-Flags are a bit mask that allows to achieve specific flow of executed transactions during the claim on the destination chain.
+Flags are a bit mask that allows to achieve specific flow of the transaction execution during the claim on the destination chain.
 
 ```solidity
 library Flags {
