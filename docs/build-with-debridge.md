@@ -10,7 +10,7 @@ description: Get started building cross-chain applications
 
 ![Cross-chain smart contract calls through deBridge](<.gitbook/assets/scheme 1.1.png>)
 
-To interact with the deBridge infrastructure is as simple as calling the `send` method of `debridgeGate` smart-contract deployed on all supported blockchains. The method can be called by any arbitrary address — either EOA or smart contracts.
+Interaction with the deBridge infrastructure is as simple as calling the `send` method of `debridgeGate` smart-contract deployed on all supported blockchains. The method can be called by any arbitrary address — either EOA or smart contracts.
 
 ```solidity
 function send(
