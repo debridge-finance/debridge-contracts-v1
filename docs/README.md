@@ -27,7 +27,7 @@ Examples of various interaction use cases and integration guidelines can be foun
 
 The deBridge protocol will be controlled by a DAO with decentralized governance which allows all token holders to participate in the future growth, have a word in the future decisions regarding protocol parameters, and treasury management.
 
-deBridge commenced in April 2021 during the [Chainlink Global Hackathon](https://chain.link/hackathon) where the team strived to solve the urgent problem of transferring assets and data between blockchains and the lack of a single decentralized standard for bridging assets. The project was awarded the grand prize and took first place among more than 140 teams worldwide.
+deBridge commenced in April 2021 during the [Chainlink Global Hackathon](https://chain.link/hackathon) where the team strived to solve the urgent problem of transferring data and liquidity between blockchains and of the lack of a single decentralized standard for bridging assets. The project was awarded the grand prize and took first place among more than 140 teams worldwide.
 
 **Resources:**\
 Website [https://debridge.finance/](https://debridge.finance)\
