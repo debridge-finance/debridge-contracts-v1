@@ -28,7 +28,7 @@ This bug bounty program is focused on preventing:
 * Theft of unclaimed assets
 * Permanent freezing of unclaimed assets
 * Smart contract fails to deliver promised returns
-* Unauthorized minting of wrapped assets that will lead them to loosing peg
+* Unauthorized minting of wrapped assets that will lead them to loose peg
 
-More detailed description can be found on the [Immunefi website](https://immunefi.com/bounty/debridge/).
+A more detailed description can be found on the [Immunefi website](https://immunefi.com/bounty/debridge/).
 
