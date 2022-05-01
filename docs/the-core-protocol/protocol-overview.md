@@ -15,7 +15,7 @@ The protocol consists of 2 key layers:
 
 ![](../.gitbook/assets/C.png)
 
-**The protocol layer** is a set of on-chain smart contracts that are used for asset management, routing of cross-chain transactions, cross-validation of validators' signatures, and reaching consensus among validators as the transaction is treated as valid only if the minimum required threshold of validators' signatures is achieved. The governance manages the parameters of the smart contracts, such as fees, supported chains, the whitelist of elected validators, validators payout ratio, and more.
+**The protocol layer** is a set of on-chain smart contracts that are used for asset management, routing of cross-chain transactions, cross-validation of validators signatures, and to reach consensus among validators as the transaction is treated as valid only if the minimum required threshold of validators signatures is achieved. The governance manages the parameters of the smart contracts, such as fees, supported chains, the whitelist of elected validators, validators payout ratio, and more.
 
 **The infrastructure layer** is represented by a set of reputable validators who operate a deBridge node alongside full nodes of every blockchain supported by the protocol.&#x20;
 
@@ -25,11 +25,11 @@ For all bridging protocols, it’s important to have a chain-agnostic design and
 
 deBridge has taken a unique approach with off-chain transactions validation mechanic when validators don’t need to broadcast any transactions and bear gas costs. Every cross-chain transaction initiated through the deBridge smart contract is assigned a unique identifier (hash). deBridge validators are tracking all transactions that pass through the smart contract of the protocol and soon as the transaction achieves its finality, each validator is obliged to sign by its private key a unique identifier of the transaction. The resulting signature is saved into [IPFS](https://ipfs.io) so that anyone can retrieve it. Any arbitrary user or keeper can collect validators' signatures from IPFS and pass them to deBridge smart contract in the target chain alongside all transaction parameters. Based on the passed set of parameters deBridge smart contract will restore a unique hash of the transaction and cross-validate its signatures from all designated validators. In case the minimum required number of signatures is valid, DebridgeGate smart contract executes the transaction and call data transferred to the destination chain.
 
-With this design, even if some blockchains would go offline, deBridge will still be functioning as expected and all transactions going to the paused chain will be processed as soon as it’s up again.
+With this design, even if some blockchain would go offline, deBridge will still be functioning as expected and all transactions going to the paused chain will be processed as soon as it’s up again.
 
 ### Delegated Staking and Slashing
 
-Validators play a crucial role in interoperability protocols since in addition to being infrastructure providers, they also secure the protocol by validating all cross-chain transactions passing through the protocol. Validators work for and are elected by the governance and should bear financial responsibility for the service they provide through the risk of being slashed in case of validating a non-existent transaction or long downtime of the infrastructure. Anyone can help to secure the protocol by being a delegator and staking assets (e.g. ETH, USDC) for validators’ collateral. Both validators and their delegators receive part of the protocol fees as an economic incentive for helping to secure the protocol and maintain its infrastructure. More details can be found in the [Slashing and Delegated Staking section.](slashing-and-delegated-staking.md)
+Validators play a crucial role in interoperability protocols since in addition to being infrastructure providers, they also secure the protocol by validating all cross-chain transactions passing through the protocol. Validators work for and are elected by the governance and should bear financial responsibility for the service they provide through the risk of being slashed in case of validating a non-existent transaction or long downtime of the infrastructure. Anyone can help to secure the protocol by being a delegator and staking assets (e.g. ETH, USDC) for validators’ collateral. Both validators and their delegators receive part of the protocol fees as an economic incentive for helping to secure the protocol and maintaining its infrastructure. More details can be found in the [Slashing and Delegated Staking section.](slashing-and-delegated-staking.md)
 
 ## Security Audits
 
@@ -79,7 +79,7 @@ The fee consists of two components **(Fix + %)**:
 
 ### Listing at deBridge
 
-The deBridge protocol is universal and there are no listing requirements. Any arbitrary token can be bridged. If the token is bridged for the first time, together with the validation transaction validator unique deploy id that is passed to the destination chain and contains the following parameters:
+The deBridge protocol is universal and there are no listing requirements. Any arbitrary token can be bridged. If the token is bridged for the first time, together with the validation transaction validators unique deploy id that is passed to the destination chain and contains the following parameters:
 
 * Native token smart contract address
 * Native chain Id
@@ -87,11 +87,11 @@ The deBridge protocol is universal and there are no listing requirements. Any ar
 * Token symbol
 * Decimals
 
-The wrapped (deAsset) is deployed in the target chain automatically together with the first claim of the wrapped asset. Thus, no additional actions are required from the user, listing is performed automatically by deBridge validators who sign a unique deployment ID. In deBridge, we care about user experience and strive to minimize unnecessary actions to be performed by protocol users.
+The wrapped (deAsset) is deployed in the target chain automatically together with the first claim of the wrapped asset. Thus, no additional actions are required from the user, listing is performed automatically by deBridge validators who sign unique deployment ID. In deBridge we care about user experience and strive to minimize unnecessary actions to be performed by protocol users.
 
 ### Partial Liquidity Provision
 
-One of the features of the deBridge protocol is that it tends to effectively utilize liquidity locked as collateral for deAssets. Any token locked in collateral can be taken by users in a form of flash loans. Upon governance decision, part of the specific asset liquidity can be supplied into reliable DeFi protocols like AAVE and Compound which should be approved by deBridge governance. Normally that should be strategies without impermanent loss with the ability to retrieve liquidity at any given moment. Most probably governance will whitelist strategies only after receiving decentralized insurance from protocols like Nexus Mutual or Unslashed.
+One of the features of the deBridge protocol is that it tends to effectively utilize liquidity locked as collateral for deAssets. Any token locked in collateral can be taken by users in a form of flash loans. Upon governance decision, part of the specific asset liquidity can be supplied into reliable DeFi protocols like AAVE, Compound which should be approved by deBridge governance. Normally that should be strategies without impermanent loss with the ability to retrieve liquidity at any given moment. Most probably governance will whitelist strategies only after receiving decentralized insurance from protocols like Nexus Mutual or Unslashed.
 
 ![](../.gitbook/assets/64.png)
 
