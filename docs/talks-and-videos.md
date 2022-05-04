@@ -11,6 +11,9 @@
 * [The Bitcoin Podcast #376 Interview](http://thebitcoinpodcast.com/the-bitcoin-podcast-376/) (9-Dec-2021) &#x20;
 * [The Decentralized Life Podcast #15](https://pod.co/decentralized/15-with-alex-smirnov-co-founder-of-debridge) (16-Dec-2021)&#x20;
 * [IOSG Scaling Summit Scaling Summit | How to See the Trade-offs among Different Cross-chain Bridge Solutions?](https://www.youtube.com/watch?v=Iz5WiRlG7qM) (21-Dec-2021)&#x20;
+* [Journal du Coin | Interview with Alex Smirnov from DeBridge - Avalanche Summit Barcelona 2022](https://www.youtube.com/watch?v=HjWsFFOOE5U) (30-Mar-2022)
+* [Metis Fest at Amsterdam during Devconnect | Panel talk](https://www.youtube.com/watch?v=a7AzYsV6wB8) (28-Apr-2022)
+* [Divi Crypto Podcast | Interview with deBridge co-founder Alex Smirnov](https://twitter.com/diviproject/status/1521838696231845888?s=21\&t=KRKZoZEHCDwreWwiwaLBlQ) (04-May-2022)
 
 
 
