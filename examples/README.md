@@ -119,15 +119,9 @@ yarn hardhat run --network bsctest examples/src/incrementorScripts/deploy.ts
 Update addresses (INCREMENTOR_ADDRESS_ON_FROM) in examples/src/incrementorScripts/constants.ts to `incrementorScripts proxy` 
 addresses (will be printed in console)
 
-incrementorScripts proxy deployed to: 0x90aA4197a5e2F3E3A76e0deC0702CcD05fce415f
-incrementorScripts implementation deployed to: 0x5533E63796a5ddFC28d996daF9E69A6B7Ed9878B
-
 3. Deploy incrementorScripts for destination network
 ```shell
 yarn hardhat run --network kovan examples/src/incrementorScripts/deploy.ts
-
-incrementorScripts proxy deployed to: 0xc1239A158F7565FB6940b32797a88a0B15848cfA
-incrementorScripts implementation deployed to: 0x90aA4197a5e2F3E3A76e0deC0702CcD05fce415f
 ```
 [why not in .env file?]
 Update addresses (INCREMENTOR_ADDRESS_ON_TO) in examples/src/incrementorScripts/constants.ts to `incrementorScripts proxy` 
