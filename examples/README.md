@@ -15,8 +15,16 @@ This repository demonstrates how to interact with deBridge infrastructure in ord
 
 In order to run scripts please configure your local environment first:
 
-1. `yarn install && yarn hardhat compile && yarn typechain --target web3-v1 --out-dir typechain-types-web3 "{artifacts/{contracts,@openzeppelin}/**/*[!dbg].json,./node_modules/@uniswap/v2-periphery/build/[!Combined]*.json}"`
-3. Configure .env file — copy values from .env.testnet or .env.mainnet for the testnet and mainnet environments respectively. You may copy them to .env either in top-level or inside this dir
+1. Configure .env file — copy values from .env.testnet or .env.mainnet for the testnet and mainnet environments respectively. Copy them to .env either in top-level dir
+
+2. In top-level dir execute command (works in bash, doesn't work in zsh)
+
+ `yarn install && yarn hardhat compile && yarn typechain --target web3-v1 --out-dir typechain-types-web3 "{artifacts/{contracts,@openzeppelin}/**/*[!dbg].json,./node_modules/@uniswap/v2-periphery/build/[!Combined]*.json}"`
+
+3. Get test tokens
+
+https://testnet.binance.org/faucet-smart
+https://faucets.chain.link/
 
 ### Sending of the Base Asset
 
@@ -29,7 +37,8 @@ Please note  the resulted `SubmissionID` which will be needed during the claim s
 
 ### Sending of the ERC-20 token
 
-execute ```yarn ts-node examples/src/sendScripts/sendETH.ts``` to send ERC-20 token
+[doesn't work yet]
+execute ```yarn ts-node examples/src/sendScripts/sendERC20.ts``` to send ERC-20 token
 
 Please note the resulted `SubmissionID` which will be needed during the claim step
 
@@ -47,7 +56,7 @@ The protocol implements [locking and minting](https://docs.debridge.finance/the-
 In order to have the transaction executed in the target chain, it should be claimed by passing all parameters of the transaction alongside signatures of submissionId from all deBridge validators. 
 
 In order to claim transaction execute
-```yarn ts-node examples/src/sendScripts/calim.ts [submissionId]```
+```yarn ts-node examples/src/sendScripts/claim.ts [submissionId]```
 
 
 # [BridgeAppBase.sol](/contracts/examples/BridgeAppBase.sol) — cross-chain application base contract called from other chains
@@ -102,22 +111,33 @@ This example shows how to send a message between two chains using Incrementor.so
 
 ### Sending a message using example scripts
 1. Add `networks` to your hardhat.config.ts, see hardhat.config.ts in this repo for reference
-2. Deploy
+2. Deploy incrementorScripts for source network
 ```shell
 yarn hardhat run --network bsctest examples/src/incrementorScripts/deploy.ts
-yarn hardhat run --network kovan examples/src/incrementorScripts/deploy.ts
 ```
-3. Update addresses (INCREMENTOR_ADDRESS_ON_*) in constants.ts to `Incrementor proxy` addresses (will be printed in console)
+[why not in .env file?]
+Update addresses (INCREMENTOR_ADDRESS_ON_FROM) in examples/src/incrementorScripts/constants.ts to `incrementorScripts proxy` 
+addresses (will be printed in console)
+
+incrementorScripts proxy deployed to: 0x90aA4197a5e2F3E3A76e0deC0702CcD05fce415f
+incrementorScripts implementation deployed to: 0x5533E63796a5ddFC28d996daF9E69A6B7Ed9878B
+
+3. Deploy incrementorScripts for destination network
+```shell
+yarn hardhat run --network kovan examples/src/incrementorScripts/deploy.ts
+
+incrementorScripts proxy deployed to: 0xc1239A158F7565FB6940b32797a88a0B15848cfA
+incrementorScripts implementation deployed to: 0x90aA4197a5e2F3E3A76e0deC0702CcD05fce415f
+```
+[why not in .env file?]
+Update addresses (INCREMENTOR_ADDRESS_ON_TO) in examples/src/incrementorScripts/constants.ts to `incrementorScripts proxy` 
+addresses (will be printed in console)
+
 4. Verify (optional)
- - Add `import "@nomiclabs/hardhat-etherscan";` to your hardhat.config.ts, install it if it's not installed
- - Also add this line
-    ```typescript
-    etherscan: { apiKey: process.env.ETHERSCAN_API_KEY }
-    ```
- - IMPLEMENTATION_ADDRESS is `Incrementor implementation` printed in console
+ - IMPLEMENTATION_ADDRESS is `Incrementor implementation` printed in console (will not work with not ethereum networks)
    ```shell
-   ETHERSCAN_API_KEY=YOUR_KEY yarn hardhat verify --show-stack-traces --network bsctest IMPLEMENTATION_ADDRESS 
-   ETHERSCAN_API_KEY=YOUR_KEY yarn hardhat verify --show-stack-traces --network kovan IMPLEMENTATION_ADDRESS
+   yarn hardhat verify --show-stack-traces --network bsctest IMPLEMENTATION_ADDRESS 
+   yarn hardhat verify --show-stack-traces --network kovan IMPLEMENTATION_ADDRESS
    ```
 5. Let both contracts know about each other
    ```shell
