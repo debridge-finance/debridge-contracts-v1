@@ -1,6 +1,6 @@
 # API Quick Start Guide
 
-deSwap is a new cross-chain swaps application built on top of the deBridge protocol. It enables anyone to perform atomic cross-chain swaps between arbitrary tokens across different chains at the best market rates. And thanks to an execution fee (_a small amount of the intermediary token that incentivizes anyone to execute the transaction on the destination chain_) end-users just need to sign a single transaction on the source chain, without the necessity to have native coins for claiming the transfer and paying gas on the destination chain themselves.
+deSwap is the first-ever application that enables capital-efficient cross-chain swaps between arbitrary liquid assets. It provides users and protocols (DAOs) with the ability to perform atomic cross-chain conversion of assets at the best market rates. And thanks to an "included gas fee" (_a small amount of the intermediary token that incentivizes anyone to execute the transaction on the destination chain_) end-users just need to sign a single transaction on the source chain, without the necessity to have native coins for claiming the transfer and paying gas on the destination chain themselves.
 
 Under the hood, deSwap consists of the following layers:
 
@@ -8,7 +8,7 @@ Under the hood, deSwap consists of the following layers:
 * **the forwarding layer** (on-chain) is represented by periphery smart contracts that are responsible for communicating with deBridge gate, DEXs and aggregators for on-chain swaps;
 * **the application layer** (off-chain) is a set of off-chain services, responsible for finding the best swap routes across different DEXs (_the planner_), estimating cross-chain swaps (_the estimator_), and packing them into transactions ready to be submitted to the blockchains.
 
-But don't be scared! The underlying complexity of deSwap is wrapped within a simple and intuitive API, which allows you to start constructing your very own cross-chain swap transactions in a matter of minutes! Find the API spec at https://deswap.debridge.finance/ along with examples and schemas.
+But don't be scared! The underlying complexity of deSwap is wrapped within a simple and intuitive B2B solution — [deSwap API](https://debridge.finance/api), which allows you to start constructing your very own cross-chain swap transactions in a matter of minutes! Find the API specifications at our Swagger available at [https://deswap.debridge.finance/](api-quick-start-guide.md#use-case-swap-usdt-on-ethereum-to-matic-on-polygon) along with examples and schemas.
 
 ### Use case: Swap USDT on Ethereum to MATIC on Polygon
 
@@ -31,7 +31,7 @@ This request contains at least the following parameters representing our initial
 The following mandatory parameters are important as well:
 
 * The `slippage` parameter defines a constraint that acts as a safeguard to protect from a possible price drop. By specifying `1` (means 1%) we allow a DEX to perform exchange only if the actual outcome is not less than 99% of the estimated outcome.
-* `executionFeeAmount=auto` asks the estimator to include (and subtract it from the outcome) a minimum execution fee sufficient to incentivize anyone to execute the transaction on the destination chain
+* `executionFeeAmount=auto` asks the estimator to include (and subtract it from the outcome) a minimum included gas fee sufficient to incentivize anyone to execute the transaction on the destination chain
 
 Sending this request will give us enough data to understand the outcome and its reasons. Under the `estimation.dstChainTokenOut` we can see the actual amount of MATIC the user may receive as a result of the swap:
 
@@ -50,7 +50,7 @@ Sending this request will give us enough data to understand the outcome and its 
 
 This implies that the user is expected to receive 29.57 MATIC (`29570160331501581528 / 10^18`), and at least 29.27 MATIC in a worst-case scenario (which corresponds to 99% of the estimated value since the slippage was initially set to 1%).
 
-Other than that, we can find the `estimation.executionFee` object containing details about the execution fee token and the amount which has been subtracted from the estimated outcome:
+Other than that, we can find the `estimation.executionFee` object containing details about the included gas fee token and the amount which has been subtracted from the estimated outcome:
 
 ```json
 "estimation": {
@@ -67,7 +67,7 @@ Other than that, we can find the `estimation.executionFee` object containing det
 }
 ```
 
-This means that the planner has picked deUSDC token as the intermediary token (used to bridge liquidity across chains), and the deBridge gate will withhold 0.089031$ (nine cents!) of it as an incentive to anyone who is willing to execute the transaction on the destination chain. In other words, by giving the deBridge gate an explicit permission to hold a small amount as an execution fee, you don't have to worry about claiming the final transaction on the Polygon chain (which implies that you need to have some MATIC token beforehand to do this!), the cross-chain swap will finish automatically on your behalf!
+This means that the planner has picked deUSDC token as the intermediary token (used to bridge liquidity across chains), and the deBridge gate will withhold 0.089031$ (nine cents!) of it as an incentive to anyone who is willing to execute the transaction on the destination chain. In other words, by giving the deBridge gate an explicit permission to hold a small amount as an included gas fee, you don't have to worry about claiming the final transaction on the Polygon chain (which implies that you need to have some MATIC token beforehand to do this!), the cross-chain swap will finish automatically on your behalf!
 
 #### Getting a transaction
 
@@ -124,7 +124,7 @@ The execution fee is a small amount of the intermediary token that incentivizes 
 
 This means that the execution fee dramatically differs across different chains: a few cents on the Polygon network, a few dollars on the BNB chain, $10-20 on the Arbitrum One chain, and more than $50 on the Ethereum chain.
 
-### Understanding the asset of the execution fee
+### Understanding the asset of the included gas fee
 
 The execution fee is a small amount of the _intermediary token_ that incentivizes anyone to execute the transaction on the destination chain. It is important to understand that the intermediary token is a select token used to transfer liquidity between chains. In the example above, we saw the deUSDC token as an intermediary token baked 1:1 by USDC collateral on Ethereum, but there may be other tokens as well. For example, there is a deETH intermediary token on the Arbitrum One chain baked 1:1 by ETH collateral hold on Ethereum. We are working to provide more intermediary tokens and increase liquidity on popular DEXs.
 
