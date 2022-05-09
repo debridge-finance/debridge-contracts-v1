@@ -1,12 +1,12 @@
 # Custom Linking
 
-The deBridge web application allows users to create custom links with a pre-defined set of parameters using URL query parameters. Users and developers can use their own prefilled settings for deSwap exchange or dePort.​
+The deBridge web application enables users to create custom links with a pre-defined set of parameters using URL query parameters. Users and developers can use their own prefilled settings for deSwap or dePort.​
 
 | Parameter      | Description                                                                            |
 | -------------- | -------------------------------------------------------------------------------------- |
 | inputChain     | Id of the chain where deSwap is initiated.                                             |
 | inputCurrency  | Token contract address of the input currency that will be swapped for output currency. |
-| outputChain    | Id of the receiving chain                                                              |
+| outputChain    | Id of the destination chain                                                            |
 | outputCurrency | Token contract address of the output currency that input currency will be swapped for. |
 | r              | Your generated referral code                                                           |
 | address        | Recipient address                                                                      |
@@ -29,7 +29,7 @@ dePort
 
 ## Chains and Tokens ID <a href="#chains-and-tokens-id" id="chains-and-tokens-id"></a>
 
-Chain IDs of all chains can be found at [https://chainlist.org/](https://chainlist.org) or in the spreadsheet below
+The Chain IDs of all chains can be found at [https://chainlist.org/](https://chainlist.org) or in the spreadsheet below
 
 |   ID  | Chain               | Token request                          |
 | :---: | ------------------- | -------------------------------------- |
