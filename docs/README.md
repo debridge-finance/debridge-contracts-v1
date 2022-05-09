@@ -1,6 +1,6 @@
 # Introduction
 
-![](<.gitbook/assets/21 (1).png>)
+![](.gitbook/assets/66.png)
 
 **deBridge is** **a** **generic messaging and** **cross-chain interoperability protocol** that enables decentralized transfers of arbitrary data and assets between various blockchains. The validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for the deBridge governance. Validators maintain the blockchain infrastructure and run the deBridge node to sign all transactions that pass through deBridge smart contracts in different blockchains.&#x20;
 
@@ -27,7 +27,7 @@ Examples of various interaction use cases and integration guidelines can be foun
 
 The deBridge protocol will be controlled by a DAO with decentralized governance which allows all token holders to participate in the future growth, have a word in the future decisions regarding protocol parameters, and treasury management.
 
-deBridge commenced in April 2021 during the [Chainlink Global Hackathon](https://chain.link/hackathon) where the team strived to solve the urgent problem of transferring data and liquidity between blockchains and of the lack of a single decentralized standard for bridging assets. The project was awarded the grand prize and took first place among more than 140 teams worldwide.
+deBridge commenced in April 2021 during the [Chainlink Global Hackathon](https://chain.link/hackathon) where the team strived to solve the urgent problem of transferring assets and data between blockchains and the lack of a single decentralized standard for bridging assets. The project was awarded the grand prize and took first place among more than 140 teams worldwide.
 
 **Resources:**\
 Website [https://debridge.finance/](https://debridge.finance)\
