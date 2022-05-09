@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../interfaces/ICallProxy.sol";
 import "../libraries/Flags.sol";
 import "../libraries/BytesLib.sol";
@@ -14,6 +15,7 @@ import "../libraries/BytesLib.sol";
 contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using Flags for uint256;
+    using AddressUpgradeable for address;
 
     /* ========== STATE VARIABLES ========== */
     /// @dev Role allowed to withdraw fee
@@ -34,6 +36,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     /* ========== ERRORS ========== */
 
     error DeBridgeGateBadRole();
+    error CallProxyBadRole();
 
     error ExternalCallFailed();
     error NotEnoughSafeTxGas();
@@ -61,6 +64,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
+    /* ========== PUBLIC METHODS ========== */
+
     /// @inheritdoc ICallProxy
     function call(
         address _reserveAddress,
@@ -72,7 +77,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     ) external payable override onlyGateRole lock returns (bool _result) {
         uint256 amount = address(this).balance;
 
-        _result = externalCall(
+        _result = _externalCall(
             _receiver,
             amount,
             _data,
@@ -103,9 +108,10 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         uint256 _chainIdFrom
     ) external override onlyGateRole lock returns (bool _result) {
         uint256 amount = IERC20Upgradeable(_token).balanceOf(address(this));
-        IERC20Upgradeable(_token).approve(_receiver, amount);
-
-        _result = externalCall(
+        if (_receiver != address(0)) {
+            _customApprove(IERC20Upgradeable(_token), _receiver, amount);
+        }
+        _result = _externalCall(
             _receiver,
             0,
             _data,
@@ -122,10 +128,70 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         if (amount > 0) {
             IERC20Upgradeable(_token).safeTransfer(_reserveAddress, amount);
         }
-        IERC20Upgradeable(_token).approve(_receiver, 0);
+        if (_receiver != address(0)) {
+            _customApprove(IERC20Upgradeable(_token), _receiver, 0);
+        }
     }
 
-    function externalCall(
+    /// @dev Sends multiple transactions and reverts all if one fails.
+    /// @param transactions Encoded transactions. Each transaction is encoded as a packed bytes of
+    ///                     operation as a uint8 with 0 for a call or 1 for a delegatecall (=> 1 byte),
+    ///                     to as a address (=> 20 bytes),
+    ///                     value as a uint256 (=> 32 bytes),
+    ///                     data length as a uint256 (=> 32 bytes),
+    ///                     data as bytes.
+    ///                     see abi.encodePacked for more information on packed encoding
+    /// @notice This method is payable as delegatecalls keep the msg.value from the previous call
+    ///         If the calling method (e.g. execTransaction) received ETH this would revert otherwise
+    function multiSend(bytes memory transactions) public payable {
+        if (address(this) != msg.sender) revert CallProxyBadRole();
+        //require(address(this) != multisendSingleton, "MultiSend should only be called via delegatecall");
+
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            let length := mload(transactions)
+            let i := 0x20
+            for {
+                // Pre block is not used in "while mode"
+            } lt(i, length) {
+                // Post block is not used in "while mode"
+            } {
+                // First byte of the data is the operation.
+                // We shift by 248 bits (256 - 8 [operation byte]) it right since mload will always load 32 bytes (a word).
+                // This will also zero out unused data.
+                let operation := shr(0xf8, mload(add(transactions, i)))
+                // We offset the load address by 1 byte (operation byte)
+                // We shift it right by 96 bits (256 - 160 [20 address bytes]) to right-align the data and zero out unused data.
+                let to := shr(0x60, mload(add(transactions, add(i, 0x01))))
+                // We offset the load address by 21 byte (operation byte + 20 address bytes)
+                let value := mload(add(transactions, add(i, 0x15)))
+                // We offset the load address by 53 byte (operation byte + 20 address bytes + 32 value bytes)
+                let dataLength := mload(add(transactions, add(i, 0x35)))
+                // We offset the load address by 85 byte (operation byte + 20 address bytes + 32 value bytes + 32 data length bytes)
+                let data := add(transactions, add(i, 0x55))
+                let success := 0
+                switch operation
+                    case 0 {
+                        success := call(gas(), to, value, data, dataLength, 0, 0)
+                    }
+                    // case 1 {
+                    //     success := delegatecall(gas(), to, data, dataLength, 0, 0)
+                    // }
+                if eq(success, 0) {
+                    revert(0, 0)
+                }
+                // Next entry starts at 85 byte + data length
+                i := add(i, add(0x55, dataLength))
+            }
+        }
+    }
+    // we need to accept ETH from deBridgeGate
+    receive() external payable {
+    }
+
+    /* ========== INTERNAL METHODS ========== */
+
+    function _externalCall(
         address _destination,
         uint256 _value,
         bytes memory _data,
@@ -135,6 +201,7 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
     ) internal returns (bool result) {
         bool storeSender = _flags.getFlag(Flags.PROXY_WITH_SENDER);
         bool checkGasLimit = _flags.getFlag(Flags.SEND_EXTERNAL_CALL_GAS_LIMIT);
+        bool multisend = _flags.getFlag(Flags.MULTI_SEND);
         // Temporary write to a storage nativeSender and chainIdFrom variables.
         // External contract can read them during a call if needed
         if (storeSender) {
@@ -155,10 +222,18 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         if (gasleft() < safeTxGas * 64 / 63 + 15500) revert NotEnoughSafeTxGas();
         // if safeTxGas is zero set gasleft
         safeTxGas = safeTxGas == 0 ? gasleft() : uint256(safeTxGas);
-        assembly {
-            result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
-        }
 
+        if (multisend) {
+            _destination = address(this);
+            assembly {
+                result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
+            }
+        }
+        else {
+            assembly {
+                result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
+            }
+        }
         // clear storage variables to get gas refund
         if (storeSender) {
             submissionChainIdFrom = 0;
@@ -166,13 +241,21 @@ contract CallProxy is Initializable, AccessControlUpgradeable, ICallProxy {
         }
     }
 
-    // we need to accept ETH from deBridgeGate
-    receive() external payable {
+    function _customApprove(IERC20Upgradeable token, address spender, uint value) internal {
+        bytes memory returndata = address(token).functionCall(
+            abi.encodeWithSelector(token.approve.selector, spender, value),
+            "ERC20 approve failed"
+        );
+        if (returndata.length > 0) {
+            // Return data is optional
+            require(abi.decode(returndata, (bool)), "ERC20 operation did not succeed");
+        }
     }
 
     // ============ Version Control ============
+
      /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 410; // 4.1.0
+        return 421; // 4.2.1
     }
 }
