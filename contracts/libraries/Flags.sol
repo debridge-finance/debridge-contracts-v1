@@ -15,6 +15,8 @@ library Flags {
     uint256 public constant SEND_HASHED_DATA = 3;
     /// @dev First 24 bytes from data is gas limit for external call
     uint256 public constant SEND_EXTERNAL_CALL_GAS_LIMIT = 4;
+    /// @dev Support multi send for externall call
+    uint256 public constant MULTI_SEND = 5;
 
     /// @dev Get flag
     /// @param _packedFlags Flags packed to uint256
@@ -26,7 +28,7 @@ library Flags {
         uint256 flag = (_packedFlags >> _flag) & uint256(1);
         return flag == 1;
     }
-    
+
     /// @dev Set flag
     /// @param _packedFlags Flags packed to uint256
     /// @param _flag Flag to set

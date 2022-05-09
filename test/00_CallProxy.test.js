@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { expectRevert } = require("@openzeppelin/test-helpers");
-
+const {  decodeMulti, encodeMulti, OperationType } = require("ethers-multisend");
 const flags = 0;
 const nativeSender = "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984";
 const chainIdFrom = 42;
@@ -1294,6 +1294,58 @@ describe("CallProxy", function () {
           expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(400);
         });
 
+
+        it("swapTokensForExactETH with MULTI_SEND flag", async function () {
+          const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
+          await this.token.transfer(this.ProxyConsumer.address, 1000);
+          const amountOut = await this.router.getAmountsOut(100, [
+            this.token.address,
+            this.weth.address,
+          ]);
+          expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+          const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
+            amountOut[1],
+            parseInt(amountOut[0]) + 500,
+            [this.token.address, this.weth.address],
+            tokenHolder.address,
+            9999999999,
+          ]);
+
+          const input = [
+            {
+              operation: OperationType.Call,
+              to: this.router.address,
+              value: '0',
+              data: callData,
+            }
+          ]
+          const multiSendTx = encodeMulti(input);
+          console.log("callData", callData);
+          console.log("multiSendTx", multiSendTx);
+
+          const transferResult = await this.ProxyConsumer.transferToken(
+            this.token.address,
+            this.router.address,
+            reserve.address,
+            2 ** 5, // flag MULTI_SEND
+            multiSendTx.data,
+            {
+              value: parseInt(amountOut[0]) + 500,
+            }
+          );
+
+          const receipt = await transferResult.wait();
+          console.log("receipt",receipt);
+
+          console.log("lastOperationStatus", await this.ProxyConsumer.lastOperationStatus());
+
+          const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
+          expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
+          expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
+          expect(await this.token.balanceOf(reserve.address)).to.be.equal(500);
+          expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(400);
+        });
+
         describe("with SEND_EXTERNAL_CALL_GAS_LIMIT flag", function () {
           it("swapTokensForExactETH with safeTxGas 1mln", async function () {
             const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
@@ -1401,6 +1453,65 @@ describe("CallProxy", function () {
           expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
           expect(await this.token.balanceOf(reserve.address)).to.be.equal(0);
           expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(900);
+        });
+
+
+        describe("with MULTI_SEND flag", function () {
+          it("swapTokensForExactETH with MULTI_SEND flag", async function () {
+            const tokenHolderBefore = await ethers.provider.getBalance(tokenHolder.address);
+            await this.token.transfer(this.ProxyConsumer.address, 1000);
+            const amountOut = await this.router.getAmountsOut(100, [
+              this.token.address,
+              this.weth.address,
+            ]);
+            expect(await this.token.balanceOf(tokenHolder.address)).to.be.equal("0");
+
+            const callData = this.router.interface.encodeFunctionData("swapTokensForExactETH", [
+              amountOut[1],
+              parseInt(amountOut[0]) + 500,
+              [this.token.address, this.weth.address],
+              tokenHolder.address,
+              9999999999,
+            ]);
+
+            console.log("callData", callData);
+
+            const input = [
+              {
+                operation: OperationType.Call,
+                to: this.router.address,
+                value: '0',
+                data: callData,
+              }
+            ]
+            const multiSendTx = encodeMulti(input);
+            console.log("multiSendTx", multiSendTx);
+
+            const transferResult = await this.ProxyConsumer.transferToken(
+              this.token.address,
+              this.router.address,
+              reserve.address,
+              2 ** 5, // flag MULTI_SEND
+              multiSendTx.data,
+              {
+                value: parseInt(amountOut[0]) + 500,
+                gasLimit: 2400000
+              }
+            );
+            const receipt = await transferResult.wait();
+            console.log("receipt",receipt);
+
+            console.log("lastOperationStatus", await this.ProxyConsumer.lastOperationStatus());
+
+            // const gasUsed = receipt.getTransactionReceipt().gasUsed;
+            // console.log("gasUsed", gasUsed.toString());
+            const tokenHolderAfter = await ethers.provider.getBalance(tokenHolder.address);
+            expect(tokenHolderAfter.sub(tokenHolderBefore)).to.be.equal(amountOut[1]);
+            expect(await this.token.balanceOf(this.proxy.address)).to.be.equal(0);
+            expect(await this.token.balanceOf(reserve.address)).to.be.equal(500);
+            expect(await this.token.balanceOf(this.ProxyConsumer.address)).to.be.equal(400);
+          });
+
         });
       });
     });
