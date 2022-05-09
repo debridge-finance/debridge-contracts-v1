@@ -18,6 +18,7 @@
 
 ## Contracts
 
+* [📑 Mainnet Addresses](contracts/mainnet-addresses.md)
 * [Interfaces](contracts/interfaces/README.md)
   * [ICallProxy](contracts/interfaces/ICallProxy.md)
   * [IDeBridgeGate](contracts/interfaces/IDeBridgeGate.md)
