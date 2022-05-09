@@ -14,7 +14,7 @@
 
 * [API Quick Start Guide](deswap/api-quick-start-guide.md)
 * [Cross-Chain Swaps Liquidity](deswap/cross-chain-swaps-liquidity.md)
-* [Custom linking](deswap/custom-linking.md)
+* [Custom Linking](deswap/custom-linking.md)
 
 ## Contracts
 

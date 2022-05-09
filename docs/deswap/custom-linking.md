@@ -1,4 +1,4 @@
-# Custom linking
+# Custom Linking
 
 The deBridge web application allows users to create custom links with a pre-defined set of parameters using URL query parameters. Users and developers can use their own prefilled settings for deSwap exchange or dePort.​
 
@@ -19,7 +19,7 @@ deSwap
 
 > BSC(USDC) - ETHEREUM (USDT)
 >
-> ​[https://app.debridge.finance/deswap?inputChain=56\&inputCurrency=0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d\&outputChain=1\&outputCurrency=0xdac17f958d2ee523a2206206994597c13d831ec7\&r=111\&address=0x64023dEcf09f20bA403305F5A2946b5b33d1933B](https://app.debridge.finance/deswap?inputChain=56\&inputCurrency=0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d\&outputChain=1\&outputCurrency=0xdac17f958d2ee523a2206206994597c13d831ec7\&r=111\&address=0x64023dEcf09f20bA403305F5A2946b5b33d1933B)​
+> ​[https://app.debridge.finance/deswap?inputChain=56\&inputCurrency=0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d\&outputChain=1\&outputCurrency=0xdac17f958d2ee523a2206206994597c13d831ec7\&r=111\&address=0x0000000000000000000000000000000000000000](https://app.debridge.finance/deswap?inputChain=56\&inputCurrency=0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d\&outputChain=1\&outputCurrency=0xdac17f958d2ee523a2206206994597c13d831ec7\&r=111\&address=0x0000000000000000000000000000000000000000)​
 
 dePort
 
