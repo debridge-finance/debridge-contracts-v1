@@ -43,7 +43,7 @@
 
 ## External Links
 
-* [Talks and Videos](external-links/talks-and-videos.md)
+* [Talks and Videos](talks-and-videos.md)
 * [Website](https://debridge.finance)
 * [Discord](https://discord.gg/debridge)
 * [Facebook](https://www.facebook.com/deBridgeFinance)
