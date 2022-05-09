@@ -2,14 +2,14 @@
 
 The deBridge web application allows users to create custom links with a pre-defined set of parameters using URL query parameters. Users and developers can use their own prefilled settings for deSwap exchange or dePort.​
 
-| Parameter      | Description                                              |
-| -------------- | -------------------------------------------------------- |
-| inputChain     | Id of the chain where deSwap is initiated.               |
-| inputCurrency  | Input currency that will be swapped for output currency. |
-| outputChain    | Id of the receiving chain                                |
-| outputCurrency | Output currency that input currency will be swapped for. |
-| r              | Referral id                                              |
-| address        | Recipient address                                        |
+| Parameter      | Description                                                                            |
+| -------------- | -------------------------------------------------------------------------------------- |
+| inputChain     | Id of the chain where deSwap is initiated.                                             |
+| inputCurrency  | Token contract address of the input currency that will be swapped for output currency. |
+| outputChain    | Id of the receiving chain                                                              |
+| outputCurrency | Token contract address of the output currency that input currency will be swapped for. |
+| r              | Your generated referral code                                                           |
+| address        | Recipient address                                                                      |
 
 ## Example <a href="#example" id="example"></a>
 
