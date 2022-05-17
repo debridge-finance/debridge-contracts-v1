@@ -29,7 +29,7 @@ dePort
 
 ## Chains and Tokens ID <a href="#chains-and-tokens-id" id="chains-and-tokens-id"></a>
 
-The Chain IDs of all chains can be found at [https://chainlist.org/](https://chainlist.org) or in the spreadsheet below
+The Chain IDs of all chains can be found at [https://chainlist.org/](https://chainlist.org/) or in the spreadsheet below
 
 |   ID  | Chain               | Token request                          |
 | :---: | ------------------- | -------------------------------------- |

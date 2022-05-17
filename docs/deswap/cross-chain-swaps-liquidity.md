@@ -89,6 +89,10 @@ Once you have deUSDC and USDC/USDT/BUSD in your wallet balance on BNB Chain (you
 * Deposit deUSDC and stable coin in a 1:1 ratio
 * Confirm transaction in your wallet
 
+Now LP tokens can be staked into the [Ellipsis Finance gauge](https://ellipsis.finance/pool/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c) to receive additional $EPX rewards:
+
+![](<../.gitbook/assets/image (2).png>)
+
 ### **Avalanche deUSDC/av3CRV pool**
 
 This is a stablecoin pool at Curve that contains deUSDC (USDC bridged through deBridge) paired with av3CRV - Curve token that represents the basket of three stable coins (USDT+USDC+DAI)
