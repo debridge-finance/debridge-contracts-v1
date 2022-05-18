@@ -13,6 +13,7 @@
 ## deSwap 🔁
 
 * [API Quick Start Guide](deswap/api-quick-start-guide.md)
+* [Transaction Bundling](deswap/transaction-bundling.md)
 * [Cross-Chain Swaps Liquidity](deswap/cross-chain-swaps-liquidity.md)
 * [Custom Linking](deswap/custom-linking.md)
 
