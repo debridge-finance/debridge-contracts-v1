@@ -1,20 +1,22 @@
 # Transaction Bundling
 
-deSwap API is a service that provides everyone with the ability to construct transactions to perform atomic cross-chain conversion of assets at the best market rates on top of the deBridge protocol. Still, there are cases when conversion itself is not a goal, being the first step towards a broader intention on the destination chain: e.g., one may want to stake the resulting token on behalf of a user, buy an NFT or perform an arbitrage immediately after the swap, take a flash loan or call a third party contract's hook, or... the sky is the limit! Typically this was always possible by sending at least two transactions: the first is the cross-chain transaction responsible for arbitrary token swap, and the second is to perform the intended operation. Sounds like neither a truly decentralized nor user-friendly way!
+deSwap API is a service that provides everyone with the ability to construct transactions to perform atomic cross-chain conversion of assets at the best market rates on top of the deBridge protocol. Still, there are cases when a conversion itself is not a goal, but rather being the first step towards a broader intention on the destination chain: e.g. one may want to stake the resulting token on behalf of a user, buy an NFT or perform an arbitrage immediately after the swap, take a flash loan or call a third party contract's hook, or... the sky is the limit! \
+\
+This has always been possible by sending at least two transactions: the first is the cross-chain transaction responsible for the arbitrary token swap, and the second is to perform the intended operation. Sounds like neither a truly decentralized nor user-friendly way!
 
-Since the deBridge protocol offers the ability to pass multiple transaction calls to the target blockchain using the new `MULTI_SEND` flag (leveraging battle-tested [gnosisSafe transaction builder](https://help.gnosis-safe.io/en/articles/4680071-transaction-builder) multisend library), deSwap API now offers transaction bundling: it's a way to optionally pass multiple transaction calls that will be invoked sequentially one after another on the destination chain after the conversion is done and the target token (the result of a cross-chain swap) is obtained. This opens limitless possibilities for performing custom operations with the target token straight within the same atomic cross-chain transaction!
+Since the deBridge protocol offers the ability to pass multiple transactions calls to the target blockchain using the new `MULTI_SEND` flag (leveraging battle-tested [gnosisSafe transaction builder](https://help.gnosis-safe.io/en/articles/4680071-transaction-builder) multisend library), the deSwap API now offers transaction bundling. It's a way to optionally pass multiple transaction calls that will be invoked sequentially one after another on the destination chain after the conversion is done and the target token (the result of a cross-chain swap) is obtained. This opens limitless possibilities for performing custom operations with the target token straight within the same atomic cross-chain transaction!
 
-### Use case: supply the resulting tokens into the AAVE pool on behalf of a user
+### Use case example: supply the resulting tokens into the AAVE pool on behalf of a user
 
-Say, a liquidity pool wants to ease the onboarding of liquidity providers and decides to simplify the supply from other chains. It may use deSwap API to construct a cross-chain transaction that will perform a swap from an arbitrary token to this pool's token, and immediately stake the resulting amount of this pool's token. An example of an application that implements this tx bundling logic with AAVE protocol can be found here: [https://stake-aave.debridge.finance/stake-aave](https://stake-aave.debridge.finance/stake-aave)
+Say, a liquidity pool wants to ease the onboarding of liquidity providers and decides to simplify the supply from other chains. It may use the deSwap API to construct a cross-chain transaction that will perform a swap from an arbitrary token to this pool's token, and immediately stake the resulting amount of this pool's token. An example of an application that implements this tx bundling logic with the AAVE protocol can be found here: [https://stake-aave.debridge.finance/stake-aave](https://stake-aave.debridge.finance/stake-aave)
 
 #### Understanding the technical design and the flow
 
-Simply speaking, deSwap API just constructs a transaction in the origin blockchain, that must invoke the external aggregator's router to swap the input token to the target token and transfer the resulting amount of the target token to a given address in the destination chain. Then, this swap transaction is passed to the deBridge gate, which executes it on the destination chain upon arrival.
+Simply speaking, the deSwap API just constructs a transaction in the source blockchain that must invoke the external aggregator's router to swap the input token to the target token and transfer the resulting amount of the target token to a given address on the destination chain. Then, this swap transaction is passed to the deBridge gate which executes it on the destination chain upon arrival.
 
-When providing multiple transaction calls to be invoked on the destination chain, deBridge gate unpacks them and executes sequentially, one after another, and the first transaction is always a swap. These transactions are executed as a bundle, meaning all of them must succeed ("all or nothing"); if any transaction fails, the execution is reverted and intermediary tokens are sent to the fallback address.
+When providing multiple transaction calls to be invoked on the destination chain, deBridge gate unpacks and executes them sequentially, one after another, and the first transaction is always a swap. These transactions are executed as a bundle, meaning all of them must succeed ("all or nothing"); if any transaction fails, the execution is reverted and intermediary tokens are sent to the fallback address.
 
-Obviously, these calls can neither communicate with each other nor pass their results to the upcoming calls. To eliminate this, we suggest developing and deploying an _operator smart contract_ - a transitory contract representing a receiver for the resulting amount of target token, which will perform the desired operation against this amount upon invocation. In case this operation fails, the whole transaction is being reverted effectively eliminating possible losses.
+Obviously, these calls can neither communicate with each other nor pass their results to the upcoming calls. To eliminate this, we suggest developing and deploying an _operator smart contract_ – a transitory contract representing a receiver for the resulting amount of the target token – which will perform the desired operation against this amount upon invocation. In case this operation fails, the whole transaction is being reverted effectively eliminating possible losses.
 
 The call flow involving the operator smart contract may look as follows:
 
@@ -57,21 +59,21 @@ function stake(
 
 #### Estimate the operator smart contract gas consumption
 
-You need to test this operator smart contract to ensure it does what it is intended to do. For example, you are willing to supply [USDC](https://polygonscan.com/address/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174) to [AAVE pool](https://polygonscan.com/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD) on the Polygon chain, then you:
+You need to test this operator smart contract to ensure it does what it is intended to do. For example, if you are willing to supply [USDC](https://polygonscan.com/address/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174) to [AAVE pool](https://polygonscan.com/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD) on Polygon, then you:
 
-1. Transfer a small amount of USDC to the operator smart contract address;
-2. Call this operator's `stake()` method, passing the appropriate values to it's arguments:
+1. Transfer a small amount of USDC to the operator's smart contract address;
+2. Call this operator's `stake()` method, passing the appropriate values to its arguments:
 
 * `_aavePoolAddress=0x794a61358D6845594F94dc1DB02A252b5b4814aD` (AAVE USDC pool on Polygon);
 * `_stakeAssetAddress=0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174` (USDC on Polygon);
 * `_onBehalfOf` is a user's wallet address;
 * `_fallbackAddress` is a user's wallet address (typically the same as above).
 
-As the result of this test call, you must expect to receive this pool's aTokens to the user's wallet address. Additionally, you must mind the amount of gas this transaction consumed - this is crucial for estimating the cost of the whole cross-chain transaction.
+As the result of this test call, you must expect to receive this pool's aTokens to the user's wallet address. Additionally, you must mind the amount of gas this transaction consumed. This is crucial for estimating the cost of the whole cross-chain transaction.
 
 #### Constructing the cross-chain transaction
 
-Now you may start constructing your cross-chain transaction by calling the deSwap API. This is already being covered by our extensive [quick start guide](https://docs.debridge.finance/deswap/api-quick-start-guide), still, there are a few minor (though very important) differences.
+Now you may start constructing your cross-chain transaction by calling the deSwap API. This is already being covered by our extensive [quick start guide](https://docs.debridge.finance/deswap/api-quick-start-guide). There are still a few minor (though very important) differences.
 
 **1️⃣ First**, you need to encode the call to your operator smart contract and pass it to the `/v1.0/transaction` endpoint as the `dstChainTxBundle` parameter. Say, we want to supply [USDC](https://polygonscan.com/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD) to [AAVE pool](https://polygonscan.com/address/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174) on behalf of user wallet's `0x0000000000000000000000000000000000000001` address, so encoding this call:
 
@@ -101,8 +103,8 @@ This parameter will make the deSwap API backend smartly combine the swap call wi
 
 **4️⃣ Fourth**, set the `dstChainTokenOutRecipient` parameter to the address of your operator smart contract rather than the user wallet's address. This is extremely important as we agreed that the resulting amount of target tokens will be transferred to the operator smart contract which will be called in the same atomic transaction performing the operation you've encoded above.
 
-That's it! You've successfully bundled additional transactions within the atomic cross-chain transaction.
+That's it! You've successfully bundled additional transactions within the atomic cross-chain transaction via deBridge.
 
 ### Conclusion
 
-With the immediate availability of transaction bundling, the protocols and DAOs may perform arbitrary cross-chain interactions, leveraging the battle-tested and audited deBridge protocol.
+With the immediate availability of transaction bundling, protocols and DAOs may perform arbitrary cross-chain interactions, leveraging the battle-tested and audited deBridge protocol.
