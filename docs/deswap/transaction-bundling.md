@@ -4,7 +4,9 @@
 \
 This has always been possible by sending at least two transactions: the first is the cross-chain transaction responsible for the arbitrary token swap, and the second is to perform the intended operation. Sounds like neither a truly decentralized nor user-friendly way!
 
-Since the deBridge protocol offers the ability to pass multiple transactions calls to the target blockchain using the new `MULTI_SEND` flag (leveraging battle-tested [gnosisSafe transaction builder](https://help.gnosis-safe.io/en/articles/4680071-transaction-builder) multisend library), the deSwap API now offers transaction bundling. It's a way to optionally pass multiple transaction calls that will be invoked sequentially one after another on the destination chain after the conversion is done and the target token (the result of a cross-chain swap) is obtained. This opens limitless possibilities for performing custom operations with the target token straight within the same atomic cross-chain transaction!
+Since the deBridge protocol offers the ability to pass multiple transaction calls to the target blockchain using the new `MULTI_SEND` flag (leveraging battle-tested [gnosisSafe transaction builder](https://help.gnosis-safe.io/en/articles/4680071-transaction-builder) multisend library), the deSwap API now offers transaction bundling. It's a way to optionally pass multiple transaction calls that will be invoked sequentially one after another on the destination chain after the conversion is done and the target token (the result of a cross-chain swap) is obtained. This opens limitless possibilities for performing custom operations with the target token straight within the same atomic cross-chain transaction!
+
+![](../.gitbook/assets/telegram-cloud-document-2-5201843455797500278.jpg)
 
 ### Use case example: supply the resulting tokens into the AAVE pool on behalf of a user
 
