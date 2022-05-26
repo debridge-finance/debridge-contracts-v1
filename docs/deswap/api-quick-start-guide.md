@@ -1,3 +1,9 @@
+---
+description: >-
+  Integrate decentralized cross-chain swaps between arbitrary assets into any
+  applications (web apps, wallets, dApps) in just a few lines of code
+---
+
 # API Quick Start Guide
 
 deSwap is the first-ever application that enables capital-efficient cross-chain swaps between arbitrary liquid assets. It provides users and protocols (DAOs) with the ability to perform atomic cross-chain conversion of assets at the best market rates. And thanks to an execution fee (included gas fee) — _a small amount of the intermediary token that incentivizes anyone to execute the transaction on the destination chain,_ end-users just need to sign a single transaction on the source chain, without the necessity to have native coins for claiming the transfer and paying gas on the destination chain themselves.
@@ -8,7 +14,11 @@ Under the hood, deSwap consists of the following layers:
 * **the forwarding layer** (on-chain) is represented by periphery smart contracts that are responsible for communicating with deBridge gate, DEXs and aggregators for on-chain swaps;
 * **the application layer** (off-chain) is a set of off-chain services, responsible for finding the best swap routes across different DEXs (_the planner_), estimating cross-chain swaps (_the estimator_), and packing them into transactions ready to be submitted to the blockchains.
 
-But don't be scared! The underlying complexity of deSwap is wrapped within a simple and intuitive B2B solution — [deSwap API](https://debridge.finance/api), which allows you to start constructing your very own cross-chain swap transactions in a matter of minutes! Find the API specifications at our Swagger available at [https://deswap.debridge.finance/](https://deswap.debridge.finance/) along with examples and schemas.
+But don't be scared! The underlying complexity of deSwap is wrapped within a simple and intuitive B2B solution — [deSwap API](https://debridge.finance/api), which allows you to start constructing your very own cross-chain swap transactions in a matter of minutes!&#x20;
+
+{% hint style="info" %}
+Find the API specifications at our Swagger available at [https://deswap.debridge.finance/](https://deswap.debridge.finance/) along with examples and schemas.
+{% endhint %}
 
 ### Use case: Swap USDT on Ethereum to MATIC on Polygon
 
