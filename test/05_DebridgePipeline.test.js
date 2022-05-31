@@ -244,6 +244,7 @@ contract("DeBridgeGate real pipeline mode", function () {
       [
         this.deBridgeTokenETH.address,
         alice,
+        alice,
         ZERO_ADDRESS,
       ]);
     this.deBridgeTokenDeployerBSC = await upgrades.deployProxy(
@@ -251,12 +252,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       [
         this.deBridgeTokenBSC.address,
         alice,
+        alice,
         ZERO_ADDRESS,
       ]);
     this.deBridgeTokenDeployerHECO = await upgrades.deployProxy(
       DeBridgeTokenDeployerFactory,
       [
         this.deBridgeTokenHECO.address,
+        alice,
         alice,
         ZERO_ADDRESS,
       ]);
