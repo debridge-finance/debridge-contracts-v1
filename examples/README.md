@@ -47,7 +47,7 @@ The protocol implements [locking and minting](https://docs.debridge.finance/the-
 In order to have the transaction executed in the target chain, it should be claimed by passing all parameters of the transaction alongside signatures of submissionId from all deBridge validators. 
 
 In order to claim transaction execute
-```yarn ts-node examples/src/sendScripts/calim.ts [submissionId]```
+```yarn ts-node examples/src/sendScripts/claim.ts [submissionId]```
 
 
 # [BridgeAppBase.sol](/contracts/examples/BridgeAppBase.sol) — cross-chain application base contract called from other chains
