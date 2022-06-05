@@ -16,6 +16,7 @@
 * [Transaction Bundling](deswap/transaction-bundling.md)
 * [Cross-Chain Swaps Liquidity](deswap/cross-chain-swaps-liquidity.md)
 * [Custom Linking](deswap/custom-linking.md)
+* [deSwap Widget](deswap/deswap-widget.md)
 
 ## Contracts
 
@@ -44,6 +45,7 @@
 
 ## External Links
 
+* [deBridge - Use Cases](external-links/debridge-use-cases.md)
 * [Talks and Videos](talks-and-videos.md)
 * [Website](https://debridge.finance)
 * [Discord](https://discord.gg/debridge)
