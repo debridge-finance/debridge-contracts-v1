@@ -1,5 +1,7 @@
 # deSwap Widget
 
+deSwap Widget is available at [https://app.debridge.finance/widget](https://app.debridge.finance/widget)
+
 ### Getting Started with the deSwap Widget
 
 With just a few lines of code, all projects and developers can embed a cross-chain exchange between arbitrary assets within your app (mobile app, website, dApp, etc.) based on the deBridge protocol. You can make the widget part of your app and you're fully free to customize colors, fonts, chains, and tokens according to your design and preferences. Here's an example:
