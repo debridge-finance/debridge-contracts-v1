@@ -10,10 +10,11 @@ The deBridge web application enables users to create custom links with a pre-def
 | outputCurrency | Token contract address of the output currency that input currency will be swapped for. |
 | r              | Your generated referral code                                                           |
 | address        | Recipient address                                                                      |
+| amount         | Token amount to swap                                                                   |
 
 ## Example <a href="#example" id="example"></a>
 
-> https://app.debridge.finance/deswap?inputChain=\&inputCurrency=\&outputChain=\&outputCurrency=\&r=\&address=
+> https://app.debridge.finance/deswap?inputChain=\&inputCurrency=\&outputChain=\&outputCurrency=\&r=\&address=\&amount=
 
 deSwap
 
