@@ -45,7 +45,7 @@
 
 ## External Links
 
-* [deBridge - Use Cases](external-links/debridge-use-cases.md)
+* [deBridge Use Cases](external-links/debridge-use-cases.md)
 * [Talks and Videos](talks-and-videos.md)
 * [Website](https://debridge.finance)
 * [Discord](https://discord.gg/debridge)
