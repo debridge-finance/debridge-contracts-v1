@@ -2,8 +2,9 @@
 
 **Twitter Spaces**
 
-* [Going Cross-Chain with deBridge: Arbitrum](https://twitter.com/deBridgeFinance/status/1539612877765906432) (24-Jun-2022)
-* [Going Cross-Chain with deBridge: Fantom](https://twitter.com/deBridgeFinance/status/1537404165894606849) (18-Jun-2022)
+* [AMA with Magic Square](https://twitter.com/deBridgeFinance/status/1542463031913115649) (1-July-2022)
+* [Going Cross-Chain with deBridge: Arbitrum](https://twitter.com/deBridgeFinance/status/1539612877765906432) (24-June-2022)
+* [Going Cross-Chain with deBridge: Fantom](https://twitter.com/deBridgeFinance/status/1537404165894606849) (18-June-2022)
 
 **Other**
 
