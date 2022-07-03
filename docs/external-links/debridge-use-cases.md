@@ -4,7 +4,7 @@ description: >-
   and read for more information!
 ---
 
-# deBridge - Use Cases
+# deBridge Use Cases
 
 1. [Algorithmic Stablecoins](https://twitter.com/deBridgeFinance/status/1481275793372491776?s=20\&t=OeICk8l0iBw6MJ4GU6SnuA)
 2. [Synthetic Assets](https://twitter.com/deBridgeFinance/status/1488901364197773312?s=20\&t=OeICk8l0iBw6MJ4GU6SnuA)
@@ -26,4 +26,6 @@ description: >-
 18. [Oracles](https://twitter.com/deBridgeFinance/status/1529097963989254144?s=20\&t=pHbYII03WwMl6LMntzXo3w)
 19. [Credentials](https://twitter.com/deBridgeFinance/status/1531968443431686144?s=20\&t=pHbYII03WwMl6LMntzXo3w)
 20. [DAOs](https://twitter.com/deBridgeFinance/status/1533809282969645058?s=20\&t=xwIhl2C-KxLduNv7iHeW1g)
+21. [Distribution](https://twitter.com/deBridgeFinance/status/1534900312150274048)
+22. [Liquidity](https://twitter.com/deBridgeFinance/status/1540326033530159104)
 
