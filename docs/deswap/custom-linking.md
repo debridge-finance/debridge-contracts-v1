@@ -40,3 +40,4 @@ The Chain IDs of all chains can be found at [https://chainlist.org/](https://cha
 |  137  | Polygon             | GET https://tokens.1inch.io/v1.1/137   |
 | 42161 | Arbitrum            | GET https://tokens.1inch.io/v1.1/42161 |
 | 43114 | Avalanche           | GET https://tokens.1inch.io/v1.1/43114 |
+|  250  | Fantom              | GET https://tokens.1inch.io/v1.1/250   |
