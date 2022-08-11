@@ -1,22 +1,34 @@
 # Table of contents
 
 * [Introduction](README.md)
-* [Build with deBridge 🛠](build-with-debridge.md)
 
 ## The Core Protocol
 
 * [Protocol Overview](the-core-protocol/protocol-overview.md)
-* [Transfers Flow](the-core-protocol/transfers.md)
 * [Slashing and Delegated Staking](the-core-protocol/slashing-and-delegated-staking.md)
 * [Security](the-core-protocol/security.md)
 
-## deSwap 🔁
+## 🛠 Build with deBridge
 
-* [API Quick Start Guide](deswap/api-quick-start-guide.md)
-* [Transaction Bundling](deswap/transaction-bundling.md)
-* [Cross-Chain Swaps Liquidity](deswap/cross-chain-swaps-liquidity.md)
-* [Custom Linking](deswap/custom-linking.md)
-* [deSwap Widget](deswap/deswap-widget.md)
+* [Getting started](build-with-debridge/getting-started.md)
+* [Lifecycle of a cross-chain call](build-with-debridge/lifecycle-of-a-cross-chain-call.md)
+* [Advanced topics](build-with-debridge/advanced-topics/README.md)
+  * [Gathering data for the claim](build-with-debridge/advanced-topics/gathering-data-for-the-claim.md)
+* [Smart contract interface](build-with-debridge/smart-contract-interface.md)
+* [Development tools](build-with-debridge/development-tools.md)
+
+## 🔁 Swap with deSwap API
+
+* [API Quick Start Guide](swap-with-deswap-api/api-quick-start-guide.md)
+* [Transaction Bundling](swap-with-deswap-api/transaction-bundling.md)
+* [Cross-Chain Swaps Liquidity](swap-with-deswap-api/cross-chain-swaps-liquidity.md)
+* [Custom Linking](swap-with-deswap-api/custom-linking.md)
+* [deSwap Widget](swap-with-deswap-api/deswap-widget.md)
+
+## 💸 dePort
+
+* [Getting started](deport/getting-started.md)
+* [Transfers Flow](deport/transfers.md)
 
 ## Contracts
 
@@ -48,11 +60,12 @@
 * [deBridge Use Cases](external-links/debridge-use-cases.md)
 * [Talks and Videos](talks-and-videos.md)
 * [Website](https://debridge.finance)
-* [Discord](https://discord.gg/debridge)
-* [Facebook](https://www.facebook.com/deBridgeFinance)
 * [Github](https://github.com/debridge-finance)
-* [LinkedIn](https://www.linkedin.com/company/debridge-finance)
-* [Medium](https://debridge.medium.com)
-* [Telegram](https://t.me/deBridge\_finance)
 * [Twitter](https://twitter.com/deBridgeFinance)
-* [YouTube](https://www.youtube.com/channel/UCtafhZxGqbjd\_cJR6rVLz0A)
+* [Social channels](external-links/social-channels/README.md)
+  * [Discord](https://discord.gg/debridge)
+  * [Facebook](https://www.facebook.com/deBridgeFinance)
+  * [LinkedIn](https://www.linkedin.com/company/debridge-finance)
+  * [Medium](https://debridge.medium.com)
+  * [Telegram](https://t.me/deBridge\_finance)
+  * [YouTube](https://www.youtube.com/channel/UCtafhZxGqbjd\_cJR6rVLz0A)
