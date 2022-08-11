@@ -18,15 +18,15 @@ Simply speaking, the deSwap API just constructs a transaction in the source bloc
 
 When providing multiple transaction calls to be invoked on the destination chain, deBridge gate unpacks and executes them sequentially, one after another, and the first transaction is always a swap. These transactions are executed as a bundle, meaning all of them must succeed ("all or nothing"); if any transaction fails, the execution is reverted and intermediary tokens are sent to the fallback address.
 
-Obviously, these calls can neither communicate with each other nor pass their results to the upcoming calls. To eliminate this, we suggest developing and deploying an _operator smart contract_ – a transitory contract representing a receiver for the resulting amount of the target token – which will perform the desired operation against this amount upon invocation. In case this operation fails, the whole transaction is reverted effectively eliminating possible losses.
+Obviously, these calls can neither communicate with each other nor pass their results to the upcoming calls. To eliminate this, we suggest developing and deploying an _adapter smart contract_ – a transitory contract representing a receiver for the resulting amount of the target token – which will perform the desired operation against this amount upon invocation. In case this operation fails, the whole transaction is being reverted effectively eliminating possible losses.
 
-The call flow involving the operator smart contract may look as follows:
+The call flow involving the adapter smart contract may look as follows:
 
 ![deSwap Transaction Bundling Call Flow](../.gitbook/assets/TransactionBundlingCallFlow.png)
 
-#### Deploying the operator smart contract
+#### Deploying the adapter smart contract
 
-You need to deploy an operator smart contract that will perform the desired operation with the target token. This contract must expect the resulting amount of the target token to be at its address upon invocation. A generic implementation of such an operator may look like this:
+You need to deploy an adapter smart contract that will perform the desired operation with the target token. This contract must expect the resulting amount of the target token to be at its address upon invocation. A generic implementation of such an adapter may look like this:
 
 ```solidity
 /**
@@ -59,12 +59,12 @@ function stake(
 }
 ```
 
-#### Estimate the operator smart contract gas consumption
+#### Estimate the adapter smart contract gas consumption
 
-You need to test this operator smart contract to ensure it does what it is intended to do. For example, if you are willing to supply [USDC](https://polygonscan.com/address/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174) to [AAVE pool](https://polygonscan.com/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD) on Polygon, then you:
+You need to test this adapter smart contract to ensure it does what it is intended to do. For example, if you are willing to supply [USDC](https://polygonscan.com/address/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174) to [AAVE pool](https://polygonscan.com/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD) on Polygon, then you:
 
-1. Transfer a small amount of USDC to the operator's smart contract address;
-2. Call this operator's `stake()` method, passing the appropriate values to its arguments:
+1. Transfer a small amount of USDC to the adapter's smart contract address;
+2. Call this adapter's `stake()` method, passing the appropriate values to its arguments:
 
 * `_aavePoolAddress=0x794a61358D6845594F94dc1DB02A252b5b4814aD` (AAVE USDC pool on Polygon);
 * `_stakeAssetAddress=0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174` (USDC on Polygon);
@@ -77,10 +77,10 @@ As the result of this test call, you must expect to receive this pool's aTokens 
 
 Now you may start constructing your cross-chain transaction by calling the deSwap API. This is already being covered by our extensive [quick start guide](https://docs.debridge.finance/deswap/api-quick-start-guide). There are still a few minor (though very important) differences.
 
-**1️⃣ First**, you need to encode the call to your operator smart contract and pass it to the `/v1.0/transaction` endpoint as the `dstChainTxBundle` parameter. Say, we want to supply [USDC](https://polygonscan.com/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD) to [AAVE pool](https://polygonscan.com/address/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174) on behalf of the user wallet `0x0000000000000000000000000000000000000001` address, so encoding this call:
+**1️⃣ First**, you need to encode the call to your adapter smart contract and pass it to the `/v1.0/transaction` endpoint as the `dstChainTxBundle` parameter. Say, we want to supply [USDC](https://polygonscan.com/address/0x794a61358D6845594F94dc1DB02A252b5b4814aD) to [AAVE pool](https://polygonscan.com/address/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174) on behalf of user wallet's `0x0000000000000000000000000000000000000001` address, so encoding this call:
 
 ```js
-const operatorCall = operatorContract
+const adapterCall = adapterContract
     .methods
     .stake(
         '0x794a61358D6845594F94dc1DB02A252b5b4814aD', // address _aavePoolAddress, Aave: Pool V3
@@ -95,15 +95,15 @@ will give the following machine-readable code:
 
 > `0x38426877000000000000000000000000794a61358d6845594f94dc1db02a252b5b4814ad000000000000000000000000794a61358d6845594f94dc1db02a252b5b4814ad00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001`.
 
-**2️⃣ Second**, put the address of your operator smart contract along with the operator call constructed above to the `dstChainTxBundle` parameter; separate the address and the call with the comma, and separate each transaction (if there are multiple transactions) with a semicolon:
+**2️⃣ Second**, put the address of your adapter smart contract along with the adapter call constructed above to the `dstChainTxBundle` parameter; separate the address and the call with the comma, and separate each transaction (if there are multiple transactions) with a semicolon:
 
-> `dstChainTxBundle=0xOpErAtOrCoNtRaCtAdDrEsS00000000000000001,0x38426877000000000000000000000000794a61358d6845594f94dc1db02a252b5b4814ad000000000000000000000000794a61358d6845594f94dc1db02a252b5b4814ad00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001`
+> `dstChainTxBundle=0xAdApTeRCoNtRaCtAdDrEsS00000000000000001,0x38426877000000000000000000000000794a61358d6845594f94dc1db02a252b5b4814ad000000000000000000000000794a61358d6845594f94dc1db02a252b5b4814ad00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001`
 
 This parameter will make the deSwap API backend smartly combine the swap call with the given call into a bundle to be atomically invoked on the destination chain.
 
-**3️⃣ Third**, put the estimated operator smart contract gas consumption to the `dstBaseGasAmount` parameter: this will allow the deSwap API backend to correctly calculate the recommended gas fee to include (former _execution fee_, _a small amount of the intermediary token that incentivizes anyone to execute the transaction on the destination chain_).
+**3️⃣ Third**, put the estimated adapter smart contract gas consumption to the `dstBaseGasAmount` parameter: this will allow the deSwap API backend to correctly calculate the recommended gas fee to include (former _execution fee_, _a small amount of the intermediary token that incentivizes anyone to execute the transaction on the destination chain_).
 
-**4️⃣ Fourth**, set the `dstChainTokenOutRecipient` parameter to the address of your operator smart contract rather than the user wallet's address. This is extremely important as we agreed that the resulting amount of target tokens will be transferred to the operator smart contract which will be called in the same atomic transaction performing the operation you've encoded above.
+**4️⃣ Fourth**, set the `dstChainTokenOutRecipient` parameter to the address of your adapter smart contract rather than the user wallet's address. This is extremely important as we agreed that the resulting amount of target tokens will be transferred to the adapter smart contract which will be called in the same atomic transaction performing the operation you've encoded above.
 
 That's it! You've successfully bundled additional transactions within the atomic cross-chain transaction via deBridge.
 

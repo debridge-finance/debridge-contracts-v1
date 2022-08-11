@@ -15,20 +15,20 @@
 * [Advanced topics](build-with-debridge/advanced-topics/README.md)
   * [Gathering data for the claim](build-with-debridge/advanced-topics/gathering-data-for-the-claim.md)
 * [Smart contract interface](build-with-debridge/smart-contract-interface.md)
-* [Development tools](build-with-debridge/development-tools.md)
+* [Development tools](build-with-debridge.md)
 
 ## 🔁 Swap with deSwap API
 
-* [API Quick Start Guide](swap-with-deswap-api/api-quick-start-guide.md)
-* [Transaction Bundling](swap-with-deswap-api/transaction-bundling.md)
-* [Cross-Chain Swaps Liquidity](swap-with-deswap-api/cross-chain-swaps-liquidity.md)
-* [Custom Linking](swap-with-deswap-api/custom-linking.md)
-* [deSwap Widget](swap-with-deswap-api/deswap-widget.md)
+* [API Quick Start Guide](deswap/api-quick-start-guide.md)
+* [Transaction Bundling](deswap/transaction-bundling.md)
+* [Cross-Chain Swaps Liquidity](deswap/cross-chain-swaps-liquidity.md)
+* [Custom Linking](deswap/custom-linking.md)
+* [deSwap Widget](deswap/deswap-widget.md)
 
 ## 💸 dePort
 
 * [Getting started](deport/getting-started.md)
-* [Transfers Flow](deport/transfers.md)
+* [Transfers Flow](the-core-protocol/transfers.md)
 
 ## Contracts
 

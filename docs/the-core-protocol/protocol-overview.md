@@ -47,7 +47,7 @@ Validators play a crucial role in interoperability protocols since, in addition 
 
 **deBridge is more than a bridge,** it's a secure interoperability layer for Web3 that enables users and protocols to transport not only value but also arbitrary messages or `CALLDATA` across different chains.
 
-![](../.gitbook/assets/image.png)
+![](<../.gitbook/assets/image (5).png>)
 
 The ability to pass arbitrary data opens up opportunities for true cross-chain composability of smart contracts and protocols that can now interact with each other despite they live in different blockchain ecosystems. An example would be an algorithmic stablecoin protocol on Ethereum that opens positions in perpetual markets protocol on Solana or Arbitrum in order to maintain the peg of its asset.
 
