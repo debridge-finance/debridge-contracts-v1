@@ -40,9 +40,3 @@ Once unstaking or transfer of stake has been initiated, the delegator stops rece
 As described in Protocol Overview, the protocol applies a small fee to each transfer. Half of these fees are transferred to the deBridge treasury controlled by governance. Another half is converted into **ETH** and used as a payout to validators and their delegators. Each payout is evenly distributed among all active validators. Each validator assigns a portion of protocol payouts `profitSharingBPS` to be shared with delegators. These basis points allow the validator to control the ratio between personal/attracted amounts of liquidity. Governance can set a minimum value of this parameter to avoid a situation when validators with a low personal stake assign `profitSharingBPS` close to zero to receive all the protocol payouts and limit the collateral of the protocol.
 
 Delegators receive a payout proportional to the USD equivalent of their stake in the validator's collateral pool. In order to perform proper distribution of protocol rewards and correctly calculate a USD value of the volatile assets, the smart contract utilizes the Uniswap price oracle.
-
-### Additional APY for Delegators
-
-In addition to deBridge protocol payouts, users can receive additional yield by supplying their liquidity locked in the delegated staking contract into strategies whitelisted by governance. Whitelisted strategies normally belong to well-known and reliable DeFi protocols such as AAVE, Compound, or Yearn.Finance. In this case, APYs of the deBridge protocol and of the strategy are summed up but in addition to the risk of validators' failure delegator will also bear the risk of the strategy where he/she has supplied a locked stake.
-
-All protocol payouts and strategy rewards top up the collateral of validators and should also pass the cooldown period in order to become realized gain.
