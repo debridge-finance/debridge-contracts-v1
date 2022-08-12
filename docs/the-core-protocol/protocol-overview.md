@@ -14,7 +14,7 @@ As a generic messaging protocol and a cross-chain interoperability infrastructur
 * deNFT — an infrastructure for cross-chain NFTs transfers and solution to create a cross-chain native NFTs
 * [dePort](https://app.debridge.finance/deport) —  a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains
 
-Your application can be the next one and this documentation and tutorials will help to dive into the protocol infrastructure and elaborate on peculiarities you might face while building your integration with deBridge.
+Your application can be the next one and this documentation and tutorials will help to dive into the protocol infrastructure and elaborate on questions you might face while building your integration with deBridge.
 
 ## Protocol Structure
 
@@ -25,23 +25,23 @@ The protocol consists of 2 key layers:
 
 ![](../.gitbook/assets/C.png)
 
-**The protocol layer** is a set of on-chain smart contracts that are used for routing of cross-chain messages, cross-validation of validators' signatures, and reaching consensus among validators as the transaction is treated as valid only if the minimum required threshold of signatures is achieved. The governance manages the parameters of the smart contracts, such as fees, supported chains, the whitelist of elected validators, validators payout ratio, and more.
+**The protocol layer** is a set of on-chain smart contracts used for asset management, routing of cross-chain transactions, cross-validation of validators' signatures, and reaching consensus among validators as the transaction is treated as valid only if the minimum required threshold of validators' signatures is achieved. The governance manages the parameters of the smart contracts, such as fees, supported chains, the whitelist of elected validators, validators payout ratio, and more.
 
 **The infrastructure layer** is represented by a set of reputable validators who operate a deBridge node alongside full nodes of every blockchain supported by the protocol.&#x20;
 
 ### **Off-chain validation**
 
-For all bridging protocols, it’s important to have a chain-agnostic design and make the protocol operation being fully independent of the uptime of all supported blockchains. In case of a pause in any underlying blockchain, the interoperability protocol should keep processing the transactions for all other chains.&#x20;
+For all bridging protocols, it’s important to have a chain-agnostic design and make the protocol operation fully independent of the uptime of all supported blockchains. In case of downtime in any underlying blockchains, the protocol should keep processing the transactions for all other chains.&#x20;
 
-deBridge has taken a unique approach with an off-chain transactions validation mechanic when validators don’t need to broadcast any transactions and bear gas costs. Every cross-chain transaction initiated through the deBridge smart contract is assigned a unique hash (Submission Id). deBridge validators are tracking all transactions that pass through the smart contract of the protocol and soon as the transaction achieves its finality, each validator is obliged to sign the Submission by its private key.&#x20;
+deBridge has taken a unique approach with an off-chain transaction validation mechanic where validators don’t need to broadcast any transactions and bear gas costs. Every cross-chain transaction initiated through the deBridge smart contract is assigned a unique hash (Submission Id). deBridge validators are tracking all transactions that pass through the smart contract of the protocol and soon as the transaction achieves its finality, each validator is obliged to sign the Submission by its private key.&#x20;
 
-The resulting signature is saved into [IPFS](https://ipfs.io) so that anyone can retrieve it. Any arbitrary user or keeper can collect validators' signatures from IPFS and pass them to deBridge smart contract in the target chain alongside all transaction parameters. Based on the passed set of parameters deBridge smart contract will restore a unique hash of the transaction and cross-validate its signatures from all designated validators. In case the minimum required number of signatures are valid, DebridgeGate smart contract executes the transaction and call data transferred to the destination chain.
+The resulting signature is saved into [IPFS](https://ipfs.io) so that anyone can retrieve it. Any arbitrary user or keeper can collect validator signatures from IPFS and pass them to the deBridge smart contract in the target chain alongside all transaction parameters. Based on the passed set of parameters, the deBridge smart contract will restore a unique hash of the transaction and cross-validate its signatures from all designated validators. In case the minimum required number of signatures is valid, the DebridgeGate smart contract executes the transaction and call data transferred to the destination chain.
 
-With this design, even if some blockchains would go offline, deBridge will still be functioning as expected and all transactions going to the paused chain will be processed as soon as it’s up again.
+With this design, even in the eventuality some blockchains experience downtime, deBridge will still remain fully functional and all transactions going to the paused chain will be processed as soon as it resumes operation.&#x20;
 
 ### Delegated Staking and Slashing
 
-Validators play a crucial role in interoperability protocols since, in addition to being infrastructure providers, they also secure the protocol by validating all cross-chain transactions passing through the protocol. Validators work for and are elected by the governance and should bear financial responsibility for the service they provide through the risk of being slashed in case of validating a non-existent transaction or long downtime of the infrastructure. Anyone can help to secure the protocol by being a delegator and staking assets (e.g. ETH, USDC) for validators’ collateral. Both validators and their delegators receive part of the protocol fees as an economic incentive for helping to secure the protocol and maintain its infrastructure. More details can be found in the [Slashing and Delegated Staking section.](slashing-and-delegated-staking.md)
+Validators play a crucial role in interoperability protocols since in addition to being infrastructure providers, they also secure the protocol by validating all cross-chain transactions passing through the protocol. Validators work for and are elected by the governance and should bear financial responsibility for the service they provide, assured through the risk of being slashed in case of validating a non-existent transaction or failing to maintain infrastructure uptime. Anyone can help to secure the protocol by becoming a delegator and staking assets (e.g. ETH, USDC) for validators’ collateral. Both validators and their delegators receive part of the protocol fees as an economic incentive for helping to secure the protocol and maintain its infrastructure. More details can be found in the [Slashing and Delegated Staking section.](slashing-and-delegated-staking.md)
 
 ## How it works
 
