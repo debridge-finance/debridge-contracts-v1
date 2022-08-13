@@ -17,7 +17,7 @@
 * [Smart contract interface](build-with-debridge/smart-contract-interface.md)
 * [Development tools](build-with-debridge.md)
 
-## 🔁 Swap with deSwap API
+## 🔁 deSwap
 
 * [API Quick Start Guide](deswap/api-quick-start-guide.md)
 * [Transaction Bundling](deswap/transaction-bundling.md)
