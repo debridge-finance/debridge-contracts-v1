@@ -18,7 +18,7 @@ Each of the tokens locked in the native chain have the associated wrapped asset 
 
 ### Listing at deBridge
 
-The deBridge protocol is universal and there are no listing requirements. Any arbitrary token can be bridged. If the token is bridged for the first time, together with the validation transaction validator unique deploy id that is passed to the destination chain and contains the following parameters:
+The deBridge protocol is universal and there are no listing requirements. Any arbitrary token can be bridged. If the token is bridged for the first time, together with the validation transaction validators sign a unique `deployId` that is passed to the destination chain and contains the following parameters:
 
 * Native token smart contract address
 * Native chain Id
