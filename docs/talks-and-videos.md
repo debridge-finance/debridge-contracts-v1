@@ -8,6 +8,7 @@
 
 **Other**
 
+* [CryptoSlate | Op-ed: Reimagining cross-chain bridges: Let’s stop trying to be liquidity protocols](https://cryptoslate.com/reimagining-cross-chain-bridges-lets-stop-trying-to-be-liquidity-protocols/) (15-August-2022)
 * [CoinGecko Podcast | The Future of Cross-Chain Bridging w/ Alex Smirnov, Co-Founder of deBridge -66](https://www.youtube.com/watch?v=JtzKQij1gWI) (29-July-2022)
 * [EthCC Paris 2022 | Alex Smirnov - Cross-chain interoperability – The next wave for DeFi and NFTs](https://www.youtube.com/watch?v=1xm8NVhxfLE) (20-July-2022)
 * [Cross-Chain Builders' Meetup Paris 2022 | Alex Smirnov, CEO and Сo-Founder of deBridge «Building a secure interoperability layer for Web3»](https://www.youtube.com/watch?v=bTiBv6Ibdyw\&t=2260s) (19-July-2022)
