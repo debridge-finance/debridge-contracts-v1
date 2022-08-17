@@ -60,9 +60,6 @@ deBridge allows building a new generation of cross-chain protocols and applicati
 
 ### Protocol Fees
 
-The protocol takes a small fee for each transfer performed through deBridge. A small fee is what users pay for confidence and decentralization since half of all fees go as a reward to deBridge validators who are [financially liable](slashing-and-delegated-staking.md) for the proper operation of the protocol.
+The protocol takes a small fee for each transfer of message performed through deBridge. A small flat fee is what users pay for confidence and decentralization since half of all fees go as a reward to deBridge validators who are [financially liable](slashing-and-delegated-staking.md) for the proper operation of the protocol. The fee is paid in the blockchain's native token. For example, if the transfer is performed from the Ethereum chain, then the fixed ETH amount will be deducted from the user's wallet towards the protocol treasury on Ethereum. The fee is normally less than $1 per message and depends on the chain where the cross-chain transaction is initiated.&#x20;
 
-The fee consists of two components **(Fix + %)**:
-
-* Fix - a fixed amount that is taken in the base asset of the blockchain. For example, if the transfer is performed from the Ethereum chain, then the fixed ETH amount will be deducted from the user's wallet towards the protocol treasury on Ethereum. The fixed fee is also required for cross-chain interoperability when the smart contract in one blockchain can invoke an arbitrary method of the smart contract in another chain without the need of transferring any liquidity.
-* Percent (%) - a percentage of each amount of bridged liquidity. Similar to Uniswap and many other DeFi protocols, deBridge takes a small 10 BPS (0.1%) fee from each transfer.
+Please check [getting-started.md](../deport/getting-started.md "mention") section to find out how the current fee amount can be retrieved from the state of the DebridgeGate smart contract.
