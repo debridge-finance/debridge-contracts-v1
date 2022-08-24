@@ -1,6 +1,6 @@
 {
   "name": "@debridge-finance/debridge-protocol-evm-interfaces",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "",
   "repository": "github:debridge-finance/debridge-protocol-evm-interfaces",
   "author": "deBridge",
@@ -12,8 +12,10 @@
   ],
   "homepage": "https://debridge.finance",
   "scripts": {
-    "test": "cmp -s <(npm run find-broken-links | wc -l | xargs) <(echo 0) || echo Broken links found",
-    "find-broken-links": "find . -type l ! -exec test -e {} \\; -print"
+    "test": "exit 0",
+    "build": "./build.sh",
+    "prepublishOnly": "npm run build"
+
   },
   "files": [
     "contracts/**",
