@@ -1,0 +1,29 @@
+{
+  "name": "@debridge-finance/debridge-protocol-evm-interfaces",
+  "version": "4.1.0",
+  "description": "",
+  "repository": "github:debridge-finance/debridge-protocol-evm-interfaces",
+  "author": "deBridge",
+  "license": "BUSL-1.1",
+  "keywords": [
+    "bridge",
+    "deBridge",
+    "ethereum"
+  ],
+  "homepage": "https://debridge.finance",
+  "scripts": {
+    "test": "cmp -s <(npm run find-broken-links | wc -l | xargs) <(echo 0) || echo Broken links found",
+    "find-broken-links": "find . -type l ! -exec test -e {} \\; -print"
+  },
+  "files": [
+    "contracts/**",
+    "LICENSE",
+    "README.md"
+  ],
+  "devDependencies": {
+  },
+  "dependencies": {
+  },
+  "peerDependencies": {
+  }
+}
