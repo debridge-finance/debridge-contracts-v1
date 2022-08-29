@@ -8,4 +8,5 @@ import "./IDeBridgeGate.sol";
 interface IDeBridgeGateExtended is IDeBridgeGate {
     function callProxy() external returns (address);
     function globalFixedNativeFee() external returns (uint256);
+    function globalTransferFeeBps() external returns (uint256);
 }
