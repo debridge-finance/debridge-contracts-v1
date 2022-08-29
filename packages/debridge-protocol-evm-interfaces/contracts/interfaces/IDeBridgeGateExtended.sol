@@ -7,4 +7,5 @@ import "./IDeBridgeGate.sol";
 ///      not included in the base IDeBridgeGate interface
 interface IDeBridgeGateExtended is IDeBridgeGate {
     function callProxy() external returns (address);
+    function globalFixedNativeFee() external returns (uint256);
 }
