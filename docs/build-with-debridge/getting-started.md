@@ -357,7 +357,10 @@ Keep in mind that estimating gas for such transaction may have undesirable pitfa
 * Consider using the [`debridge-hardhat`](https://github.com/debridge-finance/hardhat-debridge) plugin for Hardhat to test your contracts on the emulated environment
 * Find the [source code](https://github.com/debridge-finance/debridge-cross-chain-dapp-example) of the example project examined in this document, along with tests and helper commands.
 * Start using [deSDK](https://github.com/debridge-finance/desdk) to send, track and claim submissions programmatically
-* Watch the walkthrough video on how to use deBridge emulator for your development environment (coming soon)
+* Watch the walkthrough video on how to use deBridge emulator for your development environment:
+
+{% embed url="https://www.youtube.com/watch?v=Ke09y0VXtT0" %}
+
 * debridge protocol: advanced topics:
   * [gathering-data-for-the-claim.md](advanced-topics/gathering-data-for-the-claim.md "mention")
   * deBridge protocol flags explained (coming soon)
