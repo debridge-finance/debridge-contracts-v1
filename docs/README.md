@@ -1,10 +1,6 @@
----
-description: Secure interoperability layer for Web3
----
-
 # Introduction
 
-![](.gitbook/assets/66.png)
+<figure><img src=".gitbook/assets/wallpaper.png" alt=""><figcaption></figcaption></figure>
 
 **deBridge is** **a** **generic messaging and** **cross-chain interoperability protocol** that enables decentralized transfers of arbitrary data and assets between various blockchains. The validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for deBridge governance. Validators maintain the blockchain infrastructure and each run a deBridge node to sign all transactions that pass through deBridge smart contracts in different blockchains.&#x20;
 
