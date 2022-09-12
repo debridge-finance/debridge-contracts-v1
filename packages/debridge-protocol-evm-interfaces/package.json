@@ -1,0 +1,31 @@
+{
+  "name": "@debridge-finance/debridge-protocol-evm-interfaces",
+  "version": "1.0.4",
+  "description": "",
+  "repository": "github:debridge-finance/debridge-protocol-evm-interfaces",
+  "author": "deBridge",
+  "license": "MIT",
+  "keywords": [
+    "bridge",
+    "deBridge",
+    "ethereum"
+  ],
+  "homepage": "https://debridge.finance",
+  "scripts": {
+    "test": "exit 0",
+    "build": "./build.sh",
+    "prepublishOnly": "npm run build"
+
+  },
+  "files": [
+    "contracts/**",
+    "LICENSE",
+    "README.md"
+  ],
+  "devDependencies": {
+  },
+  "dependencies": {
+  },
+  "peerDependencies": {
+  }
+}
