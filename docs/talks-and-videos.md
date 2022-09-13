@@ -5,6 +5,7 @@
 * [Building toward Web2 UX in Web3 with Unstoppable Domains](https://www.youtube.com/watch?v=\_OCGbbDIIDc) (Sep 3, 2022)
 * [Building towards a secure cross-chain future](https://www.youtube.com/watch?v=SLHR-tOUllo) (Aug 17, 2022)
 * [AMA with Magic Square](https://twitter.com/deBridgeFinance/status/1542463031913115649) (1-July-2022)
+* [Going Cross-Chain with deBridge: Fantom](https://www.youtube.com/watch?v=rmXK6gJvIcA) (June 17, 2022)
 
 **Other**
 
