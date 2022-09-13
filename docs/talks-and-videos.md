@@ -2,9 +2,9 @@
 
 * [Build powerful cross-chain applications with deBridge where value and message flow seamlessly](https://www.youtube.com/watch?v=jOab067TuEk) (Sep 7, 2022)
 * [deBridge Hardhat plugin: Run emulated cross-chain environments](https://www.youtube.com/watch?v=Ke09y0VXtT0) (Sep 7, 2022)
+* [Building toward Web2 UX in Web3 with Unstoppable Domains](https://www.youtube.com/watch?v=\_OCGbbDIIDc) (Sep 3, 2022)
+* [Building towards a secure cross-chain future](https://www.youtube.com/watch?v=SLHR-tOUllo) (Aug 17, 2022)
 * [AMA with Magic Square](https://twitter.com/deBridgeFinance/status/1542463031913115649) (1-July-2022)
-* [Going Cross-Chain with deBridge: Arbitrum](https://twitter.com/deBridgeFinance/status/1539612877765906432) (24-June-2022)
-* [Going Cross-Chain with deBridge: Fantom](https://twitter.com/deBridgeFinance/status/1537404165894606849) (18-June-2022)
 
 **Other**
 
