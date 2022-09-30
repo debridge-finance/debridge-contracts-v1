@@ -72,4 +72,4 @@ deBridge solves liquidity fragmentation by allowing liquidity to be accessed cro
 
 Cross-chain infrastructure can enable users to swap to any asset accepted by the specific prediction market, bridge to the chain with the lowest gas fee, and make the bet. Best of all, this can be all done in 1 single Tx settled within minutes.
 
-_For a more detailed overview of our use cases please navigate to our_ [_Docs_](./) _- and feel free to explore the links to read more!_
+_For a more detailed overview of our use cases please navigate to our_ [_Docs_](../debridge-use-cases.md) _- and feel free to explore the links to read more!_
