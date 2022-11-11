@@ -20,6 +20,7 @@
 | 20-Jul-2022 | [**EthCC Paris 2022** \| Alex Smirnov - Cross-chain interoperability – The next wave for DeFi and NFTs](https://www.youtube.com/watch?v=1xm8NVhxfLE)                                                         |
 | 19-Jul-2022 | ****[**Cross-Chain Builders' Meetup Paris 2022** \| Alex Smirnov, CEO and Сo-Founder of deBridge «Building a secure interoperability layer for Web3»](https://www.youtube.com/watch?v=bTiBv6Ibdyw\&t=2260s)  |
 | 28-Apr-2022 | ****[**Metis Fest** at Amsterdam during Devconnect \| Panel talk](https://www.youtube.com/watch?v=a7AzYsV6wB8)                                                                                               |
+| 23-Mar-2022 | ****[**Avalanche Summit 2022** \| How to Get Started Building a Cross-Chain Protocol](https://www.youtube.com/watch?v=DpSS77aKUzs)                                                                           |
 | 21-Dec-2021 | ****[**IOSG Scaling Summit Scaling Summit** \| How to See the Trade-offs among Different Cross-chain Bridge Solutions?](https://www.youtube.com/watch?v=Iz5WiRlG7qM)                                         |
 | 17-Nov-2021 | ****[**Solana Breakpoint 2021**: Transfer Layer: Scalability and Cross Chain Bridges](https://www.youtube.com/watch?v=YH0FvcHdLX8)                                                                           |
 | 20-Oct-2021 | ****[**LisCon 2021** — The Future is Multi chain](https://www.youtube.com/watch?v=\_PZsTtrmiig)                                                                                                              |
