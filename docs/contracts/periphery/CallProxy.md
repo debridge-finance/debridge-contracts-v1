@@ -81,25 +81,61 @@ Used for calls where ERC20 transfer is involved.
 |`_nativeSender` | bytes | Native sender
 |`_chainIdFrom` | uint256 | Id of a chain that originated the request
 
-## externalCall
+## multiSend
 ```solidity
-  function externalCall(
-            address destination,
-            uint256 value,
-            bytes data,
-            bytes _nativeSender,
-            uint256 _chainIdFrom,
-            bool storeSender
-  ) internal returns (bool result)
+  function multiSend(
+            bytes transactions
+  ) external
 ```
+The code is for most part the same as the normal MultiSend (to keep compatibility),
+        but reverts if a transaction tries to use a delegatecall.
+This method is payable as delegatecalls keep the msg.value from the previous call
+        If the calling method (e.g. execTransaction) received ETH this would revert otherwise
+Sends multiple transactions and reverts all if one fails.
 
-
+### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`transactions` | bytes | Encoded transactions. Each transaction is encoded as a packed bytes of
+                    operation has to be uint8(0) in this version (=> 1 byte),
+                    to as a address (=> 20 bytes),
+                    value as a uint256 (=> 32 bytes),
+                    data length as a uint256 (=> 32 bytes),
+                    data as bytes.
+                    see abi.encodePacked for more information on packed encoding
 
 
 ## receive
 ```solidity
   function receive(
   ) external
+```
+
+
+
+
+## _externalCall
+```solidity
+  function _externalCall(
+            address _destination,
+            uint256 _value,
+            bytes _data,
+            bytes _nativeSender,
+            uint256 _chainIdFrom,
+            uint256 _flags
+  ) internal returns (bool result)
+```
+
+
+
+
+## _customApprove
+```solidity
+  function _customApprove(
+            contract IERC20Upgradeable token,
+            address spender,
+            uint256 value
+  ) internal
 ```
 
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -32,6 +32,10 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     }
 
     /* ========== CONSTRUCTOR  ========== */
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {
+    }
 
     function initialize(IDeBridgeGate _debridgeGate, address _treasury) public initializer {
         debridgeGate = _debridgeGate;
@@ -126,6 +130,6 @@ contract SimpleFeeProxy is Initializable, AccessControlUpgradeable, PausableUpgr
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 400; // 4.0.0
+        return 401; // 4.0.1
     }
 }

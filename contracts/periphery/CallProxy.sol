@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -60,6 +60,10 @@ contract CallProxy is Initializable, AccessControlUpgradeable, MultiSendCallOnly
 
     /* ========== CONSTRUCTOR  ========== */
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {
+    }
+    
     function initialize() public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
@@ -194,7 +198,11 @@ contract CallProxy is Initializable, AccessControlUpgradeable, MultiSendCallOnly
                 result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
             }
         }
-        else {
+        // check if _destination is a contract;
+        // this is crucial because the CALL opcode will succeed when arbitrary data is
+        // called against EOA, causing undesired behavior and possible asset loss.
+        // Thus, we allow calls only to contracts explicitly
+        else if (_destination.isContract()) {
             assembly {
                 result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
             }
@@ -221,6 +229,6 @@ contract CallProxy is Initializable, AccessControlUpgradeable, MultiSendCallOnly
 
      /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 423; // 4.2.3
+        return 424; // 4.2.4
     }
 }
