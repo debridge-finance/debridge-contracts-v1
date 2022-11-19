@@ -60,7 +60,6 @@
 * [deBridge Use Cases](external-links/debridge-use-cases.md)
   * [💡 Examples](external-links/debridge-use-cases/examples.md)
 * [Talks, Videos, and Articles](talks-and-videos.md)
-* [Publications](external-links/publications.md)
 * [Website](https://debridge.finance)
 * [Github](https://github.com/debridge-finance)
 * [Twitter](https://twitter.com/deBridgeFinance)
