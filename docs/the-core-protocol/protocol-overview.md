@@ -35,9 +35,23 @@ For all bridging protocols, it’s important to have a chain-agnostic design and
 
 deBridge has taken a unique approach with an off-chain transaction validation mechanic where validators don’t need to broadcast any transactions and bear gas costs. Every cross-chain transaction initiated through the deBridge smart contract is assigned a unique hash (Submission Id). deBridge validators are tracking all transactions that pass through the smart contract of the protocol and soon as the transaction achieves its finality, each validator is obliged to sign the Submission by its private key.&#x20;
 
-The resulting signature is saved into [IPFS](https://ipfs.io) so that anyone can retrieve it. Any arbitrary user or keeper can collect validator signatures from IPFS and pass them to the deBridge smart contract in the target chain alongside all transaction parameters. Based on the passed set of parameters, the deBridge smart contract will restore a unique hash of the transaction and cross-validate its signatures from all designated validators. In case the minimum required number of signatures is valid, the DebridgeGate smart contract executes the transaction and call data transferred to the destination chain.
+The resulting signature is saved into [IPFS](https://ipfs.io) so that anyone can retrieve it. Any arbitrary user or keeper can collect validator signatures from IPFS and pass them to the deBridge smart contract in the target chain alongside all transaction parameters. Based on the passed set of parameters, the deBridge smart contract will restore a unique hash of the transaction and cross-validate its signatures from all designated validators. In case the minimum required number of signatures is valid, the DebridgeGate smart contract delivers the message on the destination chain by executing its' call data.
 
 With this design, even in the eventuality some blockchains experience downtime, deBridge will still remain fully functional and all transactions going to the paused chain will be processed as soon as it resumes operation.&#x20;
+
+### Transaction Finality Requirements
+
+Due to the probabilistic finality model of most blockchains, before the message is validated by the deBridge infrastructure, validators are waiting for the required number of block confirmations before signing its Submission Id. The number of required block confirmations is based on the social consensus of transaction finality in each supported blockchain:
+
+| Blockchain | Block Confirmations |
+| ---------- | ------------------- |
+| Ethereum   | 12                  |
+| BNB Chain  | 12                  |
+| Heco       | 12                  |
+| Polygon    | 256                 |
+| Arbitrum   | 12                  |
+| Avalanche  | 12                  |
+| Fantom     | 12                  |
 
 ### Delegated Staking and Slashing
 
@@ -45,7 +59,7 @@ Validators play a crucial role in interoperability protocols since in addition t
 
 ## How it works
 
-**deBridge is more than a bridge,** it's a secure interoperability layer for Web3 that enables users and protocols to transport not only value but also arbitrary messages or `CALLDATA` across different chains.
+**deBridge is more than a bridge,** it's a secure interoperability layer for Web3 — a foundational layer that enables users and protocols to transport any arbitrary messages or `CALLDATA` across different chains enabling the ability to create any cross-chain solutions, such as deSwap — value transferring protocol built on top of deBridge
 
 ![](<../.gitbook/assets/image (5).png>)
 
@@ -57,6 +71,8 @@ deBridge allows building a new generation of cross-chain protocols and applicati
 * Multi-chain governance
 * Cross-chain lending
 * Cross-chain yield farming
+
+More information about potential use cases can be found in [debridge-use-cases.md](../external-links/debridge-use-cases.md "mention") section
 
 ### Protocol Fees
 
