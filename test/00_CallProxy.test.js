@@ -20,8 +20,8 @@ describe("CallProxy", function () {
 
   describe("Direct interaction", function () {
     describe("plain calls", function () {
-      it("when receiver is EOA - ETH goes to receiver", async function () {
-        const receiverBalanceBefore = await ethers.provider.getBalance(receiver.address);
+      it("when receiver is EOA - ETH goes to reserve", async function () {
+        const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
         transferResult = await this.proxy.call(
           reserve.address,
           receiver.address,
@@ -34,8 +34,8 @@ describe("CallProxy", function () {
           }
         );
         await transferResult.wait();
-        const receiverBalanceAfter = await ethers.provider.getBalance(receiver.address);
-        expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1234876");
+        const reserveBalanceAfter = await ethers.provider.getBalance(reserve.address);
+        expect(reserveBalanceAfter.sub(reserveBalanceBefore)).to.be.equal("1234876");
         expect(transferResult.value).to.be.equal("1234876");
       });
 
@@ -699,8 +699,8 @@ describe("CallProxy", function () {
     });
 
     describe("plain calls", function () {
-      it("when receiver is EOA", async function () {
-        const receiverBalanceBefore = await ethers.provider.getBalance(receiver.address);
+      it("when receiver is EOA - token go to reserve", async function () {
+        const reserveBalanceBefore = await ethers.provider.getBalance(reserve.address);
         const transferResult = await this.ProxyConsumer.transferToken(
           ethers.constants.AddressZero,
           receiver.address,
@@ -712,8 +712,8 @@ describe("CallProxy", function () {
           }
         );
         await transferResult.wait();
-        const receiverBalanceAfter = await ethers.provider.getBalance(receiver.address);
-        expect(receiverBalanceAfter.sub(receiverBalanceBefore)).to.be.equal("1234876");
+        const reserveBalanceAfter = await ethers.provider.getBalance(reserve.address);
+        expect(reserveBalanceAfter.sub(reserveBalanceBefore)).to.be.equal("1234876");
         expect(transferResult.value).to.be.equal("1234876");
       });
 

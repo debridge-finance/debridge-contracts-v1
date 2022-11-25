@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
@@ -58,6 +58,10 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
     }
 
     /* ========== CONSTRUCTOR  ========== */
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {
+    }
 
     function initialize(IUniswapV2Factory _uniswapFactory, IWETH _weth) public initializer {
         uniswapFactory = _uniswapFactory;
@@ -291,6 +295,6 @@ contract FeeProxy is Initializable, AccessControlUpgradeable, PausableUpgradeabl
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 400; // 4.0.0
+        return 401; // 4.0.1
     }
 }

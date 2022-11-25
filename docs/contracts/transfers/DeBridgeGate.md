@@ -40,11 +40,11 @@ Current signature verifier address to verify signatures.
   uint8 public excessConfirmations;
 ```
 Minimal required confirmations in case sent amount is big, have no effect if less than SignatureVerifier.minConfirmations
-## flashFeeBps
+## gap0
 ```solidity
-  uint256 public flashFeeBps;
+  uint256 public gap0;
 ```
-Flash loan fee in basis points (1/10000)
+*obsolete flashFeeBps
 ## nonce
 ```solidity
   uint256 public nonce;
@@ -98,11 +98,11 @@ Fee discount for address
   mapping(address => struct IDeBridgeGate.TokenInfo) public getNativeInfo;
 ```
 Returns native token info by wrapped token address
-## defiController
+## gap1
 ```solidity
-  address public defiController;
+  address public gap1;
 ```
-Return DefiController that can supply liquidity to staking strategies (AAVE, Compound, etc.)
+*obsolete defiController
 ## feeProxy
 ```solidity
   address public feeProxy;
@@ -161,6 +161,58 @@ Constructor that initializes the most important configurations.
 |`_excessConfirmations` | uint8 | minimal required confirmations in case of too many confirmations
 |`_weth` | contract IWETH | wrapped native token contract
 
+## sendMessage
+```solidity
+  function sendMessage(
+            uint256 _dstChainId,
+            bytes _targetContractAddress,
+            bytes _targetContractCalldata
+  ) external returns (bytes32 submissionId)
+```
+NO ASSETS ARE BROADCASTED ALONG WITH THIS MESSAGE
+DeBridgeGate only accepts submissions with msg.value (native ether) covering a small protocol fee
+        (defined in the globalFixedNativeFee property). Any excess amount of ether passed to this function is
+        included in the message as the execution fee - the amount deBridgeGate would give as an incentive to
+        a third party in return for successful claim transaction execution on the destination chain.
+DeBridgeGate accepts a set of flags that control the behaviour of the execution. This simple method
+        sets the default set of flags: REVERT_IF_EXTERNAL_FAIL, PROXY_WITH_SENDER
+
+Submits the message to the deBridge infrastructure to be broadcasted to another supported blockchain (identified by _dstChainId)
+     with the instructions to call the _targetContractAddress contract using the given _targetContractCalldata
+
+### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_dstChainId` | uint256 | ID of the destination chain.
+|`_targetContractAddress` | bytes | A contract address to be called on the destination chain
+|`_targetContractCalldata` | bytes | Calldata to execute against the target contract on the destination chain
+
+## sendMessage
+```solidity
+  function sendMessage(
+            uint256 _dstChainId,
+            bytes _targetContractAddress,
+            bytes _targetContractCalldata
+  ) public returns (bytes32 submissionId)
+```
+NO ASSETS ARE BROADCASTED ALONG WITH THIS MESSAGE
+DeBridgeGate only accepts submissions with msg.value (native ether) covering a small protocol fee
+        (defined in the globalFixedNativeFee property). Any excess amount of ether passed to this function is
+        included in the message as the execution fee - the amount deBridgeGate would give as an incentive to
+        a third party in return for successful claim transaction execution on the destination chain.
+DeBridgeGate accepts a set of flags that control the behaviour of the execution. This simple method
+        sets the default set of flags: REVERT_IF_EXTERNAL_FAIL, PROXY_WITH_SENDER
+
+Submits the message to the deBridge infrastructure to be broadcasted to another supported blockchain (identified by _dstChainId)
+     with the instructions to call the _targetContractAddress contract using the given _targetContractCalldata
+
+### Parameters:
+| Name | Type | Description                                                          |
+| :--- | :--- | :------------------------------------------------------------------- |
+|`_dstChainId` | uint256 | ID of the destination chain.
+|`_targetContractAddress` | bytes | A contract address to be called on the destination chain
+|`_targetContractCalldata` | bytes | Calldata to execute against the target contract on the destination chain
+
 ## send
 ```solidity
   function send(
@@ -168,11 +220,11 @@ Constructor that initializes the most important configurations.
             uint256 _amount,
             uint256 _chainIdTo,
             bytes _receiver,
-            bytes _permit,
+            bytes _permitEnvelope,
             bool _useAssetFee,
             uint32 _referralCode,
             bytes _autoParams
-  ) external
+  ) external returns (bytes32 submissionId)
 ```
 
 This method is used for the transfer of assets [from the native chain](https://docs.debridge.finance/the-core-protocol/transfers#transfer-from-native-chain).
@@ -185,7 +237,7 @@ It locks an asset in the smart contract in the native chain and enables minting 
 |`_amount` | uint256 | Amount to be transferred (note: the fee can be applied).
 |`_chainIdTo` | uint256 | Chain id of the target chain.
 |`_receiver` | bytes | Receiver address.
-|`_permit` | bytes | deadline + signature for approving the spender by signature.
+|`_permitEnvelope` | bytes | Permit for approving the spender by signature. bytes (amount + deadline + signature)
 |`_useAssetFee` | bool | use assets fee for pay protocol fix (work only for specials token)
 |`_referralCode` | uint32 | Referral code
 |`_autoParams` | bytes | Auto params for external call in target network
@@ -216,26 +268,6 @@ to unlock the designated amount of asset from collateral and transfer it to the 
 |`_nonce` | uint256 | Submission id.
 |`_signatures` | bytes | Validators signatures to confirm
 |`_autoParams` | bytes | Auto params for external call
-
-## flash
-```solidity
-  function flash(
-            address _tokenAddress,
-            address _receiver,
-            uint256 _amount,
-            bytes _data
-  ) external
-```
-
-Get a flash loan, msg.sender must implement IFlashCallback
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_tokenAddress` | address | An asset to loan
-|`_receiver` | address | Where funds should be sent
-|`_amount` | uint256 | Amount to loan
-|`_data` | bytes | Data to pass to sender's flashCallback function
 
 ## deployNewAsset
 ```solidity
@@ -421,20 +453,6 @@ Set asset deployer address.
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_deBridgeTokenDeployer` | address | Asset deployer address.
 
-## setDefiController
-```solidity
-  function setDefiController(
-            address _defiController
-  ) external
-```
-
-Set defi controller.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_defiController` | address | Defi controller address.
-
 ## setFeeContractUpdater
 ```solidity
   function setFeeContractUpdater(
@@ -495,38 +513,6 @@ Withdraw collected fees to feeProxy
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_debridgeId` | bytes32 | Asset identifier.
 
-## requestReserves
-```solidity
-  function requestReserves(
-            address _tokenAddress,
-            uint256 _amount
-  ) external
-```
-
-Request the assets to be used in DeFi protocol.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_tokenAddress` | address | Asset address.
-|`_amount` | uint256 | Amount of tokens to request.
-
-## returnReserves
-```solidity
-  function returnReserves(
-            address _tokenAddress,
-            uint256 _amount
-  ) external
-```
-
-Return the assets that were used in DeFi  protocol.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_tokenAddress` | address | Asset address.
-|`_amount` | uint256 | Amount of tokens to claim.
-
 ## setFeeProxy
 ```solidity
   function setFeeProxy(
@@ -556,20 +542,6 @@ Block or unblock a list of submissions
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_submissionIds` | bytes32[] | Ids of submissions to block/unblock
 |`isBlocked` | bool | True to block, false to unblock
-
-## updateFlashFee
-```solidity
-  function updateFlashFee(
-            uint256 _flashFeeBps
-  ) external
-```
-
-Update flash fees.
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_flashFeeBps` | uint256 | new fee in BPS
 
 ## updateFeeDiscount
 ```solidity
@@ -636,7 +608,7 @@ Add support for the asset.
   function _send(
             bytes _amount,
             address _chainIdTo,
-            uint256 _permit
+            uint256 _permitEnvelope
   ) internal returns (uint256 amountAfterFee, bytes32 debridgeId, struct IDeBridgeGate.FeeParams feeParams)
 ```
 
@@ -647,7 +619,7 @@ Locks asset on the chain and enables minting on the other chain.
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_amount` | bytes | Amount to be transferred (note: the fee can be applied).
 |`_chainIdTo` | address | Chain id of the target chain.
-|`_permit` | uint256 | deadline + signature for approving the spender by signature.
+|`_permitEnvelope` | uint256 | Permit for approving the spender by signature. bytes (amount + deadline + signature)
 
 ## _publishSubmission
 ```solidity
@@ -660,7 +632,7 @@ Locks asset on the chain and enables minting on the other chain.
             uint32 _referralCode,
             struct IDeBridgeGate.SubmissionAutoParamsTo autoParams,
             bool hasAutoParams
-  ) internal
+  ) internal returns (bytes32 submissionId)
 ```
 
 
@@ -750,20 +722,6 @@ Unlock the asset on the current chain and transfer to receiver.
 
 
 
-
-## getDefiAvaliableReserves
-```solidity
-  function getDefiAvaliableReserves(
-            address _tokenAddress
-  ) external returns (uint256)
-```
-
-Get reserves of a token available to use in defi
-
-### Parameters:
-| Name | Type | Description                                                          |
-| :--- | :--- | :------------------------------------------------------------------- |
-|`_tokenAddress` | address | Token address
 
 ## getDebridgeId
 ```solidity

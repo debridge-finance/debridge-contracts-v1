@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "../transfers/DeBridgeGate.sol";
 
@@ -17,7 +17,6 @@ contract MockDeBridgeGate is DeBridgeGate {
         IWETH _weth,
         address _feeProxy,
         address _deBridgeTokenDeployer,
-        address _defiController,
         uint256 overrideChainId
     ) public initializer {
         chainId = overrideChainId;
@@ -25,15 +24,12 @@ contract MockDeBridgeGate is DeBridgeGate {
         signatureVerifier = _signatureVerifier;
 
         callProxy = _callProxy;
-        defiController = _defiController;
         excessConfirmations = _excessConfirmations;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         weth = _weth;
         feeProxy = _feeProxy;
         deBridgeTokenDeployer = _deBridgeTokenDeployer;
-
-        flashFeeBps = 10;
     }
 
     // return overrided chain id

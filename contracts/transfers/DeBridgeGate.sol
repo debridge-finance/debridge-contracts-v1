@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
@@ -16,7 +16,6 @@ import "../interfaces/ISignatureVerifier.sol";
 import "../interfaces/IWETH.sol";
 import "../interfaces/IDeBridgeGate.sol";
 import "../interfaces/ICallProxy.sol";
-import "../interfaces/IFlashCallback.sol";
 import "../libraries/SignatureUtil.sol";
 import "../libraries/Flags.sol";
 import "../interfaces/IWethGate.sol";
@@ -52,8 +51,8 @@ contract DeBridgeGate is
     address public signatureVerifier;
     /// @dev Minimal required confirmations in case sent amount is big, have no effect if less than SignatureVerifier.minConfirmations
     uint8 public excessConfirmations;
-    /// @dev Flash loan fee in basis points (1/10000)
-    uint256 public flashFeeBps;
+    /// @dev *obsolete flashFeeBps
+    uint256 public gap0;
     /// @dev outgoing submissions count
     uint256 public nonce;
 
@@ -79,12 +78,12 @@ contract DeBridgeGate is
     /// @dev Returns native token info by wrapped token address
     mapping(address => TokenInfo) public override getNativeInfo;
 
-    /// @dev Return DefiController that can supply liquidity to staking strategies (AAVE, Compound, etc.)
-    address public defiController;
+    /// @dev *obsolete defiController
+    address public gap1;
     /// @dev Returns proxy to convert the collected fees and transfer to Ethereum network to treasury
     address public feeProxy;
     /// @dev Returns address of the proxy to execute user's calls.
-    address public callProxy;
+    address public override callProxy;
     /// @dev Returns contract for wrapped native token.
     IWETH public weth;
 
@@ -92,9 +91,9 @@ contract DeBridgeGate is
     address public feeContractUpdater;
 
     /// @dev Fallback fixed fee in native asset, used if a chain fixed fee is set to 0
-    uint256 public globalFixedNativeFee;
+    uint256 public override globalFixedNativeFee;
     /// @dev Fallback transfer fee in BPS, used if a chain transfer fee is set to 0
-    uint16 public globalTransferFeeBps;
+    uint16 public override globalTransferFeeBps;
 
     /// @dev WethGate contract, that is used for weth withdraws affected by EIP1884
     IWethGate public wethGate;
@@ -104,7 +103,6 @@ contract DeBridgeGate is
     /* ========== ERRORS ========== */
 
     error FeeProxyBadRole();
-    error DefiControllerBadRole();
     error FeeContractUpdaterBadRole();
     error AdminBadRole();
     error GovMonitoringBadRole();
@@ -128,7 +126,6 @@ contract DeBridgeGate is
     error ZeroAddress();
 
     error ProposedFeeTooHigh();
-    error FlashFeeNotPaid();
 
     error NotEnoughReserves();
     error EthTransferFailed();
@@ -137,11 +134,6 @@ contract DeBridgeGate is
 
     modifier onlyFeeProxy() {
         if (feeProxy != msg.sender) revert FeeProxyBadRole();
-        _;
-    }
-
-    modifier onlyDefiController() {
-        if (defiController != msg.sender) revert DefiControllerBadRole();
         _;
     }
 
@@ -162,6 +154,10 @@ contract DeBridgeGate is
 
     /* ========== CONSTRUCTOR  ========== */
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {
+    }
+
     /// @dev Constructor that initializes the most important configurations.
     /// @param _excessConfirmations minimal required confirmations in case of too many confirmations
     /// @param _weth wrapped native token contract
@@ -179,22 +175,74 @@ contract DeBridgeGate is
     /* ========== send, claim ========== */
 
     /// @inheritdoc IDeBridgeGate
+    function sendMessage(
+        uint256 _chainIdTo,
+        bytes memory _targetContractAddress,
+        bytes memory _targetContractCalldata
+    ) external payable override returns (bytes32 submissionId) {
+        uint flags = uint(0)
+            .setFlag(Flags.REVERT_IF_EXTERNAL_FAIL, true)
+            .setFlag(Flags.PROXY_WITH_SENDER, true);
+        return sendMessage(_chainIdTo, _targetContractAddress, _targetContractCalldata, flags, 0);
+    }
+
+    /// @inheritdoc IDeBridgeGate
+    function sendMessage(
+        uint256 _chainIdTo,
+        bytes memory _targetContractAddress,
+        bytes memory _targetContractCalldata,
+        uint256 _flags,
+        uint32 _referralCode
+    ) public payable override nonReentrant whenNotPaused
+      returns (bytes32 submissionId) {
+        if (_targetContractAddress.length == 0 || _targetContractCalldata.length == 0) {
+            revert WrongAutoArgument();
+        }
+
+        (uint256 amountAfterFee, bytes32 debridgeId, FeeParams memory feeParams) = _send(
+            "", // _permitEnvelope
+            address(0), // _token: we use native currency
+            0, // _amount to be bridged is set to zero because all amount goes to the claimer as the execution fee
+            _chainIdTo,
+            false // useAssetFee
+        );
+
+        SubmissionAutoParamsTo memory autoParams;
+        autoParams.executionFee = _normalizeTokenAmount(address(0), amountAfterFee);
+        autoParams.flags = _flags;
+        autoParams.fallbackAddress = _targetContractAddress;
+        autoParams.data = _targetContractCalldata;
+
+        return _publishSubmission(
+            debridgeId,
+            _chainIdTo,
+            0, // _amount to be bridged is set to zero because all amount goes to the claimer as the execution fee
+            _targetContractAddress,
+            feeParams,
+            _referralCode,
+            autoParams,
+            true // _hasAutoParams
+        );
+    }
+
+    /// @inheritdoc IDeBridgeGate
     function send(
         address _tokenAddress,
         uint256 _amount,
         uint256 _chainIdTo,
         bytes memory _receiver,
-        bytes memory _permit,
+        bytes memory _permitEnvelope,
         bool _useAssetFee,
         uint32 _referralCode,
         bytes calldata _autoParams
-    ) external payable override nonReentrant whenNotPaused {
+    ) external payable override nonReentrant whenNotPaused
+      returns (bytes32 submissionId) {
         bytes32 debridgeId;
         FeeParams memory feeParams;
         uint256 amountAfterFee;
         // the amount will be reduced by the protocol fee
         (amountAfterFee, debridgeId, feeParams) = _send(
-            _permit,
+            _permitEnvelope,
             _tokenAddress,
             _amount,
             _chainIdTo,
@@ -207,7 +255,9 @@ contract DeBridgeGate is
         if (_autoParams.length > 0) {
             autoParams = abi.decode(_autoParams, (SubmissionAutoParamsTo));
             autoParams.executionFee = _normalizeTokenAmount(_tokenAddress, autoParams.executionFee);
-            if (autoParams.executionFee > _amount) revert ProposedFeeTooHigh();
+            if (autoParams.executionFee > amountAfterFee) {
+                autoParams.executionFee = _normalizeTokenAmount(_tokenAddress, amountAfterFee);
+            }
             if (autoParams.data.length > 0 && autoParams.fallbackAddress.length == 0 ) revert WrongAutoArgument();
         }
 
@@ -216,7 +266,7 @@ contract DeBridgeGate is
         // round down amount in order not to bridge dust
         amountAfterFee = _normalizeTokenAmount(_tokenAddress, amountAfterFee);
 
-        _publishSubmission(
+        return _publishSubmission(
             debridgeId,
             _chainIdTo,
             amountAfterFee,
@@ -281,30 +331,6 @@ contract DeBridgeGate is
             _autoParams,
             isNativeToken
         );
-    }
-
-    /// @inheritdoc IDeBridgeGate
-    function flash(
-        address _tokenAddress,
-        address _receiver,
-        uint256 _amount,
-        bytes memory _data
-    ) external override nonReentrant whenNotPaused
-    {
-        bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
-        if (!getDebridge[debridgeId].exist) revert DebridgeNotFound();
-        uint256 currentFlashFee = (_amount * flashFeeBps) / BPS_DENOMINATOR;
-        uint256 balanceBefore = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
-
-        IERC20Upgradeable(_tokenAddress).safeTransfer(_receiver, _amount);
-        IFlashCallback(msg.sender).flashCallback(currentFlashFee, _data);
-
-        uint256 balanceAfter = IERC20Upgradeable(_tokenAddress).balanceOf(address(this));
-        if (balanceBefore + currentFlashFee > balanceAfter) revert FlashFeeNotPaid();
-
-        uint256 paid = balanceAfter - balanceBefore;
-        getDebridgeFeeInfo[debridgeId].collectedFees += paid;
-        emit Flash(msg.sender, _tokenAddress, _receiver, _amount, paid);
     }
 
     /// @dev Deploy a deToken(DeBridgeTokenProxy) for an asset
@@ -457,12 +483,6 @@ contract DeBridgeGate is
         deBridgeTokenDeployer = _deBridgeTokenDeployer;
     }
 
-    /// @dev Set defi controller.
-    /// @param _defiController Defi controller address.
-    function setDefiController(address _defiController) external onlyAdmin {
-        defiController = _defiController;
-    }
-
     /// @dev Set fee contract updater, that can update fix native fee
     /// @param _value new contract address.
     function setFeeContractUpdater(address _value) external onlyAdmin {
@@ -505,43 +525,6 @@ contract DeBridgeGate is
         emit WithdrawnFee(_debridgeId, amount);
     }
 
-    /// @inheritdoc IDeBridgeGate
-    function requestReserves(address _tokenAddress, uint256 _amount)
-        external
-        override
-        onlyDefiController
-        nonReentrant
-    {
-        bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
-        DebridgeInfo storage debridge = getDebridge[debridgeId];
-        if (!debridge.exist) revert DebridgeNotFound();
-        uint256 minReserves = (debridge.balance * debridge.minReservesBps) / BPS_DENOMINATOR;
-
-        if (minReserves + _amount > IERC20Upgradeable(_tokenAddress).balanceOf(address(this)))
-            revert NotEnoughReserves();
-
-        debridge.lockedInStrategies += _amount;
-        IERC20Upgradeable(_tokenAddress).safeTransfer(defiController, _amount);
-    }
-
-    /// @inheritdoc IDeBridgeGate
-    function returnReserves(address _tokenAddress, uint256 _amount)
-        external
-        override
-        onlyDefiController
-        nonReentrant
-    {
-        bytes32 debridgeId = getDebridgeId(getChainId(), _tokenAddress);
-        DebridgeInfo storage debridge = getDebridge[debridgeId];
-        if (!debridge.exist) revert DebridgeNotFound();
-        debridge.lockedInStrategies -= _amount;
-        IERC20Upgradeable(debridge.tokenAddress).safeTransferFrom(
-            defiController,
-            address(this),
-            _amount
-        );
-    }
-
     /// @dev Set fee converter proxy.
     /// @param _feeProxy Fee proxy address.
     function setFeeProxy(address _feeProxy) external onlyAdmin {
@@ -560,13 +543,6 @@ contract DeBridgeGate is
                 emit Unblocked(_submissionIds[i]);
             }
         }
-    }
-
-    /// @dev Update flash fees.
-    /// @param _flashFeeBps new fee in BPS
-    function updateFlashFee(uint256 _flashFeeBps) external onlyAdmin {
-        if (_flashFeeBps > BPS_DENOMINATOR) revert WrongArgument();
-        flashFeeBps = _flashFeeBps;
     }
 
     /// @dev Update discount.
@@ -655,9 +631,9 @@ contract DeBridgeGate is
     /// @dev Locks asset on the chain and enables minting on the other chain.
     /// @param _amount Amount to be transferred (note: the fee can be applied).
     /// @param _chainIdTo Chain id of the target chain.
-    /// @param _permit deadline + signature for approving the spender by signature.
+    /// @param _permitEnvelope Permit for approving the spender by signature. bytes (amount + deadline + signature)
     function _send(
-        bytes memory _permit,
+        bytes memory _permitEnvelope,
         address _tokenAddress,
         uint256 _amount,
         uint256 _chainIdTo,
@@ -670,14 +646,15 @@ contract DeBridgeGate is
         _validateToken(_tokenAddress);
 
         // Run _permit first. Avoid Stack too deep
-        if (_permit.length > 0) {
+        if (_permitEnvelope.length > 0) {
             // call permit before transferring token
-            uint256 deadline = _permit.toUint256(0);
-            (bytes32 r, bytes32 s, uint8 v) = _permit.parseSignature(32);
+            uint256 permitAmount = _permitEnvelope.toUint256(0);
+            uint256 deadline = _permitEnvelope.toUint256(32);
+            (bytes32 r, bytes32 s, uint8 v) = _permitEnvelope.parseSignature(64);
             IERC20Permit(_tokenAddress).permit(
                 msg.sender,
                 address(this),
-                _amount,
+                permitAmount,
                 deadline,
                 v,
                 r,
@@ -812,8 +789,7 @@ contract DeBridgeGate is
         uint32 _referralCode,
         SubmissionAutoParamsTo memory autoParams,
         bool hasAutoParams
-    ) internal {
-        bytes32 submissionId;
+    ) internal returns (bytes32 submissionId) {
         bytes memory packedSubmission = abi.encodePacked(
             SUBMISSION_PREFIX,
             _debridgeId,
@@ -1025,17 +1001,6 @@ contract DeBridgeGate is
 
     /* VIEW */
 
-    /// @inheritdoc IDeBridgeGate
-    function getDefiAvaliableReserves(address _tokenAddress)
-        external
-        view
-        override
-        returns (uint256)
-    {
-        DebridgeInfo storage debridge = getDebridge[getDebridgeId(getChainId(), _tokenAddress)];
-        return (debridge.balance * (BPS_DENOMINATOR - debridge.minReservesBps)) / BPS_DENOMINATOR;
-    }
-
     /// @dev Calculates asset identifier.
     /// @param _chainId Current chain id.
     /// @param _tokenAddress Address of the asset on the other chain.
@@ -1140,6 +1105,6 @@ contract DeBridgeGate is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 410; // 4.1.0
+        return 421; // 4.2.1
     }
 }

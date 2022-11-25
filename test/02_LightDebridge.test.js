@@ -42,7 +42,6 @@ contract("DeBridgeGate light mode", function () {
 
     const Debridge = await ethers.getContractFactory("MockDeBridgeGate", alice);
     const SignatureVerifier = await ethers.getContractFactory("SignatureVerifier", alice);
-    const DefiControllerFactory = await ethers.getContractFactory("DefiController", alice);
     const CallProxyFactory = await ethers.getContractFactory("CallProxy", alice);
     const WETH9 = await deployments.getArtifact("WETH9");
     const WETH9Factory = await ethers.getContractFactory(WETH9.abi, WETH9.bytecode, alice);
@@ -101,7 +100,6 @@ contract("DeBridgeGate light mode", function () {
       from: alice,
     });
 
-    this.defiController = await upgrades.deployProxy(DefiControllerFactory, []);
     this.callProxy = await upgrades.deployProxy(CallProxyFactory, []);
     const maxAmount = toWei("100000000000");
     const fixedNativeFee = toWei("0.00001");
@@ -129,7 +127,6 @@ contract("DeBridgeGate light mode", function () {
         this.weth.address,
         ZERO_ADDRESS,
         deBridgeTokenDeployer.address,
-        ZERO_ADDRESS,
         1, //overrideChainId
       ],
       {
@@ -199,25 +196,9 @@ contract("DeBridgeGate light mode", function () {
       assert.equal(this.signatureVerifier.address, newAggregator);
     });
 
-    it("should set defi controller if called by the admin", async function () {
-      const defiController = this.defiController.address;
-      await this.debridge.setDefiController(defiController, {
-        from: alice,
-      });
-      const newDefiController = await this.debridge.defiController();
-      assert.equal(defiController, newDefiController);
-    });
-
     it("should reject setting Verifier if called by the non-admin", async function () {
       await expectRevert(
         this.debridge.connect(bobAccount).setSignatureVerifier(ZERO_ADDRESS),
-        "AdminBadRole()"
-      );
-    });
-
-    it("should reject setting defi controller if called by the non-admin", async function () {
-      await expectRevert(
-        this.debridge.connect(bobAccount).setDefiController(ZERO_ADDRESS),
         "AdminBadRole()"
       );
     });

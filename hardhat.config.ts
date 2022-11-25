@@ -42,7 +42,7 @@ export default {
   solidity: {
     compilers: [
       {
-        version: "0.8.7",
+        version: "0.8.17",
         settings: {
           optimizer: {
             enabled: true,
@@ -161,10 +161,8 @@ export default {
     timeout: 100000
   },
   etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
-    apiKey: process.env.ETHERSCAN_KEY
-  },
+    apiKey: process.env.ETHERSCAN_API_KEY
+  }
 }
 
 task("upgrade", "Upgrade smart contract")

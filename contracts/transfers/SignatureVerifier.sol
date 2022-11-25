@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "./OraclesManager.sol";
 import "../interfaces/ISignatureVerifier.sol";
@@ -152,6 +152,6 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 201; // 2.0.1
+        return 202; // 2.0.2
     }
 }

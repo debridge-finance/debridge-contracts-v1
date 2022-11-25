@@ -24,6 +24,16 @@ Flag to call proxy with a sender contract
   uint256 public constant SEND_HASHED_DATA;
 ```
 Data is hash in DeBridgeGate send method
+## SEND_EXTERNAL_CALL_GAS_LIMIT
+```solidity
+  uint256 public constant SEND_EXTERNAL_CALL_GAS_LIMIT;
+```
+First 24 bytes from data is gas limit for external call
+## MULTI_SEND
+```solidity
+  uint256 public constant MULTI_SEND;
+```
+Support multi send for externall call
 
 # Functions
 ## getFlag

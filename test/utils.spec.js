@@ -47,11 +47,14 @@ const WORKER_ROLE = ethers.utils.keccak256(toUtf8Bytes("WORKER_ROLE"));
 
 
 async function permitWithDeadline(token, owner, spender, value, deadline, privKey) {
-  // return combined deadline + signature for passing to burn methods;
+  // return combined amount + deadline + signature for passing to burn methods;
   const permitSignature = await permit(token, owner, spender, value, deadline, privKey);
-  const deadlineHex = web3.utils.padLeft(web3.utils.toHex(deadline.toString()), 64);
+  const amountsPack =  web3.eth.abi.encodeParameters(
+    ['uint256','uint256'],
+    [value, deadline]
+  );
   //                                    remove first 0x
-  return deadlineHex + permitSignature.substring(2, permitSignature.length);
+  return amountsPack + permitSignature.substring(2, permitSignature.length);
 }
 
 
@@ -86,6 +89,19 @@ function packSubmissionAutoParamsFrom(executionFee, flags, fallbackAddress, data
   return packed;
 }
 
+function decodeAutoParamsTo( autoParams) {
+  return ethers.utils.defaultAbiCoder.decode([{
+    type: "tuple",
+    name: "SubmissionAutoParamsTo",
+    components: [
+      { name: "executionFee", type: 'uint256' },
+      { name: "flags", type: 'uint256' },
+      { name: "fallbackAddress", type:'bytes' },
+      { name: "data", type:'bytes' }
+    ]}],
+  autoParams );
+}
+
 async function submissionSignatures(_web3, oracleKeys, submissionId) {
   let signatures = "0x";
   for (let oracleKey of oracleKeys) {
@@ -114,4 +130,5 @@ module.exports = {
   packSubmissionAutoParamsFrom,
   submissionSignatures,
   normalizeTokenAmount,
+  decodeAutoParamsTo
 }

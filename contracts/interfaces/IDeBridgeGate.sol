@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 interface IDeBridgeGate {
     /* ========== STRUCTS ========== */
@@ -74,7 +74,56 @@ interface IDeBridgeGate {
         uint256 nativeChainId,
         bytes memory nativeAddress);
 
+    /// @dev Returns address of the proxy to execute user's calls.
+    function callProxy() external returns (address);
+
+    /// @dev Fallback fixed fee in native asset, used if a chain fixed fee is set to 0
+    function globalFixedNativeFee() external returns (uint256);
+
+    /// @dev Fallback transfer fee in BPS, used if a chain transfer fee is set to 0
+    function globalTransferFeeBps() external returns (uint16);
+
     /* ========== FUNCTIONS ========== */
+
+    /// @dev Submits the message to the deBridge infrastructure to be broadcasted to another supported blockchain (identified by _dstChainId)
+    ///      with the instructions to call the _targetContractAddress contract using the given _targetContractCalldata
+    /// @notice NO ASSETS ARE BROADCASTED ALONG WITH THIS MESSAGE
+    /// @notice DeBridgeGate only accepts submissions with msg.value (native ether) covering a small protocol fee
+    ///         (defined in the globalFixedNativeFee property). Any excess amount of ether passed to this function is
+    ///         included in the message as the execution fee - the amount deBridgeGate would give as an incentive to
+    ///         a third party in return for successful claim transaction execution on the destination chain.
+    /// @notice DeBridgeGate accepts a set of flags that control the behaviour of the execution. This simple method
+    ///         sets the default set of flags: REVERT_IF_EXTERNAL_FAIL, PROXY_WITH_SENDER
+    /// @param _dstChainId ID of the destination chain.
+    /// @param _targetContractAddress A contract address to be called on the destination chain
+    /// @param _targetContractCalldata Calldata to execute against the target contract on the destination chain
+    function sendMessage(
+        uint256 _dstChainId,
+        bytes memory _targetContractAddress,
+        bytes memory _targetContractCalldata
+    ) external payable returns (bytes32 submissionId);
+
+    /// @dev Submits the message to the deBridge infrastructure to be broadcasted to another supported blockchain (identified by _dstChainId)
+    ///      with the instructions to call the _targetContractAddress contract using the given _targetContractCalldata
+    /// @notice NO ASSETS ARE BROADCASTED ALONG WITH THIS MESSAGE
+    /// @notice DeBridgeGate only accepts submissions with msg.value (native ether) covering a small protocol fee
+    ///         (defined in the globalFixedNativeFee property). Any excess amount of ether passed to this function is
+    ///         included in the message as the execution fee - the amount deBridgeGate would give as an incentive to
+    ///         a third party in return for successful claim transaction execution on the destination chain.
+    /// @notice DeBridgeGate accepts a set of flags that control the behaviour of the execution. This simple method
+    ///         sets the default set of flags: REVERT_IF_EXTERNAL_FAIL, PROXY_WITH_SENDER
+    /// @param _dstChainId ID of the destination chain.
+    /// @param _targetContractAddress A contract address to be called on the destination chain
+    /// @param _targetContractCalldata Calldata to execute against the target contract on the destination chain
+    /// @param _flags A bitmask of toggles listed in the Flags library
+    /// @param _referralCode Referral code to identify this submission
+    function sendMessage(
+        uint256 _dstChainId,
+        bytes memory _targetContractAddress,
+        bytes memory _targetContractCalldata,
+        uint256 _flags,
+        uint32 _referralCode
+    ) external payable returns (bytes32 submissionId);
 
     /// @dev This method is used for the transfer of assets [from the native chain](https://docs.debridge.finance/the-core-protocol/transfers#transfer-from-native-chain).
     /// It locks an asset in the smart contract in the native chain and enables minting of deAsset on the secondary chain.
@@ -82,7 +131,7 @@ interface IDeBridgeGate {
     /// @param _amount Amount to be transferred (note: the fee can be applied).
     /// @param _chainIdTo Chain id of the target chain.
     /// @param _receiver Receiver address.
-    /// @param _permit deadline + signature for approving the spender by signature.
+    /// @param _permitEnvelope Permit for approving the spender by signature. bytes (amount + deadline + signature)
     /// @param _useAssetFee use assets fee for pay protocol fix (work only for specials token)
     /// @param _referralCode Referral code
     /// @param _autoParams Auto params for external call in target network
@@ -91,11 +140,11 @@ interface IDeBridgeGate {
         uint256 _amount,
         uint256 _chainIdTo,
         bytes memory _receiver,
-        bytes memory _permit,
+        bytes memory _permitEnvelope,
         bool _useAssetFee,
         uint32 _referralCode,
         bytes calldata _autoParams
-    ) external payable;
+    ) external payable returns (bytes32 submissionId) ;
 
     /// @dev Is used for transfers [into the native chain](https://docs.debridge.finance/the-core-protocol/transfers#transfer-from-secondary-chain-to-native-chain)
     /// to unlock the designated amount of asset from collateral and transfer it to the receiver.
@@ -115,32 +164,6 @@ interface IDeBridgeGate {
         bytes calldata _signatures,
         bytes calldata _autoParams
     ) external;
-
-    /// @dev Get a flash loan, msg.sender must implement IFlashCallback
-    /// @param _tokenAddress An asset to loan
-    /// @param _receiver Where funds should be sent
-    /// @param _amount Amount to loan
-    /// @param _data Data to pass to sender's flashCallback function
-    function flash(
-        address _tokenAddress,
-        address _receiver,
-        uint256 _amount,
-        bytes memory _data
-    ) external;
-
-    /// @dev Get reserves of a token available to use in defi
-    /// @param _tokenAddress Token address
-    function getDefiAvaliableReserves(address _tokenAddress) external view returns (uint256);
-
-    /// @dev Request the assets to be used in DeFi protocol.
-    /// @param _tokenAddress Asset address.
-    /// @param _amount Amount of tokens to request.
-    function requestReserves(address _tokenAddress, uint256 _amount) external;
-
-    /// @dev Return the assets that were used in DeFi  protocol.
-    /// @param _tokenAddress Asset address.
-    /// @param _amount Amount of tokens to claim.
-    function returnReserves(address _tokenAddress, uint256 _amount) external;
 
     /// @dev Withdraw collected fees to feeProxy
     /// @param _debridgeId Asset identifier.
@@ -228,15 +251,6 @@ interface IDeBridgeGate {
     event Blocked(bytes32 submissionId);
     /// @dev Emitted when a submission is unblocked.
     event Unblocked(bytes32 submissionId);
-
-    /// @dev Emitted when a flash loan is successfully returned.
-    event Flash(
-        address sender,
-        address indexed tokenAddress,
-        address indexed receiver,
-        uint256 amount,
-        uint256 paid
-    );
 
     /// @dev Emitted when fee is withdrawn.
     event WithdrawnFee(bytes32 debridgeId, uint256 fee);

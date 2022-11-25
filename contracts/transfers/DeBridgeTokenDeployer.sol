@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -61,6 +61,10 @@ contract DeBridgeTokenDeployer is
 
     /* ========== CONSTRUCTOR  ========== */
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {
+    }
+
     /// @dev Constructor that initializes the most important configurations.
     /// @param _tokenImplementation Address of deBridgeToken implementation
     /// @param _deBridgeTokenAdmin Address to set as admin for any deployed deBridgeToken
@@ -120,7 +124,7 @@ contract DeBridgeTokenDeployer is
         bytes memory bytecode = abi.encodePacked(type(DeBridgeTokenProxy).creationCode, constructorArgs);
 
         assembly {
-            // debridgeId is a salt
+        // debridgeId is a salt
             deBridgeTokenAddress := create2(0, add(bytecode, 0x20), mload(bytecode), _debridgeId)
 
             if iszero(extcodesize(deBridgeTokenAddress)) {
@@ -182,6 +186,6 @@ contract DeBridgeTokenDeployer is
     // ============ Version Control ============
     /// @dev Get this contract's version
     function version() external pure returns (uint256) {
-        return 110; // 1.1.0
+        return 111; // 1.1.1
     }
 }

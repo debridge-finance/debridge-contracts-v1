@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-pragma solidity 0.8.7;
+pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/interfaces/IERC20MetadataUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -40,6 +40,10 @@ contract FeesCalculator is
     }
 
     /* ========== CONSTRUCTOR  ========== */
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {
+    }
 
     function initialize(
         DeBridgeGate _gate
@@ -193,6 +197,6 @@ contract FeesCalculator is
 
     // ============ Version Control ============
     function version() external pure returns (uint256) {
-        return 102; // 1.0.2
+        return 103; // 1.0.3
     }
 }
