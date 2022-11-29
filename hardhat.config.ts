@@ -124,7 +124,7 @@ export default {
       // accounts:{mnemonic:process.env.MNEMONIC},
       url: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      gasPrice: 95e9,
+      // gasPrice: 95e9,
       // gas: 6.9e6,
       chainId: 1
     },
@@ -145,7 +145,7 @@ export default {
     MATIC: {
       url: "https://polygon-rpc.com/",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      // gasPrice: 5e9,
+      gasPrice: 100e9,
       // gas: 6e6,
       chainId: 137
     },
@@ -156,6 +156,26 @@ export default {
       // gas: 6e6,
       chainId: 42161
     },
+    FANTOM: {
+      url: "https://rpc.ftm.tools/",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 250
+    },
+    fantomTest: {
+      url: "https://rpc.testnet.fantom.network/",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 4002
+    },
+    AVALANCHE: {
+      url: "https://api.avax.network/ext/bc/C/rpc",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 43114
+    },
+    avalancheTest: {
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 43113
+    }
   },
   mocha: {
     timeout: 100000
