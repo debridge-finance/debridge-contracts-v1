@@ -4,9 +4,9 @@ pragma solidity ^0.8.7;
 interface ICallProxy {
 
     /// @dev Chain from which the current submission is received
-    function submissionChainIdFrom() external returns (uint256);
+    function submissionChainIdFrom() external view returns (uint256);
     /// @dev Native sender of the current submission
-    function submissionNativeSender() external returns (bytes memory);
+    function submissionNativeSender() external view returns (bytes memory);
 
     /// @dev Used for calls where native asset transfer is involved.
     /// @param _reserveAddress Receiver of the tokens if the call to _receiver fails

@@ -67,21 +67,21 @@ interface IDeBridgeGate {
 
     /// @dev Returns whether the transfer with the submissionId was claimed.
     /// submissionId is generated in getSubmissionIdFrom
-    function isSubmissionUsed(bytes32 submissionId) external returns (bool);
+    function isSubmissionUsed(bytes32 submissionId) view external returns (bool);
 
     /// @dev Returns native token info by wrapped token address
-    function getNativeInfo(address token) external returns (
+    function getNativeInfo(address token) view external returns (
         uint256 nativeChainId,
         bytes memory nativeAddress);
 
     /// @dev Returns address of the proxy to execute user's calls.
-    function callProxy() external returns (address);
+    function callProxy() external view returns (address);
 
     /// @dev Fallback fixed fee in native asset, used if a chain fixed fee is set to 0
-    function globalFixedNativeFee() external returns (uint256);
+    function globalFixedNativeFee() external view returns (uint256);
 
     /// @dev Fallback transfer fee in BPS, used if a chain transfer fee is set to 0
-    function globalTransferFeeBps() external returns (uint16);
+    function globalTransferFeeBps() external view returns (uint16);
 
     /* ========== FUNCTIONS ========== */
 
