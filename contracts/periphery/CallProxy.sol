@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../interfaces/ICallProxy.sol";
+import "../interfaces/IDeCallProxy";
 import "../libraries/Flags.sol";
 import "../libraries/BytesLib.sol";
 import "../libraries/MultiSendCallOnly.sol";
@@ -31,6 +32,8 @@ contract CallProxy is Initializable, AccessControlUpgradeable, MultiSendCallOnly
     uint256 public override submissionChainIdFrom;
     /// @dev Native sender of the current submission
     bytes public override submissionNativeSender;
+    /// @dev Proxy to process deCalls
+    address public deCallProxy;
 
     uint256 private _lock;
 
@@ -167,10 +170,11 @@ contract CallProxy is Initializable, AccessControlUpgradeable, MultiSendCallOnly
         bytes memory _nativeSender,
         uint256 _chainIdFrom,
         uint256 _flags
-    ) internal returns (bool result) {
+    ) internal virtual returns (bool result) {
         bool storeSender = _flags.getFlag(Flags.PROXY_WITH_SENDER);
         bool checkGasLimit = _flags.getFlag(Flags.SEND_EXTERNAL_CALL_GAS_LIMIT);
         bool multisendFlag = _flags.getFlag(Flags.MULTI_SEND);
+        bool deCallFlag = _flags.getFlag(Flags.DE_CALL);
         // Temporary write to a storage nativeSender and chainIdFrom variables.
         // External contract can read them during a call if needed
         if (storeSender) {
@@ -203,9 +207,14 @@ contract CallProxy is Initializable, AccessControlUpgradeable, MultiSendCallOnly
         // called against EOA, causing undesired behavior and possible asset loss.
         // Thus, we allow calls only to contracts explicitly
         else if (_destination.isContract()) {
-            assembly {
-                result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
+            if (deCallFlag) {
+                result = IDeCallProxy(deCallProxy){value:_value, gas: safeTxGas} (_destination, _chainIdFrom, _nativeSender);
+            } else {
+                assembly {
+                    result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
+                }
             }
+
         }
         // clear storage variables to get gas refund
         if (storeSender) {

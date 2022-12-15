@@ -17,6 +17,8 @@ library Flags {
     uint256 public constant SEND_EXTERNAL_CALL_GAS_LIMIT = 4;
     /// @dev Support multi send for externall call
     uint256 public constant MULTI_SEND = 5;
+    /// @dev Use deCall interface on the receiving contract
+    uint256 public constant DE_CALL = 6;
 
     /// @dev Get flag
     /// @param _packedFlags Flags packed to uint256
