@@ -208,13 +208,12 @@ contract CallProxy is Initializable, AccessControlUpgradeable, MultiSendCallOnly
         // Thus, we allow calls only to contracts explicitly
         else if (_destination.isContract()) {
             if (deCallFlag) {
-                result = IDeCallProxy(deCallProxy){value:_value, gas: safeTxGas} (_destination, _chainIdFrom, _nativeSender);
+                result = IDeCallProxy(deCallProxy){value:_value, gas: safeTxGas}.deCall(_destination, _chainIdFrom, _nativeSender);
             } else {
                 assembly {
                     result := call(safeTxGas, _destination, _value, add(_data, 0x20), mload(_data), 0, 0)
                 }
             }
-
         }
         // clear storage variables to get gas refund
         if (storeSender) {
