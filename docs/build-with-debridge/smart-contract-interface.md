@@ -54,7 +54,7 @@ struct SubmissionAutoParamsTo {
 
 ### Flags
 
-Flags are a bit mask that allows customizing the transaction execution flow on the destination chain.
+Flags are a bit mask that allows customizing the transaction execution flow on the destination chain. The bit mask means you can set several flags simultaneously by setting the corresponding bit of `flags` variable to 1
 
 ```solidity
 library Flags {
