@@ -91,7 +91,7 @@ Once you have deUSDC and USDC/USDT/BUSD in your wallet balance on BNB Chain (you
 
 Now LP tokens can be staked into the [Ellipsis Finance gauge](https://ellipsis.finance/pool/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c) to receive additional $EPX rewards:
 
-![](<../.gitbook/assets/image (2).png>)
+![](<../.gitbook/assets/image (2) (1).png>)
 
 ### **Avalanche deUSDC/av3CRV pool**
 
