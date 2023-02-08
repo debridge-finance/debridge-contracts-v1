@@ -1,13 +1,17 @@
 # Talks, Videos, and Articles
 
-#### **AMAs**
+#### **AMAs and Twitter Spaces**
 
 | Date        | Title                                                                                                                                                           |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 24-Jan-2023 | [Beyond Bridges: A deep-dive into cross-chain interoperability](https://www.youtube.com/watch?v=O\_YX3MFlt-0)                                                   |
+| 14-Dec-2022 | [Partner Spotlight: Gasless anychain trading with ZeroSwap](https://www.youtube.com/watch?v=RzZWTeIRkXw)                                                        |
+| 17-Nov-2022 | [Scaling DeFi for Mass Adoption with Sushi & Astrolab](https://www.youtube.com/watch?v=j4OECkLk24Y\&t=2s)                                                       |
 | 8-Sep-2022  | [Building Toward Web2 UX in Web3 with **Unstoppable Domains**](https://www.youtube.com/watch?v=\_OCGbbDIIDc)****                                                |
 | 17-Aug-2022 | [Building Towards a Secure Cross-Chain Future with **David Schwed (Halborn) and Mudit Gupta (Polygon)**](https://www.youtube.com/watch?v=SLHR-tOUllo\&t=4s)**** |
 | 1-Jul-2022  | [AMA with **Magic Square**](https://twitter.com/deBridgeFinance/status/1542463031913115649) ****                                                                |
 | 24-Jun-2022 | [Going Cross-Chain with deBridge: **Arbitrum**](https://twitter.com/deBridgeFinance/status/1539612877765906432) ****                                            |
+| 17-Jun-2022 | [Going Cross-Chain with deBridge: Fantom](https://www.youtube.com/watch?v=rmXK6gJvIcA\&t=6s)                                                                    |
 | 2-Dec-2021  | [**MiGoi** - deBridge AMA session](https://www.youtube.com/watch?v=nIYUXku7F\_Y)                                                                                |
 | 17-Sep-2021 | [**Halborn** AMA with Alex Smirnov of deBridge](https://www.youtube.com/watch?v=V\_kqlcRCCD8\&t=527s)                                                           |
 
