@@ -1,7 +1,7 @@
 ---
 description: >-
-  Examples of cross-chain use cases enabled by deBridge infrastructure. Click
-  and read for more information!
+  Here are some examples of cross-chain use cases enabled by deBridge
+  infrastructure. Click and read for more information!
 ---
 
 # deBridge Use Cases
