@@ -10,13 +10,13 @@ Here are the instructions on how to deposit liquidity into the pool for each blo
 
 
 
-| Blockchain/L2      | Link                                                                         | Pool address                                                                                                             |
-| ------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Arbitrum (deUSDC)  | [https://arbitrum.curve.fi/factory/17](https://arbitrum.curve.fi/factory/17) |  [0x76b44e0cf9bd024dbed09e1785df295d59770138](https://arbiscan.io/address/0x76b44e0cf9bd024dbed09e1785df295d59770138)    |
-| Arbitrum (deETH)   | [https://arbitrum.curve.fi/factory/15](https://arbitrum.curve.fi/factory/15) | [0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0](https://arbiscan.io/address/0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0)     |
-| Polygon (deUSDC)   | [https://polygon.curve.fi/factory/111](https://polygon.curve.fi/factory/111) | [0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2](https://polygonscan.com/address/0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2) |
-| BNB Chain (deUSDC) | [https://ellipsis.finance/pool/4](https://ellipsis.finance/pool/4)           | [0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c](https://bscscan.com/address/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c)     |
-| Avalanche (deUSDC) | [https://avax.curve.fi/factory/61](https://avax.curve.fi/factory/61)         | [0xd39016475200ab8957e9c772c949ef54bda69111](https://snowtrace.io/address/0xd39016475200ab8957e9c772c949ef54bda69111)    |
+| Blockchain/L2      | Link                                                                                                                                                 | Pool address                                                                                                             |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Arbitrum (deUSDC)  | [https://arbitrum.curve.fi/factory/17](https://arbitrum.curve.fi/factory/17)                                                                         |  [0x76b44e0cf9bd024dbed09e1785df295d59770138](https://arbiscan.io/address/0x76b44e0cf9bd024dbed09e1785df295d59770138)    |
+| Arbitrum (deETH)   | [https://arbitrum.curve.fi/factory/15](https://arbitrum.curve.fi/factory/15)                                                                         | [0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0](https://arbiscan.io/address/0x0a824b5d4c96ea0ec46306efbd34bf88fe1277e0)     |
+| Polygon (deUSDC)   | [https://polygon.curve.fi/factory/111](https://polygon.curve.fi/factory/111)                                                                         | [0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2](https://polygonscan.com/address/0xda43bfd7ecc6835aa6f1761ced30b986a574c0d2) |
+| BNB Chain (deUSDC) | [https://ellipsis.finance/pool/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c](https://ellipsis.finance/pool/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c) | [0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c](https://bscscan.com/address/0x5A7d2F9595eA00938F3B5BA1f97a85274f20b96c)     |
+| Avalanche (deUSDC) | [https://avax.curve.fi/factory/61](https://avax.curve.fi/factory/61)                                                                                 | [0xd39016475200ab8957e9c772c949ef54bda69111](https://snowtrace.io/address/0xd39016475200ab8957e9c772c949ef54bda69111)    |
 
 ### **Arbitrum deUSDC/2CRV pool**
 
