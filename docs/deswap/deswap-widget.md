@@ -14,7 +14,7 @@ The widget is based on web technology, that's why your app must support technolo
 
 You can use any type of framework for the web app. The launch of the widget is going on through iframe embedded on the page. The API integration is based on JavaScript.
 
-****
+
 
 ### **Widget embedding**
 
@@ -30,7 +30,7 @@ https://https://app.debridge.finance/assets/scripts/widget.js
 
 * Add html element with unique id on page
 * Generate js object with the description of the widget settings. You can use the builder of deSwap Widget for auto-generation js object.
-* Initialize deBridge.widget(initObject) , where initObject. - **** object with all settings.
+* Initialize deBridge.widget(initObject) , where initObject. - object with all settings.
 
 Initializing must be executed after connection from step **1.**
 

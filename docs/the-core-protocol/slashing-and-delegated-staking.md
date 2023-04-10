@@ -6,7 +6,7 @@ description: >-
 
 # Slashing and Delegated Staking
 
-![](<../.gitbook/assets/A (1).png>)
+<figure><img src="../.gitbook/assets/docs.debridge.finance 3.png" alt=""><figcaption></figcaption></figure>
 
 Delegated staking and slashing mechanics act as a backbone of protocol security and prevent economic incentives for validators to get into collusion and forge messages.
 

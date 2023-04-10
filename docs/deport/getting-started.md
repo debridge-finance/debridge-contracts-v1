@@ -4,7 +4,7 @@
 
 ![](<../.gitbook/assets/27 (1).png>)
 
-****[**dePort**](https://app.debridge.finance/deport) is a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains.&#x20;
+[**dePort**](https://app.debridge.finance/deport) is a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains.&#x20;
 
 dePort utilizes a locking and minting approach where the native token is locked/unlocked in a deBridgeGate smart contract in the native chain and its synthetic representation (deAsset) is minted/burnt in secondary chains.
 

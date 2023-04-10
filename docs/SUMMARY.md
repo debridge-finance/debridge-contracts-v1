@@ -25,6 +25,10 @@
 * [Custom Linking](deswap/custom-linking.md)
 * [deSwap Widget](deswap/deswap-widget.md)
 
+## DLN
+
+* [Integrating with DLN](dln/integrating-with-dln.md)
+
 ## 💸 dePort
 
 * [Getting started](deport/getting-started.md)
