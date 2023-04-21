@@ -2,7 +2,7 @@
 
 **deBridge** is a secure interoperability layer for Web3 that enables arbitrary complex cross-chain interactions in a single transaction. Due to the ability to simultaneously send messages and value deBridge acts as a unified framework for all cross-chain needs and is capable of interconnecting any smart contract on any blockchain.
 
-![Cross-chain smart contract calls through deBridge](../.gitbook/assets/image.png)
+![Cross-chain smart contract calls through deBridge](<../.gitbook/assets/image (1).png>)
 
 This guide is a great starting point that covers all necessary topics to get you started building cross-chain interactions on top of the deBridge protocol and its' infrastructure.
 

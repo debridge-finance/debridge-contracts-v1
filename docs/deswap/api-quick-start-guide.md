@@ -128,9 +128,9 @@ Other than that, the transaction is ready to be signed by the sender and sent to
 
 ### Best practices
 
-Don't forget to specify your invitation code as the `referralCode` parameter when calling the `/transaction` endpoint. If you don't have it, you can get one by pressing the WAGMI button at [https://app.debridge.finance/](https://app.debridge.finance/). Governance may thank you later for being an early builder.
+Don't forget to specify your invitation code as the `referralCode` parameter when calling the `/transaction` endpoint. If you don't have it, you can get one by pressing the INVITE FRIENDS button at [https://app.debridge.finance/](https://app.debridge.finance/). Governance may thank you later for being an early builder.
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
 
 Don't delay the transaction: since cryptoassets are highly volatile, the prices may change drastically within a short period of time which may cause swaps to fail because of changed prices and outdated slippage constraints. We recommend submitting the transaction within two minutes after construction or refreshing it's `data` by calling the `/transaction` endpoint again.
 

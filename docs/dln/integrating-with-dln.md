@@ -127,7 +127,7 @@ struct OrderCreation {
 Subsequent arguments of the `createOrder()` function can be safely omitted by specifying default values:
 
 * `_affiliateFee` can be set to empty bytes array (`0x`); this argument allows you to ask the protocol to keep the given amount as an affiliate fee in favour of affiliate beneficiary and release it whenever an order is completely fulfilled, whis is useful if you built a protocol and place orders on behalf of your users. To do so, concat the address and the amount into a single bytes array, whose length is expected to be exactly 52 bytes.
-* `_referralCode` can be set to zero (`0`); it is an invitation code to identify your transaction. If you don't have it, you can get one by pressing the WAGMI button at [app.debridge.finance](https://app.debridge.finance). Governance may thank you later for being an early builder.
+* `_referralCode` can be set to zero (`0`); it is an invitation code to identify your transaction. If you don't have it, you can get one by pressing the INVITE FRIENDS button at [app.debridge.finance](https://app.debridge.finance). Governance may thank you later for being an early builder.
 * `_permitEnvelope` can be set to empty bytes array (`0x`); it allows you to use an EIP-2612-compliant signed approval so you don't have to give a prior spending approval to allow the `DlnSource` contract to spend tokens on your behalf. This argument accepts `amount` + `deadline` + `signature` as a single bytes array
 
 #### Making a call
