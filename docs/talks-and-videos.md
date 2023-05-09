@@ -31,17 +31,19 @@
 
 #### Podcasts and Interviews
 
-| Date        | Title                                                                                                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 15-Aug-2022 | [**CryptoSlate** \| Op-ed: Reimagining cross-chain bridges: Let’s stop trying to be liquidity protocols](https://cryptoslate.com/reimagining-cross-chain-bridges-lets-stop-trying-to-be-liquidity-protocols/) |
-| 29-Jul-2022 | [**CoinGecko Podcast** \| The Future of Cross-Chain Bridging w/ Alex Smirnov, Co-Founder of deBridge -66](https://www.youtube.com/watch?v=JtzKQij1gWI)                                                        |
-| 04-May-2022 | [**Divi Crypto Podcast** \| Interview with deBridge co-founder Alex Smirnov](https://twitter.com/diviproject/status/1521838696231845888?s=21\&t=KRKZoZEHCDwreWwiwaLBlQ)                                       |
-| 30-Mar-2022 | [**Journal du Coin** \| Interview with Alex Smirnov from DeBridge - Avalanche Summit Barcelona 2022](https://www.youtube.com/watch?v=HjWsFFOOE5U)                                                             |
-| 16-Dec-2021 | [**The Decentralized Life Podcast** #15](https://pod.co/decentralized/15-with-alex-smirnov-co-founder-of-debridge)                                                                                            |
-| 9-Dec-2021  | [**The Bitcoin Podcast** #376 Interview](http://thebitcoinpodcast.com/the-bitcoin-podcast-376/)                                                                                                               |
-| 1-Dec-2021  | [**Cyber Academy** Кроссчейн-мосты: current state ✨ Андрей Великий, Алекс Смирнов, Алекс Шевченко, Петр Королев](https://www.youtube.com/watch?v=sKvkDZVBcVE)                                                 |
-| 1-Dec-2021  | [**DEFI TIMES** - Betting on the Multi-Chain Future ](https://open.spotify.com/episode/4G17XvDwXQzMMHvdYKjKlP?si=2130e9f5a8db46da\&nd=1)                                                                      |
-| 8-Nov-2021  | [Crypto Current Episode #227](https://www.youtube.com/watch?v=PahLcN8j\_kI)                                                                                                                                   |
+| Date          | Title                                                                                                                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 19-March-2023 | [**Node Guardians** \| Towards a decentralized liquidity network with deBridge & DLN](https://www.youtube.com/watch?v=N7aUKfi4FCA)                                                                            |
+| 15-Aug-2022   | [**CryptoSlate** \| Op-ed: Reimagining cross-chain bridges: Let’s stop trying to be liquidity protocols](https://cryptoslate.com/reimagining-cross-chain-bridges-lets-stop-trying-to-be-liquidity-protocols/) |
+| 29-Jul-2022   | [**CoinGecko Podcast** \| The Future of Cross-Chain Bridging w/ Alex Smirnov, Co-Founder of deBridge -66](https://www.youtube.com/watch?v=JtzKQij1gWI)                                                        |
+| 04-May-2022   | [**Divi Crypto Podcast** \| Interview with deBridge co-founder Alex Smirnov](https://twitter.com/diviproject/status/1521838696231845888?s=21\&t=KRKZoZEHCDwreWwiwaLBlQ)                                       |
+| 30-Mar-2022   | [**Journal du Coin** \| Interview with Alex Smirnov from DeBridge - Avalanche Summit Barcelona 2022](https://www.youtube.com/watch?v=HjWsFFOOE5U)                                                             |
+| 16-Dec-2021   | [**The Decentralized Life Podcast** #15](https://pod.co/decentralized/15-with-alex-smirnov-co-founder-of-debridge)                                                                                            |
+| 9-Dec-2021    | [**The Bitcoin Podcast** #376 Interview](http://thebitcoinpodcast.com/the-bitcoin-podcast-376/)                                                                                                               |
+| 1-Dec-2021    | [**Cyber Academy** Кроссчейн-мосты: current state ✨ Андрей Великий, Алекс Смирнов, Алекс Шевченко, Петр Королев](https://www.youtube.com/watch?v=sKvkDZVBcVE)                                                 |
+| 1-Dec-2021    | [**DEFI TIMES** - Betting on the Multi-Chain Future ](https://open.spotify.com/episode/4G17XvDwXQzMMHvdYKjKlP?si=2130e9f5a8db46da\&nd=1)                                                                      |
+| 8-Nov-2021    | [Crypto Current Episode #227](https://www.youtube.com/watch?v=PahLcN8j\_kI)                                                                                                                                   |
+|               |                                                                                                                                                                                                               |
 
 
 
