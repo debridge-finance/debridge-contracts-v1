@@ -1,5 +1,13 @@
 # Cross-Chain Swaps Liquidity
 
+{% hint style="info" %}
+[deSwap App](https://app.debridge.finance/deswap) and API were migrated to [DLN](https://dln.trade/) — a high-performance cross-chain trading infrastructure built on deBridge with a unique 0-TVL design (no liquidity pools).
+
+Read the full announcement here: [https://twitter.com/deBridgeFinance/status/1655914135488696322](https://twitter.com/deBridgeFinance/status/1655914135488696322)
+
+If you've provided liquidity to the deSwap pools listed below, please withdraw it
+{% endhint %}
+
 ## **Provision of liquidity for cross-chain pools at Curve**
 
 deBridge is a decentralized infrastructure that is fully composable with the existing DeFi ecosystem. That’s why we don’t need to invent our own AMM or DEX, but just create liquidity pools for deAssets in existing DEXs. In every blockchain supported by deBridge, there will be a liquidity pool for deUSDC at Curve or protocols that support the concept of the stable swap.
