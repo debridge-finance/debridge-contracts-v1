@@ -8,7 +8,7 @@ Read the full announcement here: [https://twitter.com/deBridgeFinance/status/165
 If you've provided liquidity to the deSwap pools listed below, please withdraw it
 {% endhint %}
 
-## **Provision of liquidity for cross-chain pools at Curve**
+## **deSwap cross-chain pools at Curve**
 
 deBridge is a decentralized infrastructure that is fully composable with the existing DeFi ecosystem. That’s why we don’t need to invent our own AMM or DEX, but just create liquidity pools for deAssets in existing DEXs. In every blockchain supported by deBridge, there will be a liquidity pool for deUSDC at Curve or protocols that support the concept of the stable swap.
 

@@ -32,12 +32,4 @@ dePort
 
 The Chain IDs of all chains can be found at [https://chainlist.org/](https://chainlist.org/) or in the spreadsheet below
 
-|   ID  | Chain               | Token request                          |
-| :---: | ------------------- | -------------------------------------- |
-|   1   | Ethereum            | GET https://tokens.1inch.io/v1.1/1     |
-|   56  | Binance Smart Chain | GET https://tokens.1inch.io/v1.1/56    |
-|  128  | Heco                | GET https://tokens.1inch.io/v1.1/128   |
-|  137  | Polygon             | GET https://tokens.1inch.io/v1.1/137   |
-| 42161 | Arbitrum            | GET https://tokens.1inch.io/v1.1/42161 |
-| 43114 | Avalanche           | GET https://tokens.1inch.io/v1.1/43114 |
-|  250  | Fantom              | GET https://tokens.1inch.io/v1.1/250   |
+<table><thead><tr><th width="150" align="center">ID</th><th width="218.51602023608768">Chain</th><th>Token request</th></tr></thead><tbody><tr><td align="center">1</td><td>Ethereum</td><td>GET https://tokens.1inch.io/v1.1/1</td></tr><tr><td align="center">56</td><td>Binance Smart Chain</td><td>GET https://tokens.1inch.io/v1.1/56</td></tr><tr><td align="center">128</td><td>Heco</td><td>GET https://tokens.1inch.io/v1.1/128</td></tr><tr><td align="center">137</td><td>Polygon</td><td>GET https://tokens.1inch.io/v1.1/137</td></tr><tr><td align="center">42161</td><td>Arbitrum</td><td>GET https://tokens.1inch.io/v1.1/42161</td></tr><tr><td align="center">43114</td><td>Avalanche</td><td>GET https://tokens.1inch.io/v1.1/43114</td></tr><tr><td align="center">250</td><td>Fantom</td><td>GET https://tokens.1inch.io/v1.1/250</td></tr></tbody></table>

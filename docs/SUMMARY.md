@@ -17,17 +17,13 @@
 * [Smart contract interface](build-with-debridge/smart-contract-interface.md)
 * [Development tools](build-with-debridge.md)
 
-## 🔁 deSwap
+## 🔁 Cross-chain trading
 
-* [API Quick Start Guide](deswap/api-quick-start-guide.md)
-* [Transaction Bundling](deswap/transaction-bundling.md)
-* [Cross-Chain Swaps Liquidity](deswap/cross-chain-swaps-liquidity.md)
-* [Custom Linking](deswap/custom-linking.md)
-* [deSwap Widget](deswap/deswap-widget.md)
-
-## DLN
-
-* [Integrating with DLN](dln/integrating-with-dln.md)
+* [API Quick Start Guide](cross-chain-trading/api-quick-start-guide.md)
+* [Transaction Bundling](cross-chain-trading/transaction-bundling.md)
+* [Cross-Chain Swaps Liquidity](cross-chain-trading/cross-chain-swaps-liquidity.md)
+* [Custom Linking](cross-chain-trading/custom-linking.md)
+* [deSwap Widget](cross-chain-trading/deswap-widget.md)
 
 ## 💸 dePort
 
