@@ -11,6 +11,8 @@
 ## 🛠 Build with deBridge
 
 * [Getting started](build-with-debridge/getting-started.md)
+* [Getting started with Solana](build-with-debridge/getting-started-with-solana/README.md)
+  * [Solana program interface](build-with-debridge/getting-started-with-solana/solana-program-interface.md)
 * [Lifecycle of a cross-chain call](build-with-debridge/lifecycle-of-a-cross-chain-call.md)
 * [Advanced topics](build-with-debridge/advanced-topics/README.md)
   * [Gathering data for the claim](build-with-debridge/advanced-topics/gathering-data-for-the-claim.md)
@@ -20,10 +22,10 @@
 ## 🔁 Cross-chain trading
 
 * [API Quick Start Guide](cross-chain-trading/api-quick-start-guide.md)
-* [Transaction Bundling](cross-chain-trading/transaction-bundling.md)
+* [Transaction Bundling](deswap/transaction-bundling.md)
 * [Cross-Chain Swaps Liquidity](cross-chain-trading/cross-chain-swaps-liquidity.md)
-* [Custom Linking](cross-chain-trading/custom-linking.md)
-* [deSwap Widget](cross-chain-trading/deswap-widget.md)
+* [Custom Linking](deswap/custom-linking.md)
+* [deSwap Widget](deswap/deswap-widget.md)
 
 ## 💸 dePort
 
