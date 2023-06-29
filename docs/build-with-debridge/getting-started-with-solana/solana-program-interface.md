@@ -1,10 +1,10 @@
 ---
-description: How to interact with debridge in Solana runtime
+description: How to interact with deBridge on Solana
 ---
 
 # Solana program interface
 
-To streamline communication with debridge programs on the Solana blockchain, the [debridge-solana-sdk](https://github.com/debridge-finance/debridge-solana-sdk) was developed. This [Rust](https://github.com/rust-lang/rust) SDK allows for easy and efficient connection to the debridge infrastructure, which enables decentralized transfers of messages and value between various blockchain.
+To streamline communication with deBridge programs on the Solana blockchain, the [debridge-solana-sdk](https://github.com/debridge-finance/debridge-solana-sdk) has been developed. This [Rust](https://github.com/rust-lang/rust) SDK allows for easy and efficient connection to the deBridge infrastructure, which enables decentralized transfers of messages and value between different blockchains.
 
 To start using our sdk, add it to dependencies by [cargo](https://github.com/rust-lang/cargo):
 
@@ -12,7 +12,7 @@ To start using our sdk, add it to dependencies by [cargo](https://github.com/rus
 cargo add debridge-solana-sdk
 ```
 
-If you use the [Anchor](https://github.com/coral-xyz/anchor) framework, then your programme calling for a debridge send might look like this:
+If you use the [Anchor](https://github.com/coral-xyz/anchor) framework, then your program calling for a deBridge send might look like this:
 
 ```rust
 use anchor_lang::prelude::*;
@@ -53,7 +53,7 @@ pub mod send_via_debridge {
 pub struct SendViaDebridge {}
 ```
 
-You can use any accounts in your logic, however, the remaning accounts you pass on will have to be created on the client. Our SDK provides an [examples](https://github.com/debridge-finance/debridge-solana-sdk/tree/master/example-program/ts-examples) of how to use the TypeScript library. For this example it is:
+You can use any account in your logic. However, the remaining accounts you pass on will have to be created by the client. Our SDK provides an [example](https://github.com/debridge-finance/debridge-solana-sdk/tree/master/example-program/ts-examples) of how to use the TypeScript library. For this example it is:
 
 ```typescript
 import { DeBridgeSolanaClient } from "@debridge-finance/solana-contracts-client";
@@ -98,7 +98,7 @@ const tx = await builder.transaction();
 
 ```
 
-Dependency packages used are:
+The dependency packages that are used:
 
 * [@debridge-finance/solana-contracts-client](https://www.npmjs.com/package/@debridge-finance/solana-contracts-client)&#x20;
 * [@debridge-finance/solana-utils](https://www.npmjs.com/package/@debridge-finance/solana-utils)
