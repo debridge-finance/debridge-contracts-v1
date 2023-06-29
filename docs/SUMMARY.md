@@ -22,7 +22,6 @@
 ## 🔁 Cross-chain trading
 
 * [API Quick Start Guide](cross-chain-trading/api-quick-start-guide.md)
-* [Transaction Bundling](deswap/transaction-bundling.md)
 * [Cross-Chain Swaps Liquidity](cross-chain-trading/cross-chain-swaps-liquidity.md)
 * [Custom Linking](deswap/custom-linking.md)
 * [deSwap Widget](deswap/deswap-widget.md)
