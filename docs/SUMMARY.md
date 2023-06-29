@@ -11,8 +11,7 @@
 ## 🛠 Build with deBridge
 
 * [Getting started](build-with-debridge/getting-started.md)
-* [Getting started with Solana](build-with-debridge/getting-started-with-solana/README.md)
-  * [Solana program interface](build-with-debridge/getting-started-with-solana/solana-program-interface.md)
+* [Getting started with Solana](build-with-debridge/getting-started-with-solana.md)
 * [Lifecycle of a cross-chain call](build-with-debridge/lifecycle-of-a-cross-chain-call.md)
 * [Advanced topics](build-with-debridge/advanced-topics/README.md)
   * [Gathering data for the claim](build-with-debridge/advanced-topics/gathering-data-for-the-claim.md)
