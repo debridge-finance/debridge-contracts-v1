@@ -12,9 +12,7 @@ To start using our sdk, add it to dependencies by [cargo](https://github.com/rus
 cargo add debridge-solana-sdk
 ```
 
-If you using [anchor](https://github.com/coral-xyz/anchor), your program will look like:
-
-If you use the Anchor framework, then your programme calling for a debridge send might look like this:
+If you use the [Anchor](https://github.com/coral-xyz/anchor) framework, then your programme calling for a debridge send might look like this:
 
 ```rust
 use anchor_lang::prelude::*;
