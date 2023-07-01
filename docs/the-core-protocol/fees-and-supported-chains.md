@@ -12,11 +12,12 @@ deBridge flat fees can be changed by Governance. Hence, for any on-chain interac
 
 ### Current flat fee for messages sent from different chains
 
-| Arbitrum  | 42161   | 0.001 ETH |
-| --------- | ------- | --------- |
-| Avalanche | 43114   | 0.01 AVAX |
-| BNB Chain | 56      | 0.005 BNB |
-| Ethereum  | 1       | 0.001 ETH |
-| Polygon   | 137     | 0.5 MATIC |
-| Fantom    | 250     | 4 FTM     |
-| Solana    | 7565164 | 0.03 SOL  |
+| Chain     | Chain Id | Message Transfer Fee |
+| --------- | -------- | -------------------- |
+| Arbitrum  | 42161    | 0.001 ETH            |
+| Avalanche | 43114    | 0.01 AVAX            |
+| BNB Chain | 56       | 0.005 BNB            |
+| Ethereum  | 1        | 0.001 ETH            |
+| Polygon   | 137      | 0.5 MATIC            |
+| Fantom    | 250      | 4 FTM                |
+| Solana    | 7565164  | 0.03 SOL             |
