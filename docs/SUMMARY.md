@@ -6,6 +6,7 @@
 
 * [Protocol Overview](the-core-protocol/protocol-overview.md)
 * [Slashing and Delegated Staking](the-core-protocol/slashing-and-delegated-staking.md)
+* [Fees and supported chains](the-core-protocol/fees-and-supported-chains.md)
 * [Security](the-core-protocol/security.md)
 
 ## 🛠 Build with deBridge

@@ -74,8 +74,7 @@ deBridge allows building a new generation of cross-chain protocols and applicati
 
 More information about potential use cases can be found in [debridge-use-cases.md](../external-links/debridge-use-cases.md "mention") section
 
-### Protocol Fees
+###
 
-The protocol takes a small fee for each transfer of message performed through deBridge. A small flat fee is what users pay for confidence and decentralization since half of all fees go as a reward to deBridge validators who are [financially liable](slashing-and-delegated-staking.md) for the proper operation of the protocol. The fee is paid in the blockchain's native token. For example, if the transfer is performed from the Ethereum chain, then the fixed ETH amount will be deducted from the user's wallet towards the protocol treasury on Ethereum. The fee is normally less than $1 per message and depends on the chain where the cross-chain transaction is initiated.&#x20;
 
-Please check [getting-started.md](../deport/getting-started.md "mention") section to find out how the current fee amount can be retrieved from the state of the DebridgeGate smart contract.
+
