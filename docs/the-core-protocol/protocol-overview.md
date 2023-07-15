@@ -10,9 +10,9 @@ This opens up endless opportunities to build complex cross-chain interactions, s
 
 As a generic messaging protocol and a cross-chain interoperability infrastructure, deBridge can be used to build any arbitrary cross-chain applications (deApps). Notable solutions built on top of deBridge are:
 
-* [deSwap](https://app.debridge.finance/) — solution for capital-efficient cross-chain swaps between arbitrary liquid assets
+* [DLN](https://dln.trade/) — a high-performance cross-chain trading infrastructure built on deBridge with 0-TVL design (no liquidity pools).
 * [dePort](https://app.debridge.finance/deport) —  a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains
-* deNFT — an infrastructure for cross-chain NFTs transfers and solution to create a cross-chain native NFTs (coming soon)
+* deNFT — an infrastructure for cross-chain NFTs transfers and a solution to create cross-chain native NFTs (coming soon)
 
 Your application can be the next one and this documentation and tutorials will help to dive into the protocol infrastructure and elaborate on questions you might face while building your integration with deBridge.
 
