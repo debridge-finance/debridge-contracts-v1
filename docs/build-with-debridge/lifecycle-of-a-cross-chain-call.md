@@ -18,10 +18,10 @@ Twelve off-chain validators listen for these events emitted by the `deBridgeGate
 
 * waits a specific amount of block confirmations (12 block confirmations for supported EVM chains, and 256 block confirmations for Polygon network) to ensure the finality of the transaction where the event has been emitted,
 * validates the args and the structure,
-* if the data is correct, sign the message with its own private key, and publish the signature to the deBridge API (IPFS soon).
+* if the data is correct, sign the message with its own private key, and publish the signature to Arweave.
 
 {% hint style="info" %}
-Note: see how we achieve validators' responsibility through[slashing-and-delegated-staking.md](../the-core-protocol/slashing-and-delegated-staking.md "mention").
+Note: Validators' financial responsibility to be enabled through[slashing-and-delegated-staking.md](../the-core-protocol/slashing-and-delegated-staking.md "mention").
 {% endhint %}
 
 After the minimum required number of validators have signed the message (eight at the time of writing, ⅔ of all possible signatures), the submission is confirmed and may be claimed on the destination chain.
