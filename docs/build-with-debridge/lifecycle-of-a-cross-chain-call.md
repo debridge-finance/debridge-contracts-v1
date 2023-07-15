@@ -2,9 +2,9 @@
 
 Blockchains are things in themselves by their nature: they cannot communicate with each other. That is why any bridge is a complex set of components, making any cross-chain transaction a multistage process, so just initiating a cross-chain transaction typically is not enough. It is important to understand how the deBridge infrastructure works so you can manage your submissions (either manually or even automatically) consciously and confidently.
 
-The following schema visualizes a normal cycle of a typical cross-chain call, as it may look for the [conceptual cross-chain dApp](https://github.com/debridge-finance/debridge-cross-chain-dapp-example) where Incrementor is used as an example of the smart contract that sends a cross-chain message:
+The following scheme visualizes a normal cycle of a typical cross-chain call, as it may look for the [conceptual cross-chain dApp](https://github.com/debridge-finance/debridge-cross-chain-dapp-example) where Incrementor is used as an example of the smart contract that sends a cross-chain message:
 
-![A high level schema of the deBridge infrastructure](../.gitbook/assets/02.png)
+<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption><p>Lifecycle of a cross-chain message transfer</p></figcaption></figure>
 
 When a call to the `deBridgeGate.send()` method is made on the origin chain, the gate contract validates the input (its args and the `autoParams` struct), and if everything seems correct (the data is unambiguous, the input asset covers the fees, etc), a special `Sent` event is emitted. This event exposes the following details of the submission:
 
