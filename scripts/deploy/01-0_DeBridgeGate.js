@@ -6,15 +6,20 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
-  const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
-
+  const wethAddress = deployInitParams.external.WETH;
+  
+  if (!deployInitParams.external.WETH) {
+    console.log(`Need to set WETH address!`);
+    return;
+  }
   await deployProxy("DeBridgeGate", deployer,
     [
       deployInitParams.excessConfirmations,
       wethAddress,
     ],
-    true);
+    true,
+    await hre.ethers.getContractFactory('DeBridgeGateProxy', deployer));
 };
 
 module.exports.tags = ['01-0_DeBridgeGate'];
-module.exports.dependencies = ['00_external'];
+module.exports.dependencies = [];

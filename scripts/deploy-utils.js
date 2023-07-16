@@ -1,6 +1,7 @@
 const fs = require("fs");
 const hre = require("hardhat");
 const { getImplementationAddress } = require('@openzeppelin/upgrades-core');
+const path = require('path');
 
 // TODO: don't hardcode flag values, get from Flags library directly
 const FLAGS = {
@@ -79,6 +80,49 @@ async function saveProxyDeployment(Factory, instance, args) {
   }
 }
 
+async function saveCustomProxyData(contractName, proxy, implementation, adminAddress)  {
+  // Get the chain id from the Hardhat environment
+  const chainId = await hre.network.provider.send("eth_chainId");
+
+  const dataPath = path.join('.openzeppelin', `${hre.network.name}-${chainId}-custom.json`);
+  let data;
+  if (fs.existsSync(dataPath)) {
+    data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+  } else {
+    data = {
+      manifestVersion: "3.2",
+      admin: {
+        address: adminAddress,
+        // txHash:  admin.deployTransaction.hash,
+      },
+      proxies: {},
+      impls: {},
+    };
+  }
+
+  const proxies = data.proxies[contractName] || [];
+  proxies.push({
+    address: proxy.address,
+    implementation: implementation.address,
+    admin: adminAddress,
+    txHash: proxy.deployTransaction.hash,
+  });
+  data.proxies[contractName] = proxies;
+
+  
+  if (!data.impls[implementation.address]) {
+    const layout = {};
+    //await getStorageLayout(hre, contractName);
+    data.impls[implementation.address] = {
+      address: implementation.address,
+      txHash: implementation.deployTransaction.hash,
+      layout: layout,
+    };
+  }
+
+  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
+}
+
 async function deleteProxyDeployment(Factory, proxy_address) {
   let store = await _readStore();
   const bytecodeHash = hre.ethers.utils.keccak256(Factory.bytecode);
@@ -142,7 +186,7 @@ async function upgradeProxy(contractName, contractAddress, deployer) {
 }
 
 
-async function deployProxy(contractName, deployer, args, reuseProxy) {
+async function deployProxy(contractName, deployer, args, reuseProxy, customProxyFactory = null) {
   console.log(`\n*** Deploying proxy for ${contractName} ***`);
   console.log('\tSigner: ', deployer);
   console.log('\tArgs: ', args);
@@ -174,8 +218,50 @@ async function deployProxy(contractName, deployer, args, reuseProxy) {
   }
 
   // real deploy
-  const proxy = await hre.upgrades.deployProxy(Factory, args);
-  const receipt = await proxy.deployed();
+  let proxy;
+  let receipt;
+  if (customProxyFactory) {
+    console.log("\t Reusing custom proxy")
+
+    // deploy implementation
+    console.log("\t Deploying implementation: ")
+    const impl = await Factory.deploy();
+    console.log("\t new implementation deployed at", impl.address)
+
+    // get current proxy admin
+    const admin = await hre.upgrades.deployProxyAdmin(deployer);
+    console.log("\tUsing proxy admin:", admin)
+
+    // deploy proxy
+    console.log("\t Finally, deploying custom proxy")
+    proxy = await customProxyFactory.deploy(
+      impl.address,
+      admin,
+      Factory.interface.encodeFunctionData(
+        "initialize",
+        args
+      )
+    );
+
+    receipt = await proxy.deployed();
+
+    // attach proxy to the impl address
+    proxy.attach(impl.address);
+
+    // Save the custom deployment data
+    await saveCustomProxyData(contractName, proxy, impl, admin);
+    // await saveCustomProxyData(
+    // contractName,
+    // proxy.address,
+    // impl.address,
+    // admin.address,
+    // receipt.deployTransaction.hash
+    // );
+  }
+  else {
+    proxy = await hre.upgrades.deployProxy(Factory, args);
+    receipt = await proxy.deployed();
+  }
 
   // manual await for deploy transaction to prevent errors during deployment
   await waitTx(receipt.deployTransaction);
