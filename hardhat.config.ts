@@ -145,7 +145,7 @@ export default {
     MATIC: {
       url: "https://polygon-rpc.com/",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      // gasPrice: 5e9,
+      gasPrice: 100e9,
       // gas: 6e6,
       chainId: 137
     },
