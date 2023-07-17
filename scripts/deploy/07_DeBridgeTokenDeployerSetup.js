@@ -30,7 +30,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
 
   for (let item of overridedTokens){
     //getDebridgeId(uint256 _chainId, address _tokenAddress)
-    const debridgeId = await deBridgeGateInstance.getDebridgeId(item.chainId, item.address);
+    const debridgeId = await deBridgeGateInstance.getbDebridgeId(item.chainId, item.address);
     console.log(`chainId: ${item.chainId} tokenAddress: ${item.address} debrigeId: ${debridgeId}`);
     debridgeIds.push(debridgeId);
   }

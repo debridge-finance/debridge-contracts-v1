@@ -29,12 +29,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setSignatureVerifier(signatureVerifier.address);
   await waitTx(tx);
 
-  // was added in constructor
-  // console.log(`signatureVerifier setDebridgeAddress ${deBridgeGateInstance.address}`);
-  // tx = await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
-  // await waitTx(tx);
-
-
   // --------------------------------
   //    setup CallProxy
   // --------------------------------
@@ -60,29 +54,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setFeeProxy(feeProxy.address);
   await waitTx(tx);
 
-  // added in constructor
-  // console.log(`feeProxy setDebridgeGate ${deBridgeGateInstance.address}`);
-  // console.log(`old debridgeGate ${ await feeProxy.debridgeGate()}`);
-  // tx = await feeProxy.setDebridgeGate(deBridgeGateInstance.address);
-  // await waitTx(tx);
-
-  // console.log(`feeProxy setTreasury ${deployInitParams.treasuryAddress}`);
-  // console.log(`old treasury ${ await feeProxy.treasury()}`);
-  // tx = await feeProxy.setTreasury(deployInitParams.treasuryAddress);
-  // await waitTx(tx);
-
-  // --------------------------------
-  //    setup DefiController
-  // --------------------------------
-
-  // if (deployInitParams.deploy.DefiController) {
-  //   let defiController = await getLastDeployedProxy("DefiController", deployer);
-  //   console.log(`deBridge setDefiController ${defiController.address}`);
-  //   tx = await deBridgeGateInstance.setDefiController(defiController.address);
-  //   await waitTx(tx);
-  // }
-
-
   // --------------------------------
   //    setup WethGate
   // --------------------------------
@@ -104,12 +75,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log(`deBridge setDeBridgeTokenDeployer ${deBridgeTokenDeployer.address}`);
   tx = await deBridgeGateInstance.setDeBridgeTokenDeployer(deBridgeTokenDeployer.address);
   await waitTx(tx);
-
-  // already added in constructor
-  // console.log(`deBridgeTokenDeployer setDebridgeAddress ${deBridgeGateInstance.address}`);
-  // tx = await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
-  // await waitTx(tx);
-
 
   // --------------------------------
   //    calling updateChainSupport

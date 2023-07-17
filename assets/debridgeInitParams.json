@@ -2,12 +2,12 @@
   "test": {
     "deBridgeTokenAdmin": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
     "treasuryAddress": "0x24b8d26962641ea81cb7570c1b59d955c9193f23",
-    "minConfirmations": 2,
+    "minConfirmations": 8,
     "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "excessConfirmations": 8,
     "oracles": [],
     "deploy": {
-      "wethGate": true
+      "wethGate": false
     },
     "external": {
       "WETH": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
@@ -20,12 +20,6 @@
       128,
       137,
       42161
-    ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
     ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
@@ -78,12 +72,6 @@
       421611,
       80001
     ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
-    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -134,12 +122,6 @@
       42,
       421611,
       80001
-    ],
-    "fixedNativeFee": [
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000"
     ],
     "globalFixedNativeFee": "100000000000000000",
     "globalTransferFeeBps": "10",
@@ -192,12 +174,6 @@
       421611,
       80001
     ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
-    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -248,12 +224,6 @@
       42,
       97,
       80001
-    ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
     ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
@@ -306,12 +276,6 @@
       97,
       421611
     ],
-    "fixedNativeFee": [
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000",
-      "100000000000000000"
-    ],
     "globalFixedNativeFee": "100000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -357,12 +321,6 @@
       137,
       42161
     ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
-    ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
@@ -391,9 +349,9 @@
   "ETH": {
     "deBridgeTokenAdmin": "0x6bec1faf33183e1bc316984202ecc09d46ac92d5",
     "treasuryAddress": "0xa0d6062be29710c666ae850395ac1a2aecd14885",
-    "minConfirmations": 2,
+    "minConfirmations": 8,
     "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "excessConfirmations": 8,
     "oracles": [],
     "deploy": {
       "wethGate": true
@@ -407,12 +365,6 @@
       128,
       137,
       42161
-    ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
     ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
@@ -442,9 +394,9 @@
   "BSC": {
     "deBridgeTokenAdmin": "0xa52842cd43fa8c4b6660e443194769531d45b265",
     "treasuryAddress": "0x897b41bdf47ef039484cacbbd2e07f88899f1f96",
-    "minConfirmations": 2,
+    "minConfirmations": 8,
     "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "excessConfirmations": 8,
     "oracles": [],
     "deploy": {
       "wethGate": true
@@ -458,12 +410,6 @@
       128,
       137,
       42161
-    ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
     ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
@@ -493,9 +439,9 @@
   "HECO": {
     "deBridgeTokenAdmin": "0xa52842cd43fa8c4b6660e443194769531d45b265",
     "treasuryAddress": "0x897b41bdf47ef039484cacbbd2e07f88899f1f96",
-    "minConfirmations": 2,
+    "minConfirmations": 8,
     "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "excessConfirmations": 8,
     "oracles": [],
     "deploy": {
       "wethGate": true
@@ -509,12 +455,6 @@
       56,
       137,
       42161
-    ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
     ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
@@ -544,9 +484,9 @@
   "MATIC": {
     "deBridgeTokenAdmin": "0xa52842cd43fa8c4b6660e443194769531d45b265",
     "treasuryAddress": "0x897b41bdf47ef039484cacbbd2e07f88899f1f96",
-    "minConfirmations": 2,
+    "minConfirmations": 8,
     "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "excessConfirmations": 8,
     "oracles": [],
     "deploy": {
       "wethGate": true
@@ -560,12 +500,6 @@
       56,
       128,
       42161
-    ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
     ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
@@ -595,9 +529,9 @@
   "ARBITRUM": {
     "deBridgeTokenAdmin": "0xa52842cd43fa8c4b6660e443194769531d45b265",
     "treasuryAddress": "0x897b41bdf47ef039484cacbbd2e07f88899f1f96",
-    "minConfirmations": 2,
+    "minConfirmations": 8,
     "confirmationThreshold": 3,
-    "excessConfirmations": 3,
+    "excessConfirmations": 8,
     "oracles": [],
     "deploy": {
       "wethGate": false
@@ -612,15 +546,123 @@
       128,
       137
     ],
-    "fixedNativeFee": [
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000",
-      "10000000000000000"
+    "globalFixedNativeFee": "10000000000000000",
+    "globalTransferFeeBps": "10",
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      }
+    ]
+  },
+  "FANTOM": {
+    "deBridgeTokenAdmin": "0xa52842cd43fa8c4b6660e443194769531d45b265",
+    "treasuryAddress": "0x897b41bdf47ef039484cacbbd2e07f88899f1f96",
+    "minConfirmations": 8,
+    "confirmationThreshold": 3,
+    "excessConfirmations": 8,
+    "oracles": [],
+    "deploy": {
+      "wethGate": true
+    },
+    "external": {
+      "WETH": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
+      "UniswapFactory": ""
+    },
+    "supportedChains": [
+      1,
+      56,
+      128,
+      137,
+      42161,
+      43114
+    ],
+    "globalFixedNativeFee": "4000000000000000000",
+    "globalTransferFeeBps": "10",
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      }
+    ]
+  },
+  "AVALANCHE": {
+    "deBridgeTokenAdmin": "0x8ac842e8f3be6bf67ccfdc87ce3f98d635008ef0",
+    "treasuryAddress": "0x261d50657edaec727d589295f2ec41e845b1ef1c",
+    "minConfirmations": 8,
+    "confirmationThreshold": 3,
+    "excessConfirmations": 8,
+    "oracles": [],
+    "deploy": {
+      "wethGate": true
+    },
+    "external": {
+      "WETH": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+      "UniswapFactory": ""
+    },
+    "supportedChains": [
+      1,
+      56,
+      128,
+      137,
+      250,
+      42161
     ],
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
       {
         "fixedNativeFee": "0",
         "transferFeeBps": "0",
@@ -663,6 +705,18 @@
     {
       "address": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
       "chainId": 42161
+    },
+    {
+      "address": "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
+      "chainId": 43114
+    },
+    {
+      "address": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
+      "chainId": 250
+    },
+    {
+      "address": "0x069B8857FEAB8184FB687F634618C035DAC439DC1AEB3B5598A0F00000000001",
+      "chainId": 7565164
     }
   ],
   "overridedTokensInfo": [
@@ -690,19 +744,34 @@
       "accept": true,
       "name": "Arbitrum Ether",
       "symbol": "AETH"
+    },
+    {
+      "accept": true,
+      "name": "AVAX",
+      "symbol": "AVAX"
+    },
+    {
+      "accept": true,
+      "name": "Fantom",
+      "symbol": "FTM"
+    },
+    {
+      "accept": true,
+      "name": "SOL",
+      "symbol": "SOL"
     }
   ],
   "allValidators": [
-    "0x185f65aee9609804de01a02b25655b02f57e8f19",
-    "0x576ab9fbc66fab714e3bd376f1d07ff9b7523cc9",
-    "0xd3e98dc77eda4f821a7f5dc1f779b92a3bc9435f",
-    "0x9ae654858b3089535a8aa028ef663f8b218d8796",
-    "0xb64a5f7018a701a52f0c41e3a564830c7a430064",
-    "0x9bf9a55c6bd75bf38124ea9676fcb226d4fc16fd",
-    "0x1e69be715025e6bb6d8d651674ffc39cc85fb94f",
-    "0xb92958ae539f32e2d03d08d27dfa93104ac9466b",
-    "0x4da594b739611574663aea3edddc428e00c48fe1",
-    "0x3491a1d6653ca366df83a71b9b9922b5a164118c",
-    "0x36df730f53f287f4831d25e29240de6bdb840ab5"
+    "0x4bc16662a2ce381e7bb54dc577c05619c5e67526",
+    "0xebec9bc53f9C65f69DB8591B9f240BbCDb563c54",
+    "0xf27Af436A6F2d9C64B4CA40a483eC46acDc33fe8",
+    "0x59CE95b8955F0E7Be128d5Af77161B36f6084214",
+    "0x1c0720B124e7251e881a0fbCfe259d085C59f205",
+    "0x83f81E7f9E284AAFFEDED797008663595f7342bF",
+    "0x4CA2191cDE585d65EB6AFC09D23D60b8A0AB677D",
+    "0x6436BBcA322b8cD0c56d8b9aD7837b13960dA426",
+    "0xbCF516826eD7F3b0E487C7ca6A87b3b4EccDD4DC",
+    "0x874f46124C1DAaD4749B94f82eD142754826240E",
+    "0xDD523FD4DebcF0dB6f0B2c2D30D075CaaeE023e0"
   ]
 }
