@@ -7,11 +7,7 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const deployInitParams = debridgeInitParams[networkName];
   if (!deployInitParams) return;
 
-  const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
-  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
-    deployInitParams.excessConfirmations,
-    wethAddress,
-  ]);
+  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer);
 
   const { contract: signatureVerifierInstance, isDeployed } = await deployProxy("SignatureVerifier", deployer, [
     deployInitParams.minConfirmations,
