@@ -175,7 +175,12 @@ export default {
       url: "https://api.avax-test.network/ext/bc/C/rpc",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       chainId: 43113
-    }
+    },
+    Linea: {
+      url: "https://linea-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 59144
+    },
   },
   mocha: {
     timeout: 100000

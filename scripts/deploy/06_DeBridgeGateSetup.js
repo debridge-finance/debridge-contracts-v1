@@ -1,22 +1,16 @@
 const debridgeInitParams = require("../../assets/debridgeInitParams");
 const { getLastDeployedProxy, waitTx } = require("../deploy-utils");
 
-module.exports = async function({getNamedAccounts, deployments, network}) {
+module.exports = async function ({ getNamedAccounts, deployments, network }) {
   const { deployer } = await getNamedAccounts();
   const deployInitParams = debridgeInitParams[network.name];
   if (!deployInitParams) return;
 
   console.log("Start 06_DeBridgeGateSetup");
 
-  const wethAddress = deployInitParams.external.WETH || (await deployments.get("MockWeth")).address;
-
-  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer, [
-    deployInitParams.excessConfirmations,
-    wethAddress,
-  ]);
+  const deBridgeGateInstance = await getLastDeployedProxy("DeBridgeGate", deployer);
 
   let tx;
-
 
   // --------------------------------
   //    setup SignatureVerifier
@@ -29,12 +23,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setSignatureVerifier(signatureVerifier.address);
   await waitTx(tx);
 
-  // was added in constructor
-  // console.log(`signatureVerifier setDebridgeAddress ${deBridgeGateInstance.address}`);
-  // tx = await signatureVerifier.setDebridgeAddress(deBridgeGateInstance.address);
-  // await waitTx(tx);
-
-
   // --------------------------------
   //    setup CallProxy
   // --------------------------------
@@ -44,7 +32,7 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setCallProxy(callProxy.address);
   await waitTx(tx);
 
-  console.log(`callProxy ${callProxy.address} get DEBRIDGE_GATE_ROLE`);
+
   const DEBRIDGE_GATE_ROLE = await callProxy.DEBRIDGE_GATE_ROLE();
   console.log(`callProxy grantRole DEBRIDGE_GATE_ROLE "${DEBRIDGE_GATE_ROLE}" for deBridgeGate "${deBridgeGateInstance.address}"`);
   tx = await callProxy.grantRole(DEBRIDGE_GATE_ROLE, deBridgeGateInstance.address);
@@ -59,29 +47,6 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   console.log(`deBridge setFeeProxy ${feeProxy.address}`);
   tx = await deBridgeGateInstance.setFeeProxy(feeProxy.address);
   await waitTx(tx);
-
-  // added in constructor
-  // console.log(`feeProxy setDebridgeGate ${deBridgeGateInstance.address}`);
-  // console.log(`old debridgeGate ${ await feeProxy.debridgeGate()}`);
-  // tx = await feeProxy.setDebridgeGate(deBridgeGateInstance.address);
-  // await waitTx(tx);
-
-  // console.log(`feeProxy setTreasury ${deployInitParams.treasuryAddress}`);
-  // console.log(`old treasury ${ await feeProxy.treasury()}`);
-  // tx = await feeProxy.setTreasury(deployInitParams.treasuryAddress);
-  // await waitTx(tx);
-
-  // --------------------------------
-  //    setup DefiController
-  // --------------------------------
-
-  // if (deployInitParams.deploy.DefiController) {
-  //   let defiController = await getLastDeployedProxy("DefiController", deployer);
-  //   console.log(`deBridge setDefiController ${defiController.address}`);
-  //   tx = await deBridgeGateInstance.setDefiController(defiController.address);
-  //   await waitTx(tx);
-  // }
-
 
   // --------------------------------
   //    setup WethGate
@@ -105,19 +70,13 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   tx = await deBridgeGateInstance.setDeBridgeTokenDeployer(deBridgeTokenDeployer.address);
   await waitTx(tx);
 
-  // already added in constructor
-  // console.log(`deBridgeTokenDeployer setDebridgeAddress ${deBridgeGateInstance.address}`);
-  // tx = await deBridgeTokenDeployer.setDebridgeAddress(deBridgeGateInstance.address);
-  // await waitTx(tx);
-
-
   // --------------------------------
   //    calling updateChainSupport
   // --------------------------------
 
-  console.log("updateChainSupport");
-  console.log(deployInitParams.supportedChains);
-  console.log(deployInitParams.chainSupportInfo);
+  console.log("deployInitParams.supportedChains: ", deployInitParams.supportedChains);
+  console.log("deployInitParams.chainSupportInfo: ", deployInitParams.chainSupportInfo);
+  console.log("updateChainSupport isChainFrom false");
   tx = await deBridgeGateInstance.updateChainSupport(
     deployInitParams.supportedChains,
     deployInitParams.chainSupportInfo,
@@ -138,15 +97,13 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   );
   await waitTx(tx);
 
+  console.log("updateChainSupport isChainFrom true");
   tx = await deBridgeGateInstance.updateChainSupport(
     deployInitParams.supportedChains,
     deployInitParams.chainSupportInfo,
     true //_isChainFrom is true for editing getChainFromConfig.
   );
   await waitTx(tx);
-
-  console.log("deployInitParams.supportedChains: ", deployInitParams.supportedChains);
-  console.log("deployInitParams.fixedNativeFee: ", deployInitParams.fixedNativeFee);
 
 
   // --------------------------------
@@ -158,6 +115,9 @@ module.exports = async function({getNamedAccounts, deployments, network}) {
   //     uint16 _globalTransferFeeBps
   // )
   console.log("deBridgeGate updateGlobalFee");
+  console.log(`globalFixedNativeFee: ${deployInitParams.globalFixedNativeFee}`);
+  console.log(`globalTransferFeeBps: ${deployInitParams.globalTransferFeeBps}`);
+
   tx = await deBridgeGateInstance.updateGlobalFee(
     deployInitParams.globalFixedNativeFee,
     deployInitParams.globalTransferFeeBps
