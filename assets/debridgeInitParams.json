@@ -5,7 +5,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": false
     },
@@ -352,7 +351,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": true
     },
@@ -366,7 +364,7 @@
       137,
       42161
     ],
-    "globalFixedNativeFee": "10000000000000000",
+    "globalFixedNativeFee": "1000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
       {
@@ -397,7 +395,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": true
     },
@@ -442,7 +439,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": true
     },
@@ -487,7 +483,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": true
     },
@@ -532,7 +527,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": false
     },
@@ -577,7 +571,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": true
     },
@@ -634,7 +627,6 @@
     "minConfirmations": 8,
     "confirmationThreshold": 3,
     "excessConfirmations": 8,
-    "oracles": [],
     "deploy": {
       "wethGate": true
     },
@@ -653,6 +645,74 @@
     "globalFixedNativeFee": "10000000000000000",
     "globalTransferFeeBps": "10",
     "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      }
+    ]
+  },
+  "Linea": {
+    "deBridgeTokenAdmin": "0xa52842cd43fa8c4b6660e443194769531d45b265",
+    "treasuryAddress": "0x897b41bdf47ef039484cacbbd2e07f88899f1f96",
+    "minConfirmations": 8,
+    "confirmationThreshold": 10,
+    "excessConfirmations": 8,
+    "deploy": {
+      "wethGate": false
+    },
+    "external": {
+      "WETH": "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f",
+      "UniswapFactory": ""
+    },
+    "supportedChains": [
+      1,
+      56,
+      128,
+      137,
+      250,
+      42161,
+      43114,
+      7565164
+    ],
+    "globalFixedNativeFee": "1000000000000000",
+    "globalTransferFeeBps": "10",
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
       {
         "fixedNativeFee": "0",
         "transferFeeBps": "0",
