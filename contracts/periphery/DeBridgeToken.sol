@@ -59,10 +59,7 @@ contract DeBridgeToken is
         address[] memory minters
     ) public initializer {
         _decimals = decimals_;
-        name_ = string(abi.encodePacked("deBridge ",
-            bytes(name_).length == 0 ? symbol_ : name_));
-        symbol_ = string(abi.encodePacked("de", symbol_));
-
+        name_ = bytes(name_).length == 0 ? symbol_ : name_;
         __ERC20_init_unchained(name_, symbol_);
 
         _setupRole(DEFAULT_ADMIN_ROLE, admin);
