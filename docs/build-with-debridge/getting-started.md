@@ -318,6 +318,7 @@ const isConfirmed = await submission.hasRequiredBlockConfirmations();
 | Arbitrum  | 12                            |
 | Avalanche | 12                            |
 | Fantom    | 12                            |
+| Solana    | Finalized status              |
 
 #### Pulling signatures
 
