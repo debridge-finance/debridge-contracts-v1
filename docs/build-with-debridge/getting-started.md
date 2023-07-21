@@ -319,6 +319,7 @@ const isConfirmed = await submission.hasRequiredBlockConfirmations();
 | Avalanche | 12                            |
 | Fantom    | 12                            |
 | Solana    | Finalized status              |
+| Linea     | 12                            |
 
 #### Pulling signatures
 
