@@ -281,7 +281,7 @@ Of course, this call may be crafted on-chain in your own contract or off-chain. 
 Consider reading the [lifecycle-of-a-cross-chain-call.md](lifecycle-of-a-cross-chain-call.md "mention") to get yourself familiar with how the cross-chain calls are handled.
 {% endhint %}
 
-After our smart contract (`Incrementor` in our case) submits a new cross-chain call, the `deBridgeGate` contract emits a `Sent` event containing all necessary details about the cross-chain call, including the `submissionId` — the global cross-chain identifier of such a call. The `submissionId` is the important thing to identify our submission, so we must capture it either by parsing the event manually or using deSDK which does [this action](https://github.com/debridge-finance/desdk#tracking-submissions) for us:
+After our smart contract (`Incrementor` in our case) submits a new cross-chain call, the `deBridgeGate` contract emits a `Sent` event containing all necessary details about the cross-chain call, including the `submissionId` — the global cross-chain identifier of such a call. The `submissionId` is the important thing to identify our submission, so we must capture it either by parsing the event manually or using [deBridge SDK (deSDK)](https://github.com/debridge-finance/desdk) which does [this action](https://github.com/debridge-finance/desdk#tracking-submissions) for us:
 
 ```typescript
 // find all submissions submitted in your transaction by its hash
