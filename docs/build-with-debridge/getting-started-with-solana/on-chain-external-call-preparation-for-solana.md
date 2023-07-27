@@ -65,7 +65,7 @@ DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.E
 
 ## 2. Expenses
 
-Determine how much lamports your instruction spends on the destination network (most often account creation). Record this value as expenses. Each instruction is technically worth 5000 lamports (since we can't determine how many resources it will spend in advance, the implication is that it can be executed in a separate transaction). Therefore, 5000 + expenses is the estimate of how much lamports will cost the execution.
+Determine how much lamports your instruction spends on the destination network (most often, for account creation). Record this value as expenses. Each instruction is technically worth 5000 lamports (since we can't determine how many resources it will spend in advance, the implication is that it can be executed in a separate transaction). Therefore, 5000 + expenses is the estimate of how much lamports will cost the execution.
 
 ```solidity
 
@@ -78,7 +78,7 @@ DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.E
 
 ## 3. Pubkey substituion
 
-Determine which accounts in the instruction are input dependent and cannot be passed directly from the user for security reasons.
+Determine which accounts in the instruction are input-dependent and cannot be passed directly from the user for security reasons.
 
 For example, if there is a PDA in the destination network that depends on some unique transfer identifier, then we need to form `PubkeySubstituio.`
 
@@ -115,7 +115,7 @@ DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.E
 
 
 
-If the user can't break protocol rules by passing a any Pubkey, then you can take that key directly from the user's input and you don't need substituion.
+If the user can't break protocol rules by passing any Pubkey, then you can take that key directly from the user's input and you don't need substituion.
 
 ## 4. DataSubstitution
 
@@ -137,7 +137,7 @@ This way you can transfer the whole wallet balance except for some part of it (e
 
 ## 5. Reward
 
-The last one is to set the reward. Since for almost any transfer it will depend on the difference between the price of the fee and SOL asset, it will almost always be reported externally. Reward should cover 5000 lamports and all expenses. In the execution phase, the executor evaluates the 5000 + expenses in the translation token and if the reward covers the execution, then executes the translation.
+The last step is to set the reward. Since for almost any transfer it will depend on the difference between the price of the fee and the price of SOL asset, it will almost always be reported externally. The reward should cover 5000 lamports and all expenses. In the execution phase, the executor evaluates the 5000 + expenses in the translation token and if the reward covers the execution, then it executes the translation.
 
 ```solidity
 
