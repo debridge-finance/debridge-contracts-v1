@@ -115,7 +115,7 @@ DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.E
 
 
 
-If the user can't break protocol rules by passing any Pubkey, then you can take that key directly from the user's input and you don't need substituion.
+If the user can't break protocol rules by passing any Pubkey, then you can take that key directly from the user's input and you don't need substitution.
 
 ## 4. DataSubstitution
 
@@ -152,7 +152,7 @@ DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.E
 
 This algorithm should be done for each instruction in your extcall. The total instruction set must be less than 10 kilobytes.
 
-When you have prepared all the necessary instructions, you need to generate a binary buffer and send it through debridge as external call:
+When you have prepared all the necessary instructions, you need to generate a binary buffer and send it through deBridge as external call:
 
 ```
 DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.ExternalInstruction({
