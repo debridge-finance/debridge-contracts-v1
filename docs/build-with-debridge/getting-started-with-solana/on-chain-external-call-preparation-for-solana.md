@@ -1,6 +1,6 @@
 # On-Chain external call preparation for Solana
 
-Preparing an extcall to call programmes in Solana is simple:
+Preparing an extcall to call programs in Solana is simple:
 
 ## 1. Instruction
 
