@@ -1,0 +1,290 @@
+--------------------------01-0_DeBridgeGate-------------------------------------------------------------------------------
+npx hardhat deploy --tags 01-0_DeBridgeGate  --network OP
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for DeBridgeGate ***
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Args:  [ 8, '0x4200000000000000000000000000000000000006' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xa7afa59159ea946695a7b273b71569492ae27bca774d13de47553c6ffe5dd6cc ...
+        Implementation address: 0xB1A20D1c885fd775df97396397d6f8F07Abdd20D
+        New proxy deployed:  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        New proxy version: 421
+--------------------------01-1_DeBridgeToken------------------------------------------------------------------------------
+npx hardhat deploy --tags  01-1_DeBridgeToken  --network OP
+Nothing to compile
+No need to generate any newer typings.
+deploying "DeBridgeToken" (tx: 0x69c3a006e1c9a70dc050f22a929f29c03de0c3890b16e630d7a0297aa73b5241)...: deployed at 0xc1656B63D9EEBa6d114f6bE19565177893e5bCBF with 1702492 gas
+--------------------------01-2_DeBridgeTokenDeployer ---------------------------------------------------------------------
+npx hardhat deploy --tags  01-2_DeBridgeTokenDeployer  --network OP
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for DeBridgeTokenDeployer ***
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Args:  [
+  '0xc1656B63D9EEBa6d114f6bE19565177893e5bCBF',
+  '0xa52842cd43fa8c4b6660e443194769531d45b265',
+  '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x4d8d07d73cdd34c81f040547cb0d50a4678bcb26d51740852dd2712a00cf4f1b ...
+        Implementation address: 0x4c7CA8fcFFE77281A8B81D4580CFf8257d785491
+        New proxy deployed:  0x8244d6Ffe0695B30b2bAD424683Ee3bc534Ea464
+        New proxy version: 111
+--------------------------02_SignatureVerifier----------------------------------------------------------------------------
+npx hardhat deploy --tags  02_SignatureVerifier  --network OP
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for SignatureVerifier ***
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Args:  [ 8, 10, 8, '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA' ]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0x408b85e96158262e31ab3a41d3e390a851943a96208a7114ad550080cd753cd1 ...
+An unexpected error occurred:
+
+Error: ERROR processing /deploy/02_SignatureVerifier.js:
+ProviderError: Too Many Requests error received from mainnet.optimism.io
+
+  Implementation address: 0x2a3e72ed893b5958690e16c3bbe1bd92137b6250
+        New proxy deployed:  0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c
+        New proxy version: 202
+
+--------------------------03_CallProxy------------------------------------------------------------------------------------
+npx hardhat deploy --tags  03_CallProxy  --network OP
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for CallProxy ***
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Args:  []
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xd90c6da98072874b4cefb1759f7a3515742ff33d83817fd2ea99451bcae3bde3 ...
+        Implementation address: 0x4e446b6Cf4d127827c83Ca0c848Db0B43841c391
+        New proxy deployed:  0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        New proxy version: 424
+--------------------------04_FeeProxy-------------------------------------------------------------------------------------
+npx hardhat deploy --tags  04_FeeProxy  --network OP
+Nothing to compile
+No need to generate any newer typings.
+
+*** Deploying proxy for SimpleFeeProxy ***
+        Signer:  0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        Args:  [
+  '0x43dE2d77BF8027e25dBD179B491e8d64f38398aA',
+  '0x897b41bdf47ef039484cacbbd2e07f88899f1f96'
+]
+        reuseProxy:  true
+        Found deployed proxies:  0
+        No deployed proxies found, deploying a new one
+Waiting 1 block confirmations for tx 0xaa2e00ff97cba1276b57a2584bd8b88795b73aa63dc9fc50f29b7c453f9fd8c2 ...
+        Implementation address: 0x27406EbF0b76923d93b4C6c6224bCaB7fFf11f87
+        New proxy deployed:  0xC2bAC0DB5B18B0c3225581Ba14BD0B448c623636
+        New proxy version: 401
+--------------------------06_DeBridgeGateSetup----------------------------------------------------------------------------
+ npx hardhat deploy --tags  06_DeBridgeGateSetup  --network OP
+Nothing to compile
+No need to generate any newer typings.
+Start 06_DeBridgeGateSetup
+deBridge setSignatureVerifier 0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c
+Waiting 1 block confirmations for tx 0x3f9189b1983f43d67d731c789a8e06e358fdc9dcd21ec2d91e36bae798fe8fa3 ...
+deBridge setCallProxy 0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+Waiting 1 block confirmations for tx 0x125e690b1243da4fdf81e410c2d8da4515c5ede5899a666a07528372fa641292 ...
+callProxy grantRole DEBRIDGE_GATE_ROLE "0xd5a6101e940ba33e226d2395b16238ab3063d7ee83d7b3ff59cb92988b395437" for deBridgeGate "0x43dE2d77BF8027e25dBD179B491e8d64f38398aA"
+Waiting 1 block confirmations for tx 0x22abebc1124930a7c8903da5226da14504447084df3e506d559a6f8e1aa47daa ...
+deBridge setFeeProxy 0xC2bAC0DB5B18B0c3225581Ba14BD0B448c623636
+Waiting 1 block confirmations for tx 0x9ce5357bf78c3e3a63024b0b8fc3caee178be50182207dda821bef18d793f21f ...
+deBridge setDeBridgeTokenDeployer 0x8244d6Ffe0695B30b2bAD424683Ee3bc534Ea464
+Waiting 1 block confirmations for tx 0xeb5dc76490a54a5b4b1a10aa463c679b28079f4519256cc79ca55873523a8615 ...
+deployInitParams.supportedChains:  [
+      1,      56,
+    128,     137,
+    250,    8453,
+  42161,   43114,
+  59144, 7565164
+]
+deployInitParams.chainSupportInfo:  [
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true },
+  { fixedNativeFee: '0', transferFeeBps: '0', isSupported: true }
+]
+updateChainSupport isChainFrom false
+Waiting 1 block confirmations for tx 0xc4040bd670a7c4a876d78a8a57531a0a992add80f9afe5b0ce63ed3ad9a69f4e ...
+updateChainSupport isChainFrom true
+Waiting 1 block confirmations for tx 0xfdd747e472f6f279685aea6b2d08a697aa0ce156211a9cf80d76af071a86c58d ...
+deBridgeGate updateGlobalFee
+globalFixedNativeFee: 1000000000000000
+globalTransferFeeBps: 10
+Waiting 1 block confirmations for tx 0xd8fb1fcaa8c0a5c3b5facc9a37abfee23834e532c0392c2d3c34c58e03a9272b ...
+--------------------------07_DeBridgeTokenDeployerSetup-------------------------------------------------------------------
+ npx hardhat deploy --tags  07_DeBridgeTokenDeployerSetup  --network OP
+Nothing to compile
+No need to generate any newer typings.
+Start 07_DeBridgeTokenDeployerSetup
+deBridgeGateInstance  0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+overridedTokens  [
+  { address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', chainId: 1 },
+  {
+    address: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    chainId: 56
+  },
+  {
+    address: '0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f',
+    chainId: 128
+  },
+  {
+    address: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+    chainId: 137
+  },
+  {
+    address: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    chainId: 42161
+  },
+  {
+    address: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
+    chainId: 43114
+  },
+  {
+    address: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
+    chainId: 250
+  },
+  {
+    address: '0x069B8857FEAB8184FB687F634618C035DAC439DC1AEB3B5598A0F00000000001',
+    chainId: 7565164
+  }
+]
+overridedTokensInfo  [
+  { accept: true, name: 'Ether', symbol: 'ETH' },
+  { accept: true, name: 'BNB', symbol: 'BNB' },
+  { accept: true, name: 'HT', symbol: 'HT' },
+  { accept: true, name: 'Matic', symbol: 'MATIC' },
+  { accept: true, name: 'Arbitrum Ether', symbol: 'AETH' },
+  { accept: true, name: 'AVAX', symbol: 'AVAX' },
+  { accept: true, name: 'Fantom', symbol: 'FTM' },
+  { accept: true, name: 'SOL', symbol: 'SOL' }
+]
+Calculating debridgeId
+chainId: 1 tokenAddress: 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2 debrigeId: 0x7a4f5988eb2e00ce51697c543e0163ef96f4ec0dfd6729d29b0a1dd88626f055
+chainId: 56 tokenAddress: 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c debrigeId: 0xf93982a76d8e8739fd39d418ca95d6d90f344b45e05ad231c2069a6a0eef7ea1
+chainId: 128 tokenAddress: 0x5545153ccfca01fbd7dd11c0b23ba694d9509a6f debrigeId: 0x776a8db547cd3c2243c6b815a5c37d226cf3df57249b22bd152b97ed18aecc8b
+chainId: 137 tokenAddress: 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270 debrigeId: 0xa64f418a067d562d9c177be545e9f12ab864534625b002205b154a71ddd08be3
+chainId: 42161 tokenAddress: 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1 debrigeId: 0x78c8d09f83f806c7b5a679f99831e432763a4ffbc6a8fa68734ca7d3ef5108b0
+chainId: 43114 tokenAddress: 0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7 debrigeId: 0x0d7439042514ae2e124f31c7905e3021f2bae72180b0bee68cb40bdfcaaf5620
+chainId: 250 tokenAddress: 0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83 debrigeId: 0xfb287dc89e2c05a5bd155c4f39bf20cffb1ec19dc451902429aa581cef979eca
+chainId: 7565164 tokenAddress: 0x069B8857FEAB8184FB687F634618C035DAC439DC1AEB3B5598A0F00000000001 debrigeId: 0x15db45753160f76964dfa867510c9ede0ac87ac9ce24771de7efa0dab8251c1a
+Waiting 1 block confirmations for tx 0x46c70d5ca342d169ea6c4515c7d41a9e5f4ee41d4c6071ed3890febb5c581038 ...
+Checks
+debridgeId: 0x7a4f5988eb2e00ce51697c543e0163ef96f4ec0dfd6729d29b0a1dd88626f055  [ true, 'Ether', 'ETH', accept: true, name: 'Ether', symbol: 'ETH' ]
+debridgeId: 0xf93982a76d8e8739fd39d418ca95d6d90f344b45e05ad231c2069a6a0eef7ea1  [ true, 'BNB', 'BNB', accept: true, name: 'BNB', symbol: 'BNB' ]
+debridgeId: 0x776a8db547cd3c2243c6b815a5c37d226cf3df57249b22bd152b97ed18aecc8b  [ true, 'HT', 'HT', accept: true, name: 'HT', symbol: 'HT' ]
+debridgeId: 0xa64f418a067d562d9c177be545e9f12ab864534625b002205b154a71ddd08be3  [
+  true,
+  'Matic',
+  'MATIC',
+  accept: true,
+  name: 'Matic',
+  symbol: 'MATIC'
+]
+debridgeId: 0x78c8d09f83f806c7b5a679f99831e432763a4ffbc6a8fa68734ca7d3ef5108b0  [
+  true,
+  'Arbitrum Ether',
+  'AETH',
+  accept: true,
+  name: 'Arbitrum Ether',
+  symbol: 'AETH'
+]
+debridgeId: 0x0d7439042514ae2e124f31c7905e3021f2bae72180b0bee68cb40bdfcaaf5620  [ true, 'AVAX', 'AVAX', accept: true, name: 'AVAX', symbol: 'AVAX' ]
+debridgeId: 0xfb287dc89e2c05a5bd155c4f39bf20cffb1ec19dc451902429aa581cef979eca  [ true, 'Fantom', 'FTM', accept: true, name: 'Fantom', symbol: 'FTM' ]
+debridgeId: 0x15db45753160f76964dfa867510c9ede0ac87ac9ce24771de7efa0dab8251c1a  [ true, 'SOL', 'SOL', accept: true, name: 'SOL', symbol: 'SOL' ]
+--------------------------08_SignatureVerifierSetup-----------------------------------------------------------------------
+ npx hardhat deploy --tags  08_SignatureVerifierSetup  --network OP
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        Start add validators
+        from DEPLOYER 0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+********************************************************************************
+new validators  11: 0x4bc16662a2ce381e7bb54dc577c05619c5e67526,0xebec9bc53f9c65f69db8591b9f240bbcdb563c54,0xf27af436a6f2d9c64b4ca40a483ec46acdc33fe8,0x59ce95b8955f0e7be128d5af77161b36f6084214,0x1c0720b124e7251e881a0fbcfe259d085c59f205,0x83f81e7f9e284aaffeded797008663595f7342bf,0x4ca2191cde585d65eb6afc09d23d60b8a0ab677d,0x6436bbca322b8cd0c56d8b9ad7837b13960da426,0xbcf516826ed7f3b0e487c7ca6a87b3b4eccdd4dc,0x874f46124c1daad4749b94f82ed142754826240e,0xdd523fd4debcf0db6f0b2c2d30d075caaee023e0
+Deployer has DEFAULT_ADMIN_ROLE
+Contract version: 202
+existValidators: 
+validatorsForAdd: 11: 0x4bc16662a2ce381e7bb54dc577c05619c5e67526,0xebec9bc53f9c65f69db8591b9f240bbcdb563c54,0xf27af436a6f2d9c64b4ca40a483ec46acdc33fe8,0x59ce95b8955f0e7be128d5af77161b36f6084214,0x1c0720b124e7251e881a0fbcfe259d085c59f205,0x83f81e7f9e284aaffeded797008663595f7342bf,0x4ca2191cde585d65eb6afc09d23d60b8a0ab677d,0x6436bbca322b8cd0c56d8b9ad7837b13960da426,0xbcf516826ed7f3b0e487c7ca6a87b3b4eccdd4dc,0x874f46124c1daad4749b94f82ed142754826240e,0xdd523fd4debcf0db6f0b2c2d30d075caaee023e0
+validatorsForRemove: 0: 
+MinConfirmations from contract: 8
+adding : 0x4bc16662a2ce381e7bb54dc577c05619c5e67526,0xebec9bc53f9c65f69db8591b9f240bbcdb563c54,0xf27af436a6f2d9c64b4ca40a483ec46acdc33fe8,0x59ce95b8955f0e7be128d5af77161b36f6084214,0x1c0720b124e7251e881a0fbcfe259d085c59f205,0x83f81e7f9e284aaffeded797008663595f7342bf,0x4ca2191cde585d65eb6afc09d23d60b8a0ab677d,0x6436bbca322b8cd0c56d8b9ad7837b13960da426,0xbcf516826ed7f3b0e487c7ca6a87b3b4eccdd4dc,0x874f46124c1daad4749b94f82ed142754826240e,0xdd523fd4debcf0db6f0b2c2d30d075caaee023e0
+Waiting 1 block confirmations for tx 0xb58bd2ae2467d6d44fd176624cfe4ebccdb57ba29877254d3361567da8b1fb79 ...
+addOraclesTx : 0xb58bd2ae2467d6d44fd176624cfe4ebccdb57ba29877254d3361567da8b1fb79
+Checks after update
+found validator in contract: 0x4bc16662a2ce381e7bb54dc577c05619c5e67526
+found validator in contract: 0xebec9bc53f9c65f69db8591b9f240bbcdb563c54
+found validator in contract: 0xf27af436a6f2d9c64b4ca40a483ec46acdc33fe8
+found validator in contract: 0x59ce95b8955f0e7be128d5af77161b36f6084214
+found validator in contract: 0x1c0720b124e7251e881a0fbcfe259d085c59f205
+found validator in contract: 0x83f81e7f9e284aaffeded797008663595f7342bf
+found validator in contract: 0x4ca2191cde585d65eb6afc09d23d60b8a0ab677d
+found validator in contract: 0x6436bbca322b8cd0c56d8b9ad7837b13960da426
+found validator in contract: 0xbcf516826ed7f3b0e487c7ca6a87b3b4eccdd4dc
+found validator in contract: 0x874f46124c1daad4749b94f82ed142754826240e
+found validator in contract: 0xdd523fd4debcf0db6f0b2c2d30d075caaee023e0
+--------------------------08_transfer_admin_role--------------------------------------------------------------------------
+npx hardhat deploy --tags  08_transfer_admin_role  --network OP
+Nothing to compile
+No need to generate any newer typings.
+********************************************************************************
+        Start transfering DEFAULT_ADMIN_ROLE role for contracts
+        from DEPLOYER 0xd6F0DabbBccd143f7d526a82Ca176b5395cCc844
+        to MULTISIG 0xa52842cd43fa8c4b6660e443194769531d45b265
+********************************************************************************
+Transfering admin role for DeBridgeTokenDeployer | 0x8244d6Ffe0695B30b2bAD424683Ee3bc534Ea464
+        call grantRole for multisig
+Waiting 1 block confirmations for tx 0xa906fd3c2dd43543affe5018f74ec902235cdbdcbdafa5324455d503df969f3e ...
+        call revokeRole for deployer
+Waiting 1 block confirmations for tx 0xa463d9a0991e62d50e3b62bc8c6926d01ae5244826b0a89e311084ea0beaea52 ...
+Transfering admin role for SignatureVerifier | 0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c
+        call grantRole for multisig
+Waiting 1 block confirmations for tx 0xf3ea51fcde2b834c235584e8b93d31bc33538aed74bacb3b9f37e106b75c369f ...
+        call revokeRole for deployer
+Waiting 1 block confirmations for tx 0x07eacfac436ac8d39118c6a216b94ef5c139efd336a36e52166dd64e5b2f8364 ...
+Transfering admin role for CallProxy | 0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824
+        call grantRole for multisig
+Waiting 1 block confirmations for tx 0x68f9e48fced8fc0a50243313c35a5150e4f5fef69d5943990f997e7ca2978d7f ...
+        call revokeRole for deployer
+Waiting 1 block confirmations for tx 0x065e742056ff01907d9db8903c6d31720c056d2ad652bc0ac2717d812e9af038 ...
+Transfering admin role for SimpleFeeProxy | 0xC2bAC0DB5B18B0c3225581Ba14BD0B448c623636
+        call grantRole for multisig
+Waiting 1 block confirmations for tx 0x98a0263f35f835b98a7dcb632845c345dc2a62ad65d047f548bc7af646406725 ...
+        call revokeRole for deployer
+Waiting 1 block confirmations for tx 0x8fb6f12ada52c5f0a3d358f2c2e15664864292e56ea6915160e09a81e2dc2ab8 ...
+Transfering admin role for DeBridgeGate | 0x43dE2d77BF8027e25dBD179B491e8d64f38398aA
+        call grantRole for multisig
+Waiting 1 block confirmations for tx 0x1ee03d3016c648059546a54feda16c36f897b4be195be8aa24182a862c440ccc ...
+        call revokeRole for deployer
+Waiting 1 block confirmations for tx 0x8d6ce4b5aa3b3aae63b8cf25fe4aefd56a311989dc38e394eea25ecb449efe4c ...
+✔ 0x43dE2d77BF8027e25dBD179B491e8d64f38398aA (transparent) proxy ownership transfered through admin proxy
+✔ 0x8244d6Ffe0695B30b2bAD424683Ee3bc534Ea464 (transparent) proxy ownership transfered through admin proxy
+✔ 0x949b3B3c098348b879C9e4F15cecc8046d9C8A8c (transparent) proxy ownership transfered through admin proxy
+✔ 0x8a0C79F5532f3b2a16AD1E4282A5DAF81928a824 (transparent) proxy ownership transfered through admin proxy
+✔ 0xC2bAC0DB5B18B0c3225581Ba14BD0B448c623636 (transparent) proxy ownership transfered through admin proxy
+--------------------------12_BatchBalance---------------------------------------------------------------------------------------
+npx hardhat deploy --tags  12_BatchBalance  --network OP
+Nothing to compile
+No need to generate any newer typings.
+deploying "BatchBalance" (tx: 0xf13954cce704b59047bb9465c9daa89b8991bdea157d63e6882dab6dfed84d92)...: deployed at 0x55C93b20Dd2F790AC429D6341a022A781791654A with 300273 gas
+-----------------------------------------------------------------------------------------------------------------

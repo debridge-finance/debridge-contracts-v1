@@ -184,7 +184,13 @@ export default {
     Base: {
       url: "https://base-mainnet.public.blastapi.io",
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
-      chainId: 8453
+      chainId: 8453,
+      gasPrice: 1e9,
+    },
+    OP: {
+      url: "https://optimism-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 10
     },
   },
   mocha: {
