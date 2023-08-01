@@ -181,6 +181,11 @@ export default {
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       chainId: 59144
     },
+    Base: {
+      url: "https://base-mainnet.public.blastapi.io",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 8453
+    },
   },
   mocha: {
     timeout: 100000

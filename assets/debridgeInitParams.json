@@ -745,6 +745,80 @@
       }
     ]
   },
+  "Base": {
+    "deBridgeTokenAdmin": "0xF0A9d50F912D64D1105b276526e21881bF48A29e",
+    "treasuryAddress": "0x364D2265Fcb713f58C62682bf9eD0Fb3c8549755",
+    "minConfirmations": 8,
+    "confirmationThreshold": 10,
+    "excessConfirmations": 8,
+    "deploy": {
+      "wethGate": false
+    },
+    "external": {
+      "WETH": "0x4200000000000000000000000000000000000006",
+      "UniswapFactory": ""
+    },
+    "supportedChains": [
+      1,
+      56,
+      128,
+      137,
+      250,
+      42161,
+      43114,
+      59144,
+      7565164
+    ],
+    "globalFixedNativeFee": "1000000000000000",
+    "globalTransferFeeBps": "10",
+    "chainSupportInfo": [
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      },
+      {
+        "fixedNativeFee": "0",
+        "transferFeeBps": "0",
+        "isSupported": true
+      }
+    ]
+  },
   "overridedTokens": [
     {
       "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
