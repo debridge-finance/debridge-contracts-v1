@@ -52,6 +52,7 @@ Due to the probabilistic finality model of most blockchains, before the message 
 | Arbitrum   | 12                  |
 | Avalanche  | 12                  |
 | Fantom     | 12                  |
+| Solana     | Finalized Status    |
 
 ### Delegated Staking and Slashing
 

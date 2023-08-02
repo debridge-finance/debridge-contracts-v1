@@ -12,12 +12,4 @@ deBridge flat fees can be changed by Governance. Hence, for any on-chain interac
 
 ### Current flat fee for messages sent from different chains
 
-| Chain     | Chain Id | Message Transfer Fee |
-| --------- | -------- | -------------------- |
-| Arbitrum  | 42161    | 0.001 ETH            |
-| Avalanche | 43114    | 0.01 AVAX            |
-| BNB Chain | 56       | 0.005 BNB            |
-| Ethereum  | 1        | 0.001 ETH            |
-| Polygon   | 137      | 0.5 MATIC            |
-| Fantom    | 250      | 4 FTM                |
-| Solana    | 7565164  | 0.03 SOL             |
+<table><thead><tr><th>Chain</th><th width="123.33333333333331">Chain Id</th><th>Message Transfer Fee</th><th>Blocks finality</th></tr></thead><tbody><tr><td>Arbitrum</td><td>42161</td><td>0.001 ETH</td><td>12</td></tr><tr><td>Avalanche</td><td>43114</td><td>0.01 AVAX</td><td>12</td></tr><tr><td>BNB Chain</td><td>56</td><td>0.005 BNB</td><td>12</td></tr><tr><td>Ethereum</td><td>1</td><td>0.001 ETH</td><td>12</td></tr><tr><td>Polygon</td><td>137</td><td>0.5 MATIC</td><td>256</td></tr><tr><td>Fantom</td><td>250</td><td>4 FTM</td><td>12</td></tr><tr><td>Solana</td><td>7565164</td><td>0.03 SOL</td><td>Status Finalized</td></tr><tr><td>Linea</td><td>59144</td><td>0.001 ETH</td><td>12</td></tr></tbody></table>
