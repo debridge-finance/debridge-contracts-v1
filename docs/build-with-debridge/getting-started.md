@@ -307,19 +307,7 @@ The submission gets accepted by the validators after a transaction (containing t
 const isConfirmed = await submission.hasRequiredBlockConfirmations();
 ```
 
-
-
-| Chain     | Number of block confirmations |
-| --------- | ----------------------------- |
-| Ethereum  | 12                            |
-| BNB Chain | 12                            |
-| Heco      | 12                            |
-| Polygon   | 256                           |
-| Arbitrum  | 12                            |
-| Avalanche | 12                            |
-| Fantom    | 12                            |
-| Solana    | Finalized status              |
-| Linea     | 12                            |
+The number of block confirmations required for sent messages can be found in [fees-and-supported-chains.md](../the-core-protocol/fees-and-supported-chains.md "mention") section
 
 #### Pulling signatures
 
