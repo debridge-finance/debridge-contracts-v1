@@ -117,6 +117,16 @@ DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.E
 
 If the user can't break protocol rules by passing any Pubkey, then you can take that key directly from the user's input and you don't need substitution.
 
+## 3.1 Pubkey placeholders
+
+As well as pubkey substitutions, placeholders could be used to substitute extcall accounts, but placeholders can't be used to calculate ATA during extcall execution. At the moment we have following placeholders:
+
+* **Wallet Placeholder:** \``` J4vKrc4pCdtiHpxFDfBy4iyZ22Uf7fBjJyJ817k4673y` `` - if you set this pubkey to some account, it will be replaced by actual Submission Wallet during execution. Submission wallet is a [token account](https://github.com/solana-labs/solana-program-library/blob/523156a0cdd9cada27036bd72d326bc40c00f85f/token/program/src/state.rs#L83-L106) that contains transferred tokens during execution.
+* **Submission Placehoder: \`**`` 7cu34CRu47UZKLRHjt9kFPhuoYyHCzAafGiGWz83GNFs` `` will be replaced by [Submission account](https://github.com/debridge-finance/debridge-solana-sdk/blob/5c3f5149504daddab38d5383ae6c8c15efb4235c/src/debridge\_accounts.rs#L59-L79) during execution. [Submission account](https://github.com/debridge-finance/debridge-solana-sdk/blob/5c3f5149504daddab38d5383ae6c8c15efb4235c/src/debridge\_accounts.rs#L59-L79) contains transfer metadata such as native sender, send from chain, etc.
+* **Authority Placeholder: \`**`` 2iBUASRfDHgEkuZ91Lvos5NxwnmiryHrNbWBfEVqHRQZ` `` will be replaced by Submission Authority account during execution. Submission authority is an owner/authority account for Submission Wallet.&#x20;
+
+If both placeholder and substitution are used for the same account, only substitution will be performed
+
 ## 4. DataSubstitution
 
 If you need a transfer amount as part of your transfer and it cannot be calculated in advance, then you must use `DataSubstitution`. One substitution is now available (`SubmissionAuthWalletAmount`) which works as follows. Takes the `account_index` account of the current instruction, interprets it as a token account, takes its balance, chooses its encoding (big endian, little endian), use `substration` and inserts it into the current instruction by `offset` before calling it.
