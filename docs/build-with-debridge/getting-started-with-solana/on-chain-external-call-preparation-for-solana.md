@@ -80,7 +80,7 @@ DeBridgeSolana.ExternalInstruction memory externalInstruction = DeBridgeSolana.E
 
 Determine which accounts in the instruction are input-dependent and cannot be passed directly from the user for security reasons.
 
-For example, if there is a PDA in the destination network that depends on some unique transfer identifier, then we need to form `PubkeySubstituio.`
+For example, if there is a PDA in the destination network that depends on some unique transfer identifier, then we need to form \`PubkeySubstitutions\``.`
 
 This gives the following Solidity code:
 
@@ -123,9 +123,9 @@ As well as pubkey substitutions, placeholders could be used to substitute extcal
 
 * **Wallet Placeholder:** \``` J4vKrc4pCdtiHpxFDfBy4iyZ22Uf7fBjJyJ817k4673y` `` - if you set this pubkey to some account, it will be replaced by actual Submission Wallet during execution. Submission wallet is a [token account](https://github.com/solana-labs/solana-program-library/blob/523156a0cdd9cada27036bd72d326bc40c00f85f/token/program/src/state.rs#L83-L106) that contains transferred tokens during execution.
 * **Submission Placehoder: \`**`` 7cu34CRu47UZKLRHjt9kFPhuoYyHCzAafGiGWz83GNFs` `` will be replaced by [Submission account](https://github.com/debridge-finance/debridge-solana-sdk/blob/5c3f5149504daddab38d5383ae6c8c15efb4235c/src/debridge\_accounts.rs#L59-L79) during execution. [Submission account](https://github.com/debridge-finance/debridge-solana-sdk/blob/5c3f5149504daddab38d5383ae6c8c15efb4235c/src/debridge\_accounts.rs#L59-L79) contains transfer metadata such as native sender, send from chain, etc.
-* **Authority Placeholder: \`**`` 2iBUASRfDHgEkuZ91Lvos5NxwnmiryHrNbWBfEVqHRQZ` `` will be replaced by Submission Authority account during execution. Submission authority is an owner/authority account for Submission Wallet.&#x20;
+* **Authority Placeholder: \`**`` 2iBUASRfDHgEkuZ91Lvos5NxwnmiryHrNbWBfEVqHRQZ` `` will be replaced by Submission Authority account during execution. Submission authority is an owner/authority account for Submission Wallet. It is this account that manages [#2.-expenses](on-chain-external-call-preparation-for-solana.md#2.-expenses "mention").
 
-If both placeholder and substitution are used for the same account, only substitution will be performed
+If both placeholder and substitution are used for the same account, only substitution will be performed.
 
 ## 4. DataSubstitution
 
