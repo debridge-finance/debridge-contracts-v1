@@ -41,18 +41,7 @@ With this design, even in the eventuality some blockchains experience downtime, 
 
 ### Transaction Finality Requirements
 
-Due to the probabilistic finality model of most blockchains, before the message is validated by the deBridge infrastructure, validators are waiting for the required number of block confirmations before signing its Submission Id. The number of required block confirmations is based on the social consensus of transaction finality in each supported blockchain:
-
-| Blockchain | Block Confirmations |
-| ---------- | ------------------- |
-| Ethereum   | 12                  |
-| BNB Chain  | 12                  |
-| Heco       | 12                  |
-| Polygon    | 256                 |
-| Arbitrum   | 12                  |
-| Avalanche  | 12                  |
-| Fantom     | 12                  |
-| Solana     | Finalized Status    |
+Due to the probabilistic finality model of most blockchains, before the message is validated by the deBridge infrastructure, validators wait for the required number of block confirmations before signing its Submission Id. The number of required block confirmations is based on the social consensus of transaction finality in each supported blockchain. Requirements for each chain can be found in [fees-and-supported-chains.md](fees-and-supported-chains.md "mention") section.
 
 ### Delegated Staking and Slashing
 
