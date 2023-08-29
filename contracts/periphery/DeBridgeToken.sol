@@ -28,10 +28,15 @@ contract DeBridgeToken is
     /// @dev Asset's decimals
     uint8 internal _decimals;
 
+    /* ========== EVENTS ========== */
+
+    event NameUpdated(string oldName, string newName, string oldSymbol, string newSymbol, bytes32 oldDomainSeparator, bytes32 newDomainSeparator);
+    
     /* ========== ERRORS ========== */
 
     error MinterBadRole();
     error PauserBadRole();
+    error AdminBadRole();
 
     /* ========== MODIFIERS ========== */
 
@@ -42,6 +47,11 @@ contract DeBridgeToken is
 
     modifier onlyPauser() {
         if (!hasRole(PAUSER_ROLE, msg.sender)) revert PauserBadRole();
+        _;
+    }
+
+    modifier onlyAdmin() {
+        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) revert AdminBadRole();
         _;
     }
 
@@ -148,9 +158,38 @@ contract DeBridgeToken is
         _pause();
     }
 
-     /// @dev Unpauses all token transfers. The caller must have the `PAUSER_ROLE`.
+    /// @dev Unpauses all token transfers. The caller must have the `PAUSER_ROLE`.
     function unpause() public onlyPauser {
         _unpause();
+    }
+
+    /// @dev Set new name/symbol. The caller must have the `DEFAULT_ADMIN_ROLE`.
+    /// @param _newName new name
+    /// @param _newSymbol new symbol
+    function updateName(string memory _newName, string memory _newSymbol) external onlyAdmin {
+        string memory oldName = _name;
+        string memory oldSymbol = _symbol;
+        bytes32 oldDomainSeparator = DOMAIN_SEPARATOR;
+
+        _name = _newName;
+        _symbol = _newSymbol;
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256(
+                    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+                ),
+                keccak256(bytes(_name)),
+                keccak256(bytes("1")),
+                chainId,
+                address(this)
+            )
+        );
+
+        emit NameUpdated(oldName, _newName, oldSymbol, _newSymbol, oldDomainSeparator, DOMAIN_SEPARATOR);
     }
 
     function _beforeTokenTransfer(
