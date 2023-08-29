@@ -138,6 +138,7 @@ contract("DeBridgeGate light mode with batch claimer", function () {
       [
         deBridgeToken.address,
         alice,
+        alice,
         ZERO_ADDRESS,
       ]);
 

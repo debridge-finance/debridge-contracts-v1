@@ -117,6 +117,7 @@ contract("DeBridgeGate light mode", function () {
       [
         deBridgeToken.address,
         alice,
+        alice,
         ZERO_ADDRESS,
       ]);
 

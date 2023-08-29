@@ -18,6 +18,7 @@ module.exports = async function ({ getNamedAccounts, deployments, network }) {
     [
       deToken,
       deployInitParams.deBridgeTokenAdmin,
+      deployInitParams.deBridgeTokenPauser,
       deBridgeGateInstance.address,
     ],
     true);
