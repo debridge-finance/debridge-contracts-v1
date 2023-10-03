@@ -1,10 +1,10 @@
 # Off-chain external call preparation for Solana
 
-Solana's `TransactionInstruction`s could be serialized into calldata format using `@debridge-finance/debridge-external-call` npm package.
+Instructions should be serialized one by one, final calldata is a concatenation of separately serialized instructions.
 
-Instructions should be serialized one by one, final calldata is a concatenation of a separately serialized instructions.
+For the info about the rewards, substitutions, and expenses check the previous section.&#x20;
 
-For the info about the rewards, substitutions and expenses check the previous section
+Solana's `TransactionInstruction`s could be serialized into calldata format using `@debridge-finance/debridge-external-call` npm package:
 
 ```typescript
 import * as wasm from "@debridge-finance/debridge-external-call";
