@@ -14,6 +14,7 @@
 * [Getting started](build-with-debridge/getting-started.md)
 * [Getting started with Solana](build-with-debridge/getting-started-with-solana/README.md)
   * [On-Chain external call preparation for Solana](build-with-debridge/getting-started-with-solana/on-chain-external-call-preparation-for-solana.md)
+  * [Off-chain external call preparation for Solana](build-with-debridge/getting-started-with-solana/off-chain-external-call-preparation-for-solana.md)
 * [Lifecycle of a cross-chain call](build-with-debridge/lifecycle-of-a-cross-chain-call.md)
 * [Advanced topics](build-with-debridge/advanced-topics/README.md)
   * [Gathering data for the claim](build-with-debridge/advanced-topics/gathering-data-for-the-claim.md)
