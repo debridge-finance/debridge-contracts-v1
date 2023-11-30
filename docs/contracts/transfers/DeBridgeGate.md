@@ -675,7 +675,7 @@ Unlock the asset on the current chain and transfer to receiver.
 | :--- | :--- | :------------------------------------------------------------------- |
 |`_debridgeId` | bytes32 | Asset identifier.
 |`_receiver` | bytes32 | Receiver address.
-|`_amount` | address | Amount of the transfered asset (note: the fee can be applyed).
+|`_amount` | address | Amount of the transferred asset (note: the fee can be applied).
 
 ## _mintOrTransfer
 ```solidity
