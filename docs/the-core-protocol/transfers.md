@@ -35,7 +35,7 @@ submissionId = keccak256(
 `debridgeID` is a hash of concatenation of the token native chain Id and native token address.
 
 * deBridge validation nodes track events emitted by `deBridgeGate` smart contract and after a minimum number of blocks confirmations validators submit the transfer identifier (submissionId) to the `deBridgeAggregator` contract in the target chain. `submissionId` is calculated as a hash of concatenation:
-* The user or any arbitrary waller (e.g. Keeper service) can call `claim` method of `deBridgeGate` by passing all transaction parameters and all valudators' signatures. Smart contract will restore `submissionId` based on the set of passed parameters and if minimal required number of validators signatures is valid, the transaction is treated by protocol as valid and the asset is minted/unlocked to the receiver address and data is executed through the callProxy.
+* The user or any arbitrary waller (e.g. Keeper service) can call `claim` method of `deBridgeGate` by passing all transaction parameters and all validators' signatures. Smart contract will restore `submissionId` based on the set of passed parameters and if minimal required number of validators signatures is valid, the transaction is treated by protocol as valid and the asset is minted/unlocked to the receiver address and data is executed through the callProxy.
 
 deBridge protocol supports **multi-chain routing** when users can transfer deAssets between secondary chains directly, without the need to route them through the native chain. These transfers work in the same way, but deAsset is burnt in the chain where the transfer is originated and the corresponding amount of deAsset is minted in the target chain
 
