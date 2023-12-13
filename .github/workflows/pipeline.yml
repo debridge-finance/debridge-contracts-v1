@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     name: Test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     env:
       TEST_BSC_PROVIDER: https://bsc-dataseed.binance.org/
