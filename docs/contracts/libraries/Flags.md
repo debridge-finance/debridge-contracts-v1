@@ -33,7 +33,7 @@ First 24 bytes from data is gas limit for external call
 ```solidity
   uint256 public constant MULTI_SEND;
 ```
-Support multi send for externall call
+Support multi send for external call
 
 # Functions
 ## getFlag
