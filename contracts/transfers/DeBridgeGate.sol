@@ -49,7 +49,7 @@ contract DeBridgeGate is
     address public deBridgeTokenDeployer;
     /// @dev Current signature verifier address to verify signatures.
     address public signatureVerifier;
-    /// @dev Minimal required confirmations in case sent amount is big, have no effect if less than SignatureVerifier.minConfirmations
+    /// @dev Minimal required confirmations in case the sent amount is big, have no effect if less than SignatureVerifier.minConfirmations
     uint8 public excessConfirmations;
     /// @dev *obsolete flashFeeBps
     uint256 public gap0;
@@ -563,7 +563,7 @@ contract DeBridgeGate is
         discountInfo.discountTransferBps = _discountTransferBps;
     }
 
-    // we need to accept ETH sends to unwrap WETH
+    // we need to accept ETH sent to unwrap WETH
     receive() external payable {
         // assert(msg.sender == address(weth)); // only accept ETH via fallback from the WETH contract
     }
