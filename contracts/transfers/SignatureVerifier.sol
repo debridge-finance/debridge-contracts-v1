@@ -122,7 +122,7 @@ contract SignatureVerifier is OraclesManager, ISignatureVerifier {
         confirmationThreshold = _confirmationThreshold;
     }
 
-    /// @dev Sets core debridge conrtact address.
+    /// @dev Sets core debridge contract address.
     /// @param _debridgeAddress Debridge address.
     function setDebridgeAddress(address _debridgeAddress) external onlyAdmin {
         debridgeAddress = _debridgeAddress;

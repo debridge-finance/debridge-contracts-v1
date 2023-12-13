@@ -174,7 +174,7 @@ DeBridgeGate only accepts submissions with msg.value (native ether) covering a s
         (defined in the globalFixedNativeFee property). Any excess amount of ether passed to this function is
         included in the message as the execution fee - the amount deBridgeGate would give as an incentive to
         a third party in return for successful claim transaction execution on the destination chain.
-DeBridgeGate accepts a set of flags that control the behaviour of the execution. This simple method
+DeBridgeGate accepts a set of flags that control the behavior of the execution. This simple method
         sets the default set of flags: REVERT_IF_EXTERNAL_FAIL, PROXY_WITH_SENDER
 
 Submits the message to the deBridge infrastructure to be broadcasted to another supported blockchain (identified by _dstChainId)
@@ -200,7 +200,7 @@ DeBridgeGate only accepts submissions with msg.value (native ether) covering a s
         (defined in the globalFixedNativeFee property). Any excess amount of ether passed to this function is
         included in the message as the execution fee - the amount deBridgeGate would give as an incentive to
         a third party in return for successful claim transaction execution on the destination chain.
-DeBridgeGate accepts a set of flags that control the behaviour of the execution. This simple method
+DeBridgeGate accepts a set of flags that control the behavior of the execution. This simple method
         sets the default set of flags: REVERT_IF_EXTERNAL_FAIL, PROXY_WITH_SENDER
 
 Submits the message to the deBridge infrastructure to be broadcasted to another supported blockchain (identified by _dstChainId)
