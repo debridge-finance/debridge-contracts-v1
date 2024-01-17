@@ -33,6 +33,10 @@
 * [Getting started](deport/getting-started.md)
 * [Transfers Flow](the-core-protocol/transfers.md)
 
+## 🌐 deBridge IaaS
+
+* [Getting started](debridge-iaas/getting-started.md)
+
 ## Contracts
 
 * [📑 Mainnet Addresses](contracts/mainnet-addresses.md)
