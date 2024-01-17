@@ -161,7 +161,7 @@ Crafting the deBridge submission (a cross-chain transaction) spins around the `d
 
 #### A protocol fee
 
-Worth mentioning that the `send()` method is marked as payable (meaning that it accepts ether during a call) and it is necessary to bypass enough ether to cover the protocol fee (or global fixed native fee, according to the internal definition) taken in the native currency of the chain. How much? deBridge tries to stick to around one dollar fee, so the fee varies from chain to chain: for example, at the time of writing the fee on Ethereum is 0.001 ETH and the fee on Polygon is 0.5 MATIC. You are advised to retrieve the actual fee amount by reading `deBridgeGate`'s `globalFixedNativeFee` property either on-chain:
+Worth mentioning that the `send()` method is marked as payable (meaning that it accepts ether during a call) and it is necessary to bypass enough ether to cover the protocol fee (or global fixed native fee, according to the internal definition) taken in the native currency of the chain. How much? The fee varies from chain to chain: for example, at the time of writing the fee on Ethereum is 0.001 ETH and the fee on Polygon is 0.5 MATIC. Since fees can be changed by deBridge governance and are expected to be reduced as protocol scales, you are advised to retrieve the actual fee amount by reading `deBridgeGate`'s `globalFixedNativeFee` property either on-chain:
 
 ```solidity
 uint protocolFee = deBridgeGate.globalFixedNativeFee;
