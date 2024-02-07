@@ -45,4 +45,4 @@ Users who are interacting with any IaaS chains should do their own research abou
 
 ### Getting started today
 
-Click here to get started by [filling out this form](https://forms.gle/U7NJqaUQmHE3ymDF6) and we will reach out!
+Get started by initiating an IaaS subscription for any chain here: [**https://app.debridge.finance/subscriptions**](https://app.debridge.finance/subscriptions)
