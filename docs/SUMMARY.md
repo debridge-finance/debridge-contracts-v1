@@ -9,7 +9,7 @@
 * [Fees and supported chains](the-core-protocol/fees-and-supported-chains.md)
 * [Security](the-core-protocol/security.md)
 
-## 🛠 Build with deBridge
+## 🛠️ Build with deBridge
 
 * [Getting started](build-with-debridge/getting-started.md)
 * [Getting started with Solana](build-with-debridge/getting-started-with-solana/README.md)
