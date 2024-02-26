@@ -37,11 +37,13 @@ Once the IaaS smart contract accepts the payment, and smart contracts are deploy
 
 Be aware that deBridge validation nodes perform continuous state and balance sheet validation. If there are any inconsistencies discovered (e.g. the total supply of dePort-issued assets calculated in the node differs from the total supply on-chain), validators will automatically stop operation for this chain and nullify the subscription without issuing any refunds.
 
+If a blockchain stops paying for its IaaS-subscription, there will be a grace period of a maximum of 10 days. This will allow users to derisk while sending all pending cross-chain messages that are needed before validation fully stops. The subscription will continue as normal (from the original end of the date for the subscription) if the blockchain (or someone else) decides to cover the monthly subscription cost.&#x20;
+
 ### Risks for users
 
 The process of IaaS subscription initialization is decentralized and performed through an IaaS smart contract, so deBridge doesn't perform due diligence on any blockchain ecosystems connected through IaaS and doesn't bear any responsibility for the quality and validity of the data returned by RPC of the chain, which is specified and provided by subscription governance address as one of the parameters.
 
-Users who are interacting with any IaaS chains should do their own research about the chain and it's IaaS subscription parameters such as RPC and governance address (same as users of Uniswap who can buy any arbitrary token simply by specifying token address).&#x20;
+Users who are interacting with any IaaS chains should do their own research about the chain and its IaaS subscription parameters such as RPC and governance address (same as users of Uniswap who can buy any arbitrary token simply by specifying token address).&#x20;
 
 ### Getting started today
 
