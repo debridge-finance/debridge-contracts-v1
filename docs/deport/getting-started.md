@@ -2,7 +2,7 @@
 
 ## dePort
 
-![](<../.gitbook/assets/27 (1).png>)
+<figure><img src="../.gitbook/assets/dePort - Updated.png" alt=""><figcaption></figcaption></figure>
 
 [**dePort**](https://app.debridge.finance/deport) is a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains.&#x20;
 
