@@ -12,7 +12,7 @@ As a generic messaging protocol and a cross-chain interoperability infrastructur
 
 * [DLN](https://dln.trade/) — a high-performance cross-chain trading infrastructure built on deBridge with 0-TVL design (no liquidity pools).
 * [dePort](https://app.debridge.finance/deport) —  a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains
-* deNFT — an infrastructure for cross-chain NFTs transfers and a solution to create cross-chain native NFTs (coming soon)
+* deNFT — an infrastructure for cross-chain NFT transfers and a solution to create cross-chain native NFTs (coming soon)
 
 Your application can be the next one and this documentation and tutorials will help to dive into the protocol infrastructure and elaborate on questions you might face while building your integration with deBridge.
 
@@ -37,7 +37,7 @@ deBridge has taken a unique approach with an off-chain transaction validation me
 
 The resulting signature is saved into Arweave — a decentralized data availability layer. Any arbitrary user or keeper can collect validator signatures from Arweave and pass them to the DebridgeGate smart contract in the target chain alongside all transaction parameters. Based on the passed set of parameters, the deBridge smart contract will restore a unique hash of the transaction and cross-validate its signatures from all designated validators. In case the minimum required number of signatures is valid, the DebridgeGate smart contract delivers the message on the destination chain by executing its' call data.
 
-With this design, even in the eventuality some blockchains experience downtime, deBridge will still remain fully functional and all transactions going to the paused chain will be processed as soon as it resumes operation.&#x20;
+With this design, even in the eventuality that some blockchains experience downtime, deBridge will still remain fully functional and all transactions going to the paused chain will be processed as soon as it resumes operation.&#x20;
 
 ### Transaction Finality Requirements
 
@@ -55,14 +55,14 @@ Validators play a crucial role in interoperability protocols since in addition t
 
 The ability to pass arbitrary data opens up opportunities for true cross-chain composability of smart contracts and protocols that can now interact with each other despite they live in different blockchain ecosystems. An example would be an algorithmic stablecoin protocol on Ethereum that opens positions in perpetual markets protocol on Solana or Arbitrum in order to maintain the peg of its asset.
 
-deBridge allows building a new generation of cross-chain protocols and applications that haven’t been possible in the past. Some of the use cases are:
+deBridge allows the building of a new generation of cross-chain protocols and applications that haven’t been possible in the past. Some of the use cases are:
 
 * Cross-chain swaps
 * Multi-chain governance
 * Cross-chain lending
 * Cross-chain yield farming
 
-More information about potential use cases can be found in [debridge-use-cases.md](../external-links/debridge-use-cases.md "mention") section
+More information about potential use cases can be found in the [debridge-use-cases.md](../external-links/debridge-use-cases.md "mention") section.
 
 ###
 
