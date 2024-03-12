@@ -21,12 +21,12 @@
 * [Smart contract interface](build-with-debridge/smart-contract-interface.md)
 * [Development tools](build-with-debridge.md)
 
-## 🔁 Cross-chain trading
+## 🔁 Cross-chain bridging and value transfers
 
-* [API Quick Start Guide](cross-chain-trading/api-quick-start-guide.md)
-* [Cross-Chain Swaps Liquidity](cross-chain-trading/cross-chain-swaps-liquidity.md)
-* [Custom Linking](deswap/custom-linking.md)
-* [deSwap Widget](deswap/deswap-widget.md)
+* [deBridge API Quick Start Guide](cross-chain-bridging-and-value-transfers/debridge-api-quick-start-guide.md)
+* [Cross-Chain Swaps Liquidity](cross-chain-bridging-and-value-transfers/cross-chain-swaps-liquidity.md)
+* [Custom Linking](cross-chain-bridging-and-value-transfers/custom-linking.md)
+* [deBridge Widget](cross-chain-bridging-and-value-transfers/debridge-widget.md)
 
 ## 💸 dePort
 

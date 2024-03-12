@@ -2,7 +2,7 @@
 
 <figure><img src=".gitbook/assets/New Cover.png" alt=""><figcaption></figcaption></figure>
 
-**deBridge is** **a** **secure interoperability layer for Web3** that enables decentralized transfers of arbitrary messages and value between various blockchains. The validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for deBridge governance. Validators maintain the blockchain infrastructure and each run a deBridge node to sign all transactions that pass through deBridge smart contracts in different blockchains.&#x20;
+**deBridge is** **a high-performance and** **secure interoperability layer for Web3** that enables decentralized transfers of arbitrary messages and value between blockchains. The validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for deBridge governance. Validators maintain the blockchain infrastructure and each run a deBridge node to sign all transactions that pass through deBridge smart contracts in different blockchains.&#x20;
 
 [Delegated staking and slashing](the-core-protocol/slashing-and-delegated-staking.md) mechanics act as a backbone for protocol security and provide economic disincentives for validators to collude.
 
@@ -16,7 +16,7 @@ The deBridge protocol is an infrastructure platform and a framework for:
 Projects can integrate with deBridge infrastructure to tap into the various cross-chain opportunities that we enable. These can for instance be:
 
 * Build own custom bridges for assets and NFTs preserving custom NFT logic (e.g. breeding)&#x20;
-* Enable users from other blockchain ecosystems interact with their protocol (enable global accessibility)
+* Enable users from other blockchain ecosystems to interact with their protocol (enable global accessibility)
 * Scale up their protocol to other chains and exchange commands/messages between components of their protocol
 * Make their protocol composable with protocols from other ecosystems
 * Build new types of cross-chain applications and primitives

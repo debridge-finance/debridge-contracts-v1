@@ -1,8 +1,8 @@
-# deSwap Widget
+# deBridge Widget
 
-deSwap Widget is available at [https://app.debridge.finance/widget](https://app.debridge.finance/widget)
+deBridge Widget is available at [https://app.debridge.finance/widget](https://app.debridge.finance/widget)
 
-### Getting Started with the deSwap Widget
+### Getting Started with the deBridge Widget
 
 With just a few lines of code, all projects and developers can embed a cross-chain exchange between arbitrary assets within your app (mobile app, website, dApp, etc.) based on the deBridge protocol. You can make the widget part of your app and you're fully free to customize colors, fonts, chains, and tokens according to your design and preferences. Here's an example:
 
@@ -99,9 +99,9 @@ fontFamily: string
 
 ![](https://t4717986.p.clickup-attachments.com/t4717986/a45292fd-c79e-424a-9689-837ff3f2e136/image.png)
 
-### deSwap Widget builder&#x20;
+### deBridge Widget builder&#x20;
 
-Builder is available at [https://app.debridge.finance/widget](https://app.debridge.finance/widget) and contains:
+The builder is available at [https://app.debridge.finance/widget](https://app.debridge.finance/widget) and contains:
 
 1. Widget settings fields.
 2. Widget preview.&#x20;
@@ -109,5 +109,5 @@ Builder is available at [https://app.debridge.finance/widget](https://app.debrid
 
 ### &#x20;Algorithm of work
 
-1. Fill in the fields of widget settings to see your future widget. All field changes are updated in real-time.&#x20;
+1. Fill in the fields of widget settings to see your future widget. All field changes are updated in real time.&#x20;
 2. Once UI and other settings suit your requirements, you can just copy the source code to your project to embed the widget according to the "Widget embedding" section.
