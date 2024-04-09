@@ -28,6 +28,12 @@
 * [Custom Linking](cross-chain-bridging-and-value-transfers/custom-linking.md)
 * [deBridge Widget](cross-chain-bridging-and-value-transfers/debridge-widget.md)
 
+***
+
+* [⚡️deBridge Points](debridge-points/README.md)
+  * [deBridge Points: Referrers Overview](debridge-points/debridge-points-referrers-overview.md)
+  * [deBridge Points: Integrators Overview](debridge-points/debridge-points-integrators-overview.md)
+
 ## 💸 dePort
 
 * [Getting started](deport/getting-started.md)
