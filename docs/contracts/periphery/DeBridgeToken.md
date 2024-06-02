@@ -44,6 +44,7 @@ Asset's decimals
             string symbol_,
             uint8 decimals_,
             address admin,
+            address pauser,
             address[] minters
   ) public
 ```
@@ -57,6 +58,7 @@ Constructor that initializes the most important configurations.
 |`symbol_` | string | Asset's symbol.
 |`decimals_` | uint8 | Asset's decimals.
 |`admin` | address | Address to set as asset's admin.
+|`pauser` | address | Address to set as asset's pauser.
 |`minters` | address[] | The accounts allowed to int new tokens.
 
 ## mint

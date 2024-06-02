@@ -50,12 +50,14 @@ contract DeBridgeToken is
     /// @param symbol_ Asset's symbol.
     /// @param decimals_ Asset's decimals.
     /// @param admin Address to set as asset's admin.
+    /// @param pauser Address to set as asset's pauser.
     /// @param minters The accounts allowed to int new tokens.
     function initialize(
         string memory name_,
         string memory symbol_,
         uint8 decimals_,
         address admin,
+        address pauser,
         address[] memory minters
     ) public initializer {
         _decimals = decimals_;
@@ -66,7 +68,7 @@ contract DeBridgeToken is
         __ERC20_init_unchained(name_, symbol_);
 
         _setupRole(DEFAULT_ADMIN_ROLE, admin);
-        _setupRole(PAUSER_ROLE, admin);
+        _setupRole(PAUSER_ROLE, pauser);
         uint256 mintersCount = minters.length;
         for (uint256 i = 0; i < mintersCount; i++) {
             _setupRole(MINTER_ROLE, minters[i]);
