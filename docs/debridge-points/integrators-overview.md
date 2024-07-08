@@ -1,4 +1,4 @@
-# deBridge Points: Integrators Overview
+# Integrators Overview
 
 Last updated: April 9, 2024
 
@@ -28,18 +28,15 @@ Here are our go-to docs with details on how to get started in the best possible 
 
 All projects need to generate the specific referral link that they pass on the backend of the deBridge integration they do to make sure they get the 25% referring bonus. Here’s how you do it:&#x20;
 
-1. Pick the chain from here as Polygon: [https://app.debridge.finance/](https://app.debridge.finance/). In the top right corner, you will see the polygon chain icon.
-2. Go to [https://app.debridge.finance/statistic/](https://app.debridge.finance/statistic/) and click generate
-3. Add your tracking code to the integration on the backend
-4. Go to the statistics page and see your stats live
+1. Go to [https://app.debridge.finance/refer](https://app.debridge.finance/refer) and click generate
+2. Pass "referralCode" parameter to all queries to DLN API, or specify it for all deBridge smart contract calls
+3. Go to the statistics page and see your stats live
 
 Extra: Please share the code with us if you haven’t already.&#x20;
 
 ### Where to see your deBridge points
 
 You will be able to see your deBridge points by visiting this website and connecting the wallet address you used to generate the referral link: [https://explorer.debridge.finance/statistic/](https://explorer.debridge.finance/statistic/)&#x20;
-
-
 
 ### FAQ
 
