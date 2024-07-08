@@ -2,31 +2,68 @@
 
 * [Introduction](README.md)
 
-## The Core Protocol
+## The deBridge Messaging Protocol
 
-* [Protocol Overview](the-core-protocol/protocol-overview.md)
-* [Slashing and Delegated Staking](the-core-protocol/slashing-and-delegated-staking.md)
-* [Fees and supported chains](the-core-protocol/fees-and-supported-chains.md)
-* [Security](the-core-protocol/security.md)
+* [Protocol Overview](the-debridge-messaging-protocol/protocol-overview.md)
+* [Fees and Supported Chains](the-debridge-messaging-protocol/fees-and-supported-chains.md)
+* [🟢 Deployed Contracts](the-debridge-messaging-protocol/deployed-contracts.md)
+* [Development Guides](the-debridge-messaging-protocol/development-guides/README.md)
+  * [Building an EVM-based dApp](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/README.md)
+    * [EVM smart contract interfaces](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/README.md)
+      * [Interfaces](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/README.md)
+        * [ICallProxy](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/icallproxy.md)
+        * [IDeBridgeGate](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/idebridgegate.md)
+        * [IDeBridgeToken](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/idebridgetoken.md)
+        * [IDeBridgeTokenDeployer](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/idebridgetokendeployer.md)
+        * [IOraclesManager](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/ioraclesmanager.md)
+        * [ISignatureVerifier](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/isignatureverifier.md)
+        * [IWethGate](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/interfaces/iwethgate.md)
+      * [Libraries](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/libraries/README.md)
+        * [Flags](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/libraries/flags.md)
+      * [Periphery](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/periphery/README.md)
+        * [CallProxy](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/periphery/callproxy.md)
+        * [DeBridgeToken](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/periphery/debridgetoken.md)
+        * [DeBridgeTokenProxy](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/periphery/debridgetokenproxy.md)
+        * [SimpleFeeProxy](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/periphery/simplefeeproxy.md)
+      * [Transfers](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/transfers/README.md)
+        * [DeBridgeGate](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/transfers/debridgegate.md)
+        * [DeBridgeTokenDeployer](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/transfers/debridgetokendeployer.md)
+        * [OraclesManager](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/transfers/oraclesmanager.md)
+        * [SignatureVerifier](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/transfers/signatureverifier.md)
+        * [WethGate](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/evm-smart-contract-interfaces/transfers/wethgate.md)
+  * [Sending cross-chain messages from Solana](the-debridge-messaging-protocol/development-guides/sending-cross-chain-messages-from-solana/README.md)
+    * [On-Chain external call preparation for Solana](the-debridge-messaging-protocol/development-guides/sending-cross-chain-messages-from-solana/on-chain-external-call-preparation-for-solana.md)
+    * [Off-chain external call preparation for Solana](the-debridge-messaging-protocol/development-guides/sending-cross-chain-messages-from-solana/off-chain-external-call-preparation-for-solana.md)
+  * [Lifecycle of a cross-chain call](the-debridge-messaging-protocol/development-guides/lifecycle-of-a-cross-chain-call.md)
+  * [Gathering data for the claim](the-debridge-messaging-protocol/development-guides/gathering-data-for-the-claim.md)
+* [Development Tools](the-debridge-messaging-protocol/development-tools.md)
+* [Security](the-debridge-messaging-protocol/security.md)
+* [Slashing and Delegated Staking](the-debridge-messaging-protocol/slashing-and-delegated-staking.md)
 
-## 🛠️ Build with deBridge
+## 🔁 DLN: The deBridge Liquidity Network Protocol
 
-* [Getting started](build-with-debridge/getting-started.md)
-* [Getting started with Solana](build-with-debridge/getting-started-with-solana/README.md)
-  * [On-Chain external call preparation for Solana](build-with-debridge/getting-started-with-solana/on-chain-external-call-preparation-for-solana.md)
-  * [Off-chain external call preparation for Solana](build-with-debridge/getting-started-with-solana/off-chain-external-call-preparation-for-solana.md)
-* [Lifecycle of a cross-chain call](build-with-debridge/lifecycle-of-a-cross-chain-call.md)
-* [Advanced topics](build-with-debridge/advanced-topics/README.md)
-  * [Gathering data for the claim](build-with-debridge/advanced-topics/gathering-data-for-the-claim.md)
-* [Smart contract interface](build-with-debridge/smart-contract-interface.md)
-* [Development tools](build-with-debridge.md)
-
-## 🔁 Cross-chain bridging and value transfers
-
-* [deBridge API Quick Start Guide](cross-chain-bridging-and-value-transfers/debridge-api-quick-start-guide.md)
-* [Cross-Chain Swaps Liquidity](cross-chain-bridging-and-value-transfers/cross-chain-swaps-liquidity.md)
-* [Custom Linking](cross-chain-bridging-and-value-transfers/custom-linking.md)
-* [deBridge Widget](cross-chain-bridging-and-value-transfers/debridge-widget.md)
+* [Introduction](dln-the-debridge-liquidity-network-protocol/introduction.md)
+* [Protocol Overview](dln-the-debridge-liquidity-network-protocol/protocol-overview.md)
+* [Fees and Supported Chains](dln-the-debridge-liquidity-network-protocol/fees-and-supported-chains.md)
+* [🟢 Deployed Contracts](dln-the-debridge-liquidity-network-protocol/deployed-contracts.md)
+* [Market and Limit Orders](dln-the-debridge-liquidity-network-protocol/market-and-limit-orders.md)
+* [Interacting with smart contracts](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/README.md)
+  * [Introduction](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/introduction.md)
+  * [Placing orders](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/placing-orders.md)
+  * [Filling orders](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/filling-orders.md)
+  * [Withdrawing Affiliate Fees](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/withdrawing-affiliate-fees.md)
+  * [Creating Calldata for Solana](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/creating-calldata-for-solana.md)
+* [Interacting with the API](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/README.md)
+  * [Quick Start Guide](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/quick-start-guide.md)
+  * [Getting a Quote](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/getting-a-quote.md)
+  * [Requesting Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/requesting-order-creation-transaction.md)
+  * [Submitting an Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/submitting-an-order-creation-transaction.md)
+  * [Tracking a Status of the Order](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/tracking-a-status-of-the-order.md)
+  * [Cancelling the Order](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/cancelling-the-order.md)
+  * [Affiliate fees](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/affiliate-fees.md)
+* [Interacting with the deBridge App](dln-the-debridge-liquidity-network-protocol/interacting-with-the-debridge-app/README.md)
+  * [Custom Linking](dln-the-debridge-liquidity-network-protocol/interacting-with-the-debridge-app/custom-linking.md)
+* [deBridge Widget](dln-the-debridge-liquidity-network-protocol/debridge-widget.md)
 
 ## 💸 dePort
 
@@ -41,31 +78,6 @@
 ## 🌐 deBridge IaaS
 
 * [Getting started](debridge-iaas/getting-started.md)
-
-## Contracts
-
-* [📑 Mainnet Addresses](contracts/mainnet-addresses.md)
-* [Interfaces](contracts/interfaces/README.md)
-  * [ICallProxy](contracts/interfaces/ICallProxy.md)
-  * [IDeBridgeGate](contracts/interfaces/IDeBridgeGate.md)
-  * [IDeBridgeToken](contracts/interfaces/IDeBridgeToken.md)
-  * [IDeBridgeTokenDeployer](contracts/interfaces/IDeBridgeTokenDeployer.md)
-  * [IOraclesManager](contracts/interfaces/IOraclesManager.md)
-  * [ISignatureVerifier](contracts/interfaces/ISignatureVerifier.md)
-  * [IWethGate](contracts/interfaces/IWethGate.md)
-* [Libraries](contracts/libraries/README.md)
-  * [Flags](contracts/libraries/Flags.md)
-* [Periphery](contracts/periphery/README.md)
-  * [CallProxy](contracts/periphery/CallProxy.md)
-  * [DeBridgeToken](contracts/periphery/DeBridgeToken.md)
-  * [DeBridgeTokenProxy](contracts/periphery/DeBridgeTokenProxy.md)
-  * [SimpleFeeProxy](contracts/periphery/SimpleFeeProxy.md)
-* [Transfers](contracts/transfers/README.md)
-  * [DeBridgeGate](contracts/transfers/DeBridgeGate.md)
-  * [DeBridgeTokenDeployer](contracts/transfers/DeBridgeTokenDeployer.md)
-  * [OraclesManager](contracts/transfers/OraclesManager.md)
-  * [SignatureVerifier](contracts/transfers/SignatureVerifier.md)
-  * [WethGate](contracts/transfers/WethGate.md)
 
 ## External Links
 

@@ -2,9 +2,9 @@
 
 ## deBridge IaaS
 
-<figure><img src="../.gitbook/assets/iaas-head.svg" alt=""><figcaption></figcaption></figure>
-
 deBridge IaaS (Interoperability-as-a-Service) is the first service enabling complete cross-chain interoperability for any EVM or SVM blockchain ecosystems. It’s a turnkey solution that allows any chain to plug into deBridge infrastructure solving all three pillars of interoperability simultaneously including transfers of authenticated messages, cross-chain asset custody, and native high-performance value exchange (liquidity bridging).&#x20;
+
+<figure><img src="../.gitbook/assets/B.png" alt="" width="375"><figcaption></figcaption></figure>
 
 As a complete solution, deBridge IaaS can enable any chain to become fully composable within the global DeFi ecosystem, attracting developers, users, and liquidity from outside their ecosystem all with a subscription fee, paid on-chain. Blockchain ecosystems no longer have to solve each hurdle individually but instead can open up to global composability from day one.&#x20;
 

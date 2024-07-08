@@ -1,10 +1,29 @@
+---
+cover: .gitbook/assets/Header (2).png
+coverY: 0
+layout:
+  cover:
+    visible: true
+    size: hero
+  title:
+    visible: true
+  description:
+    visible: true
+  tableOfContents:
+    visible: true
+  outline:
+    visible: true
+  pagination:
+    visible: true
+---
+
 # Introduction
 
-<figure><img src=".gitbook/assets/New Cover.png" alt=""><figcaption></figcaption></figure>
+**deBridge is DeFi's internet of liquidity**, enabling real-time movement of assets and information across the DeFi landscape. Without the bottlenecks and risks of liquidity pools, deBridge can power all type of cross-chain interactions with deep liquidity, tight spreads, and guaranteed rates.\
+\
+The validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for deBridge governance. Validators maintain the blockchain infrastructure and each run a deBridge node to sign all transactions that pass through deBridge smart contracts on different supported blockchains.&#x20;
 
-**deBridge is** **a high-performance and** **secure interoperability layer for Web3** that enables decentralized transfers of arbitrary messages and value between blockchains. The validation of cross-chain transactions is performed by a network of independent validators who are elected by and work for deBridge governance. Validators maintain the blockchain infrastructure and each run a deBridge node to sign all transactions that pass through deBridge smart contracts in different blockchains.&#x20;
-
-[Delegated staking and slashing](the-core-protocol/slashing-and-delegated-staking.md) mechanics act as a backbone for protocol security and provide economic disincentives for validators to collude.
+[Delegated staking and slashing](the-debridge-messaging-protocol/slashing-and-delegated-staking.md) mechanics act as a backbone for protocol security and provide economic disincentives for validators to collude.
 
 The deBridge protocol is an infrastructure platform and a framework for:
 
@@ -22,7 +41,7 @@ Projects can integrate with deBridge infrastructure to tap into the various cros
 * Build new types of cross-chain applications and primitives
 * Enable global accessibility by letting users and protocols from other chains seamlessly interact with the protocol
 
-Our [getting-started.md](build-with-debridge/getting-started.md "mention") guide is a great starting point that covers all topics needed to start building cross-chain interactions through the deBridge protocol and its infrastructure.
+Our [building-an-evm-based-dapp](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/ "mention") guide is a great starting point that covers all topics needed to start building cross-chain interactions through the deBridge protocol and its infrastructure.
 
 The deBridge protocol will be controlled by a DAO with decentralized governance which allows all token holders to participate in future growth, have a word in the future decisions regarding protocol parameters, and participate in treasury management.
 
@@ -45,10 +64,10 @@ Facebook: [https://www.facebook.com/deBridgeFinance](https://www.facebook.com/de
 
 ## Quick Start
 
-{% content-ref url="the-core-protocol/protocol-overview.md" %}
-[protocol-overview.md](the-core-protocol/protocol-overview.md)
+{% content-ref url="the-debridge-messaging-protocol/protocol-overview.md" %}
+[protocol-overview.md](the-debridge-messaging-protocol/protocol-overview.md)
 {% endcontent-ref %}
 
-{% content-ref url="build-with-debridge/getting-started.md" %}
-[getting-started.md](build-with-debridge/getting-started.md)
+{% content-ref url="the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/" %}
+[building-an-evm-based-dapp](the-debridge-messaging-protocol/development-guides/building-an-evm-based-dapp/)
 {% endcontent-ref %}

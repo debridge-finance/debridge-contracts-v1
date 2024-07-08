@@ -2,11 +2,11 @@
 
 ## dePort
 
-<figure><img src="../.gitbook/assets/dePort - Updated.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Slide 16_9 - 5.png" alt=""><figcaption></figcaption></figure>
 
-[**dePort**](https://app.debridge.finance/deport) is a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains.&#x20;
+[**dePort**](https://app.debridge.finance/deport) is a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) on other chains.&#x20;
 
-dePort utilizes a locking and minting approach where the native token is locked/unlocked in a deBridgeGate smart contract in the native chain and its synthetic representation (deAsset) is minted/burnt in secondary chains.
+dePort utilizes a lock-and-mint approach where the native token is locked/unlocked in a deBridgeGate smart contract on the native (source) chain and its synthetic representation (deAsset) is minted/burnt in secondary (target) chains.
 
 For each asset, under the **native chain**, we assume the unique blockchain where the token was originally created.
 
@@ -14,7 +14,7 @@ For each asset, under the **native chain**, we assume the unique blockchain wher
 
 ### Collateralization
 
-Each of the tokens locked in the native chain have the associated wrapped asset on the target chains. By design, the protocol ensures that the total supply of each deAsset that can be minted in secondary chains is always 1:1 backed by the asset collateral locked in the deBridgeGate smart contract in the native chain. That provides a flawless user experience and guarantees that the user will never face a liquidity imbalance problem which is often encountered in other bridging solutions, where users face significant delays after they already locked liquidity in the bridge.
+Each of the tokens locked in the native chain have the associated wrapped asset on the target chains. By design, the protocol ensures that the total supply of each deAsset that can be minted on secondary chains is always 1:1 backed by the asset collateral locked in the deBridgeGate smart contract on the native chain. That provides more secure and reliable user experience and guarantees that the user will not face a liquidity imbalance problem which has been encountered in other bridging solutions, where users face significant delays after they already locked liquidity in a bridge.
 
 ### Listing at deBridge
 

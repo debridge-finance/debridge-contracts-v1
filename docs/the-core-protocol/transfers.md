@@ -1,8 +1,8 @@
 # Transfers Flow
 
-![](../.gitbook/assets/B.png)
+<figure><img src="../.gitbook/assets/Header (4).png" alt=""><figcaption></figcaption></figure>
 
-## Transfers From Native Chain
+## Transfers From Native (Source) Chain
 
 Let's consider the situation where the user or smart contracts performs a transfer of the asset and data from chain A to chain B. Then the following steps are performed:
 
@@ -35,15 +35,15 @@ submissionId = keccak256(
 `debridgeID` is a hash of concatenation of the token native chain Id and native token address.
 
 * deBridge validation nodes track events emitted by `deBridgeGate` smart contract and after a minimum number of blocks confirmations validators submit the transfer identifier (submissionId) to the `deBridgeAggregator` contract on the target chain. `submissionId` is calculated as a hash of concatenation:
-* The user or any arbitrary wallet (e.g. Keeper service) can call `claim` method of `deBridgeGate` by passing all transaction parameters and all validators' signatures. Smart contract will restore `submissionId` based on the set of passed parameters and if the minimum required number of validators' signatures is valid, the transaction is treated by protocol as valid and the asset is minted/unlocked to the receiver address and data is executed through the callProxy.
+* The user or any arbitrary wallet (e.g. Keeper service) can call `claim` method of `deBridgeGate` by passing all transaction parameters and all validators' signatures. Smart contract will restore `submissionId` based on the set of passed parameters and if the minimum required number of validators' signatures is valid, the transaction is treated by the protocol as valid and the asset is minted/unlocked to the receiver address and data is executed through the callProxy.
 
-deBridge protocol supports **multi-chain routing** when users can transfer deAssets between secondary chains directly, without the need to route them through the native chain. These transfers work in the same way, but deAsset is burnt in the chain where the transfer is originated and the corresponding amount of deAsset is minted in the target chain
+deBridge protocol supports **multi-chain routing** when users can transfer deAssets between secondary chains directly, without the need to route them through the native chain. These transfers work in the same way, but deAsset is burnt in the chain where the transfer is originated and the corresponding amount of deAsset is minted on the target chain.
 
 ## Cross-Chain Transfers Execution Time
 
 Cross-chain transfer through deBridge normally takes a few minutes and the delay is caused by two factors:
 
-1. The finality of the transaction in the blockchain where the transfer is originated
-2. Time required for claim transaction to get into the block in the destination chain
+1. The finality of the transaction on the blockchain where the transfer is originated
+2. Time required for claim transaction to get into the block on the destination chain
 
-Each blockchain has a different block generation time and requires a different number of block confirmations for ensured transaction finality, thus before validating the transaction validators must wait for its finality
+Each blockchain has a different block generation time and requires a different number of block confirmations for ensured transaction finality, thus before validating the transaction validators must wait for its finality.
