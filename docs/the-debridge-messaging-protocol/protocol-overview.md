@@ -2,7 +2,7 @@
 
 ## Background
 
-For a long time, bridges were viewed only as value transfer protocols and custodians that are responsible for locking assets on the source chain and issuing wrapped representations of the assets on the destination chain.
+For a long time, bridges were viewed only as value transfer protocols and custodians responsible for locking assets on the source chain and issuing wrapped representations of the assets on the destination chain.
 
 The deBridge protocol drastically expands the concept of traditional bridges by introducing generic cross-chain message transfers. Now developers and builders can interconnect any smart contracts across different blockchains to perform transfers of data and transaction calls (messages that contain instructions to be executed, or `CALLDATA`) together with the value transfer in the same transaction.&#x20;
 
@@ -10,7 +10,7 @@ This opens up endless opportunities to build complex cross-chain interactions, s
 
 As a generic messaging protocol and a cross-chain interoperability infrastructure, deBridge can be used to build any arbitrary cross-chain applications (deApps). Notable solutions built on top of deBridge are:
 
-* deBridge Liquidity Network Protocol (DLN) — a high-performance cross-chain value transfer infrastructure built on deBridge with 0-TVL design (no liquidity pools).
+* [deBridge Liquidity Network](https://app.debridge.finance/) (DLN) — a high-performance cross-chain value transfer infrastructure built on deBridge with 0-TVL design (no liquidity pools).
 * [dePort](https://app.debridge.finance/deport) —  a native bridge for assets that allows protocols to bridge tokens and create utility for their synthetic representation (deTokens) in other chains.
 * deNFT — an infrastructure for cross-chain NFT transfers and a solution to create cross-chain native NFTs (coming soon).
 
