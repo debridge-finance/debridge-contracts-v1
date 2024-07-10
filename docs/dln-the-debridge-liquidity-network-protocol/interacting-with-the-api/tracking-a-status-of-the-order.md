@@ -1,6 +1,6 @@
 # Tracking a Status of the Order
 
-After the transaction has been [successfully included](broken-reference) in the source blockchain, it is time to retrieve the status of an order created within the given transaction. There are several ways to track the status of the trade.
+After the transaction has been successfully included in the source blockchain, it is time to retrieve the status of an order created within the given transaction. There are several ways to track the status of the trade.
 
 The first way is [`/filteredList`](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders\_GetOrders)[ ](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders\_GetOrders)method of dedicated `stats-api` that allows retrieving the history of all trades performed by the wallet and their statuses. Check [redoc](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders\_GetOrders) for more details. Stats-API Swagger is available at [this link](https://stats-api.dln.trade/swagger/index.html#/).
 
