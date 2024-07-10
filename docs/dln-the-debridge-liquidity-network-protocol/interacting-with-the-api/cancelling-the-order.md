@@ -6,7 +6,7 @@ The only way to cancel the order is to initiate the cancellation procedure it wa
 
 The cancellation procedure can only be initiated by the `dstChainOrderAuthorityAddress` in a separate transaction on the destination chain. Such transaction can be requested by calling the `/v1.0/dln/order/:id/cancel-tx` endpoint:
 
-> `https://api.dln.trade/v1.0/dln/order/0x9ee6c3d0aa68a7504e619b02df7c71539d0ce10e27f593bf8604b62e51955a01/cancel-tx`
+> `https://dln.debridge.finance/v1.0/dln/order/0x9ee6c3d0aa68a7504e619b02df7c71539d0ce10e27f593bf8604b62e51955a01/cancel-tx`
 
 This gives the response with the transaction data ready to be signed and broadcasted to the destination chain:
 

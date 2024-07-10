@@ -1,7 +1,7 @@
 # Getting a Quote
 
 {% hint style="info" %}
-The [/quote](https://api.dln.trade/v1.0/#/DLN/DlnOrderControllerV10\_estimateTakeAmountOrder) endpoint of DNL API should be used only to display outcomes of the trades when the address of the user is unknown (e.g. to let the user see prices of cross-chain trades before one connects the wallet to the dApp).
+The [`/quote`](https://dln.debridge.finance/v1.0#/DLN/DlnOrderControllerV10\_estimateTakeAmountOrder) endpoint of DNL API should be used only to display outcomes of the trades when the address of the user is unknown (e.g. to let the user see prices of cross-chain trades before one connects the wallet to the dApp).
 
 Whenever an address is known, make sure to call `/create-tx` directly.
 {% endhint %}
@@ -25,7 +25,7 @@ Let's get a quote for our use-case by calling the `/v1.0/dln/order/quote` endpoi
 
 Calling the endpoint:
 
-> `https://api.dln.trade/v1.0/dln/order/quote?srcChainId=56&srcChainTokenIn=0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d&srcChainTokenInAmount=100000000000000000000&dstChainId=43114&dstChainTokenOut=0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7&prependOperatingExpenses=true&affiliateFeePercent=0.1`
+> `https://dln.debridge.finance/v1.0/dln/order/quote?srcChainId=56&srcChainTokenIn=0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d&srcChainTokenInAmount=100000000000000000000&dstChainId=43114&dstChainTokenOut=0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7&prependOperatingExpenses=true&affiliateFeePercent=0.1`
 
 gives a response with the recommended amount of input token, and several details describing how it has been calculated. The recommended amount of the output token (USDT in our case) available in the `estimation.dstChainTokenOut.recommendedAmount` property — this is the amount that can be suggested to a user for explicit approval before placing an order.
 

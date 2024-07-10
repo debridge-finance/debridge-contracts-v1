@@ -54,6 +54,7 @@
   * [Withdrawing Affiliate Fees](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/withdrawing-affiliate-fees.md)
   * [Creating Calldata for Solana](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/creating-calldata-for-solana.md)
 * [Interacting with the API](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/README.md)
+  * [Authentication](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/authentication.md)
   * [Quick Start Guide](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/quick-start-guide.md)
   * [Getting a Quote](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/getting-a-quote.md)
   * [Requesting Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/requesting-order-creation-transaction.md)

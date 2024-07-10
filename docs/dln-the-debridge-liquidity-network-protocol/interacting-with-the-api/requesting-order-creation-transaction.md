@@ -2,7 +2,7 @@
 
 Placing a trade on the deBridge Liquidity Network (DLN) actually means submitting a data struct to the DLN smart contract on the source chain. The data struct must represent the order, including but not limited to: the give and take offers, recipient, order authorities, and other variables.
 
-There is a [`/v1.0/dln/order/create-tx`](https://api.dln.trade/v1.0/#/DLN/DlnOrderControllerV10\_createOrder) endpoint for that, which takes all the parameters provided to the quote, the give and take parts of the quote, plus several more parameters describing the sender, recipient, and order authorities.
+There is a [`/v1.0/dln/order/create-tx`](https://dln.debridge.finance/v1.0#/DLN/DlnOrderControllerV10\_createOrder) endpoint for that, which takes all the parameters provided to the quote, the give and take parts of the quote, plus several more parameters describing the sender, recipient, and order authorities.
 
 To form the trade and get tx data to be signed, prepare the following parameters:
 
@@ -17,7 +17,7 @@ To form the trade and get tx data to be signed, prepare the following parameters
 
 Let's call the `/v1.0/dln/order/create-tx` endpoint with all these parameter values mentioned above:
 
-> `https://api.dln.trade/v1.0/dln/order/create-tx?srcChainId=56&srcChainTokenIn=0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d&srcChainTokenInAmount=100722632000000000000&dstChainId=43114&dstChainTokenOut=0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7&dstChainTokenOutAmount=99623050&dstChainTokenOutRecipient=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&srcChainOrderAuthorityAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&dstChainOrderAuthorityAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&affiliateFeePercent=0.1&affiliateFeeRecipient=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`
+> `https://dln.debridge.finance/v1.0/dln/order/create-tx?srcChainId=56&srcChainTokenIn=0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d&srcChainTokenInAmount=100722632000000000000&dstChainId=43114&dstChainTokenOut=0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7&dstChainTokenOutAmount=99623050&dstChainTokenOutRecipient=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&srcChainOrderAuthorityAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&dstChainOrderAuthorityAddress=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045&affiliateFeePercent=0.1&affiliateFeeRecipient=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`
 
 {% hint style="warning" %}
 Keep in mind to set`srcChainOrderAuthorityAddress` and `dstChainOrderAuthorityAddress`to the addresses, a user has access to. Otherwise, the order has the risk of being stuck forever or the funds being sent to the wrong address during the [canceling procedure](broken-reference) (if that happens).
