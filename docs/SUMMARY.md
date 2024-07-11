@@ -55,7 +55,6 @@
   * [Creating Calldata for Solana](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/creating-calldata-for-solana.md)
 * [Interacting with the API](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/README.md)
   * [Authentication](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/authentication.md)
-  * [The lifecycle](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/the-lifecycle.md)
   * [Requesting Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/requesting-order-creation-transaction.md)
   * [Submitting an Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/submitting-an-order-creation-transaction.md)
   * [Tracking a Status of the Order](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/tracking-a-status-of-the-order.md)

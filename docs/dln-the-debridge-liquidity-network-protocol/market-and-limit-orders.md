@@ -9,7 +9,7 @@ With the deBridge Liquidity Network Protocol, a transaction can’t fail on the 
 
 Users can place orders to exchange any assets at any price, but if the order premium covers all overhead costs for takers and brings them a profit, they are economically incentivized to fulfill the order as fast as possible. In this case, this is a market order that will be settled shortly.
 
-To facilitate the creation of market orders, deBridge provides a [Quick Start Guide](interacting-with-the-api/the-lifecycle.md). Any integrator or an app can query the API in order to retrieve the recommended price for the order for their users and secure its immediate execution. The quote recommended by the API lays in a spread that includes a 4bps incentive for takers and covers overhead costs such as gas.
+To facilitate the creation of market orders, deBridge provides a [Quick Start Guide](broken-reference). Any integrator or an app can query the API in order to retrieve the recommended price for the order for their users and secure its immediate execution. The quote recommended by the API lays in a spread that includes a 4bps incentive for takers and covers overhead costs such as gas.
 
 #### Joining the deBridge Liquidity Network Protocol as a Solver <a href="#joining-dln-as-taker" id="joining-dln-as-taker"></a>
 
