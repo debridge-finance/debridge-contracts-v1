@@ -45,7 +45,7 @@ Our [building-an-evm-based-dapp](the-debridge-messaging-protocol/development-gui
 
 The deBridge protocol will be controlled by a DAO with decentralized governance which allows all token holders to participate in future growth, have a word in the future decisions regarding protocol parameters, and participate in treasury management.
 
-deBridge commenced in April 2021 during the [Chainlink Global Hackathon](https://chain.link/hackathon) with the ambition of solving the urgent problem of transferring assets and data between blockchains, and by creating the first single decentralized standard for bridging assets. The project was awarded the Grand Prize and took first place among more than 140 teams worldwide.
+deBridge commenced in April 2021 during the Chainlink Global Hackathon with the ambition of solving the urgent problem of transferring assets and data between blockchains, and by creating the first single decentralized standard for bridging assets. The project was awarded the Grand Prize and took first place among more than 140 teams worldwide.
 
 **Resources:**\
 Website [https://debridge.finance/](https://debridge.finance)\
