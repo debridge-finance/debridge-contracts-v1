@@ -9,6 +9,16 @@ The following smart contracts have been deployed across supported chains to powe
 | `DlnSource`      | [src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4](https://solscan.io/account/src5qyZHqTqecJV4aY6Cb6zDZLMDzrDKKezs22MPHr4) | Used to place orders on DLN           |
 | `DlnDestination` | [dst5MGcFPoBeREFAA5E3tU5ij8m5uVYwkzkSAbsLbNo](https://solscan.io/account/dst5MGcFPoBeREFAA5E3tU5ij8m5uVYwkzkSAbsLbNo) | Used to fulfill and cancel DLN orders |
 
+### Contract IDLs <a href="#evm-chains" id="evm-chains"></a>
+
+{% file src="../.gitbook/assets/dst.ts" %}
+DLN Destination
+{% endfile %}
+
+{% file src="../.gitbook/assets/src.ts" %}
+DLN Source
+{% endfile %}
+
 ### EVM Chains <a href="#evm-chains" id="evm-chains"></a>
 
 | Smart contract         | Address                                      | Description                                                                                                                                   |
