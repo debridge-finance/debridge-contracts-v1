@@ -1596,9 +1596,9 @@ contract("DeBridgeGate real pipeline mode", function () {
       });
       const deEmptyNameTokenAddressInBSC = pairAddedEvent.args.tokenAddress;
       const deEmptyNameToken = await DeBridgeToken.at(deEmptyNameTokenAddressInBSC);
-      assert.equal(await deEmptyNameToken.symbol(), "deNONAME");
+      assert.equal(await deEmptyNameToken.symbol(), "NONAME");
       // detoken name should use symbol because original name is empty
-      assert.equal(await deEmptyNameToken.name(), "deBridge NONAME");
+      assert.equal(await deEmptyNameToken.name(), "NONAME");
       assert.equal((await deEmptyNameToken.decimals()).toString(), "18");
 
       // console.log(`deBNBAddressInHECO ${deBNBAddressInHECO}`);
@@ -1612,14 +1612,14 @@ contract("DeBridgeGate real pipeline mode", function () {
       // console.log(await deBridgeTokenInstance.symbol());
       // console.log(await deBridgeTokenInstance.name());
       // console.log(await deBridgeTokenInstance.decimals());
-      assert.equal(await deBridgeTokenInstance.symbol(), "deETH");
-      assert.equal(await deBridgeTokenInstance.name(), "deBridge ETH");
+      assert.equal(await deBridgeTokenInstance.symbol(), "ETH");
+      assert.equal(await deBridgeTokenInstance.name(), "ETH");
       assert.equal((await deBridgeTokenInstance.decimals()).toString(), "18");
 
 
       const deBNBInHecoTokenInstance = await DeBridgeToken.at(deBNBAddressInHECO);
-      assert.equal(await deBNBInHecoTokenInstance.symbol(), "deWBNB");
-      assert.equal(await deBNBInHecoTokenInstance.name(), "deBridge Wrapped BNB");
+      assert.equal(await deBNBInHecoTokenInstance.symbol(), "WBNB");
+      assert.equal(await deBNBInHecoTokenInstance.name(), "Wrapped BNB");
       assert.equal((await deBNBInHecoTokenInstance.decimals()).toString(), "18");
     });
 
