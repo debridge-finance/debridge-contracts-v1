@@ -83,7 +83,7 @@ Sets minimal required confirmations.
   ) external
 ```
 
-Sets core debridge conrtact address.
+Sets core debridge contract address.
 
 ### Parameters:
 | Name | Type | Description                                                          |
