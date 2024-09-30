@@ -20,6 +20,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | Gnosis           | 100       | 100000002         | 1 xDAI     |
 | Lightlink        | 1890      | 100000003         | 0.0005 ETH |
 | Metis            | 1088      | 100000004         | 0.02 METIS |
+| Bitrock          | 7171      | 100000005         | 20 BROCK   |
 
 The fee is fully refunded in case the limit order is canceled.
 
