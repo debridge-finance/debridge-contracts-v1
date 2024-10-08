@@ -1,8 +1,8 @@
 ---
 description: >-
-  DLN Hooks is a core feature of the DLN protocol that allows users, protocols,
-  and market makers to attach arbitrary on-chain actions to the orders that
-  would get executed upon their fulfillment.
+  deBridge Hooks is a core feature of the DLN protocol that allows users,
+  protocols, and market makers to attach arbitrary on-chain actions to the
+  orders that would get executed upon their fulfillment.
 ---
 
 # deBridge Hooks
@@ -57,11 +57,11 @@ Non-atomic hooks are allowed to be executed later in a separate transaction afte
 
 ### Who pays for hook execution?
 
-Submitting a transaction to execute a hook implies paying a transaction fee. The DLN Hooks engine provides two distinct ways to incentivize solvers and other trustless third parties to submit transactions to execute hooks.
+Submitting a transaction to execute a hook implies paying a transaction fee. The deBridge Hooks engine provides two distinct ways to incentivize solvers and other trustless third parties to submit transactions to execute hooks.
 
 The most straightforward way to cover hook execution is to lay the cost in the spread of an order: say, there is an order to sell 105 USDC on Solana and buy 100 USDC on Ethereum with a hook that deposits the bought amount to the LP: in this case, the difference between sell amount and buy amount (5 USDC) must cover all the fees and costs, including the cost of this hook execution. This is the preferred approach for **atomic hooks** that target **EVM-based chains**, because in this case the hook is the part of the execution flow of a transaction that fills the order.&#x20;
 
-Additionally, a hook metadata may explicitly define a reward that the DLN Hooks engine contract should cut off an order outcome (before the outcome is transferred to a hook) in favor of a solver who pays for a transaction: for example, there could be an order to sell 106 USDC on Ethereum, buy 101 USDC on Solana with a hook that deposits exactly 100 USDC to the LP and leaves 1 USDC as a reward. This approach works for non-atomic hooks, and the smart contract guarantees that a solver would get exactly the specified amount of the outcome.
+Additionally, a hook metadata may explicitly define a reward that the deBridge Hooks engine contract should cut off an order outcome (before the outcome is transferred to a hook) in favor of a solver who pays for a transaction: for example, there could be an order to sell 106 USDC on Ethereum, buy 101 USDC on Solana with a hook that deposits exactly 100 USDC to the LP and leaves 1 USDC as a reward. This approach works for non-atomic hooks, and the smart contract guarantees that a solver would get exactly the specified amount of the outcome.
 
 The DLN API simplifies a hook's cost estimation by automatically simulating transaction upon order creation.
 
@@ -69,7 +69,7 @@ The DLN API simplifies a hook's cost estimation by automatically simulating tran
 
 A common source of frustration is a blockchain where a hook is expected to run: hooks are built for destination chains. For example, an order that sells SOL on Solana and buys ETH on Ethereum would get placed on Solana with the hook data encoded specifically for EVM, and vice versa.
 
-Atomic **success-required hooks** that get reverted would prevent their orders from getting fulfilled, causing users' funds to stuck, which would require users to initiate [a cancellation procedure](interacting-with-the-api/cancelling-the-order.md). This increases friction and worsens the overall user experience, so it is advised to carefully test hooks and estimate potential fulfillments prior placing orders with such hooks. The API [takes the burden](interacting-with-the-api/integrating-dln-hooks/) of proper hook data validation, encoding, and hook simulation, ensuring that an order could get filled on the destination chain.&#x20;
+Atomic **success-required hooks** that get reverted would prevent their orders from getting fulfilled, causing users' funds to stuck, which would require users to initiate [a cancellation procedure](interacting-with-the-api/cancelling-the-order.md). This increases friction and worsens the overall user experience, so it is advised to carefully test hooks and estimate potential fulfillments prior placing orders with such hooks. The API [takes the burden](interacting-with-the-api/integrating-debridge-hooks/) of proper hook data validation, encoding, and hook simulation, ensuring that an order could get filled on the destination chain.&#x20;
 
 ### Examples
 
@@ -78,9 +78,9 @@ Atomic **success-required hooks** that get reverted would prevent their orders f
 
 ### Availability
 
-DLN Hooks are available on all supported blockchains. Hooks can be encoded programmatically while interacting directly with smart contracts, or passed to the DLN API via a simple high level interface.
+deBridge Hooks are available on all supported blockchains. Hooks can be encoded programmatically while interacting directly with smart contracts, or passed to the DLN API via a simple high level interface.
 
 Further reading:
 
-* Easy usage with the DLN API: [integrating-dln-hooks](interacting-with-the-api/integrating-dln-hooks/ "mention")
+* Easy usage with the DLN API: [integrating-debridge-hooks](interacting-with-the-api/integrating-debridge-hooks/ "mention")
 * Technical specification: [hook-data](protocol-specs/hook-data/ "mention")
