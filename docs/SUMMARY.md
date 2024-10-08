@@ -44,7 +44,7 @@
 
 * [Introduction](dln-the-debridge-liquidity-network-protocol/introduction.md)
 * [Protocol Overview](dln-the-debridge-liquidity-network-protocol/protocol-overview.md)
-* [DLN Hooks](dln-the-debridge-liquidity-network-protocol/dln-hooks.md)
+* [deBridge Hooks](dln-the-debridge-liquidity-network-protocol/debridge-hooks.md)
 * [Fees and Supported Chains](dln-the-debridge-liquidity-network-protocol/fees-and-supported-chains.md)
 * [🟢 Deployed Contracts](dln-the-debridge-liquidity-network-protocol/deployed-contracts.md)
 * [Market and Limit Orders](dln-the-debridge-liquidity-network-protocol/market-and-limit-orders.md)

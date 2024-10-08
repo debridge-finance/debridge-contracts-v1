@@ -1,11 +1,11 @@
 ---
 description: >-
-  DLN Hooks is a core feature of the DLN protocol that allows users, protocols
+  DLN Hooks is a core feature of the DLN protocol that allows users, protocols,
   and market makers to attach arbitrary on-chain actions to the orders that
   would get executed upon their fulfillment.
 ---
 
-# DLN Hooks
+# deBridge Hooks
 
 The DLN protocol allows users to place cross-chain orders with an arbitrary on-chain action attached as an inseparable part of it, enabling cryptographically signed operations to be performed on the destination chain upon order fulfillment.
 
@@ -69,7 +69,7 @@ The DLN API simplifies a hook's cost estimation by automatically simulating tran
 
 A common source of frustration is a blockchain where a hook is expected to run: hooks are built for destination chains. For example, an order that sells SOL on Solana and buys ETH on Ethereum would get placed on Solana with the hook data encoded specifically for EVM, and vice versa.
 
-Atomic **success-required hooks** that get reverted would prevent their orders from getting fulfilled, causing users' funds to stuck, which would require users to initiate [a cancellation procedure](interacting-with-the-api/cancelling-the-order.md). This increases friction and worsens overall user experience, so it is advised to carefully test hooks and estimate potential fulfillments prior placing orders with such hooks. The API [takes the burden](interacting-with-the-api/integrating-dln-hooks/) of proper hook data validation, encoding, and hook simulation, ensuring that an order could get filled on the destination chain.&#x20;
+Atomic **success-required hooks** that get reverted would prevent their orders from getting fulfilled, causing users' funds to stuck, which would require users to initiate [a cancellation procedure](interacting-with-the-api/cancelling-the-order.md). This increases friction and worsens the overall user experience, so it is advised to carefully test hooks and estimate potential fulfillments prior placing orders with such hooks. The API [takes the burden](interacting-with-the-api/integrating-dln-hooks/) of proper hook data validation, encoding, and hook simulation, ensuring that an order could get filled on the destination chain.&#x20;
 
 ### Examples
 
