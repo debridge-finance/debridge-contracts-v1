@@ -44,6 +44,7 @@
 
 * [Introduction](dln-the-debridge-liquidity-network-protocol/introduction.md)
 * [Protocol Overview](dln-the-debridge-liquidity-network-protocol/protocol-overview.md)
+* [DLN Hooks](dln-the-debridge-liquidity-network-protocol/dln-hooks.md)
 * [Fees and Supported Chains](dln-the-debridge-liquidity-network-protocol/fees-and-supported-chains.md)
 * [🟢 Deployed Contracts](dln-the-debridge-liquidity-network-protocol/deployed-contracts.md)
 * [Market and Limit Orders](dln-the-debridge-liquidity-network-protocol/market-and-limit-orders.md)
@@ -52,10 +53,11 @@
   * [Placing orders](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/placing-orders.md)
   * [Filling orders](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/filling-orders.md)
   * [Withdrawing Affiliate Fees](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/withdrawing-affiliate-fees.md)
-  * [Creating Calldata for Solana](dln-the-debridge-liquidity-network-protocol/interacting-with-smart-contracts/creating-calldata-for-solana.md)
 * [Interacting with the API](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/README.md)
   * [Authentication](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/authentication.md)
   * [Requesting Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/requesting-order-creation-transaction.md)
+  * [Integrating DLN hooks](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/integrating-dln-hooks/README.md)
+    * [Creating Hook data for Solana](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/integrating-dln-hooks/creating-hook-data-for-solana.md)
   * [Submitting an Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/submitting-an-order-creation-transaction.md)
   * [Tracking a Status of the Order](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/tracking-a-status-of-the-order.md)
   * [Cancelling the Order](dln-the-debridge-liquidity-network-protocol/interacting-with-the-api/cancelling-the-order.md)
@@ -63,6 +65,11 @@
 * [Interacting with the deBridge App](dln-the-debridge-liquidity-network-protocol/interacting-with-the-debridge-app/README.md)
   * [Custom Linking](dln-the-debridge-liquidity-network-protocol/interacting-with-the-debridge-app/custom-linking.md)
 * [deBridge Widget](dln-the-debridge-liquidity-network-protocol/debridge-widget.md)
+* [Protocol specs](dln-the-debridge-liquidity-network-protocol/protocol-specs/README.md)
+  * [Deterministic order ID](dln-the-debridge-liquidity-network-protocol/protocol-specs/deterministic-order-id.md)
+  * [Hook data](dln-the-debridge-liquidity-network-protocol/protocol-specs/hook-data/README.md)
+    * [Anatomy of a Hook for the EVM-based chains](dln-the-debridge-liquidity-network-protocol/protocol-specs/hook-data/anatomy-of-a-hook-for-the-evm-based-chains.md)
+    * [Anatomy of a Hook for Solana](dln-the-debridge-liquidity-network-protocol/protocol-specs/hook-data/anatomy-of-a-hook-for-solana.md)
 
 ## 💸 dePort
 
