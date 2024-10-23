@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
 <a href="https://debridge.finance/" target="_blank">
-<img src="https://user-images.githubusercontent.com/10200871/137014801-40decb80-0595-4f0f-8ee5-f0f1ab5c0380.png" width="225" alt="logo">
+<img src="https://github.com/user-attachments/assets/01c30bd5-2a18-470f-9df8-c9ac77a2a4c4" width="225" alt="logo">
 </a>
 </p>
 <br/>
