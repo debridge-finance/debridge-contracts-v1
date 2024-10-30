@@ -85,6 +85,10 @@
 
 * [Getting started](debridge-iaas/getting-started.md)
 
+## 🌐 Legal
+
+* [SDK & API License Agreement](legal/sdk-and-api-license-agreement.md)
+
 ## External Links
 
 * [deBridge Use Cases](external-links/debridge-use-cases.md)
