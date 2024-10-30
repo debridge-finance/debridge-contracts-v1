@@ -1,10 +1,6 @@
 # SDK & API License Agreement
 
-## SDK & API License Agreement
-
 Last Updated: 27 October 2024
-
-
 
 This API licence agreement (this "Agreement") is entered into as of the date which the Client first accesses, downloads or utilises the Licensor's APIs (the "Effective Date"), and is a legally binding contract between DXTECH INC., a company incorporated under the laws of Panama (the "Licensor") and you (the "Client", together with the Licensor the "Parties", and each a "Party"), and applies to the use of the API (as defined herein) and associated SDK and documentation, available through https://debridge.finance/api (the "Website"). If you do not agree to be bound by the terms and conditions of this Agreement, please do not proceed with the use of the API.
 
