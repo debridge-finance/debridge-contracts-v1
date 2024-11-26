@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20PausableUpgradeable.sol";
 import "../interfaces/IDeBridgeToken.sol";
 
-/// @dev ERC20 token that is used as wrapped asset to represent the native token value on the other chains.
+/// @dev ERC20 token that is used as a wrapped asset to represent the native token value on the other chains.
 contract DeBridgeToken is
     Initializable,
     AccessControlUpgradeable,
