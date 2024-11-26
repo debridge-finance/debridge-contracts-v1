@@ -13,7 +13,7 @@ Address of deBridgeToken implementation
 ```solidity
   address public deBridgeTokenAdmin;
 ```
-An addres to set as admin for any deployed deBridgeToken
+An address to set as admin for any deployed deBridgeToken
 ## debridgeAddress
 ```solidity
   address public debridgeAddress;

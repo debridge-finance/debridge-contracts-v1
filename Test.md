@@ -5,13 +5,13 @@
 ### General requirements
 
 1. Oracles allowed to submit the data are set by the admin.
-2. The number of the required confirmatios is set by the admin.
+2. The number of the required confirmations is set by the admin.
 3. The contract holds the Links.
 4. The oracles receives the reward to their virtual balance after submission.
 5. The reward can be withdrawn any time.
-6. The admin can withdraw unalocated Links any time.
+6. The admin can withdraw unallocated Links any time.
 7. The oracle's payment can be configured by the admin.
-8. The mint and burnt requests are confirmed only after requered amount of confirmations are received.
+8. The mint and burnt requests are confirmed only after required amount of confirmations are received.
 
 ### Test Item: admin-only functions
 
@@ -26,7 +26,7 @@
 - [x] admin
 - [x] one without admin permissions
 
-**Scenario 2**: Withdraw unalocated Links:
+**Scenario 2**: Withdraw unallocated Links:
 
 - [x] admin
 - [x] one without admin permissions
@@ -80,7 +80,7 @@
 3. Only minters can create new tokens.
 4. Only minters can burn tokens.
 
-### Test Item: admint-only functions
+### Test Item: admit-only functions
 
 **Scope**: Test the minter functions of the contract.
 
@@ -137,7 +137,7 @@
 7. Part of the fee can be withdrawn.
 8. The aggregator can be replaced.
 9. The part of locked tokens can be used in DEFI protocol.
-10. The transfers must be confirmed by the oracles to be compleated.
+10. The transfers must be confirmed by the oracles to be completed.
 
 ### Test Item: admin-only actions
 
@@ -168,7 +168,7 @@
 - [x] new
 - [x] added before
 
-**Scope**: Test fee managemnet.
+**Scope**: Test fee management.
 
 **Action**: Invoke the `fundAggregator`, `withdrawFee` methods.
 
@@ -254,9 +254,9 @@
 - [x] with the current chain
 - [x] with the different chain
 
-**Scenario 2**: Call burn with diffrent amounts when:
+**Scenario 2**: Call burn with different amounts when:
 
-- [x] enough tokens are transfered
+- [x] enough tokens are transferred
 - [x] too few tokens are sent
 
 **Scope**: Test claim.
@@ -272,7 +272,7 @@
 
 **Scenario 2**: Call claim with different confirmations when:
 
-- [x] the burnt is confiremd
+- [x] the burnt is confirmed
 - [x] the burnt isn't confirmed
 
 **Scenario 3**: Call claim few times:
@@ -360,7 +360,7 @@
 6. Part of the fee can be withdrawn.
 7. The aggregator can be replaced.
 8. The part of locked tokens can be used in DEFI protocol.
-9. The transfers must be confirmed by the oracles to be compleated.
+9. The transfers must be confirmed by the oracles to be completed.
 
 ### Test Item: admin-only actions
 
@@ -391,7 +391,7 @@
 - [x] new
 - [x] added before
 
-**Scope**: Test fee managemnet.
+**Scope**: Test fee management.
 
 **Action**: Invoke the `fundAggregator`, `withdrawFee` methods.
 
@@ -467,9 +467,9 @@
 - [x] with the current chain
 - [ ] with the different chain
 
-**Scenario 2**: Call burn with diffrent amounts when:
+**Scenario 2**: Call burn with different amounts when:
 
-- [x] enough tokens are transfered
+- [x] enough tokens are transferred
 - [x] too few tokens are sent
 
 **Scope**: Test claim.
@@ -485,7 +485,7 @@
 
 **Scenario 2**: Call claim with different confirmations when:
 
-- [x] the burnt is confiremd
+- [x] the burnt is confirmed
 - [x] the burnt isn't confirmed
 
 **Scenario 3**: Call claim few times:
@@ -602,7 +602,7 @@
 
 **Scenario 1**: Call `executeUnstake`:
 
-- [x] noraml withdrawal id
+- [x] normal withdrawal id
 - [x] withdrawal id from future
 
 **Scope**: Test unstaking at the different time.
