@@ -36,13 +36,19 @@ Other than that, the transaction is ready to be signed by a user and broadcasted
 The affiliate fee is paid only after the order gets fulfilled, and the taker requests order unlock during the unlock procedure.
 {% endhint %}
 
-
-
 ### Solana
 
 For DLN trades coming from Solana the `tx` object returned by DLN API has only one field `data` which is hex-encoded [VersionedTransaction](https://docs.solana.com/developing/versioned-transactions)
 
 To convert the hex-encoded string into `VersionedTransaction` decode hex to buffer using any library and call `VersionedTransaction.deserialize(decoded)`.
+
+{% hint style="info" %}
+Make sure you properly set transaction priority fees based on the current load of the Solana network. Refer to one of these guides to learn more about how to estimate tx fee parameters: \
+\- [Triton](https://docs.triton.one/chains/solana/improved-priority-fees-api) guide\
+\- [Helius](https://docs.helius.dev/solana-apis/priority-fee-api) guide
+
+More info about sending versioned transactions [here](https://docs.phantom.app/solana/sending-a-transaction-1#signing-and-sending-a-versioned-transaction).
+{% endhint %}
 
 Example:
 
@@ -87,10 +93,3 @@ tx.message.recentBlockhash = blockhash; // Update blockhash!
 tx.sign([wallet]); // Sign the tx with wallet
 connection.sendTransaction(tx);
 ```
-
-More info about sending versioned transactions [here](https://docs.phantom.app/solana/sending-a-transaction-1#signing-and-sending-a-versioned-transaction).
-
-How to estimate priority fee:&#x20;
-
-* [Helius](https://docs.helius.dev/solana-apis/priority-fee-api)
-* [Triton](https://docs.triton.one/chains/solana/improved-priority-fees-api)
