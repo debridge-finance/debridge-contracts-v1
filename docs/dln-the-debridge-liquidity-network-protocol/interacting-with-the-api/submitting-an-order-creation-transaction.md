@@ -49,9 +49,39 @@ Example:
 ```typescript
 import { VersionedTransaction, Connection, clusterApiUrl, Keypair } from "@solana/web3.js";
 
+function encodeNumberToArrayLE(num: number, arraySize: number): Uint8Array {
+  const result = new Uint8Array(arraySize);
+  for (let i = 0; i < arraySize; i++) {
+    result[i] = Number(num & 0xff);
+    num >>= 8;
+  }
+
+  return result;
+}
+
+function updatePriorityFee(tx: VersionedTransaction, computeUnitPrice: number, computeUnitLimit?: number) {
+  const computeBudgetOfset = 1;
+  const computeUnitPriceData = tx.message.compiledInstructions[1].data;
+  const encodedPrice = encodeNumberToArrayLE(computeUnitPrice, 8);
+  for (let i = 0; i < encodedPrice.length; i++) {
+    computeUnitPriceData[i + computeBudgetOfset] = encodedPrice[i];
+  }
+
+  if (computeUnitLimit) {
+    const computeUnitLimitData = tx.message.compiledInstructions[0].data;
+    const encodedLimit = encodeNumberToArrayLE(computeUnitLimit, 4);
+    for (let i = 0; i < encodedLimit.length; i++) {
+      computeUnitLimitData[i + computeBudgetOfset] = encodedLimit[i];
+    }
+  }
+}
+
 const wallet = new Keypair(); // your actual wallet here
 const connection = new Connection(clusterApiUrl("mainnet-beta")); // your actual connection here
 const tx = VersionedTransaction.deserialize(Buffer.from(tx.data.slice(2), "hex"));
+
+// make sure to set correct CU price & limit for the best UX 
+updatePriorityFee(tx, NEW_CU_PRICE, NEW_CU_LIMIT);
 const { blockhash } = await connection.getLatestBlockhash();
 tx.message.recentBlockhash = blockhash; // Update blockhash!
 tx.sign([wallet]); // Sign the tx with wallet
@@ -59,3 +89,8 @@ connection.sendTransaction(tx);
 ```
 
 More info about sending versioned transactions [here](https://docs.phantom.app/solana/sending-a-transaction-1#signing-and-sending-a-versioned-transaction).
+
+How to estimate priority fee:&#x20;
+
+* [Helius](https://docs.helius.dev/solana-apis/priority-fee-api)
+* [Triton](https://docs.triton.one/chains/solana/improved-priority-fees-api)
