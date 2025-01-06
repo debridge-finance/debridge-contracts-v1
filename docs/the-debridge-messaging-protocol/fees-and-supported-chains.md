@@ -28,4 +28,5 @@ deBridge flat fees can be changed by governance. Hence, for any on-chain interac
 | Gnosis                | 100       | 1 xDAI               | 12               |
 | Lightlink (suspended) | 1890      | 0.0005 ETH           | 12               |
 | Metis                 | 1088      | 0.02 METIS           | 12               |
+| Sonic                 | 146       | 1 S                  | 24               |
 
