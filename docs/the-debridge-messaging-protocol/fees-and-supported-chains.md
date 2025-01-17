@@ -30,4 +30,5 @@ deBridge flat fees can be changed by governance. Hence, for any on-chain interac
 | Metis                 | 1088      | 100000004         | 0.02 METIS           | 12               |
 | Bitrock               | 7171      | 100000005         | 20 BROCK             | 12               |
 | Sonic                 | 146       | 100000014         | 1 S                  | 24               |
+| CrossFi               | 4158      | 100000006         | 1 XFI                | 12               |
 
