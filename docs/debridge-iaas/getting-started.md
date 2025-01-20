@@ -24,6 +24,17 @@ deBridge IaaS is a complete solution for any blockchain/ecosystem in the space, 
 
 With a simple subscription fee, blockchains can solve all three interoperability challenges and make their ecosystem instantly accessible and composable from (and between) any EVM or SVM chain.&#x20;
 
+### Limitations
+
+There are certain KPI criteria that need to be fulfilled by chains before they are added to the main deBridge app ([https://app.debridge.finance/](https://app.debridge.finance/)):
+
+* Security
+* TVL
+* Daily transactions
+* DAUs
+
+In any case, your chain will be fully accessible through API and deBridge widget, and your users will be able to bridge to/from the chain directly from your own UI/landing page with widget integrated. The chain will also be fully supported on the infrastructure level, including messaging, deBridge custody (dePort), DLN hooks, etc.
+
 ### Pricing structure
 
 deBridge IaaS works on a subscription-based model with monthly or quarterly payments. Any on-chain address can initialize a subscription by providing RPC for the network and performing the payment.
