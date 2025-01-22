@@ -31,4 +31,5 @@ deBridge flat fees can be changed by governance. Hence, for any on-chain interac
 | Bitrock               | 7171      | 100000005         | 20 BROCK             | 12               |
 | Sonic                 | 146       | 100000014         | 1 S                  | 24               |
 | CrossFi               | 4158      | 100000006         | 1 XFI                | 12               |
+| Cronos zkEVM          | 388       | 100000010         | 7 zkCRO              | 12               |
 
