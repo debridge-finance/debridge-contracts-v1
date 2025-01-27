@@ -32,4 +32,5 @@ deBridge flat fees can be changed by governance. Hence, for any on-chain interac
 | Sonic                 | 146       | 100000014         | 1 S                  | 24               |
 | CrossFi               | 4158      | 100000006         | 1 XFI                | 12               |
 | Cronos zkEVM          | 388       | 100000010         | 7 zkCRO              | 12               |
+| Abstract              | 2741      | 100000017         | 0.0004 ETH           | 12               |
 
