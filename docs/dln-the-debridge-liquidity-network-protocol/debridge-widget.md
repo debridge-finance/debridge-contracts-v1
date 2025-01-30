@@ -275,43 +275,32 @@ The widget object provides several methods to programmatically interact with it.
        widget.setExternalSolanaWallet({
            provider: window.solana,
            name: "Phantom",
-           imageSrc: 'https://app.debridge.finance/assets/images/wallet/metamask.svg'
+           imageSrc: 'https://app.debridge.finance/assets/images/wallet/phenom.svg'
        });
        ```
-8. **`setExternalSolanaWallet(walletConfig)`**
-   * Connects an external Solana-compatible wallet.
-   *   Example usage:
-
-       ```javascript
-       widget.setExternalSolanaWallet({
-           provider: window.solana,
-           name: "Phantom",
-           imageSrc: 'https://app.debridge.finance/assets/images/wallet/metamask.svg'
-       });
-       ```
-9. **`setReceiverAddress(address)`**
+8. **`setReceiverAddress(address)`**
    * Sets the receiver's wallet address.
    *   Example usage:
 
        ```javascript
        widget.setReceiverAddress('0x...');
        ```
-10. **`setAffiliateFee(feeConfig)`**
-    * Sets the affiliate fee for Solana and EVM networks.
-    *   Example usage:
+9. **`setAffiliateFee(feeConfig)`**
+   * Sets the affiliate fee for Solana and EVM networks.
+   *   Example usage:
 
-        ```javascript
-        widget.setAffiliateFee({
-            solana: {
-                affiliateFeePercent: '0.5',
-                affiliateFeeRecipient: 'B5...',
-            },
-            evm: {
-                affiliateFeePercent: '1',
-                affiliateFeeRecipient: '0x...',
-            }
-        });
-        ```
+       ```javascript
+       widget.setAffiliateFee({
+           solana: {
+               affiliateFeePercent: '0.5',
+               affiliateFeeRecipient: 'B5...',
+           },
+           evm: {
+               affiliateFeePercent: '1',
+               affiliateFeeRecipient: '0x...',
+           }
+       });
+       ```
 
 ### deBridge Widget builder&#x20;
 
