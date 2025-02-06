@@ -25,6 +25,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | CrossFi               | 4158      | 100000006         | 1 XFI      |
 | Cronos zkEVM          | 388       | 100000010         | 7 zkCRO    |
 | Abstract              | 2741      | 100000017         | 0.0004 ETH |
+| Berachain             | 80094     | 100000020         | 0.02 BERA  |
 
 The fee is fully refunded in case the limit order is canceled.
 
