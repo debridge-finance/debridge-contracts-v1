@@ -12,25 +12,5 @@ deBridge flat fees can be changed by governance. Hence, for any on-chain interac
 
 ### Current flat fee for messages sent from different chains <a href="#current-flat-fee-for-messages-sent-from-different-chains" id="current-flat-fee-for-messages-sent-from-different-chains"></a>
 
-| Chain                 | Chain ID  | Internal Chain ID | Message Transfer Fee | Block finality   |
-| --------------------- | --------- | ----------------- | -------------------- | ---------------- |
-| Arbitrum              | 42161     | 42161             | 0.001 ETH            | 12               |
-| Avalanche             | 43114     | 43114             | 0.05 AVAX            | 12               |
-| BNB Chain             | 56        | 56                | 0.005 BNB            | 12               |
-| Ethereum              | 1         | 1                 | 0.001 ETH            | 12               |
-| Polygon               | 137       | 137               | 0.5 MATIC            | 256              |
-| Fantom                | 250       | 250               | 4 FTM                | 12               |
-| Solana                | 7565164   | 7565164           | 0.03 SOL             | Status Finalized |
-| Linea                 | 59144     | 59144             | 0.001 ETH            | 12               |
-| Optimism              | 10        | 10                | 0.001 ETH            | 12               |
-| Base                  | 8453      | 8453              | 0.001 ETH            | 12               |
-| Neon                  | 245022934 | 100000001         | 0.75 NEON            | 32               |
-| Gnosis                | 100       | 100000002         | 1 xDAI               | 12               |
-| Lightlink (suspended) | 1890      | 100000003         | 0.0005 ETH           | 12               |
-| Metis                 | 1088      | 100000004         | 0.02 METIS           | 12               |
-| Bitrock               | 7171      | 100000005         | 20 BROCK             | 12               |
-| Sonic                 | 146       | 100000014         | 1 S                  | 24               |
-| CrossFi               | 4158      | 100000006         | 1 XFI                | 12               |
-| Cronos zkEVM          | 388       | 100000010         | 7 zkCRO              | 12               |
-| Abstract              | 2741      | 100000017         | 0.0004 ETH           | 12               |
+<table><thead><tr><th width="143">Chain</th><th>Chain ID</th><th>Internal Chain ID</th><th>Message Transfer Fee</th><th>Block finality</th></tr></thead><tbody><tr><td>Arbitrum</td><td>42161</td><td>42161</td><td>0.001 ETH</td><td>12</td></tr><tr><td>Avalanche</td><td>43114</td><td>43114</td><td>0.05 AVAX</td><td>12</td></tr><tr><td>BNB Chain</td><td>56</td><td>56</td><td>0.005 BNB</td><td>12</td></tr><tr><td>Ethereum</td><td>1</td><td>1</td><td>0.001 ETH</td><td>12</td></tr><tr><td>Polygon</td><td>137</td><td>137</td><td>0.5 MATIC</td><td>256</td></tr><tr><td>Fantom</td><td>250</td><td>250</td><td>4 FTM</td><td>12</td></tr><tr><td>Solana</td><td>7565164</td><td>7565164</td><td>0.03 SOL</td><td>Status Finalized</td></tr><tr><td>Linea</td><td>59144</td><td>59144</td><td>0.001 ETH</td><td>12</td></tr><tr><td>Optimism</td><td>10</td><td>10</td><td>0.001 ETH</td><td>12</td></tr><tr><td>Base</td><td>8453</td><td>8453</td><td>0.001 ETH</td><td>12</td></tr><tr><td>Neon</td><td>245022934</td><td>100000001</td><td>0.75 NEON</td><td>32</td></tr><tr><td>Gnosis</td><td>100</td><td>100000002</td><td>1 xDAI</td><td>12</td></tr><tr><td>Lightlink (suspended)</td><td>1890</td><td>100000003</td><td>0.0005 ETH</td><td>12</td></tr><tr><td>Metis</td><td>1088</td><td>100000004</td><td>0.02 METIS</td><td>12</td></tr><tr><td>Bitrock</td><td>7171</td><td>100000005</td><td>20 BROCK</td><td>12</td></tr><tr><td>Sonic</td><td>146</td><td>100000014</td><td>1 S</td><td>24</td></tr><tr><td>CrossFi</td><td>4158</td><td>100000006</td><td>1 XFI</td><td>12</td></tr><tr><td>Cronos zkEVM</td><td>388</td><td>100000010</td><td>7 zkCRO</td><td>12</td></tr><tr><td>Abstract</td><td>2741</td><td>100000017</td><td>0.0004 ETH</td><td>12</td></tr><tr><td>Berachain</td><td>80094</td><td>100000020</td><td>0.02 BERA</td><td>12</td></tr></tbody></table>
 
