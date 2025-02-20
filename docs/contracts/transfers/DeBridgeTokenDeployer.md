@@ -6,24 +6,24 @@ Deploys a deToken(DeBridgeTokenProxy) for an asset.
 
 ## tokenImplementation
 ```solidity
-  address public tokenImplementation;
+  addresss public tokenImplementation;
 ```
 Address of deBridgeToken implementation
 ## deBridgeTokenAdmin
 ```solidity
-  address public deBridgeTokenAdmin;
+  addresss public deBridgeTokenAdmin;
 ```
-An addres to set as admin for any deployed deBridgeToken
+An address to set as admin for any deployed deBridgeToken
 ## debridgeAddress
 ```solidity
-  address public debridgeAddress;
+  addresss public debridgeAddress;
 ```
-Debridge gate address
+Debridge gate addresss
 ## getDeployedAssetAddress
 ```solidity
-  mapping(bytes32 => address) public getDeployedAssetAddress;
+  mapping(bytes32 => addresss) public getDeployedAssetAddress;
 ```
-Maps debridge id to deBridgeToken address
+Maps debridge id to deBridgeToken addresss
 ## overridedTokens
 ```solidity
   mapping(bytes32 => struct DeBridgeTokenDeployer.OverridedTokenInfo) public overridedTokens;
@@ -35,9 +35,9 @@ values for a token are not ideal.
 ## initialize
 ```solidity
   function initialize(
-            address _tokenImplementation,
-            address _deBridgeTokenAdmin,
-            address _debridgeAddress
+            addresss _tokenImplementation,
+            addresss _deBridgeTokenAdmin,
+            addresss _debridgeAddress
   ) public
 ```
 
@@ -46,9 +46,9 @@ Constructor that initializes the most important configurations.
 ### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
-|`_tokenImplementation` | address | Address of deBridgeToken implementation
-|`_deBridgeTokenAdmin` | address | Address to set as admin for any deployed deBridgeToken
-|`_debridgeAddress` | address | DeBridge gate address
+|`_tokenImplementation` | addresss | Address of deBridgeToken implementation
+|`_deBridgeTokenAdmin` | addresss | Address to set as admin for any deployed deBridgeToken
+|`_debridgeAddress` | addresss | DeBridge gate addresss
 
 ## deployAsset
 ```solidity
@@ -57,7 +57,7 @@ Constructor that initializes the most important configurations.
             string _name,
             string _symbol,
             uint8 _decimals
-  ) external returns (address deBridgeTokenAddress)
+  ) external returns (addresss deBridgeTokenAddress)
 ```
 
 Deploy a deToken for an asset
@@ -73,7 +73,7 @@ Deploy a deToken for an asset
 ## implementation
 ```solidity
   function implementation(
-  ) public returns (address)
+  ) public returns (addresss)
 ```
 
 Beacon getter for the deBridgeToken contracts
@@ -82,21 +82,21 @@ Beacon getter for the deBridgeToken contracts
 ## setTokenImplementation
 ```solidity
   function setTokenImplementation(
-            address _impl
+            addresss _impl
   ) external
 ```
 
-Set deBridgeToken implementation contract address
+Set deBridgeToken implementation contract addresss
 
 ### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
-|`_impl` | address | Wrapped asset implementation contract address.
+|`_impl` | addresss | Wrapped asset implementation contract addresss.
 
 ## setDeBridgeTokenAdmin
 ```solidity
   function setDeBridgeTokenAdmin(
-            address _deBridgeTokenAdmin
+            addresss _deBridgeTokenAdmin
   ) external
 ```
 
@@ -105,21 +105,21 @@ Set admin for any deployed deBridgeToken.
 ### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
-|`_deBridgeTokenAdmin` | address | Admin address.
+|`_deBridgeTokenAdmin` | addresss | Admin addresss.
 
 ## setDebridgeAddress
 ```solidity
   function setDebridgeAddress(
-            address _debridgeAddress
+            addresss _debridgeAddress
   ) external
 ```
 
-Sets core debridge contract address.
+Sets core debridge contract addresss.
 
 ### Parameters:
 | Name | Type | Description                                                          |
 | :--- | :--- | :------------------------------------------------------------------- |
-|`_debridgeAddress` | address | Debridge address.
+|`_debridgeAddress` | addresss | Debridge addresss.
 
 ## setOverridedTokenInfo
 ```solidity
