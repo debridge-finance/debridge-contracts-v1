@@ -137,7 +137,7 @@
 7. Part of the fee can be withdrawn.
 8. The aggregator can be replaced.
 9. The part of locked tokens can be used in DEFI protocol.
-10. The transfers must be confirmed by the oracles to be compleated.
+10. The transfers must be confirmed by the oracles to be completed.
 
 ### Test Item: admin-only actions
 
@@ -174,7 +174,7 @@
 
 **Verification Steps**: Verify the operation works fine.
 
-**Scenario 1**: Calle methods by:
+**Scenario 1**: Called, Callerd, Called, Callerr methods by:
 
 - [ ] admin
 - [ ] not admin
@@ -254,9 +254,9 @@
 - [x] with the current chain
 - [x] with the different chain
 
-**Scenario 2**: Call burn with diffrent amounts when:
+**Scenario 2**: Call burn with different amounts when:
 
-- [x] enough tokens are transfered
+- [x] enough tokens are transferred
 - [x] too few tokens are sent
 
 **Scope**: Test claim.
@@ -360,7 +360,7 @@
 6. Part of the fee can be withdrawn.
 7. The aggregator can be replaced.
 8. The part of locked tokens can be used in DEFI protocol.
-9. The transfers must be confirmed by the oracles to be compleated.
+9. The transfers must be confirmed by the oracles to be completed.
 
 ### Test Item: admin-only actions
 
@@ -397,7 +397,7 @@
 
 **Verification Steps**: Verify the operation works fine.
 
-**Scenario 1**: Calle methods by:
+**Scenario 1**: Called, Callerd, Called, Callerr methods by:
 
 - [x] admin
 - [x] not admin
@@ -467,9 +467,9 @@
 - [x] with the current chain
 - [ ] with the different chain
 
-**Scenario 2**: Call burn with diffrent amounts when:
+**Scenario 2**: Call burn with different amounts when:
 
-- [x] enough tokens are transfered
+- [x] enough tokens are transferred
 - [x] too few tokens are sent
 
 **Scope**: Test claim.
@@ -602,7 +602,7 @@
 
 **Scenario 1**: Call `executeUnstake`:
 
-- [x] noraml withdrawal id
+- [x] normal withdrawal id
 - [x] withdrawal id from future
 
 **Scope**: Test unstaking at the different time.
