@@ -28,6 +28,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | Berachain             | 80094     | 100000020         | 0.02 BERA  |
 | Story                 | 1514      | 100000013         | 0.01 IP    |
 | HyperEVM              | 999       | 100000022         | 0.05 WHYPE |
+| Zircuit               | 48900     | 100000015         | 0.001 ETH  |
 
 The fee is fully refunded in case the limit order is canceled.
 
