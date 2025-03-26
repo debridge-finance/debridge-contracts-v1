@@ -29,6 +29,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | Story                 | 1514      | 100000013         | 0.01 IP    |
 | HyperEVM              | 999       | 100000022         | 0.05 WHYPE |
 | Zircuit               | 48900     | 100000015         | 0.001 ETH  |
+| Flow                  | 747       | 100000009         | 2.5 FLOW   |
 
 The fee is fully refunded in case the limit order is canceled.
 
