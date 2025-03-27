@@ -1,8 +1,20 @@
-# Creating Calldata for Solana
+# Creating Hook data for Solana
+
+### 0. Order creation <a href="#id-0.-order-creation" id="id-0.-order-creation"></a>
+
+Make sure that you're creating order with receiver = `exe59FS5cojZkPJVDFDV8RnXCC7wd6yoBjsUtqH7Zai` (hex: 0x09b966be097f46dcf58ebaae2365f56b74cd218a2b8c62468ffa4c53d484b05&#x33;**)**
+
+This is the program that deserializes calldata, converts it into Solana TransactionInstructions and executes them via CPI.
 
 ### 1. Intro <a href="#id-1.-intro" id="id-1.-intro"></a>
 
 Solana calldata is a serialized `TransactionInstruction` list with additional metadata (see next sections). It can be serialized using a wasm module built by deBridge.
+
+**After order fulfillment** funds are transferred to the AUTHORITY\_PLACEHOLDER (in case take token is native sol). When take token is SPL token funds are being transferred to the WALLET\_PLACEHOLDER.
+
+During calldata execution (via UI or automatic executor) executor (entity that sends transaction with ExecuteExternalCall instruction) transfers \*rewards\* amount of native Sol to AUTHORITY\_PLACEHOLDER and receives \*expenses\* amount of take token from WALLET\_PLACEHOLDER.
+
+Each calldata instruction is signed by AUTHORITY\_PLACEHOLDER during execution, no additional signatures could be passed to the CPI.
 
 ### 2. Expenses <a href="#id-2.-expenses" id="id-2.-expenses"></a>
 
@@ -22,9 +34,9 @@ For example, if there is a PDA in the destination network that depends on some u
 
 As well as pubkey substitutions, placeholders could be used to substitute extcall accounts, but placeholders can't be used to calculate ATA during extcall execution. At the moment we have the following placeholders:
 
-* **Wallet Placeholder:** `J4vKrc4pCdtiHpxFDfBy4iyZ22Uf7fBjJyJ817k4673y` - if you set this pubkey to some account, it will be replaced by actual Submission Wallet during execution. Submission wallet is a [token account](https://github.com/solana-labs/solana-program-library/blob/523156a0cdd9cada27036bd72d326bc40c00f85f/token/program/src/state.rs#L83-L106) that contains transferred tokens during execution.
-* **Submission Placehoder:** `7cu34CRu47UZKLRHjt9kFPhuoYyHCzAafGiGWz83GNFs` will be replaced by [Submission account](https://github.com/debridge-finance/debridge-solana-sdk/blob/5c3f5149504daddab38d5383ae6c8c15efb4235c/src/debridge\_accounts.rs#L59-L79) during execution. [Submission account](https://github.com/debridge-finance/debridge-solana-sdk/blob/5c3f5149504daddab38d5383ae6c8c15efb4235c/src/debridge\_accounts.rs#L59-L79) contains transfer metadata such as native sender, send from chain, etc.
-* **Authority Placeholder:** `2iBUASRfDHgEkuZ91Lvos5NxwnmiryHrNbWBfEVqHRQZ` will be replaced by Submission Authority account during execution. Submission authority is an owner/authority account for Submission Wallet. It is this account that manages [#2.-expenses](https://docs.dln.trade/dln-on-chain/creating-calldata-for-solana#2.-expenses).
+* **Wallet Placeholder:** `J4vKrc4pCdtiHpxFDfBy4iyZ22Uf7fBjJyJ817k4673y` - if you set this pubkey to some account, it will be replaced by actual ExtcallWallet during execution. ExtcallWallet is a [token account](https://github.com/solana-labs/solana-program-library/blob/523156a0cdd9cada27036bd72d326bc40c00f85f/token/program/src/state.rs#L83-L106) that contains order's take tokens (in case take token is an SPL token. When native Sol is used ExtcallWallet will be empty).
+* **ExtcallMetaPlacehoder:** `7cu34CRu47UZKLRHjt9kFPhuoYyHCzAafGiGWz83GNFs` will be replaced by ExtcallMeta. ExtcallMeta contains such info as order take token, take token amount, execution state, orderId.
+* **Authority Placeholder:** `2iBUASRfDHgEkuZ91Lvos5NxwnmiryHrNbWBfEVqHRQZ` will be replaced by ExtcallAuthority account during execution. Extcall authority is an owner/authority account for ExtcallWallet. It is this account that manages [#2.-expenses](https://open.gitbook.com/~site/site_xrbL4/~/revisions/pYOfKt6RQ7EyH3EYBec9/dln-on-chain/creating-calldata-for-solana#2.-expenses). When take token of the order is **native Sol**, funds will be transferred here (**not to the ExtcallWallet**)
 
 If both placeholder and substitution are used for the same account, only substitution will be performed.
 
