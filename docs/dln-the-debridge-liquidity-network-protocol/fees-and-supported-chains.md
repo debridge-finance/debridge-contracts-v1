@@ -30,7 +30,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | HyperEVM              | 999       | 100000022         | 0.05 WHYPE |
 | Zircuit               | 48900     | 100000015         | 0.001 ETH  |
 | Flow                  | 747       | 100000009         | 2.5 FLOW   |
-| Zilliqa               | 32769     | 100000008         |            |
+| Zilliqa               | 32769     | 100000008         | 50 ZIL     |
 
 The fee is fully refunded in case the limit order is canceled.
 
