@@ -32,6 +32,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | Flow                  | 747       | 100000009         | 2.5 FLOW   |
 | Zilliqa               | 32769     | 100000008         | 50 ZIL     |
 | BOB                   | 60808     | 100000021         | 0.001 ETH  |
+| Mantle                | 5000      | 100000023         | 2 MNT      |
 
 The fee is fully refunded in case the limit order is canceled.
 
