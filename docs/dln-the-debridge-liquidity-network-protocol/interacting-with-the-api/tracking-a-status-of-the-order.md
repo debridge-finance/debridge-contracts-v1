@@ -1,8 +1,12 @@
+---
+hidden: true
+---
+
 # Tracking a Status of the Order
 
 After the transaction has been successfully included in the source blockchain, it is time to retrieve the status of an order created within the given transaction. There are several ways to track the status of the trade.
 
-The first way is [`/filteredList`](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders\_GetOrders)[ ](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders\_GetOrders)method of dedicated `stats-api` that allows retrieving the history of all trades performed by the wallet and their statuses. Check [redoc](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders\_GetOrders) for more details. Stats-API Swagger is available at [this link](https://stats-api.dln.trade/swagger/index.html#/).
+The first way is [`/filteredList`](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders_GetOrders)[ ](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders_GetOrders)method of dedicated `stats-api` that allows retrieving the history of all trades performed by the wallet and their statuses. Check [redoc](https://stats-api.dln.trade/redoc/index.html?url=/swagger/v1/swagger.json#tag/Orders/operation/Orders_GetOrders) for more details. Stats-API Swagger is available at [this link](https://stats-api.dln.trade/swagger/index.html#/).
 
 Example of trade history for address `0xB779DaeAD6031Ef189cAD4Ac438c991Efe7635A7`:
 
@@ -20,7 +24,7 @@ curl -X 'POST' \
 
 To understand the data structure and how trade history can be reflected in your app, you can check the [DLN trade history](https://app.debridge.finance/orders) page of deExplorer which is using this endpoint to obtain data.
 
-In case detailed information on one specific trade is needed, [`/api/Orders/creationTxHash/`](https://dln-api.debridge.finance/swagger/index.html#/Orders/Orders\_GetOrderByCreationTx) endpoint of DLN API can be used. It returns the status and all the order parameters that are reflected on the order page of deExplorer.
+In case detailed information on one specific trade is needed, [`/api/Orders/creationTxHash/`](https://dln-api.debridge.finance/swagger/index.html#/Orders/Orders_GetOrderByCreationTx) endpoint of DLN API can be used. It returns the status and all the order parameters that are reflected on the order page of deExplorer.
 
 Example of how to retrieve DLN trade details based on orderID: [https://stats-api.dln.trade/api/Orders/creationTxHash/0x3fe11542154f53dcf3134eacb30ea5ca586c9e134c223e56bbe1893862469bc5](https://stats-api.dln.trade/api/Orders/creationTxHash/0x3fe11542154f53dcf3134eacb30ea5ca586c9e134c223e56bbe1893862469bc5) and [Link to the same order](https://app.debridge.finance/order?orderId=0x313d90a13e5f54efa3c065a98f1434c59d12ba9f4da8b224533bc56b6ed40d82) in deExplorer
 
@@ -48,7 +52,7 @@ gives an array with only one `orderId` within it:
 An array instead of a single `orderId` is returned because a top-level transaction may perform several calls to DLN, thus leading to multiple order creation.
 {% endhint %}
 
-After the `orderId` has been revealed, it can be used to track the order's status by orderId specifically (instead of creation txHash). Use the `GET` [`/api/Orders/{orderId}`](https://stats-api.dln.trade/swagger/index.html#/Orders/Orders\_GetOrder) endpoint supplying the given `orderId`. Calling the endpoint:
+After the `orderId` has been revealed, it can be used to track the order's status by orderId specifically (instead of creation txHash). Use the `GET` [`/api/Orders/{orderId}`](https://stats-api.dln.trade/swagger/index.html#/Orders/Orders_GetOrder) endpoint supplying the given `orderId`. Calling the endpoint:
 
 > [`https://stats-api.dln.trade/api/Orders/0x9ee6c3d0aa68a7504e619b02df7c71539d0ce10e27f593bf8604b62e51955a01`](https://stats-api.dln.trade/api/Orders/0x9ee6c3d0aa68a7504e619b02df7c71539d0ce10e27f593bf8604b62e51955a01)
 

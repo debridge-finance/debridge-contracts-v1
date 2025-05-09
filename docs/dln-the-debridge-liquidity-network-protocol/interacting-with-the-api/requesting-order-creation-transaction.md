@@ -1,3 +1,7 @@
+---
+hidden: true
+---
+
 # Requesting Order Creation Transaction
 
 Placing a cross-chain order on the deBridge Liquidity Network (DLN) actually means calling the DLN smart contract on the source chain. The transaction call must provide a wide range of parameters representing the order, including but not limited to: the give and take offers, recipient address, order authorities' addresses.&#x20;
@@ -9,7 +13,7 @@ Additionally, the spread between the give offer (_how much asset the user is sel
 * the taker's margin fee,
 * the operating expenses that a solver would have to pay during and after order fulfillment (this includes solver's gas costs for filling an order on the destination chain, and for claiming order fulfillment on the source chain).
 
-Preparing such a wide range of different variables could be a very sophisticated thing, which the API's  [`create-tx`](https://dln.debridge.finance/v1.0#/DLN/DlnOrderControllerV10\_createOrder) endpoint takes off the developers.&#x20;
+Preparing such a wide range of different variables could be a very sophisticated thing, which the API's  [`create-tx`](https://dln.debridge.finance/v1.0#/DLN/DlnOrderControllerV10_createOrder) endpoint takes off the developers.&#x20;
 
 The endpoint accepts several groups of parameters explained below.
 
