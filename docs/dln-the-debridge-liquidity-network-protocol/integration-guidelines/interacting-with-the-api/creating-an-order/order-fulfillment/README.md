@@ -10,4 +10,4 @@ Order fulfillment involves three distinct steps:
 
 In total, a solver performs two transactions during the lifecycle of an order: one to fulfill it on the destination chain and another to claim the locked input assets on the source chain. The gas fees associated with both transactions are considered [operating costs](../fees-and-operating-expenses.md) and should be factored in when creating an order.
 
-<figure><img src="../../../../.gitbook/assets/Solvers-steps.drawio.png" alt=""><figcaption><p>Solver's Steps</p></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/Solvers-steps.drawio.png" alt=""><figcaption><p>Solver's Steps</p></figcaption></figure>

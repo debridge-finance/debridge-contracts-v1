@@ -194,7 +194,7 @@ The `SentOrderCancel` event is emitted whenever the **cancel** procedure has bee
 
 #### Canceling order <a href="#canceling-order" id="canceling-order"></a>
 
-The only way to cancel the order is to initiate the cancellation procedure on the chain it was intended to be fulfilled on (the `takeChainId` property of the order). During the cancellation process, the order is marked as cancelled (to prevent further fulfillment) and a cross-chain message is sent through the [deBridge cross-chain messaging infrastructure](../../the-debridge-messaging-protocol/protocol-overview.md) to the `DlnSource` contract on the source chain to unlock the given funds. The funds locked on the source chain are returned in full including affiliate and protocol fees.
+The only way to cancel the order is to initiate the cancellation procedure on the chain it was intended to be fulfilled on (the `takeChainId` property of the order). During the cancellation process, the order is marked as cancelled (to prevent further fulfillment) and a cross-chain message is sent through the [deBridge cross-chain messaging infrastructure](../../../the-debridge-messaging-protocol/protocol-overview.md) to the `DlnSource` contract on the source chain to unlock the given funds. The funds locked on the source chain are returned in full including affiliate and protocol fees.
 
 To initiate the cancellation procedure, call the `DlnDestination.sendEvmOrderCancel()` method on the destination chain as follows:
 
@@ -207,10 +207,10 @@ function sendEvmOrderCancel(
 ```
 
 * mind that only an `orderAuthorityAddressDst` address specified during the order creation is allowed to perform this call for the given order;
-* you need to cover the deBridge cross-chain messaging protocol fee (measured in the blockchain native currency where the message is being sent from) to make a cancellation message accepted. Consider looking at the details on [retrieving the deBridge protocol fee](../../the-debridge-messaging-protocol/fees-and-supported-chains.md);
+* you need to cover the deBridge cross-chain messaging protocol fee (measured in the blockchain native currency where the message is being sent from) to make a cancellation message accepted. Consider looking at the details on [retrieving the deBridge protocol fee](../../../the-debridge-messaging-protocol/fees-and-supported-chains.md);
 * for the `_order` argument, use the `Order` structure obtained from the `CreatedOrder()` upon order creation;
 * for the `_cancelBeneficiary` argument, use the address you'd like the given funds to be unlocked to on the source chain. Whenever the `allowedCancelBeneficiarySrc` has been explicitly provided upon order creation, you are only allowed to use that value;
-* for the `_executionFee` argument, specify the amount of native blockchain currency (in addition to the deBridge protocol fee) to provide an incentive to keepers for the successful claim of the cross-chain message on the destination chain. In other words, this is a prepayment for potential gas expenses on the destination chain, that will be transferred by the protocol. Otherwise, you'd need to find the cross-chain transaction in the [deExplorer](https://explorer.debridge.finance/) and claim it manually. Consider understanding [how the cross-chain call is handled](../../the-debridge-messaging-protocol/development-guides/lifecycle-of-a-cross-chain-call.md).
+* for the `_executionFee` argument, specify the amount of native blockchain currency (in addition to the deBridge protocol fee) to provide an incentive to keepers for the successful claim of the cross-chain message on the destination chain. In other words, this is a prepayment for potential gas expenses on the destination chain, that will be transferred by the protocol. Otherwise, you'd need to find the cross-chain transaction in the [deExplorer](https://explorer.debridge.finance/) and claim it manually. Consider understanding [how the cross-chain call is handled](../../../the-debridge-messaging-protocol/development-guides/lifecycle-of-a-cross-chain-call.md).
 
 Finally, you are ready to initiate a cancellation procedure:
 

@@ -16,4 +16,4 @@ To reduce operational complexity, DLN is designed such that solvers only need to
 * **wETH** on Avalanche, BNB Chain, and Polygon
 * **USDC** (issued by Circle Inc.) on all DLN-supported chains
 
-This model ensures reliable settlement and minimizes the capital management burden on solvers while still supporting a wide variety of bridged tokens. Further details about operating costs and fees are available [here](../../../the-debridge-messaging-protocol/fees-and-supported-chains.md).
+This model ensures reliable settlement and minimizes the capital management burden on solvers while still supporting a wide variety of bridged tokens. Further details about operating costs and fees are available [here](../../../../the-debridge-messaging-protocol/fees-and-supported-chains.md).

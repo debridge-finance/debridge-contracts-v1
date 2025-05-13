@@ -1,4 +1,4 @@
-# Introduction
+# Interacting with smart contracts
 
 The deBridge Liquidity Network Protocol is an on-chain system of smart contracts where users place their cross-chain limit orders, giving a specific amount of input token on the source chain (`giveAmount` of the `giveToken` on the `giveChain`) and specifying the outcome they are willing to take on the destination chain (`takeAmount` of the `takeToken` on the `takeChain`).&#x20;
 
@@ -6,4 +6,4 @@ The given amount is being locked by the `DlnSource` smart contract on the source
 
 The DLN Protocol consists of two contracts: the `DlnSource` contract responsible for order placement, and the `DlnDestination` contract responsible for order fulfillment.
 
-Currently, both contracts are deployed on the [supported blockchains](../fees-and-supported-chains.md) effectively allowing anyone to place orders in any direction. Contract addresses and ABIs can be found here: [Trusted Smart Contracts](../deployed-contracts.md)
+Currently, both contracts are deployed on the [supported blockchains](../../fees-and-supported-chains.md) effectively allowing anyone to place orders in any direction. Contract addresses and ABIs can be found here: [Trusted Smart Contracts](../../deployed-contracts.md)

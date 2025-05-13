@@ -77,7 +77,7 @@ The DLN API simplifies a hook's cost estimation by automatically simulating tran
 
 A common source of frustration is a blockchain where a hook is expected to run: hooks are built for destination chains. For example, an order that sells SOL on Solana and buys ETH on Ethereum would get placed on Solana with the hook data encoded specifically for EVM, and vice versa.
 
-Atomic **success-required hooks** that get reverted would prevent their orders from getting fulfilled, causing users' funds to stuck, which would require users to initiate [a cancellation procedure](interacting-with-the-api/cancelling-the-order.md). This increases friction and worsens the overall user experience, so it is advised to carefully test hooks, and estimate potential fulfillments before placing orders with such hooks in production. The API [takes the burden](interacting-with-the-api/integrating-debridge-hooks/) of proper hook data validation, encoding, and hook simulation, ensuring that an order can get filled on the destination chain.&#x20;
+Atomic **success-required hooks** that get reverted would prevent their orders from getting fulfilled, causing users' funds to stuck, which would require users to initiate [a cancellation procedure](integration-guidelines/interacting-with-the-api/cancelling-the-order.md). This increases friction and worsens the overall user experience, so it is advised to carefully test hooks, and estimate potential fulfillments before placing orders with such hooks in production. The API [takes the burden](integration-guidelines/interacting-with-the-api/integrating-debridge-hooks/) of proper hook data validation, encoding, and hook simulation, ensuring that an order can get filled on the destination chain.&#x20;
 
 ### Examples
 
@@ -90,5 +90,5 @@ deBridge Hooks are available on all supported blockchains. Hooks can be encoded 
 
 Further reading:
 
-* Easy usage with the DLN API: [integrating-debridge-hooks](interacting-with-the-api/integrating-debridge-hooks/ "mention")
+* Easy usage with the DLN API: [integrating-debridge-hooks](integration-guidelines/interacting-with-the-api/integrating-debridge-hooks/ "mention")
 * Technical specification: [hook-data](protocol-specs/hook-data/ "mention")

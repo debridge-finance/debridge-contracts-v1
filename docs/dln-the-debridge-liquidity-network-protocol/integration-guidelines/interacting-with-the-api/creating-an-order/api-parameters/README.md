@@ -6,7 +6,7 @@ Below is a succinct breakdown of the parameters used in the `create-tx` API endp
 
 These parameters define the origin and destination of the transaction, including the assets being sold on the source chain and the assets being purchased on the destination chain.
 
-<table><thead><tr><th width="260">Parameter</th><th width="210">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>srcChainId</code></td><td><code>56</code></td><td>The internal <code>chainId</code> of the <a href="../../../fees-and-supported-chains.md">supported source chain</a>. </td></tr><tr><td><code>srcChainTokenIn</code></td><td><code>0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d</code></td><td>Input asset address (what the user sells)</td></tr><tr><td><code>dstChainId</code></td><td><code>43114</code></td><td>The internal <code>chainId</code> of the <a href="../../../fees-and-supported-chains.md">supported destination chain</a>.</td></tr><tr><td><code>dstChainTokenOut</code></td><td><code>0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7</code></td><td>Output asset address (what the user buys)</td></tr></tbody></table>
+<table><thead><tr><th width="260">Parameter</th><th width="210">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>srcChainId</code></td><td><code>56</code></td><td>The internal <code>chainId</code> of the <a href="../../../../fees-and-supported-chains.md">supported source chain</a>. </td></tr><tr><td><code>srcChainTokenIn</code></td><td><code>0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d</code></td><td>Input asset address (what the user sells)</td></tr><tr><td><code>dstChainId</code></td><td><code>43114</code></td><td>The internal <code>chainId</code> of the <a href="../../../../fees-and-supported-chains.md">supported destination chain</a>.</td></tr><tr><td><code>dstChainTokenOut</code></td><td><code>0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7</code></td><td>Output asset address (what the user buys)</td></tr></tbody></table>
 
 ## Offer Parameters
 
@@ -36,7 +36,7 @@ Affiliate fee-related settings can be included to specify a percentage of the tr
 
 ## Referral Code
 
-An optional referral code can be included for tracking and rewards. More details are available [here](../../../../debridge-points/integrators-overview.md).
+An optional referral code can be included for tracking and rewards. More details are available [here](../../../../../debridge-points/integrators-overview.md).
 
 <table><thead><tr><th width="265">Parameter</th><th width="200">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>referralCode</code></td><td><code>31805</code></td><td>Integrator's referral code. You can generate it <a href="https://app.debridge.finance/refer">here</a>. </td></tr></tbody></table>
 

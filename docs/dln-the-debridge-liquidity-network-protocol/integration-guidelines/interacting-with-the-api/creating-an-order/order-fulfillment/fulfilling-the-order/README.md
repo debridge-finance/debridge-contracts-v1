@@ -2,7 +2,7 @@
 
 After the `OrderCreated` event is detected, solvers enter the next stage of the process, illustrated by the green background in the diagram below.
 
-<figure><img src="../../../../../.gitbook/assets/Solvers-steps-2.drawio (1).png" alt=""><figcaption><p>Solver's steps - Fulfilling the Order</p></figcaption></figure>
+<figure><img src="../../../../../../.gitbook/assets/Solvers-steps-2.drawio (1).png" alt=""><figcaption><p>Solver's steps - Fulfilling the Order</p></figcaption></figure>
 
 Solvers typically begin by simulating the order to evaluate its profitability. Unprofitable orders are ignored. However, if market conditions change, solvers may re-simulate previously ignored orders to reassess their viability.
 

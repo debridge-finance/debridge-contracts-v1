@@ -16,7 +16,7 @@ When enabled, [operating expenses](../fees-and-operating-expenses.md) are calcul
 
 For example, swapping 100 USDC on Arbitrum for 100 USDC on Polygon in [our application](https://app.debridge.finance/) displays a small fee (just over $0.03), shown above the red line in the figure below. This represents the solver's operating expenses.
 
-<figure><img src="../../../../.gitbook/assets/prependOperatingExpenses.png" alt=""><figcaption><p>DeBridge app trading view, demonstrating <code>prependOperatingExpenses=true</code></p></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/prependOperatingExpenses.png" alt=""><figcaption><p>DeBridge app trading view, demonstrating <code>prependOperatingExpenses=true</code></p></figcaption></figure>
 
 * **ERC20 Approval:** The total amount (including operating expenses) must be approved using the `approve` function. This value is provided in `response.estimation.srcChainTokenIn.amount`.
   * **Buffer Recommendations:** Estimates may need to be refreshed if there is a delay between generating the response and submitting `response.tx`. Updated operating expenses might require a new approval. Additional guidance is available [in this article](prependoperatingexpenses.md).

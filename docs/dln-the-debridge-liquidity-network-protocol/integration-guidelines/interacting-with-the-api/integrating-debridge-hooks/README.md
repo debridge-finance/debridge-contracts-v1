@@ -1,8 +1,8 @@
-# Integrating DLN hooks
+# Integrating deBridge hooks
 
 The DLN API provides a convenient high-level interface to attach hooks to orders upon [requesting an order creation transaction](../requesting-order-creation-transaction.md). The API takes the burden of proper hook data validation, encoding, cost estimation, and simulation, ensuring that an order would get filled on the destination chain and there is no technical inconsistencies that may prevent it. This is especially important for **atomic** **success-required hooks**, as an error during such hook execution would prevent an order from getting filled, and an order's authority would need to initiate [a cancellation procedure](../cancelling-the-order.md) from the destination chain, which increases friction and worsens UX.&#x20;
 
-To specify the hook, use the `dlnHook` parameter of the [`create-tx`](https://dln.debridge.finance/v1.0#/DLN/DlnOrderControllerV10\_createOrder) endpoint. The value for this parameter must be a JSON in a specific format that describes the hook for the given destination chain. Depending on the destination chain, different templates are available.
+To specify the hook, use the `dlnHook` parameter of the [`create-tx`](https://dln.debridge.finance/v1.0#/DLN/DlnOrderControllerV10_createOrder) endpoint. The value for this parameter must be a JSON in a specific format that describes the hook for the given destination chain. Depending on the destination chain, different templates are available.
 
 ### Serialized instructions hook for Solana
 
@@ -33,7 +33,7 @@ dlnHook: JSON.stringify({
 
 ### Transaction call hook for EVM
 
-To easily attach an atomic success-required hook that executes an arbitrary transaction call via the default [Universal hook](../../protocol-specs/hook-data/anatomy-of-a-hook-for-the-evm-based-chains.md#universal-hook), the DLN API provides a simple shortcut for that:
+To easily attach an atomic success-required hook that executes an arbitrary transaction call via the default [Universal hook](../../../protocol-specs/hook-data/anatomy-of-a-hook-for-the-evm-based-chains.md#universal-hook), the DLN API provides a simple shortcut for that:
 
 ```javascript
 {
@@ -46,9 +46,9 @@ To easily attach an atomic success-required hook that executes an arbitrary tran
 }
 ```
 
-The `data.to` and `data.calldata` properties represent the transaction call that should be made, as explained in the [Universal hook](../../protocol-specs/hook-data/anatomy-of-a-hook-for-the-evm-based-chains.md#universal-hook) section. The `gas` property **must** be specified if:
+The `data.to` and `data.calldata` properties represent the transaction call that should be made, as explained in the [Universal hook](../../../protocol-specs/hook-data/anatomy-of-a-hook-for-the-evm-based-chains.md#universal-hook) section. The `gas` property **must** be specified if:
 
-* the underlying call handles errors gracefully, which leads to underestimation of gas (see [our investigation](https://twitter.com/AlexSmirnov\_\_/status/1538903343455772673) on this)
+* the underlying call handles errors gracefully, which leads to underestimation of gas (see [our investigation](https://twitter.com/AlexSmirnov__/status/1538903343455772673) on this)
 * the transaction call can't be estimated currently, which leads to inability of the DLN API to properly estimate transaction costs.&#x20;
 
 <details>
@@ -95,7 +95,7 @@ This simple shortcut would be transparently converted by the DLN API to a hook w
 
 ### Arbitrary hook for EVM
 
-To provide a complete customization of a hook, the DLN API offers a template that fully replicates the [HookDataV1 struct](../../protocol-specs/hook-data/anatomy-of-a-hook-for-the-evm-based-chains.md#hook-data-layout):
+To provide a complete customization of a hook, the DLN API offers a template that fully replicates the [HookDataV1 struct](../../../protocol-specs/hook-data/anatomy-of-a-hook-for-the-evm-based-chains.md#hook-data-layout):
 
 ```json
 {

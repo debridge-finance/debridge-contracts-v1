@@ -6,7 +6,7 @@ description: Bridging of non-reserve assets, and steps to take. Pre-Order-Swap e
 
 The [DeBridge Liquidity Network](broken-reference) (DLN) protocol supports bridging any liquid token from the source chain to the destination chain, not just [reserve assets](reserve-assets.md). While the actions taken by the system are similar to those used when [bridging reserve assets](bridging-reserve-assets.md), the internal flow differs and introduces considerations that must be communicated clearly for a seamless end-user experience.
 
-<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption><p>Bridging non-reserve assets</p></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (13).png" alt=""><figcaption><p>Bridging non-reserve assets</p></figcaption></figure>
 
 Cross-chain settlements are executed in [reserve assets ](reserve-assets.md)to simplify operations for solvers. As a result, whenever a non-reserve asset is bridged, it must first be swapped into a reserve asset before the order is created—a process referred to as the **Pre-Order-Swap**.
 

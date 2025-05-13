@@ -7,7 +7,7 @@ deBridge Widget is available at [https://app.debridge.finance/widget](https://ap
 With just a few lines of code, all projects and developers can embed a cross-chain exchange between arbitrary assets within your app (mobile app, website, dApp, etc.) based on the deBridge protocol. You can make the deBridge widget part of your app and you're fully free to customize colors, fonts, chains, and tokens according to your design and preferences. Here's an example:\
 
 
-<figure><img src="../.gitbook/assets/Slide 16_9 - 15.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Slide 16_9 - 15.png" alt=""><figcaption></figcaption></figure>
 
 ### **Requirements**
 
@@ -98,7 +98,7 @@ fontFamily: string
 }
 ```
 
-<figure><img src="../.gitbook/assets/Slide 16_9 - 16.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Slide 16_9 - 16.png" alt=""><figcaption></figcaption></figure>
 
 ### deBridge Widget events and methods&#x20;
 

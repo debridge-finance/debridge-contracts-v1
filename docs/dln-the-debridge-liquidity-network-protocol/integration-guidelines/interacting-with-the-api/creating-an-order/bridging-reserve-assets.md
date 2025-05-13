@@ -16,6 +16,6 @@ The simplest scenario occurs when bridging [reserve assets](reserve-assets.md) f
 * **Step 3:** Sign and submit `response.tx` to the blockchain. This action locks the specified amount of [reserve assets](reserve-assets.md) on the source chain until the order is either [claimed by a solver ](order-fulfillment/claiming-the-order.md)or [cancelled by an authorized entity](../cancelling-the-order.md).&#x20;
 *
 
-    <figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption><p>Reserve-asset bridging, visualized</p></figcaption></figure>
+    <figure><img src="../../../../.gitbook/assets/image (10).png" alt=""><figcaption><p>Reserve-asset bridging, visualized</p></figcaption></figure>
 
 Once these steps are completed, the bridging process from the user's perspective is finished. The next actions involve either [monitoring the order’s status](../tracking-order-status/) or [initiating cancellation](../cancelling-the-order.md). Additional details on how solvers fulfill the order on the destination chain are available [here](order-fulfillment/).

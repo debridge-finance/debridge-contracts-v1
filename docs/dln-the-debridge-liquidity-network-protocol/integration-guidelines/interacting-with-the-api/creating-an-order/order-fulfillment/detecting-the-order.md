@@ -2,7 +2,7 @@
 
 The first step in the solver workflow is highlighted with a green background in the diagram below.
 
-<figure><img src="../../../../.gitbook/assets/Solvers-steps-1.drawio (1).png" alt=""><figcaption><p>Solver's steps - Detecting the Order</p></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/Solvers-steps-1.drawio (1).png" alt=""><figcaption><p>Solver's steps - Detecting the Order</p></figcaption></figure>
 
 Solvers monitor the `DlnSource` contract for the `CreatedOrder` event:
 

@@ -1,2 +1,0 @@
-# Interacting with smart contracts
-

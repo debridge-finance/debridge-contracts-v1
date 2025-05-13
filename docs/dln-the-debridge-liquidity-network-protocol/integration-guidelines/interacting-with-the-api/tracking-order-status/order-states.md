@@ -6,7 +6,7 @@ description: Order states explained. Order lifecycle state-machine diagram.
 
 In the figure below, the order states are represented in a state-machine diagram, with the actions that trigger each state transition.&#x20;
 
-<figure><img src="../../../.gitbook/assets/image (14).png" alt=""><figcaption><p>Order states, state-machine diagram</p></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (14).png" alt=""><figcaption><p>Order states, state-machine diagram</p></figcaption></figure>
 
 According to the DLN API, an order must be in one of these states:
 
