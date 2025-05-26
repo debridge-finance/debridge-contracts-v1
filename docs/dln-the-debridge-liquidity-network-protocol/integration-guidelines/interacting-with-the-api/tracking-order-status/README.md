@@ -144,4 +144,4 @@ export async function getOrderStatusByOrderId(orderId: string) {
 
 #### Affiliate Fee Settlement
 
-If set during order creation, the [affiliate fee](../affiliate-fees.md) is automatically transferred to the `affiliateFeeRecipient` once the order reaches the `ClaimedUnlock` status.
+If set during order creation, the [affiliate fee](../../affiliate-fees/) is automatically transferred to the `affiliateFeeRecipient` once the order reaches the `ClaimedUnlock` status.

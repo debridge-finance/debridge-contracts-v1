@@ -2,11 +2,11 @@
 description: Bridging of non-reserve assets, and steps to take. Pre-Order-Swap explained.
 ---
 
-# Bridging non-reserve assets
+# Bridging Non-Reserve Assets
 
 The [DeBridge Liquidity Network](broken-reference) (DLN) protocol supports bridging any liquid token from the source chain to the destination chain, not just [reserve assets](reserve-assets.md). While the actions taken by the system are similar to those used when [bridging reserve assets](bridging-reserve-assets.md), the internal flow differs and introduces considerations that must be communicated clearly for a seamless end-user experience.
 
-<figure><img src="../../../../.gitbook/assets/image (13).png" alt=""><figcaption><p>Bridging non-reserve assets</p></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption><p>Bridging non-reserve assets</p></figcaption></figure>
 
 Cross-chain settlements are executed in [reserve assets ](reserve-assets.md)to simplify operations for solvers. As a result, whenever a non-reserve asset is bridged, it must first be swapped into a reserve asset before the order is created—a process referred to as the **Pre-Order-Swap**.
 
@@ -20,8 +20,8 @@ If integrators prefer to manage the swap path manually, they can perform the con
 
 This design—basing estimates on the minimum outcome of the **Pre-Order-Swap**—helps shield users from market volatility and reduces the likelihood of orders being ignored due to insufficient profitability from a solver's perspective.
 
-Once the swap completes, the [reserve assets ](reserve-assets.md)are locked within the protocol until the order is either [fulfilled](order-fulfillment/) or [cancelled](../cancelling-the-order.md).&#x20;
+Once the swap completes, the [reserve assets ](reserve-assets.md)are locked within the protocol until the order is either [fulfilled](order-fulfillment/) or [cancelled](../interacting-with-the-api/cancelling-the-order.md).&#x20;
 
 {% hint style="warning" %}
-If the order is [cancelled](../cancelling-the-order.md), the locked [reserve assets](reserve-assets.md) are returned to the user. It is important to note that the user will receive reserve assets back—not the original non-reserve assets used at the start of the process.
+If the order is [cancelled](../interacting-with-the-api/cancelling-the-order.md), the locked [reserve assets](reserve-assets.md) are returned to the user. It is important to note that the user will receive reserve assets back—not the original non-reserve assets used at the start of the process.
 {% endhint %}

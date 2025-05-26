@@ -2,7 +2,7 @@
 
 It is recommended that transactions returned by the `create-tx` API be signed and submitted within 30 seconds. When `response.tx` is submitted within this window, the likelihood of successful order execution exceeds 99.9%.
 
-There is no explicit time-to-live (TTL) on the transaction itself—that is, the period between receiving the `create-tx` API [response](api-response/) and submitting it on-chain. Transactions may remain valid for extended periods, especially when no [pre-order-swap](bridging-non-reserve-assets.md) is involved or when the [pre-order-swap](bridging-non-reserve-assets.md) is between stablecoins.
+There is no explicit time-to-live (TTL) on the transaction itself—that is, the period between receiving the `create-tx` API [response](api-response/) and submitting it on-chain. Transactions may remain valid for extended periods, especially when no [pre-order-swap](../../under-the-hood/bridging-non-reserve-assets.md) is involved or when the [pre-order-swap](../../under-the-hood/bridging-non-reserve-assets.md) is between stablecoins.
 
 ## Handling Operating Expense Fluctuations&#x20;
 

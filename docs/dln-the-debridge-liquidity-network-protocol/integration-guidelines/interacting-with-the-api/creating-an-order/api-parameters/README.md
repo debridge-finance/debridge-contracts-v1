@@ -1,6 +1,6 @@
 # API Parameters
 
-Below is a succinct breakdown of the parameters used in the `create-tx` API endpoint. Detailed descriptions and usage examples are provided in dedicated subpages.
+`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`Below is a succinct breakdown of the parameters used in the `create-tx` API endpoint. Detailed descriptions and usage examples are provided in dedicated subpages.
 
 ## Directional Parameters
 
@@ -12,7 +12,7 @@ These parameters define the origin and destination of the transaction, including
 
 These parameters specify the amounts of tokens to be sold and received. The API can also be configured to automatically determine the output amount to ensure a reasonably profitable market order.
 
-<table><thead><tr><th width="260">Parameter</th><th width="210">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>srcChainTokenInAmount</code></td><td><p><code>100000000000000000000</code> </p><p> or</p><p><code>auto</code> </p></td><td>The amount of input token the user is selling, with decimals. It can be set to <code>auto</code> as well, but make sure to set the amount of output token in that case.</td></tr><tr><td><code>dstChainTokenOutAmount</code></td><td><p><code>auto</code> </p><p>or</p><p><code>100000000000000000000</code> </p></td><td>The amount of output token the user is buying. It is recommended to let the API calculate the reasonable outcome by setting this parameter to <code>auto</code>, otherwise you are risking the created order being ignored by solvers and stuck until <a href="../../cancelling-the-order.md">cancelled</a>.</td></tr><tr><td><code>prependOperatingExpense</code></td><td><code>true</code></td><td><a href="prependoperatingexpenses.md">Recommended</a> for better user experience. Moves the calculated amount of <a href="../fees-and-operating-expenses.md">operating expenses</a> out of the spread and adds it on top the amount of input token.</td></tr></tbody></table>
+<table><thead><tr><th width="260">Parameter</th><th width="210">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>srcChainTokenInAmount</code></td><td><p><code>100000000000000000000</code> </p><p> or</p><p><code>auto</code> </p></td><td>The amount of input token the user is selling, with decimals. It can be set to <code>auto</code> as well, but make sure to set the amount of output token in that case.</td></tr><tr><td><code>dstChainTokenOutAmount</code></td><td><p><code>auto</code> </p><p>or</p><p><code>100000000000000000000</code> </p></td><td>The amount of output token the user is buying. It is recommended to let the API calculate the reasonable outcome by setting this parameter to <code>auto</code>, otherwise you are risking the created order being ignored by solvers and stuck until <a href="../../cancelling-the-order.md">cancelled</a>.</td></tr><tr><td><code>prependOperatingExpense</code></td><td><code>true</code></td><td><a href="prependoperatingexpenses.md">Recommended</a> for better user experience. Moves the calculated amount of <a href="../../../fees-and-operating-expenses.md">operating expenses</a> out of the spread and adds it on top the amount of input token.</td></tr></tbody></table>
 
 ## Authorities and recipient address
 
@@ -30,9 +30,9 @@ Ensure that the address specified for `dstChainOrderAuthorityAddress` is accessi
 
 ## Affiliate Fee parameters
 
-Affiliate fee-related settings can be included to specify a percentage of the trade value and the recipient address. More details are available [here](../../affiliate-fees.md).
+Affiliate fee-related settings can be included to specify a percentage of the trade value and the recipient address. More details are available [here](../../../affiliate-fees/).
 
-<table><thead><tr><th width="265">Parameter</th><th width="200">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>affiliateFeePercent</code></td><td><code>0.1</code></td><td>Input asset amount percentage to cut off in favor of the affiliate fee recipient during order creation.</td></tr><tr><td><code>affiliateFeeRecipient</code></td><td><code>0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045</code></td><td>Source chain address where the accrued affiliate fees will be transferred to when the order is fulfilled and unlocked.</td></tr></tbody></table>
+<table><thead><tr><th width="261">Parameter</th><th width="261">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>affiliateFeePercent</code></td><td><code>0.1</code></td><td>Input asset amount percentage to cut off in favor of the affiliate fee recipient during order creation.</td></tr><tr><td><code>affiliateFeeRecipient</code></td><td><code>0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045</code> or <code>862oLANNqhdXyUCwLJPBqUHrScrqNR4yoGWGTxjZftKs</code></td><td>Source chain address (EVM) or public key (Solana) where the accrued affiliate fees will be transferred when the order reaches <code>ClaimUnlocked</code> <a href="../../tracking-order-status/order-states.md">state</a>.</td></tr></tbody></table>
 
 ## Referral Code
 
