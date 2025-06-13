@@ -59,6 +59,7 @@
       * [API Response](dln-the-debridge-liquidity-network-protocol/integration-guidelines/interacting-with-the-api/creating-an-order/api-response/README.md)
         * [JSON Example](dln-the-debridge-liquidity-network-protocol/integration-guidelines/interacting-with-the-api/creating-an-order/api-response/json-example.md)
       * [Refreshing Estimates](dln-the-debridge-liquidity-network-protocol/integration-guidelines/interacting-with-the-api/creating-an-order/refreshing-estimates.md)
+      * [Quoting Strategies](dln-the-debridge-liquidity-network-protocol/integration-guidelines/interacting-with-the-api/creating-an-order/quoting-strategies.md)
     * [Monitoring Orders](dln-the-debridge-liquidity-network-protocol/integration-guidelines/interacting-with-the-api/monitoring-orders/README.md)
       * [Order States](dln-the-debridge-liquidity-network-protocol/integration-guidelines/interacting-with-the-api/monitoring-orders/order-states.md)
     * [Requesting Order Creation Transaction](dln-the-debridge-liquidity-network-protocol/integration-guidelines/interacting-with-the-api/requesting-order-creation-transaction.md)
