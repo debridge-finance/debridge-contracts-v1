@@ -32,7 +32,7 @@ Ensure that the address specified for `dstChainOrderAuthorityAddress` is accessi
 
 Affiliate fee-related settings can be included to specify a percentage of the trade value and the recipient address. More details are available [here](../../../affiliate-fees/).
 
-<table><thead><tr><th width="261">Parameter</th><th width="261">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>affiliateFeePercent</code></td><td><code>0.1</code></td><td>Input asset amount percentage to cut off in favor of the affiliate fee recipient during order creation.</td></tr><tr><td><code>affiliateFeeRecipient</code></td><td><code>0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045</code> or <code>862oLANNqhdXyUCwLJPBqUHrScrqNR4yoGWGTxjZftKs</code></td><td>Source chain address (EVM) or public key (Solana) where the accrued affiliate fees will be transferred when the order reaches <code>ClaimUnlocked</code> <a href="../../tracking-order-status/order-states.md">state</a>.</td></tr></tbody></table>
+<table><thead><tr><th width="261">Parameter</th><th width="261">Example value</th><th>Description</th></tr></thead><tbody><tr><td><code>affiliateFeePercent</code></td><td><code>0.1</code></td><td>Input asset amount percentage to cut off in favor of the affiliate fee recipient during order creation.</td></tr><tr><td><code>affiliateFeeRecipient</code></td><td><code>0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045</code> or <code>862oLANNqhdXyUCwLJPBqUHrScrqNR4yoGWGTxjZftKs</code></td><td>Source chain address (EVM) or public key (Solana) where the accrued affiliate fees will be transferred when the order reaches <code>ClaimUnlocked</code> <a href="../../monitoring-orders/order-states.md">state</a>.</td></tr></tbody></table>
 
 ## Referral Code
 

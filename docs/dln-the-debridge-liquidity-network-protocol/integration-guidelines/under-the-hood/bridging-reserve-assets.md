@@ -18,4 +18,4 @@ The simplest scenario occurs when bridging [reserve assets](reserve-assets.md) f
 
     <figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption><p>Reserve-asset bridging, visualized</p></figcaption></figure>
 
-Once these steps are completed, the bridging process from the user's perspective is finished. The next actions involve either [monitoring the order’s status](../interacting-with-the-api/tracking-order-status/) or [initiating cancellation](../interacting-with-the-api/cancelling-the-order.md). Additional details on how solvers fulfill the order on the destination chain are available [here](order-fulfillment/).
+Once these steps are completed, the bridging process from the user's perspective is finished. The next actions involve either [monitoring the order’s status](../interacting-with-the-api/monitoring-orders/) or [initiating cancellation](../interacting-with-the-api/cancelling-the-order.md). Additional details on how solvers fulfill the order on the destination chain are available [here](order-fulfillment/).

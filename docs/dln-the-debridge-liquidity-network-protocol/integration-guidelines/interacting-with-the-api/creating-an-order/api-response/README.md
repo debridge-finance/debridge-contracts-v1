@@ -67,7 +67,7 @@ An array describing the cost components associated with the trade. Possible entr
   * `metadata`&#x20;
     * Additional contextual information about the order.
 * `orderId`
-  * A deterministic identifier for the order. The same ID is used on both source and destination chains and can be used to [track order status](../../tracking-order-status/#by-order-id).
+  * A deterministic identifier for the order. The same ID is used on both source and destination chains and can be used to [track order status](../../monitoring-orders/#by-order-id).
 * `fixFee`&#x20;
   * [Flat fee](../../../../fees-and-supported-chains.md) charged in the source chain's native currency. This matches `tx.value` for EVM-based chains.&#x20;
 * `userPoints`

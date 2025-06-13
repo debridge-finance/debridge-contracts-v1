@@ -19,7 +19,7 @@ To enable affiliate fees for cross-chain swaps, the following [parameters](../in
   * A public key on **Solana**
   * A wallet address on **EVM chains**
 
-Affiliate fees become available once an order reaches the `ClaimedUnlock` [state](../interacting-with-the-api/tracking-order-status/order-states.md).&#x20;
+Affiliate fees become available once an order reaches the `ClaimedUnlock` [state](../interacting-with-the-api/monitoring-orders/order-states.md).&#x20;
 
 * On **EVM chains**, the affiliate fee is [automatically transferred to the specified recipient when a solver claims the order](../under-the-hood/order-fulfillment/claiming-the-order.md)
 * On **Solana**, the fee must be withdrawn manually. Further details on withdrawing affiliate fees are provided [here](withdrawing-affiliate-fees.md).
