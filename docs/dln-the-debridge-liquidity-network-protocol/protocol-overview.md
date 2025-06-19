@@ -9,7 +9,7 @@ The deBridge Liquidity Network Protocol is represented by a set of smart contrac
 
 The given amount is then temporarily locked by the DLN smart contract on the source chain, and any on-chain address (named a **solver**) with sufficient liquidity in the destination chain can attempt to fulfill the order by calling the corresponding method of DLN smart contract and supplying the liquidity as requested by the maker in the DLN order parameters. After the order is fulfilled, a solver initiates a cross-chain message to be sent by the DLN smart contract to the source chain via the deBridge messaging protocol. When the message is delivered, it unlocks the funds on the source chain to the solver’s address, effectively completing the order. Below is a graphic outlining the process:
 
-<figure><img src="../.gitbook/assets/Slide 16_9 - 12.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (15).png" alt=""><figcaption><p>Order execution flow</p></figcaption></figure>
 
 Order Creation
 
