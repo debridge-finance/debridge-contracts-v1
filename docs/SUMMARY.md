@@ -117,7 +117,7 @@
 * [Talks, Videos, and Articles](talks-and-videos.md)
 * [Website](https://debridge.finance)
 * [Github](https://github.com/debridge-finance)
-* [Twitter](https://twitter.com/deBridgeFinance)
+* [Twitter](https://twitter.com/deBridge)
 * [Social channels](external-links/social-channels/README.md)
   * [Discord](https://discord.gg/debridge)
   * [Facebook](https://www.facebook.com/deBridgeFinance)
