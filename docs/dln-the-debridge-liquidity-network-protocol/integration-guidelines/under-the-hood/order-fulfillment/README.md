@@ -4,10 +4,16 @@ This page outlines secondary but relevant concepts related to order creation. Wh
 
 Order fulfillment involves three distinct steps:
 
-1. Detecting the created order on the source chain
-2. Fulfilling the order on the destination chain
+1. Detecting the created order on the source chain&#x20;
+2. Fulfilling the order on the destination chain&#x20;
 3. Claiming the order on the source chain
 
-In total, a solver performs two transactions during the lifecycle of an order: one to fulfill it on the destination chain and another to claim the locked input assets on the source chain. The gas fees associated with both transactions are considered [operating costs](../../fees-and-operating-expenses.md) and should be factored in when creating an order.
+In total, a solver performs three transactions during the lifecycle of an order:&#x20;
 
-<figure><img src="../../../../.gitbook/assets/Solvers-steps.drawio.png" alt=""><figcaption><p>Solver's Steps</p></figcaption></figure>
+* fulfilling it on the destination chain
+* sending unlock message via DMP from destination to source chain
+* claiming the locked input assets on the source chain
+
+The gas fees associated with those transactions are considered [operating costs](../../fees-and-operating-expenses.md) and should be factored in when creating an order.
+
+<figure><img src="../../../../.gitbook/assets/fulfillment-full-dark-correct-mermaid.png" alt=""><figcaption></figcaption></figure>
