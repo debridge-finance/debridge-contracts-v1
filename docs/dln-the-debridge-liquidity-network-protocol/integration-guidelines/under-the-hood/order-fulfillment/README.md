@@ -14,6 +14,6 @@ In total, a solver performs three transactions during the lifecycle of an order:
 * sending unlock message via DMP from destination to source chain
 * claiming the locked input assets on the source chain
 
-The gas fees associated with those transactions are considered [operating costs](../../fees-and-operating-expenses.md) and should be factored in when creating an order.
+The gas fees associated with those transactions are considered [operating costs](../../fee-structure.md) and should be factored in when creating an order.
 
 <figure><img src="../../../../.gitbook/assets/fulfillment-full-dark-correct-mermaid.png" alt=""><figcaption></figcaption></figure>

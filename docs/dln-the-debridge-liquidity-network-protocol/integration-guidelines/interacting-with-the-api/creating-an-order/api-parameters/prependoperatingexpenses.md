@@ -12,7 +12,7 @@ prependOperatingExpenses = true
 
 ## Enabled (`prependOperatingExpenses=true`)
 
-When enabled, [operating expenses](../../../fees-and-operating-expenses.md) are calculated separately from the spread and added on top of the input token amount, making all fees fully transparent. This approach helps clarify exactly what is being paid in fees.
+When enabled, [operating expenses](../../../fee-structure.md) are calculated separately from the spread and added on top of the input token amount, making all fees fully transparent. This approach helps clarify exactly what is being paid in fees.
 
 For example, swapping 100 USDC on Arbitrum for 100 USDC on Polygon in [our application](https://app.debridge.finance/) displays a small fee (just over $0.03), shown above the red line in the figure below. This represents the solver's operating expenses.
 
@@ -24,6 +24,6 @@ For example, swapping 100 USDC on Arbitrum for 100 USDC on Polygon in [our appli
 
 ## Disabled (`prependOperatingExpenses=false`)
 
-When disabled, `response.estimation.srcChainTokenIn.amount` equals the `srcChainTokenInAmount` specified in the original `create-tx` request. In this case, [operating expenses](../../../fees-and-operating-expenses.md) are subtracted directly from the spread between the input value and `response.estimation.dstChainTokenOut`.
+When disabled, `response.estimation.srcChainTokenIn.amount` equals the `srcChainTokenInAmount` specified in the original `create-tx` request. In this case, [operating expenses](../../../fee-structure.md) are subtracted directly from the spread between the input value and `response.estimation.dstChainTokenOut`.
 
 Both modes produce the same execution outcome, but enabling `prependOperatingExpenses` typically provides a clearer breakdown of the fee structure for end users.

@@ -6,6 +6,10 @@ description: >-
 
 # Affiliate fees
 
+### Referral Code
+
+To enable affiliate fees, a referral code must be included in the `create-tx` [request parameters](../interacting-with-the-api/creating-an-order/api-parameters/). Further details on obtaining a referral code and its additional use-cases are available in the [Referrers ](../../../debridge-points/referrers-overview.md)and [Integrators Overview](../../../debridge-points/integrators-overview.md) sections.
+
 ### Affiliate Fees
 
 Affiliate fees can be earned through both cross-chain and same-chain swaps by including the appropriate parameters in the request. This allows integrators to monetize swap activity within their applications.

@@ -83,7 +83,7 @@
       * [Claiming the Order](dln-the-debridge-liquidity-network-protocol/integration-guidelines/under-the-hood/order-fulfillment/claiming-the-order.md)
   * [Affiliate fees](dln-the-debridge-liquidity-network-protocol/integration-guidelines/affiliate-fees/README.md)
     * [Withdrawing Affiliate Fees](dln-the-debridge-liquidity-network-protocol/integration-guidelines/affiliate-fees/withdrawing-affiliate-fees.md)
-  * [Fees and operating expenses](dln-the-debridge-liquidity-network-protocol/integration-guidelines/fees-and-operating-expenses.md)
+  * [Fee Structure](dln-the-debridge-liquidity-network-protocol/integration-guidelines/fee-structure.md)
 * [Interacting with the deBridge App](dln-the-debridge-liquidity-network-protocol/interacting-with-the-debridge-app/README.md)
   * [Custom Linking](dln-the-debridge-liquidity-network-protocol/interacting-with-the-debridge-app/custom-linking.md)
 * [Protocol specs](dln-the-debridge-liquidity-network-protocol/protocol-specs/README.md)
