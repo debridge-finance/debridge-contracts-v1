@@ -35,6 +35,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | Mantle                | 5000      | 100000023         | 2 MNT      |
 | Plume                 | 98866     | 100000024         | 7 PLUME    |
 | Sophon                | 50104     | 100000025         | 1 SOPH     |
+| Sei                   | 1329      | 100000027         | 6 SEI      |
 
 The fee is fully refunded in case the limit order is canceled.
 
