@@ -1,6 +1,6 @@
 # API Parameters
 
-`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`Below is a succinct breakdown of the parameters used in the `create-tx` API endpoint. Detailed descriptions and usage examples are provided in dedicated subpages.
+Below is a succinct breakdown of the parameters used in the `create-tx` API endpoint. Detailed descriptions and usage examples are provided in dedicated subpages.
 
 ## Directional Parameters
 
