@@ -36,6 +36,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | Plume                 | 98866     | 100000024         | 7 PLUME    |
 | Sophon                | 50104     | 100000025         | 1 SOPH     |
 | Sei                   | 1329      | 100000027         | 6 SEI      |
+| TRON                  | 728126428 | 100000026         | 4 TRX      |
 
 The fee is fully refunded in case the limit order is canceled.
 
