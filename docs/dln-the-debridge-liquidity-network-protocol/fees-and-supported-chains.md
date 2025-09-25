@@ -37,6 +37,7 @@ deBridge charges a small fee when an order is created through `DlnSource` smart 
 | Sophon                | 50104     | 100000025         | 1 SOPH     |
 | Sei                   | 1329      | 100000027         | 6 SEI      |
 | TRON                  | 728126428 | 100000026         | 4 TRX      |
+| Plasma                | 9745      | 100000028         | 0.01 XPL   |
 
 The fee is fully refunded in case the limit order is canceled.
 
